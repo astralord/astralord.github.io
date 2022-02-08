@@ -1,5 +1,5 @@
 ---
-title: The Annotated Statistics
+title: The Annotated Statistics. Part I: Basics of Point Estimation
 author: Aleksandr Samarin
 date: 2021-09-27
 categories: [Statistics]

@@ -1,6 +1,5 @@
-
 ---
-title: The Annotated Statistics. Part II
+title: The Annotated Statistics. Part II: Bayesian Statistics
 author: Aleksandr Samarin
 date: 2021-02-08
 categories: [Statistics]
