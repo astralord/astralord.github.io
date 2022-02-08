@@ -1,7 +1,8 @@
+
 ---
-title: The Annotated Statistics. Part I: Basics of Point Estimation
+title: The Annotated Statistics. Part II
 author: Aleksandr Samarin
-date: 2021-09-27
+date: 2021-02-08
 categories: [Statistics]
 tags: [statistics]
 math: true
@@ -9,7 +10,7 @@ math: true
 
 ### Definition
 
-* Let $g$ be an estimation of $\gamma$, then 
+* Let $g$ be an estimation of $\gamma$, then
 
   $$ B_\theta(g) = \mathbb{E}_\theta[g(X)] - \gamma(\theta) $$
 
