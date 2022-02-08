@@ -1,7 +1,7 @@
 ---
-title: The Annotated Statistics. Part II: Bayesian Statistics
-author: Aleksandr Samarin
-date: 2021-02-08
+layout: post
+title: 'The Annotated Statistics. Part I: Basics of Point Estimation'
+date: 2022-02-09 03:13 +0800
 categories: [Statistics]
 tags: [statistics]
 math: true
@@ -18,3 +18,6 @@ math: true
 * Estimator $g*$ is called *uniformly minimum variance unbiased (UMVU)* if
 
   $$\operatorname{Var}_\theta(g*(X)) = \mathbb{E}_\theta[(g*(X) - \gamma(\theta))**2] = \inf_{g \in \{g|g \text{is unbiased}\} } \operatorname{Var}(g(X)).$$
+
+
+
