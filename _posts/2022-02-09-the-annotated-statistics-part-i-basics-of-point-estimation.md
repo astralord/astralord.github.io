@@ -11,7 +11,7 @@ math: true
 
 ### Uniformly best estimator
 
-Imagine that you are a pharmaceutical company about to introduce a new drug into production. Prior to launch you need to carry out experiments to assess its quality depending on the dosage. Say you give this medicine to an animal, after which the animal is examined and checked whether it has recovered or not by taking a dose of $X$. You can think of the result as random variable $Y$, following Bernoulli distribution:
+Imagine that you are a pharmaceutical company about to introduce a new drug into production. Prior to launch you need to carry out experiments to assess its quality depending on the dosage. Say you give this medicine to an animal, after which the animal is examined and checked whether it has recovered or not by taking a dose of $X$. You can think of the result as random variable $Y$ following Bernoulli distribution:
 
 $$ Y \sim \operatorname{Bin}(1, p(X)), $$
 
@@ -38,13 +38,13 @@ Then estimating function $p(x)$ is equal to estimating parameter $\beta$.
   
   $$ B(\theta) = 0 \quad \forall \theta \in \Theta.$$
 
-* Estimator $\tilde{g}$ is called *uniformly minimum variance unbiased (UMVU)* if
+* Estimator $\tilde{g}$ is called **uniformly minimum variance unbiased (UMVU)** if
 
-  $$ \tilde{g} \in \Varepsilon_\gamma = \{g|g \text{ is unbiased}\} $$
+  $$ \tilde{g} \in \mathcal{E}_\gamma = \{g|g \text{ is unbiased}\} $$
 
 and
 
-  $$\operatorname{Var}_\theta(\tilde{g}(X)) = \mathbb{E}_\theta[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \Varepsilon_\gamma} \operatorname{Var}(g(X)).$$
+  $$\operatorname{Var}_\theta(\tilde{g}(X)) = \mathbb{E}_\theta[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
 
 
 ### Efficient estimator
