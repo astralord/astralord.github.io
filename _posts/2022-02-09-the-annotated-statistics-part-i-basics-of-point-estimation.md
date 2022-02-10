@@ -41,7 +41,7 @@ Here is a list of notations to help you read through equations in this post.
 | $$ (\mathcal{X}, \mathcal{B}) $$ | Measurable space, defined by set $\mathcal{X}$ and $\sigma$-algebra $\mathcal{B}$. If we define measure <br> $$P(B) = \mathbb{P}(X^{-1}(B)),\ B \in \mathcal{B},$$ <br> then $(\mathcal{X}, \mathcal{B}, P)$ is also a probability space and $\mathcal{X}$  is called **sample space**.|
 | $$ X: (\Omega, \mathcal{A}, \mathbb{P}) \rightarrow (\mathcal{X}, \mathcal{B}) $$ | Random variable: mapping from set of possible outcomes $\Omega$ to sample space $\mathcal {X}$.  |
 | $$ x = X(\omega) $$ | Sample, element of $\mathcal {X}$. |
-| $$ \Theta $$ | **Parametric space**, $\vert \Theta \vert \geq 2$. |
+| $$ \Theta $$ | **Parameter space**, $\vert \Theta \vert \geq 2$. |
 | $$ \mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \} $$ | Family of probability measures on $(\mathcal{X}, \mathcal{B})$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. |
 
 We are interested in the true distribution $P \in \mathcal{P}$ of random variable $X: \Omega \rightarrow \mathcal{X}$. On the basis of $x=X(\omega)$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above:
@@ -64,29 +64,39 @@ Mandatory parameter estimation example that should be in every statistics handbo
 
 $$\mathcal{X}=\mathbb{R}^n, \quad \mathcal{B}=\mathcal{B}^n, \quad \mathcal{P}=\{\otimes_{i=1}^nP_{\mu, \sigma^2} \mid \mu \in \mathbb{R}, \sigma^2>0 \}, \quad \Theta=\mathbb{R} \times \left[0, \infty\right).$$
 
-The typical estimation for $\gamma(\vartheta) = \vartheta = (\mu, \sigma^2)$ (which you already might have seen somewhere) is
+The typical estimation for $\gamma(\vartheta) = \vartheta = (\mu, \sigma^2)$ would be
 
 $$ g(x) = \begin{pmatrix} \overline{x}_n \\ \hat{s}_n^2 \end{pmatrix} = \begin{pmatrix} \frac{1}{n} \sum_{i=1}^n x_i \\ \frac{1}{n} \sum_{i=1}^n (x_i-\overline{x}_n)^2 \end{pmatrix}. $$
-
-```python
-import numpy as np
-
-def g1(x):
-	return np.mean(x), np.std(x)
-```
 		
-Let's think of another example: $X_1, \dots, X_n$ i.i.d. $\sim F$, where $F(x) = \mathbb{P}(X \leq x)$ is unknown distribution function. Here $\Theta$ is an infinite-dimensional family of distribution functions. Say we are interested in value of this function at one point $k$: 
+Let's think of another example: $X_1, \dots, X_n$ i.i.d. $\sim F$, where $F(x) = \mathbb{P}(X \leq x)$ is unknown distribution function. Here $\Theta$ is an infinite-dimensional family of distribution functions. Say we are interested in value of this function at point $k$: 
 
 $$\gamma(F) = F(k).$$ 
 
-Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{X_i \leq k\}}$.
+Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{X_i \leq k\}}$. We see from this example why mapping $\gamma: \Theta \rightarrow \Gamma$ was introduced, as we are not always interested in $\vartheta$ itself, but in an appropriate functional. 
 
-```python
-def g2(x):
-	return np.sum([1 for xx in x if xx <= k]) / len(x)
-```
+Now you might want to ask, how to choose point estimator and how to measure its goodness? Let's define non-negative function $L: \Gamma \times \Gamma \rightarrow [0, \infty)$, we will call it **loss function**, and for estimator $g$ function
 
-We see from the last example why mapping $\gamma: \Theta \rightarrow \Gamma$ was introduced, as we are not always interested in $\vartheta$ itself, but in an appropriate functional. 
+$$ R(\vartheta, g) = \mathbb{E}[L(\gamma(\vartheta), g(X))]) = \int_\mathcal{X} L(\gamma(\vartheta), g(X)) P_\vartheta(dx)$$ 
+
+will be the **risk of $g$ under $L$**.
+
+If $\vartheta$ is the true parameter and $g(x)$ is an estimation, then $L(\gamma(\vartheta), g(x))$ measures the corresponding loss. If $\Gamma$ is a metric space, then loss functions typically depend on the distance between $\gamma(\vartheta)$ and $g(x)$, like the quadratic loss $L(x, y)=(x-y)^2$ for $\Gamma = \mathbb{R}$. The risk then is the expected loss.
+
+Now say we have a set of all possible estimators $g$ called $\mathcal{K}$, then $\tilde{g} \in \mathcal{K}$ is called **uniformly best estimator** if
+
+$$ R(\vartheta, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\vartheta, g), \quad \forall \vartheta \in \Theta. $$
+
+In general, neither uniformly best estimators exist nor is one estimator uniformly better than another. For example, let's take normal random variable with unit variance and estimate its mean $\gamma(\mu) = \mu$ with quadratic loss. Pick the trivial constant estimator $g_\nu(x)=\nu$. Then
+
+$$ R(\mu, g_\nu) = \mathbb{E}[(\mu - \nu)^2] = (\mu - \nu)^2. $$
+
+In particular, $R(\nu, g_\nu)=0$. Thus no $g_\nu$ is uniformly better than some $g_\mu$. Also, in order to obtain a uniformly better estimator $\tilde{g}$, 
+
+$$ \mathbb{E}[(\tilde{g}(X)-\mu)^2]=0 \quad \forall \mu \in \mathbb{R} \quad \Longleftrightarrow \quad \tilde{g}(x)=\mu \ P_\mu\text{-a.s.} \quad \forall \mu \in \mathbb{R}$$
+
+has to hold, which is contradictory.
+
+Therefore in order to still get *optimal* estimators we have to choose other criteria than a uniformly smaller risk.
 
 ## UMVU estimator 
 
@@ -102,10 +112,15 @@ We see from the last example why mapping $\gamma: \Theta \rightarrow \Gamma$ was
 
   $$ \tilde{g} \in \mathcal{E}_\gamma = \{g| B_\theta(g) = 0 \} $$
 
-and
+  and
 
   $$\operatorname{Var}_\theta(\tilde{g}(X)) = \mathbb{E}_\theta[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
 
+* If we choose $L(x, y) = (x - y)^2$, then
+
+  $$ MSE_\vartheta(g) = R(\vartheta, g)=\mathbb{E}[(g(X)-\gamma(\vartheta))^2]=\operatorname{Var}_\vartheta(g(X))+B_\vartheta^2(g)$$
+
+  is called the **mean squared error**.
 
 ## Efficient estimator
 
