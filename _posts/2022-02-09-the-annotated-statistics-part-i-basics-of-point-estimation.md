@@ -34,14 +34,14 @@ Here is a list of notations to help you read through equations in the post easil
 
 | Symbol | Meaning |
 | ----------------------------- | ------------- |
-| $$(\Omega, \mathcal{A}, \mathbb{P})$$ | **Probability space**: triplet of set of all possible outcomes $\Omega$, $\sigma$-algebra (event space) $\mathcal{A}$ and probability measure $\mathbb{P}$. |
+| $$(\Omega, \mathcal{A}, \mathbb{P})$$ | **Probability space**: triplet of <br> $\cdot$ set of all possible outcomes $\Omega$, <br> $\cdot$ $\sigma$-algebra (event space) $\mathcal{A}$, <br> $\cdot$ probability measure $\mathbb{P}$. |
 | $$ (\mathcal{X}, \mathcal{B}) $$ | Measurable space, defined by set $\mathcal{X}$ and $\sigma$-algebra $\mathcal{B}$. |
-| $$ X: \Omega \rightarrow \mathcal{X} $$ | Random variable. Recall that random variable is a function defined on a set of possible outcomes $\Omega$ and it maps to measurable space $\mathcal {X}$. If we define measure $P(B) = \mathbb{P}(X^{-1}(B))$, $B \in \mathcal{B}$, then triplet $(\mathcal{X}, \mathcal{B}, P)$ is also a probability space and $\mathcal{X}$  is called **sample space**. |
+| $$ X: (\Omega, \mathcal{A}, \mathbb{P}) \rightarrow (\mathcal{X}, \mathcal{B}) $$ | Random variable. Recall that random variable is a function defined on a set of possible outcomes $\Omega$ and it maps to measurable space $\mathcal {X}$. <br> If we define measure $P(B) = \mathbb{P}(X^{-1}(B))$, $B \in \mathcal{B}$, then triplet $(\mathcal{X}, \mathcal{B}, P)$ is also a probability space and $\mathcal{X}$  is called **sample space**. |
 | $$ x = X(\omega) $$ | Sample, element of $\mathcal {X}$. |
 | $$ \Theta $$ | **Parametric space**, $\mid \Theta \mid \geq 2$. |
 | $$ \mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \} $$ | Family of probability measures on $(\mathcal{X}, \mathcal{B})$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. |
 
-The idea is that we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. On the basis of $x=X(\omega)$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above:
+The idea is that we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X: \Omega \rightarrow \mathcal{X}$. On the basis of $x=X(\omega)$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above:
 
 $$ Y_i \sim \operatorname{Bin}(1, 1 - e^{-\vartheta X_i}) = P_i^\vartheta. $$ 
 
