@@ -28,6 +28,9 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating function $p(x)$ is equal to estimating parameter $\vartheta $.
 
+<details>
+<summary> Code </summary>
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -49,13 +52,15 @@ def plot_drug_experiment(theta):
                 alpha=0.6, s=100, edgecolor="k", linewidth=1)
     plt.ylim([0.5, 1.5])
     plt.yticks([1], labels=["Healed"])
-    plt.xlabel("Dose $X$")
+    plt.xlabel("Dose $X_i$")
     
-plot_drug_experiment(0.5) # place your theta here
+plot_drug_experiment(???) # place your parameter here
 ```
 
+</details>
+
 ![Drug experiment]({{ '/assets/img/drug-experiment.png' | relative_url }})
-*Fig. 1. Visualization of statistical experiment. The question arises: how do we estimate the value of parameter $\vartheta$ based on our observations?*
+*Fig. 1. Visualization of statistical experiment. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
 
 ### Notations
 
