@@ -3,7 +3,7 @@ layout: post
 title: 'The Annotated Statistics. Part I: Basics of Point Estimation'
 date: 2022-02-09 03:13 +0800
 categories: [Statistics]
-tags: [statistics, point-estimation, exponential-family, cramer-rao-inequality, fisher-information]
+tags: [statistics, parameter-estimation, exponential-family, cramer-rao-inequality, fisher-information]
 math: true
 ---
 
@@ -28,8 +28,34 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating function $p(x)$ is equal to estimating parameter $\vartheta $.
 
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+plt.rcParams['text.usetex'] = True
+plt.rcParams["font.size"] = "14"
+
+def plot_drug_experiment(theta):
+    plt.rcParams["figure.figsize"] = (10, 1)
+    sx = plt.subplot(1, 1, 1)
+    x = {True: [], False: []}
+    for i in np.arange(1, 10):
+        p = 1 - np.exp(-theta * i)
+        y = np.random.binomial(1, p)
+        x[y > 0].append(i)
+    plt.scatter(x[True], [1] * len(x[True]), marker="P", color="#21ba0d", \
+                alpha=0.6, s=100, edgecolor="k", linewidth=1)
+    plt.scatter(x[False], [1] * len(x[False]), marker="X", color="#db4444", \
+                alpha=0.6, s=100, edgecolor="k", linewidth=1)
+    plt.ylim([0.5, 1.5])
+    plt.yticks([1], labels=["Healed"])
+    plt.xlabel("Dose $X$")
+    
+plot_drug_experiment(0.5) # place your theta here
+```
+
 ![Drug experiment]({{ '/assets/img/drug-experiment.png' | relative_url }})
-*Fig. 1. Visualization of statistical experiment. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
+*Fig. 1. Visualization of statistical experiment. The question arises: how do we estimate the value of parameter $\vartheta$ based on our observations?*
 
 ### Notations
 
@@ -76,7 +102,7 @@ Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{X
 
 Now you might want to ask, how to choose point estimator and how to measure its goodness? Let's define non-negative function $L: \Gamma \times \Gamma \rightarrow [0, \infty)$, we will call it **loss function**, and for estimator $g$ function
 
-$$ R(\vartheta, g) = \mathbb{E}[L(\gamma(\vartheta), g(X))]) = \int_\mathcal{X} L(\gamma(\vartheta), g(X)) P_\vartheta(dx)$$ 
+$$ R(\vartheta, g) = \mathbb{E}[L(\gamma(\vartheta), g(X))] = \int_\mathcal{X} L(\gamma(\vartheta), g(X)) P_\vartheta(dx)$$ 
 
 will be the **risk of $g$ under $L$**.
 
