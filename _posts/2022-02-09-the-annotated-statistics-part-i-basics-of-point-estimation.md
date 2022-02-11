@@ -30,8 +30,7 @@ Then estimating function $p(x)$ is equal to estimating parameter $\vartheta $.
 
 <details>
   <summary> Code </summary>
-  
-  Python code here:
+  <!-- have to be followed by an empty line! --> <br>
   
   ```python
   import numpy as np
