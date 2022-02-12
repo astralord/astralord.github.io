@@ -28,65 +28,7 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating function $p(x)$ is equal to estimating parameter $\vartheta $.
 
-<details>
-  <summary> Code </summary>
-  <!-- have to be followed by an empty line! --> <br>
-  
-  ```python
-  import numpy as np
-  import matplotlib.pyplot as plt
-
-  plt.rcParams['text.usetex'] = True
-  plt.rcParams["font.size"] = "14"
-
-  def plot_drug_experiment(theta):
-      plt.rcParams["figure.figsize"] = (10, 1)
-      sx = plt.subplot(1, 1, 1)
-      x = {True: [], False: []}
-      for i in np.arange(1, 10):
-          p = 1 - np.exp(-theta * i)
-          y = np.random.binomial(1, p)
-          x[y > 0].append(i)
-      plt.scatter(x[True], [1] * len(x[True]), marker="P", color="#21ba0d", \
-                  alpha=0.6, s=100, edgecolor="k", linewidth=1)
-      plt.scatter(x[False], [1] * len(x[False]), marker="X", color="#db4444", \
-                  alpha=0.6, s=100, edgecolor="k", linewidth=1)
-      plt.ylim([0.5, 1.5])
-      plt.yticks([1], labels=["Healed"])
-      plt.xlabel("Dose $X_i$")
-
-  plot_drug_experiment(???) # place your parameter here
-  ```
-  
-</details>
-
-  ```python
-  import numpy as np
-  import matplotlib.pyplot as plt
-
-  plt.rcParams['text.usetex'] = True
-  plt.rcParams["font.size"] = "14"
-
-  def plot_drug_experiment(theta):
-      plt.rcParams["figure.figsize"] = (10, 1)
-      sx = plt.subplot(1, 1, 1)
-      x = {True: [], False: []}
-      for i in np.arange(1, 10):
-          p = 1 - np.exp(-theta * i)
-          y = np.random.binomial(1, p)
-          x[y > 0].append(i)
-      plt.scatter(x[True], [1] * len(x[True]), marker="P", color="#21ba0d", \
-                  alpha=0.6, s=100, edgecolor="k", linewidth=1)
-      plt.scatter(x[False], [1] * len(x[False]), marker="X", color="#db4444", \
-                  alpha=0.6, s=100, edgecolor="k", linewidth=1)
-      plt.ylim([0.5, 1.5])
-      plt.yticks([1], labels=["Healed"])
-      plt.xlabel("Dose $X_i$")
-
-  plot_drug_experiment(???) # place your parameter here
-  ```
-  
-![Drug experiment]({{ '/assets/img/drug-experiment.png' | relative_url }})
+![Drug experiment]({{ '/assets/img/drug-efficiency.gif' | relative_url }})
 *Fig. 1. Visualization of statistical experiment. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
 
 ### Notations
