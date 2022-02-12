@@ -10,8 +10,7 @@ math: true
 > This series of posts is a guidance to statistics for those who already have knowledge in probability theory and would like to become familiar with mathematical statistics. Part I focuses on point estimation of parameters for the most frequently used probability distributions.
 
 
-## Intro
-
+### Intro
 Imagine that you are a pharmaceutical company about to introduce a new drug into production. Prior to launch you need to carry out experiments to assess its quality depending on the dosage. Say you give this medicine to an animal, after which the animal is examined and checked whether it has recovered or not by taking a dose of $X$. You can think of the result as random variable $Y$ following Bernoulli distribution:
 
 $$ Y \sim \operatorname{Bin}(1, p(X)), $$
@@ -26,10 +25,10 @@ Our goal is to estimate function $p: [0, \infty) \rightarrow [0, 1]$. For exampl
 
 $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
-Then estimating function $p(x)$ is equal to estimating parameter $\vartheta $.
+Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
 ![Drug experiment]({{ '/assets/img/drug-efficiency.gif' | relative_url }})
-*Fig. 1. Visualization of statistical experiment. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
+*Fig. 1. Visualization of statistical experiments. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
 
 ### Notations
 
@@ -44,7 +43,7 @@ Here is a list of notations to help you read through equations in this post.
 | $$ \Theta $$ | **Parameter space**, $\vert \Theta \vert \geq 2$. |
 | $$ \mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \} $$ | Family of probability measures on $(\mathcal{X}, \mathcal{B})$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. |
 
-We are interested in the true distribution $P \in \mathcal{P}$ of random variable $X: \Omega \rightarrow \mathcal{X}$. On the basis of $x=X(\omega)$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above:
+We are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. On the basis of $x=X(\omega)$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above:
 
 $$ Y_i \sim \operatorname{Bin}(1, 1 - e^{-\vartheta X_i}) = P_i^\vartheta. $$ 
 
@@ -74,31 +73,33 @@ $$\gamma(F) = F(k).$$
 
 Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{X_i \leq k\}}$. We see from this example why mapping $\gamma: \Theta \rightarrow \Gamma$ was introduced, as we are not always interested in $\vartheta$ itself, but in an appropriate functional. 
 
-Now you might want to ask, how to choose point estimator and how to measure its goodness? Let's define non-negative function $L: \Gamma \times \Gamma \rightarrow [0, \infty)$, we will call it **loss function**, and for estimator $g$ function
+But how we choose point estimator and how to measure its goodness? Let's define a criteria, non-negative function $L: \Gamma \times \Gamma \rightarrow [0, \infty)$, which we will call **loss function**, and for estimator $g$ function
 
 $$ R(\vartheta, g) = \mathbb{E}[L(\gamma(\vartheta), g(X))] = \int_\mathcal{X} L(\gamma(\vartheta), g(X)) P_\vartheta(dx)$$ 
 
-will be the **risk of $g$ under $L$**.
+we will call the **risk of $g$ under $L$**.
 
 If $\vartheta$ is the true parameter and $g(x)$ is an estimation, then $L(\gamma(\vartheta), g(x))$ measures the corresponding loss. If $\Gamma$ is a metric space, then loss functions typically depend on the distance between $\gamma(\vartheta)$ and $g(x)$, like the quadratic loss $L(x, y)=(x-y)^2$ for $\Gamma = \mathbb{R}$. The risk then is the expected loss.
 
-Now say we have a set of all possible estimators $g$ called $\mathcal{K}$, then $\tilde{g} \in \mathcal{K}$ is called **uniformly best estimator** if
+Suppose we have a set of all possible estimators $g$ called $\mathcal{K}$. Then it is natural to search for an estimator, which mimimizes our risk, namely $\tilde{g} \in \mathcal{K}$, such that
 
-$$ R(\vartheta, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\vartheta, g), \quad \forall \vartheta \in \Theta. $$
+$$ R(\vartheta, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\vartheta, g), \quad \forall \vartheta \in \Theta. $$ 
 
-In general, neither uniformly best estimators exist nor is one estimator uniformly better than another. For example, let's take normal random variable with unit variance and estimate its mean $\gamma(\mu) = \mu$ with quadratic loss. Pick the trivial constant estimator $g_\nu(x)=\nu$. Then
+Let's call $\tilde{g}$ an **uniformly best estimator**.
+
+Sadly, in general, neither uniformly best estimators exist nor is one estimator uniformly better than another. For example, let's take normal random variable with unit variance and estimate its mean $\gamma(\mu) = \mu$ with quadratic loss. Pick the trivial constant estimator $g_\nu(x)=\nu$. Then
 
 $$ R(\mu, g_\nu) = \mathbb{E}[(\mu - \nu)^2] = (\mu - \nu)^2. $$
 
 In particular, $R(\nu, g_\nu)=0$. Thus no $g_\nu$ is uniformly better than some $g_\mu$. Also, in order to obtain a uniformly better estimator $\tilde{g}$, 
 
-$$ \mathbb{E}[(\tilde{g}(X)-\mu)^2]=0 \quad \forall \mu \in \mathbb{R} \quad \Longleftrightarrow \quad \tilde{g}(x)=\mu \ P_\mu\text{-a.s.} \quad \forall \mu \in \mathbb{R}$$
+$$ \mathbb{E}[(\tilde{g}(X)-\mu)^2]=0 \quad \forall \mu \in \mathbb{R} $$
 
-has to hold, which is contradictory.
+has to hold, which basically means that $\tilde{g}(x) = \mu$ with probability $1$ for every $\mu \in \mathbb{R}$, which of course is impossible.
 
-Therefore in order to still get *optimal* estimators we have to choose other criteria than a uniformly smaller risk.
+This brings us to the fact, that in order to still get *optimal* estimators we have to choose other criteria than a uniformly smaller risk.
 
-## UMVU estimator 
+### UMVU estimator
 
 * Let $g$ be an estimation of $\gamma$, then
 
@@ -122,7 +123,28 @@ Therefore in order to still get *optimal* estimators we have to choose other cri
 
   is called the **mean squared error**.
 
-## Efficient estimator
+### Chi-squared and t-distributions
+
+Let $X_1, \dots, X_n$ be i.i.d. $\sim \mathcal{N}(0, 1)$. Then random variable $Z = \sum_{i=1}^n X_i^2$ has chi-squared distribution with $n$ degrees of freedom (notation: $Z \sim \chi_n^2$). Its density:
+
+$$ f_{\chi_n^2}(x) = \frac{x^{\frac{n}{2}-1} e^{-\frac{x}{2}}}{2^{\frac{n}{2}}\Gamma\big(\frac{n}{2}\big)}, \quad x > 0, $$
+
+where $\Gamma(\cdot)$ is a gamma function:
+
+$$ \Gamma(\alpha) = \int_0^\infty x^{\alpha-1} e^{-x} dx, \quad \alpha > 0.$$
+
+Let $Y \sim \mathcal{N}(0, 1)$ and $Z \sim \chi_n^2$, then 
+
+$$ T = \frac{Y}{\sqrt{Z/n}} $$
+
+has t-distribution with $n$ degrees of freedom (notation $T \sim t_n$). Its density:
+
+$$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
+
+![Chi-squared and t-distributions]({{ '/assets/img/chi-t.gif' | relative_url }})
+*Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions.*
+
+### Efficient estimator
 
 ...
 
