@@ -30,6 +30,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 ![Drug experiment]({{ '/assets/img/drug-efficiency.gif' | relative_url }})
 *Fig. 1. Visualization of statistical experiments. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
 
+<!--
 ### Notations
 
 Here is a list of notations to help you read through equations in this post.
@@ -43,37 +44,36 @@ Here is a list of notations to help you read through equations in this post.
 | $$ \Theta $$ | **Parameter space**, $\vert \Theta \vert \geq 2$. |
 | $$ \mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \} $$ | Family of probability measures on $(\mathcal{X}, \mathcal{B})$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. |
 
-We are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. On the basis of $x=X(\omega)$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above:
+-->
 
-$$ Y_i \sim \operatorname{Bin}(1, 1 - e^{-\vartheta X_i}) = P_i^\vartheta. $$ 
+Formally, we can define **parameter space** $\Theta$ with $\vert \Theta \vert \geq 2$ and family of probability measures $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. Then we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. 
 
-Formally,
+Recall from probability theory that random variable $X$ is a mapping from set of all possible outcomes $\Omega$ to a **sample space** $\mathcal{X}$. On the basis of given sample $x = X(\omega)$, $\omega \in \Omega$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above
 
-$$ \mathcal{X}=\{ 0, 1 \}^n, \quad \mathcal{B}=\mathcal{P(X)}, \quad \mathcal{P}=\{\otimes_{i=1}^nP_i^{\vartheta} \mid \vartheta>0 \}, \quad \Theta=\left[0, \infty\right). $$
+$$ Y_i \sim \operatorname{Bin}(1, 1 - e^{-\vartheta X_i}) = P_i^\vartheta $$ 
+
+and
+
+$$ \mathcal{X} = \{0, 1\}^n, \quad \Theta=\left[0, \infty\right), \quad \mathcal{P}=\{\otimes_{i=1}^nP_i^{\vartheta} \mid \vartheta>0 \}. $$
 
 
 ### Uniformly best estimator
-Now we are ready to construct formal definition of parameter estimation. Let's define measurable space $(\Gamma, \mathcal{A}_\Gamma)$ and mapping $\gamma: \Theta \rightarrow \Gamma$. Then measurable function 
 
-$$ g: (\mathcal{X}, \mathcal{B}) \rightarrow \Gamma(\mathcal{A}_\Gamma) $$
-
-is called **(point) estimation** of $\gamma(\vartheta)$.
-
-Mandatory parameter estimation example that should be in every statistics handbook is mean and variance estimation for Normal distribution. Let $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2) = P_{\mu, \sigma^2}$, then
-
-$$\mathcal{X}=\mathbb{R}^n, \quad \mathcal{B}=\mathcal{B}^n, \quad \mathcal{P}=\{\otimes_{i=1}^nP_{\mu, \sigma^2} \mid \mu \in \mathbb{R}, \sigma^2>0 \}, \quad \Theta=\mathbb{R} \times \left[0, \infty\right).$$
-
-The typical estimation for $\gamma(\vartheta) = \vartheta = (\mu, \sigma^2)$ would be
+Mandatory parameter estimation example which can be found in every statistics handbook is mean and variance estimation for Normal distribution. Let $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2) = P_{\mu, \sigma^2}$. The typical estimation for $\vartheta = (\mu, \sigma^2)$ would be
 
 $$ g(x) = \begin{pmatrix} \overline{x}_n \\ \hat{s}_n^2 \end{pmatrix} = \begin{pmatrix} \frac{1}{n} \sum_{i=1}^n x_i \\ \frac{1}{n} \sum_{i=1}^n (x_i-\overline{x}_n)^2 \end{pmatrix}. $$
-		
-Let's think of another example: $X_1, \dots, X_n$ i.i.d. $\sim F$, where $F(x) = \mathbb{P}(X \leq x)$ is unknown distribution function. Here $\Theta$ is an infinite-dimensional family of distribution functions. Say we are interested in value of this function at point $k$: 
+
+We will get back to characteristics of this estimation later. But now it is worth noting that we are not always interested in $\vartheta$ itself, but in an appropriate functional $\gamma(\vartheta)$. We can see it in another example.
+
+Let $X_1, \dots, X_n$ i.i.d. $\sim F$, where $F(x) = \mathbb{P}(X \leq x)$ is unknown distribution function. Here $\Theta$ is an infinite-dimensional family of distribution functions. Say we are interested in value of this function at point $k$: 
 
 $$\gamma(F) = F(k).$$ 
 
-Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{X_i \leq k\}}$. We see from this example why mapping $\gamma: \Theta \rightarrow \Gamma$ was introduced, as we are not always interested in $\vartheta$ itself, but in an appropriate functional. 
+Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{X_i \leq k\}}$.
 
-But how we choose point estimator and how to measure its goodness? Let's define a criteria, non-negative function $L: \Gamma \times \Gamma \rightarrow [0, \infty)$, which we will call **loss function**, and for estimator $g$ function
+Now we are ready to construct formal definition of parameter estimation. Let's define measurable space $\Gamma$ and mapping $\gamma: \Theta \rightarrow \Gamma$. Then measurable function $ g: \mathcal{X} \rightarrow \Gamma $ is called **(point) estimation** of $\gamma(\vartheta)$. 
+
+But how do we choose point estimator and how we can measure its goodness? Let's define a criteria, non-negative function $L: \Gamma \times \Gamma \rightarrow [0, \infty)$, which we will call **loss function**, and for estimator $g$ function
 
 $$ R(\vartheta, g) = \mathbb{E}[L(\gamma(\vartheta), g(X))] = \int_\mathcal{X} L(\gamma(\vartheta), g(X)) P_\vartheta(dx)$$ 
 
@@ -97,54 +97,120 @@ $$ \mathbb{E}[(\tilde{g}(X)-\mu)^2]=0 \quad \forall \mu \in \mathbb{R} $$
 
 has to hold, which basically means that $\tilde{g}(x) = \mu$ with probability $1$ for every $\mu \in \mathbb{R}$, which of course is impossible.
 
-This brings us to the fact, that in order to still get *optimal* estimators we have to choose other criteria than a uniformly smaller risk.
 
 ### UMVU estimator
 
-* Let $g$ be an estimation of $\gamma$, then
+In order to still get *optimal* estimators we have to choose other criteria than a uniformly smaller risk. What should be our objective properties of $g$?
 
-  $$ B_\theta(g) = \mathbb{E}_\theta[g(X)] - \gamma(\theta) $$
+Let's think of difference between this estimator's expected value and the true value of $\gamma$ being estimated:
 
-  is called **bias** of $g$. Estimation $g$ is called **unbiased** if 
+$$ B_\theta(g) = \mathbb{E}_\theta[g(X)] - \gamma(\theta). $$
+
+This value in is called **bias** of $g$ and estimator $g$ is called **unbiased** if 
   
-  $$ B_\theta(g) = 0 \quad \forall \theta \in \Theta.$$
-
-* Estimator $\tilde{g}$ is called **uniformly minimum variance unbiased (UMVU)** if
-
-  $$ \tilde{g} \in \mathcal{E}_\gamma = \{g| B_\theta(g) = 0 \} $$
-
-  and
+$$ B_\theta(g) = 0 \quad \forall \theta \in \Theta.$$
+ 
+It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{g \in \mathcal{K} | B_\theta(g) = 0 \}$. Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. So we search for an estimator with least variance:
 
   $$\operatorname{Var}_\theta(\tilde{g}(X)) = \mathbb{E}_\theta[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
 
-* If we choose $L(x, y) = (x - y)^2$, then
+Estimator $\tilde{g}$ in such case is called **uniformly minimum variance unbiased (UMVU)**.
 
-  $$ MSE_\vartheta(g) = R(\vartheta, g)=\mathbb{E}[(g(X)-\gamma(\vartheta))^2]=\operatorname{Var}_\vartheta(g(X))+B_\vartheta^2(g)$$
+In general, if we choose $L(x, y) = (x - y)^2$, then
 
-  is called the **mean squared error**.
+$$ MSE_\vartheta(g) = R(\vartheta, g)=\mathbb{E}[(g(X)-\gamma(\vartheta))^2]=\operatorname{Var}_\vartheta(g(X))+B_\vartheta^2(g)$$
+
+is called the **mean squared error**. Note, that in some cases biased estimators have lower MSE because they have a smaller variance than does any unbiased estimator;
 
 ### Chi-squared and t-distributions
 
-Let $X_1, \dots, X_n$ be i.i.d. $\sim \mathcal{N}(0, 1)$. Then random variable $Z = \sum_{i=1}^n X_i^2$ has chi-squared distribution with $n$ degrees of freedom (notation: $Z \sim \chi_n^2$). Its density:
+Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estimators for mean and standard deviation of normally distributed random variable? Now we are ready to talk about their properties, but firstly we have to introduce two distributions:
 
-$$ f_{\chi_n^2}(x) = \frac{x^{\frac{n}{2}-1} e^{-\frac{x}{2}}}{2^{\frac{n}{2}}\Gamma\big(\frac{n}{2}\big)}, \quad x > 0, $$
+* Let $X_1, \dots, X_n$ be i.i.d. $\sim \mathcal{N}(0, 1)$. Then random variable $Z = \sum_{i=1}^n X_i^2$ has chi-squared distribution with $n$ degrees of freedom (notation: $Z \sim \chi_n^2$). Its density:
 
-where $\Gamma(\cdot)$ is a gamma function:
+  $$ f_{\chi_n^2}(x) = \frac{x^{\frac{n}{2}-1} e^{-\frac{x}{2}}}{2^{\frac{n}{2}}\Gamma\big(\frac{n}{2}\big)}, \quad x > 0, $$
 
-$$ \Gamma(\alpha) = \int_0^\infty x^{\alpha-1} e^{-x} dx, \quad \alpha > 0.$$
+  where $\Gamma(\cdot)$ is a gamma function:
 
-Let $Y \sim \mathcal{N}(0, 1)$ and $Z \sim \chi_n^2$, then 
+  $$ \Gamma(\alpha) = \int_0^\infty x^{\alpha-1} e^{-x} dx, \quad \alpha > 0.$$
 
-$$ T = \frac{Y}{\sqrt{Z/n}} $$
+  It's easy to see that $\mathbb{E}[Z] = \sum_{i=1}^n \mathbb{E}[X_i^2] = n$ and 
 
-has t-distribution with $n$ degrees of freedom (notation $T \sim t_n$). Its density:
+  $$\operatorname{Var}(Z) = \sum_{i=1}^n \operatorname{Var}(X_i^2) = n\big(\mathbb{E}[X_1^4]) - \mathbb{E}[X_1^2]^2\big) = 2n.$$
 
-$$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
+* Let $Y \sim \mathcal{N}(0, 1)$ and $Z \sim \chi_n^2$, then 
+
+  $$ T = \frac{Y}{\sqrt{Z/n}} $$
+
+  has t-distribution with $n$ degrees of freedom (notation $T \sim t_n$). Its density:
+
+  $$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
 
 ![Chi-squared and t-distributions]({{ '/assets/img/chi-t.gif' | relative_url }})
 *Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions.*
 
+It can now be shown that
+
+$$ \overline{X}_n = \frac{1}{n} \sum_{i=1}^n X_i \sim \mathcal{N} \Big( \mu, \frac{\sigma^2}{n} \Big) $$
+
+and
+
+$$ \hat{s}_n^2(X) = \frac{1}{n}\sum_{i=1}^n (X_i - \overline{X}_n)^2 \sim \frac{\sigma^2}{n} \chi^2_{n-1}. $$
+
+As a consequence:
+
+$$ \frac{(n-1)(\overline{X}_n-\mu)}{\sqrt{n}s_n^2(X)} \sim t_{n-1}.$$
+
+<details>
+<summary>Proof</summary>
+TBD
+</details>
+
+Let's check which of these estimators are unbiased. We see that $\mathbb{E}[\overline{X}_n] = \mu$, therefore $\overline{X}_n$ is unbiased. On the other hand
+
+$$ \mathbb{E}[s_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
+
+
 ### Efficient estimator
 
-...
+Given a set of unbiased estimators, it is not an easy task to determine which one provides the smallest variance. Luckily, we have a theorem which gives us a lower bound for an estimator variance.
 
+Suppose we have a family of densities $f(\cdot, \vartheta)$, such that set $M_f=\{x \in \mathcal{X} \mid f(x, \vartheta) > 0 \}$ doesn't depend on $\vartheta$ and derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. Let's define function
+
+$$ U_\vartheta(x) = \left\{\begin{array}{ll}
+	0, & \text{if } x \notin M_f, \\
+	\frac{\partial}{\partial \vartheta} \log f(x, \vartheta), & \text{otherwise.}
+	\end{array} \right. $$
+
+and function
+
+$$ I(f(\cdot, \vartheta))=\mathbb{E}_\vartheta \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]. $$
+
+Under mild regularity conditions we have
+
+$$ \mathbb{E}[U_\vartheta(X)] = \mathbb{E}\big[\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)\big] = \frac{\partial}{\partial \vartheta}  \mathbb{E}[\log f(x, \vartheta)] = 0$$
+
+and 
+
+$$ \operatorname{Var}(U_\vartheta(X)) = \mathbb{E}[(U_\vartheta(X))^2]=I(f(\cdot, \vartheta)). $$ 
+
+Then using Cauchy-Schwartz inequality we get 
+
+$$ \begin{aligned}
+	\big( \frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)] \big)^2 &= \big( \mathbb{E}_\vartheta[g(X) \cdot U_\vartheta(X)] \big)^2 \\ 
+& = \big(\operatorname{Cov}(g(X), U_\vartheta(X)) \big)^2 \\
+& \leq \operatorname{Var}(g(X))\cdot \operatorname{Var}(U_\vartheta(X)) \\ 
+&= I(f(\cdot, \vartheta))\cdot \operatorname{Var}(g(X)).
+	\end{aligned} $$
+	
+The resulting inequality:
+
+$$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)]\big)^2}{I(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
+
+is called **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** of family $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
+
+This theorem gives a lower bound for the vatiance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions (e.g. invariance of $M_f$) are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
+
+For a set of i.i.d. variables $X_1, \dots X_n$, meaning that their joint density distribution is $f(x,\vartheta) = \prod_{i=1}^n f^i(x,\vartheta)$, we have
+
+$$ I(f(\cdot, \vartheta))=nI(f^1(\cdot, \vartheta)). $$
