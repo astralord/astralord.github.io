@@ -110,17 +110,15 @@ This value in is called **bias** of $g$ and estimator $g$ is called **unbiased**
   
 $$ B_\theta(g) = 0 \quad \forall \theta \in \Theta.$$
  
-It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{g \in \mathcal{K} | B_\theta(g) = 0 \}$. Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. So we search for an estimator with least variance:
+It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{g \in \mathcal{K} \mid B_\theta(g) = 0 \}$. Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Our metric for goodness then might be the variance of $g$. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
 
   $$\operatorname{Var}_\theta(\tilde{g}(X)) = \mathbb{E}_\theta[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
-
-Estimator $\tilde{g}$ in such case is called **uniformly minimum variance unbiased (UMVU)**.
 
 In general, if we choose $L(x, y) = (x - y)^2$, then
 
 $$ MSE_\vartheta(g) = R(\vartheta, g)=\mathbb{E}[(g(X)-\gamma(\vartheta))^2]=\operatorname{Var}_\vartheta(g(X))+B_\vartheta^2(g)$$
 
-is called the **mean squared error**. Note, that in some cases biased estimators have lower MSE because they have a smaller variance than does any unbiased estimator;
+is called the **mean squared error**. Note, that in some cases biased estimators have lower MSE because they have a smaller variance than does any unbiased estimator.
 
 ### Chi-squared and t-distributions
 
@@ -166,10 +164,11 @@ $$ \frac{(n-1)(\overline{X}_n-\mu)}{\sqrt{n}s_n^2(X)} \sim t_{n-1}.$$
 TBD
 </details>
 
-Let's check which of these estimators are unbiased. We see that $\mathbb{E}[\overline{X}_n] = \mu$, therefore $\overline{X}_n$ is unbiased. On the other hand
+Let's check which of these estimators are unbiased. We get $\mathbb{E}[\overline{X}_n] = \mu$, therefore $\overline{X}_n$ is unbiased. On the other hand
 
 $$ \mathbb{E}[s_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
+Now the question left: is $\overline{X}_n$ an UMVU estimator, e.g. can we find mean estimator with variance lower than $\frac{\sigma^2}{n}$?
 
 ### Efficient estimator
 
@@ -197,7 +196,7 @@ $$ \operatorname{Var}(U_\vartheta(X)) = \mathbb{E}[(U_\vartheta(X))^2]=I(f(\cdot
 Then using Cauchy-Schwartz inequality we get 
 
 $$ \begin{aligned}
-	\big( \frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)] \big)^2 &= \big( \mathbb{E}_\vartheta[g(X) \cdot U_\vartheta(X)] \big)^2 \\ 
+	\big( \frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)] \big)^2 &= \big( \mathbb{E}_\vartheta[g(X) \cdot U_\vartheta(X)] \big)^2 \\ 
 & = \big(\operatorname{Cov}(g(X), U_\vartheta(X)) \big)^2 \\
 & \leq \operatorname{Var}(g(X))\cdot \operatorname{Var}(U_\vartheta(X)) \\ 
 &= I(f(\cdot, \vartheta))\cdot \operatorname{Var}(g(X)).
@@ -207,10 +206,49 @@ The resulting inequality:
 
 $$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)]\big)^2}{I(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
 
-is called **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** of family $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
+is called **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \{P_\vartheta \mid \vartheta \in \Theta \}$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
 
-This theorem gives a lower bound for the vatiance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions (e.g. invariance of $M_f$) are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
+This theorem gives a lower bound for the variance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions (e.g. invariance of $M_f$) are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
 
-For a set of i.i.d. variables $X_1, \dots X_n$, meaning that their joint density distribution is $f(x,\vartheta) = \prod_{i=1}^n f^i(x,\vartheta)$, we have
+Also, for a set of i.i.d. variables $X_1, \dots X_n$, meaning that their joint density distribution is 
+
+$$f(x,\vartheta) = \prod_{i=1}^n f^i(x,\vartheta),$$
+
+we have
 
 $$ I(f(\cdot, \vartheta))=nI(f^1(\cdot, \vartheta)). $$
+
+Let's get back to the example with $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu, 1)$ having the density
+
+$$ f^1(x, \vartheta) = \frac{1}{\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2}}. $$
+
+Then 
+
+$$ I(f^1(\cdot, \mu)) = \mathbb{E} \Big[ \big( \frac{\partial}{\partial \mu} \log f^1 (X_1, \mu)\big)^2 \Big] = \mathbb{E}[(X_1 - \mu)^2] = 1.$$
+
+In particular, for $X = (X_1, \dots, X_n)$ Fisher information $I(f(X, \mu)) = n$ and Cramér–Rao bound for unbiased estimator:
+
+$$ \operatorname{Var}(g(X)) \geq \frac{1}{n} \big( \frac{\partial}{\partial \mu} \mathbb{E}[g(X)] \big)^2 = \frac{1}{n}. $$
+
+Therefore, $g(x) = \overline{x}_n$ is an UMVU estimator.
+
+
+### Multidimensional Cramér–Rao inequality
+
+Define function 
+
+$$ G(\vartheta)=\Big( \frac{\partial}{\partial \vartheta_j} \mathbb{E}_\vartheta[g_i(X)] \Big)_{i,j} \in \mathbb{R}^{k \times d}. $$
+
+Then with multidimensional Cauchy-Shwartz inequality one can prove that under similar regularity conditions we have:
+
+$$ \operatorname{Cov}(g(X)) \geq G(\vartheta) I^{-1}(f(\cdot, \vartheta))G^T(\vartheta) \in \mathbb{R}^{k \times k}, $$
+
+where
+
+$$ I(f(\cdot, \vartheta))=\Big( \mathbb{E}\Big[\frac{\partial}{\partial \vartheta_i} \log f(X, \vartheta) \cdot \frac{\partial}{\partial \vartheta_j} \log f(X, \vartheta) \Big]  \Big)_{i,j=1}^d \in \mathbb{R}^{d \times d}. $$
+
+EXAMPLE:....
+
+### Exponential family
+
+In the previous examples, we consider without proof the fulfillment of all regularity conditions of the Rao-Kramer inequality. Next, we will discuss a family of distributions for which the Rao-Kramer inequality turns into an equality.
