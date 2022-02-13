@@ -168,7 +168,39 @@ Let's check which of these estimators are unbiased. We get $\mathbb{E}[\overline
 
 $$ \mathbb{E}[s_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
-Now the question left: is $\overline{X}_n$ an UMVU estimator, e.g. can we find mean estimator with variance lower than $\frac{\sigma^2}{n}$?
+We can easily check the (un-)biasedness of these estimators. Let's fix number of samples, for example $n=10$, and run sufficiently large amount of experiments, say $10000$. Then wash, rinse, repeat again $10$ times to observe multiple outputs.
+
+```python
+print(' Mean   Var ')
+n = 10
+for _ in range(10):
+    means = []
+    stds = []
+    for experiment in range(10000):
+        x = np.random.normal(0, 1, n)
+        means.append(np.mean(x))
+        stds.append(np.std(x) ** 2)
+    print("{:6.3f}".format(np.mean(means)), "{:6.3f}".format(np.mean(stds)))
+```
+Output:
+
+```
+ Mean   Var 
+-0.003  0.901
+ 0.000  0.897
+ 0.001  0.899
+-0.001  0.900
+ 0.001  0.906
+ 0.002  0.905
+-0.002  0.903
+ 0.001  0.900
+ 0.004  0.892
+-0.001  0.904
+```
+
+We see here that while $\overline{X}_n$ varies around $\mu=0$, expected value of estimator $\hat{s}_n^2(X)$ is near $0.9 \neq \sigma^2$.
+
+So far we figured the unbiasedness of $g(X) = \overline{X}_n$. But how can we tell if $\overline{X}_n$ is an UMVU estimator? Can we find an estimator of $\mu$ with variance lower than $\frac{\sigma^2}{n}$?
 
 ### Efficient estimator
 
@@ -177,8 +209,8 @@ Given a set of unbiased estimators, it is not an easy task to determine which on
 Suppose we have a family of densities $f(\cdot, \vartheta)$, such that set $M_f=\{x \in \mathcal{X} \mid f(x, \vartheta) > 0 \}$ doesn't depend on $\vartheta$ and derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. Let's define function
 
 $$ U_\vartheta(x) = \left\{\begin{array}{ll}
-	0, & \text{if } x \notin M_f, \\
-	\frac{\partial}{\partial \vartheta} \log f(x, \vartheta), & \text{otherwise.}
+	\frac{\partial}{\partial \vartheta} \log f(x, \vartheta), & \text{if } x \in M_f, \\
+	0, & \text{otherwise,}
 	\end{array} \right. $$
 
 and function
