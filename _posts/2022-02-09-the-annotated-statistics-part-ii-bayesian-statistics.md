@@ -31,7 +31,6 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
 The right hand side of the equation above is call the **Bayes risk**.
 
-<script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
 // set the dimensions and margins of the graph
@@ -71,9 +70,7 @@ d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_data
   var density =  kde( data.map(function(d){  return d.price; }) )
 
   // Plot the area
-  var curve = svg
-    .append('g')
-    .append("path")
+  svg.append("path")
       .attr("class", "mypath")
       .datum(density)
       .attr("fill", "#69b3a2")
@@ -86,32 +83,6 @@ d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_data
           .x(function(d) { return x(d[0]); })
           .y(function(d) { return y(d[1]); })
       );
-
-  // A function that update the chart when slider is moved?
-  function updateChart(binNumber) {
-    // recompute density estimation
-    kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(binNumber))
-    density =  kde( data.map(function(d){  return d.price; }) )
-    console.log(binNumber)
-    console.log(density)
-
-    // update the chart
-    curve
-      .datum(density)
-      .transition()
-      .duration(1000)
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(d[0]); })
-          .y(function(d) { return y(d[1]); })
-      );
-  }
-
-  // Listen to the slider?
-  d3.select("#mySlider").on("change", function(d){
-    selectedValue = this.value
-    updateChart(selectedValue)
-  })
 
 });
 

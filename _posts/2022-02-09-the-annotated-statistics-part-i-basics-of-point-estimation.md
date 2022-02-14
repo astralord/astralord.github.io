@@ -94,7 +94,7 @@ This value in is called **bias** of $g$ and estimator $g$ is called **unbiased**
   
 $$ B_\vartheta(g) = 0 \quad \forall \vartheta \in \Theta.$$
  
-It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{ g \in \mathcal{K} \mid B_\vartheta(g) = 0 \}$. Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Our metric for goodness then might be the variance of $g$. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
+It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{ g \in \mathcal{K} \mid B_\vartheta(g) = 0 \}.$ Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Our metric for goodness then might be the variance of $g$. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
 
   $$\operatorname{Var}(\tilde{g}(X)) = \mathbb{E}[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
 
