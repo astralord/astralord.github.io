@@ -27,24 +27,8 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
-![Drug experiment]({{ '/assets/img/drug-efficiency.gif' | relative_url }})
+![Drug experiment]({{'/assets/img/drug-efficiency.gif'|relative_url}})
 *Fig. 1. Visualization of statistical experiments. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
-
-<!--
-### Notations
-
-Here is a list of notations to help you read through equations in this post.
-
-| Symbol(s) | Meaning |
-| ----------------------------- | ------------- |
-| $$(\Omega, \mathcal{A}, \mathbb{P})$$ | **Probability space**: triplet, containing <br> $\cdot$ set of all possible outcomes $\Omega$, <br> $\cdot$ $\sigma$-algebra (event space) $\mathcal{A}$, <br> $\cdot$ probability measure $\mathbb{P}$. |
-| $$ (\mathcal{X}, \mathcal{B}) $$ | Measurable space, defined by set $\mathcal{X}$ and $\sigma$-algebra $\mathcal{B}$. If we define measure <br> $$P(B) = \mathbb{P}(X^{-1}(B)),\ B \in \mathcal{B},$$ <br> then $(\mathcal{X}, \mathcal{B}, P)$ is also a probability space and $\mathcal{X}$  is called **sample space**.|
-| $$ X: (\Omega, \mathcal{A}, \mathbb{P}) \rightarrow (\mathcal{X}, \mathcal{B}) $$ | Random variable: mapping from set of possible outcomes $\Omega$ to sample space $\mathcal {X}$.  |
-| $$ x = X(\omega) $$ | Sample, element of $\mathcal {X}$. |
-| $$ \Theta $$ | **Parameter space**, $\vert \Theta \vert \geq 2$. |
-| $$ \mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \} $$ | Family of probability measures on $(\mathcal{X}, \mathcal{B})$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. |
-
--->
 
 Formally, we can define **parameter space** $\Theta$ with $\vert \Theta \vert \geq 2$ and family of probability measures $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. Then we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. 
 
@@ -104,15 +88,15 @@ In order to still get *optimal* estimators we have to choose other criteria than
 
 Let's think of difference between this estimator's expected value and the true value of $\gamma$ being estimated:
 
-$$ B_\theta(g) = \mathbb{E}_\theta[g(X)] - \gamma(\theta). $$
+$$ B_\vartheta(g) = \mathbb{E}[g(X)] - \gamma(\vartheta). $$
 
 This value in is called **bias** of $g$ and estimator $g$ is called **unbiased** if 
   
-$$ B_\theta(g) = 0 \quad \forall \theta \in \Theta.$$
+$$ B_\vartheta(g) = 0 \quad \forall \vartheta \in \Theta.$$
  
-It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{g \in \mathcal{K} \mid B_\theta(g) = 0 \}$. Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Our metric for goodness then might be the variance of $g$. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
+It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{ g \in \mathcal{K} \mid B_\vartheta(g) = 0 \}$. Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Our metric for goodness then might be the variance of $g$. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
 
-  $$\operatorname{Var}_\theta(\tilde{g}(X)) = \mathbb{E}_\theta[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
+  $$\operatorname{Var}(\tilde{g}(X)) = \mathbb{E}[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
 
 In general, if we choose $L(x, y) = (x - y)^2$, then
 
@@ -144,7 +128,7 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
   $$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
 
-![Chi-squared and t-distributions]({{ '/assets/img/chi-t.gif' | relative_url }})
+![Chi-squared and t-distributions]({{'/assets/img/chi-t.gif'|relative_url}})
 *Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions.*
 
 It can now be shown that

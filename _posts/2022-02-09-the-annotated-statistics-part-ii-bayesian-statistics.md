@@ -27,6 +27,12 @@ The right hand side of the equation above is call the **Bayes risk**.
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
+viewof p2 = Inputs.range([0, 1], {
+  value: 0.5,
+  step: 0.01,
+  label: "p: probability of success"
+})
+    
 var width = $("#d3div").width(),
     height = 400;
 
