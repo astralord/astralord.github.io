@@ -20,67 +20,114 @@ is called the **Bayes risk of $g$ with respect to $\pi$**. An estimator $\tilde{
 
 $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
-<div id='d3div'></div>
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Add a slider -->
+<input type="range" name="mySlider" id=mySlider min="10" max="100" value="50">
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
 
 The right hand side of the equation above is call the **Bayes risk**.
 
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
-viewof p2 = Inputs.range([0, 1], {
-  value: 0.5,
-  step: 0.01,
-  label: "p: probability of success"
-})
-    
-var width = $("#d3div").width(),
-    height = 400;
+// set the dimensions and margins of the graph
+var margin = {top: 30, right: 30, bottom: 30, left: 50},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-var color = d3.scale.category20();
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
 
-var force = d3.layout.force()
-    .charge(-62)
-    .linkDistance(80)
-    .size([width, height]);
+// get the data
+d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/1_OneNum.csv", function(data) {
 
-var svg = d3.select("#d3div").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  // add the x Axis
+  var x = d3.scaleLinear()
+            .domain([0, 1000])
+            .range([0, width]);
+  svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
 
-d3.json("../../../../assets/jazz_scales_network_minCTs6.json", function(error, graph) {
-  if (error) throw error;
+  // add the y Axis
+  var y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, 0.01]);
+  svg.append("g")
+      .call(d3.axisLeft(y));
 
-  force
-      .nodes(graph.nodes)
-      .links(graph.links)
-      .start();
+  // Compute kernel density estimation
+  var kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))
+  var density =  kde( data.map(function(d){  return d.price; }) )
 
-  var link = svg.selectAll(".link")
-      .data(graph.links)
-    .enter().append("line")
-      .attr("class", "link")
-      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+  // Plot the area
+  var curve = svg
+    .append('g')
+    .append("path")
+      .attr("class", "mypath")
+      .datum(density)
+      .attr("fill", "#69b3a2")
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d[0]); })
+          .y(function(d) { return y(d[1]); })
+      );
 
-  var node = svg.selectAll(".node")
-      .data(graph.nodes)
-    .enter().append("circle")
-      .attr("class", "node")
-      .attr("r", 5)
-      .style("fill", function(d) { return color(d.group); })
-      .call(force.drag);
+  // A function that update the chart when slider is moved?
+  function updateChart(binNumber) {
+    // recompute density estimation
+    kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(binNumber))
+    density =  kde( data.map(function(d){  return d.price; }) )
+    console.log(binNumber)
+    console.log(density)
 
-  node.append("title")
-      .text(function(d) { return d.name; });
+    // update the chart
+    curve
+      .datum(density)
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d[0]); })
+          .y(function(d) { return y(d[1]); })
+      );
+  }
 
-  force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+  // Listen to the slider?
+  d3.select("#mySlider").on("change", function(d){
+    selectedValue = this.value
+    updateChart(selectedValue)
+  })
 
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-  });
 });
+
+
+// Function to compute density
+function kernelDensityEstimator(kernel, X) {
+  return function(V) {
+    return X.map(function(x) {
+      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+    });
+  };
+}
+function kernelEpanechnikov(k) {
+  return function(v) {
+    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+  };
+}
 
 </script>
