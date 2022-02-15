@@ -30,6 +30,7 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 <div id="my_dataviz"></div>
 
 The right hand side of the equation above is call the **Bayes risk**.
++++
 
 <script>
 
@@ -48,11 +49,11 @@ var svg = d3.select("#my_dataviz")
           "translate(" + margin.left + "," + margin.top + ")");
 
 // get the data
-d3.csv("../../../../assets/chi-t.csv", function(data) {
+d3.csv("../assets/chi-t.csv", function(data) {
 
   // add the x Axis
   var x = d3.scaleLinear()
-            .domain([0, 1000])
+            .domain([0, 25])
             .range([0, width]);
   svg.append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -61,20 +62,16 @@ d3.csv("../../../../assets/chi-t.csv", function(data) {
   // add the y Axis
   var y = d3.scaleLinear()
             .range([height, 0])
-            .domain([0, 0.01]);
+            .domain([0, 0.1]);
   svg.append("g")
       .call(d3.axisLeft(y));
-
-  // Compute kernel density estimation
-  var kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))
-  var density =  kde( data.map(function(d){  return d.chi_2; }) )
 
   // Plot the area
   var curve = svg
     .append('g')
     .append("path")
       .attr("class", "mypath")
-      .datum(density)
+      .datum(data)
       .attr("fill", "#69b3a2")
       .attr("opacity", ".8")
       .attr("stroke", "#000")
@@ -82,27 +79,21 @@ d3.csv("../../../../assets/chi-t.csv", function(data) {
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
-          .x(function(d) { return x(d[0]); })
-          .y(function(d) { return y(d[1]); })
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.chi_3); })
       );
 
   // A function that update the chart when slider is moved?
   function updateChart(binNumber) {
-    // recompute density estimation
-    kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(binNumber))
-    density =  kde( data.map(function(d){  return d.price; }) )
-    console.log(binNumber)
-    console.log(density)
-
     // update the chart
     curve
-      .datum(density)
+      .datum(data)
       .transition()
       .duration(1000)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
-          .x(function(d) { return x(d[0]); })
-          .y(function(d) { return y(d[1]); })
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.chi_9); })
       );
   }
 
@@ -114,19 +105,5 @@ d3.csv("../../../../assets/chi-t.csv", function(data) {
 
 });
 
-
-// Function to compute density
-function kernelDensityEstimator(kernel, X) {
-  return function(V) {
-    return X.map(function(x) {
-      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-    });
-  };
-}
-function kernelEpanechnikov(k) {
-  return function(v) {
-    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-  };
-}
 
 </script>
