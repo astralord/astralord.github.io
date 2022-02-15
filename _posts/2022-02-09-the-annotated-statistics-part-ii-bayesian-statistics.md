@@ -48,7 +48,7 @@ var svg = d3.select("#my_dataviz")
           "translate(" + margin.left + "," + margin.top + ")");
 
 // get the data
-d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/1_OneNum.csv", function(data) {
+d3.csv("../../../../assets/chi-t.csv", function(data) {
 
   // add the x Axis
   var x = d3.scaleLinear()
@@ -67,10 +67,12 @@ d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_data
 
   // Compute kernel density estimation
   var kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))
-  var density =  kde( data.map(function(d){  return d.price; }) )
+  var density =  kde( data.map(function(d){  return d.chi_2; }) )
 
   // Plot the area
-  svg.append("path")
+  var curve = svg
+    .append('g')
+    .append("path")
       .attr("class", "mypath")
       .datum(density)
       .attr("fill", "#69b3a2")
@@ -83,6 +85,32 @@ d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_data
           .x(function(d) { return x(d[0]); })
           .y(function(d) { return y(d[1]); })
       );
+
+  // A function that update the chart when slider is moved?
+  function updateChart(binNumber) {
+    // recompute density estimation
+    kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(binNumber))
+    density =  kde( data.map(function(d){  return d.price; }) )
+    console.log(binNumber)
+    console.log(density)
+
+    // update the chart
+    curve
+      .datum(density)
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d[0]); })
+          .y(function(d) { return y(d[1]); })
+      );
+  }
+
+  // Listen to the slider?
+  d3.select("#mySlider").on("change", function(d){
+    selectedValue = this.value
+    updateChart(selectedValue)
+  })
 
 });
 
