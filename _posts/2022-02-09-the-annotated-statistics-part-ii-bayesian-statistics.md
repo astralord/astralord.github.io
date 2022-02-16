@@ -35,15 +35,14 @@ is called the **Bayes risk of $g$ with respect to $\pi$**. An estimator $\tilde{
 
 $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
-<!-- Create a div where the graph will take place -->
-<div id="chi_t_plt"></div> 
-
 <!-- Load d3.js -->
-<script src="//d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
 
 <!-- Add a slider -->
 <input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">
 
+<!-- Create a div where the graph will take place -->
+<div id="chi_t_plt"></div> 
 
 The right hand side of the equation above is call the **Bayes risk**.
 12345
@@ -78,7 +77,7 @@ var t_svg = chi_svg
           "translate(" + margin.left + "," + margin.top + ")");
 
 // get the data
-d3.csv("../../../../assets/chi-t.csv", function(error, data) {
+d3.csv("../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
 
   // add the x Axis
@@ -181,60 +180,149 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
 
 </script>
 
+<button type='button'>Randomize Data</button>
+
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+  
+var w = 600;
+var h = 250;
+var padding = 30;
+
+ // Create dynamic random dataset function
+var datagen = function() {
+    var dataset = [];
+    var numValues = 25;
+    var maxRange = Math.random() * 1000;
+    for (var i = 0; i < numValues; i++) {
+        //create x and y coords
+        var xnum = Math.floor(Math.random() * maxRange);
+        var ynum = Math.floor(Math.random() * maxRange);
+        //add number to array
+        dataset.push([xnum, ynum]);
+    }
+    return dataset;
+};
+ //creat data
+dataset = datagen();
+
+ // Create scale functions
+var xScale = d3.scale.linear()
+    .domain([0, d3.max(dataset, function(d) {
+        return d[0];
+    })])
+    .range([padding, w - padding * 2]);
+
+var yScale = d3.scale.linear()
+    .domain([0, d3.max(dataset, function(d) {
+        return d[1];
+    })])
+    .range([h - padding, padding]);
+
+ // Define Axis
+var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient("bottom")
+    .ticks(5);
+var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient('left')
+    .ticks(5);
+
+ // Create svg element 
+var svg = d3.select('body')
+    .append('svg')
+    .attr('width', w)
+    .attr('height', h);
+
+ // Create circles
+svg.selectAll('circle')
+    .data(dataset)
+    .enter()
+    .append('circle')
+    .attr('cx', function(d) {
+        return xScale(d[0]);
+    })
+    .attr('cy', function(d) {
+        return yScale(d[1]);
+    })
+    .attr('r', 4)
+    .attr('fill', 'teal');
+
+ // Create axis
+svg.append('g') // new group element 
+.attr('class', 'x axis')
+ //move to bottom
+.attr('transform', 'translate(' + 0 + ',' + (h - padding) + ')')
+    .call(xAxis);
+
+svg.append('g')
+    .attr('class', 'y axis')
+ //move left a bit to compensate for padding
+.attr('transform', 'translate(' + padding + ',' + 0 + ')')
+    .call(yAxis);
+
+ // On click, update with new random data
+d3.select('button')
+    .on('click', function(d) {
+        //renew data
+        dataset = datagen();
+
+        //Update scale domains
+        xScale.domain([0, d3.max(dataset, function(d) {
+            return d[0];
+        })]);
+        yScale.domain([0, d3.max(dataset, function(d) {
+            return d[1];
+        })]);
+
+        // Update all circles
+        svg.selectAll('circle')
+            .data(dataset)
+            .transition() // Transition 1
+        .duration(1000)
+            .ease('circle')
+            .each('start', function() {
+                d3.select(this)
+                    .attr('fill', 'gray')
+                    .attr('r', 2);
+            })
+            .attr('cx', function(d) {
+                return xScale(d[0]);
+            })
+            .attr('cy', function(d) {
+                return yScale(d[1]);
+            })
+            .transition() // Transition 2, equiv to below
+        .duration(250)
+            .attr('fill', 'teal')
+            .attr('r', 4);
+
+        // .each('end', function() {
+        //     d3.select(this)
+        //         .transition()
+        //         .duration(250)
+        //         .attr('fill', 'teal')
+        //         .attr('r', 4);
+        // });
+
+        // Update axis
+        svg.select('.x.axis')
+            .transition()
+            .duration(1000)
+            .call(xAxis);
+
+        svg.select('.y.axis')
+            .transition()
+            .duration(1000)
+            .call(yAxis);
+
+    });
+
+</script>
+
+123
 
 <div id='d3div'></div>
 
-<script>
-  
-var width = $("#d3div").width(),
-    height = 400;
-
-var color = d3.scale.category20();
-
-var force = d3.layout.force()
-    .charge(-62)
-    .linkDistance(80)
-    .size([width, height]);
-
-var svg = d3.select("#d3div").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-d3.json("../../../../assets/jazz_scales_network_minCTs6.json", function(graph) {
-
-  force
-      .nodes(graph.nodes)
-      .links(graph.links)
-      .start();
-
-  var link = svg.selectAll(".link")
-      .data(graph.links)
-    .enter().append("line")
-      .attr("class", "link")
-      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
-
-  var node = svg.selectAll(".node")
-      .data(graph.nodes)
-    .enter().append("circle")
-      .attr("class", "node")
-      .attr("r", 5)
-      .style("fill", function(d) { return color(d.group); })
-      .call(force.drag);
-
-  node.append("title")
-      .text(function(d) { return d.name; });
-
-  force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-  });
-  
-});
-
-
-</script>
+123
