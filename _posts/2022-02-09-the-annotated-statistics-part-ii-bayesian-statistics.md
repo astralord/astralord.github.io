@@ -39,7 +39,7 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 <div id="chi_t_plt"></div> 
 
 <!-- Load d3.js -->
-<script src="//d3js.org/d3.v4.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
 
 <!-- Add a slider -->
 <input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">
