@@ -71,7 +71,6 @@ var t_svg = chi_svg
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-// get the data
 d3.csv("../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
 
