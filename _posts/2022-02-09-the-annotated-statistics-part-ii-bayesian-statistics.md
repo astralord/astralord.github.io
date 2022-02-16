@@ -60,7 +60,7 @@ var chi_svg = d3.select("#chi_t_plt")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-var margin = {top: 0, right: 10, bottom: 35, left: 300}
+var margin = {top: 0, right: 10, bottom: 35, left: 300};
     
 var t_svg = chi_svg
   .append("svg")
