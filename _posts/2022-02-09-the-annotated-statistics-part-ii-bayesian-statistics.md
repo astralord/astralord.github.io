@@ -45,7 +45,7 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 <div id="chi_t_plt"></div> 
 
 The right hand side of the equation above is call the **Bayes risk**.
-12345
+00000
 
 <script>
 
@@ -320,9 +320,3 @@ d3.select('button')
     });
 
 </script>
-
-123
-
-<div id='d3div'></div>
-
-123
