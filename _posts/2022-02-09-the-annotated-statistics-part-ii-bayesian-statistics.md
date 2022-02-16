@@ -7,6 +7,21 @@ tags: [statistics, parameter-estimation, bayesian-statistics, bayes-estimator, m
 math: true
 enable_d3: true
 ---
+<script src="//code.jquery.com/jquery.js"></script>
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+
 
 > Part II introduces different approach to parameters estimation called Bayesian interpretation.
 
@@ -31,7 +46,7 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
 
 The right hand side of the equation above is call the **Bayes risk**.
--...-...-
+!!!
 
 <script>
 
