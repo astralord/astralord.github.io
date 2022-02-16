@@ -20,14 +20,15 @@ is called the **Bayes risk of $g$ with respect to $\pi$**. An estimator $\tilde{
 
 $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
+<!-- Create a div where the graph will take place -->
+<div id="chi_t_plt"></div> 
+
 <!-- Load d3.js -->
-<script src="https://d3js.org/d3.v4.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
 
 <!-- Add a slider -->
 <input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">
 
-<!-- Create a div where the graph will take place -->
-<div id="chi_t_plt"></div> 
 
 The right hand side of the equation above is call the **Bayes risk**.
 -...-...-
@@ -160,6 +161,66 @@ d3.csv("../../../../assets/chi-t.csv", function(data) {
     selectedValue = this.value
     updateChart(selectedValue)
   })
+});
+
+</script>
+
+
+<div id='d3div'></div>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
+
+<script>
+  
+var width = $("#d3div").width(),
+    height = 400;
+
+var color = d3.scale.category20();
+
+var force = d3.layout.force()
+    .charge(-62)
+    .linkDistance(80)
+    .size([width, height]);
+
+var svg = d3.select("#d3div").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+d3.json("../../../../assets/jazz_scales_network_minCTs6.json", function(error, graph) {
+  if (error) throw error;
+
+  force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+    .enter().append("line")
+      .attr("class", "link")
+      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+    .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", 5)
+      .style("fill", function(d) { return color(d.group); })
+      .call(force.drag);
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  });
+  
 });
 
 
