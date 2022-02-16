@@ -157,9 +157,9 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
       );
   }
 
-  d3.select("#ddof_slider").on("change", function(d){
-    selectedValue = this.value
-    updateChart(selectedValue)
+  d3.select("#ddof_slider").on("change", function(d) {
+    selectedValue = this.value;
+    updateChart(selectedValue);
   })
 });
 
