@@ -128,7 +128,131 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
   $$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
 
-![Chi-squared and t-distributions]({{'/assets/img/chi-t.gif'|relative_url}})
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">
+
+<div id="chi_t_plt"></div> 
+<script>
+
+var margin = {top: 10, right: 350, bottom: 30, left: 30},
+    width = 600 - margin.left - margin.right,
+    height = 200 - margin.top - margin.bottom;
+
+var chi_svg = d3.select("#chi_t_plt")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var margin = {top: 0, right: 10, bottom: 35, left: 300};
+    
+var t_svg = chi_svg
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("../../../../assets/chi-t.csv", function(error, data) {
+  if (error) throw error;
+
+  var chi_x = d3.scaleLinear()
+            .domain([-0, 40])
+            .range([0, width]);
+            
+  chi_svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(chi_x));
+
+  var t_x = d3.scaleLinear()
+            .domain([-20, 20])
+            .range([0, width]);
+            
+  t_svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(t_x));
+
+  var y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, 0.5]);
+            
+  chi_svg.append("g")
+      .call(d3.axisLeft(y));
+  
+  
+  var t_y = d3.scaleLinear()
+            .range([height, 5])
+            .domain([0, 0.5]);
+                
+  t_svg.append("g")
+      .call(d3.axisLeft(t_y));
+
+  var chi_curve = chi_svg
+    .append('g')
+    .append("path")
+      .datum(data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return chi_x(d.chi_x); })
+          .y(function(d) { return y(d["chi_5"]); })
+      );
+      
+  var t_curve = t_svg
+    .append('g')
+    .append("path")
+      .datum(data)
+      .attr("fill", "#EDA137")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return t_x(d.t_x); })
+          .y(function(d) { return t_y(d["t_5"]); })
+      );
+
+  function updateChart(n) {
+    chi_curve
+      .datum(data)
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return chi_x(d.chi_x); })
+          .y(function(d) { return y(d["chi_" + n]); })
+      );
+    t_curve
+      .datum(data)
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return t_x(d.t_x); })
+          .y(function(d) { return t_y(d["t_" + n]); })
+      );
+  }
+
+  d3.select("#ddof_slider").on("change", function(d) {
+    selectedValue = this.value;
+    updateChart(selectedValue);
+  })
+});
+
+</script>
+
 *Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions.*
 
 It can now be shown that
