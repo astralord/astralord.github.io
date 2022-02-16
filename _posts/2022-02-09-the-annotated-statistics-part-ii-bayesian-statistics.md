@@ -24,23 +24,36 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 <script src="https://d3js.org/d3.v4.js"></script>
 
 <!-- Add a slider -->
-<input type="range" name="mySlider" id=mySlider min="10" max="100" value="50">
+<input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">
 
 <!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+<div id="chi_t_plt"></div> 
 
 The right hand side of the equation above is call the **Bayes risk**.
-+++
+-.-.-
 
 <script>
 
 // set the dimensions and margins of the graph
-var margin = {top: 30, right: 30, bottom: 30, left: 50},
-    width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+var margin = {top: 10, right: 350, bottom: 30, left: 30},
+    width = 600 - margin.left - margin.right,
+    height = 200 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
-var svg = d3.select("#my_dataviz")
+var chi_svg = d3.select("#chi_t_plt")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// set the dimensions and margins of the graph
+
+var margin = {top: 0, right: 10, bottom: 35, left: 300}
+    
+// append the svg object to the body of the page
+var t_svg = chi_svg
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -52,53 +65,98 @@ var svg = d3.select("#my_dataviz")
 d3.csv("../assets/chi-t.csv", function(data) {
 
   // add the x Axis
-  var x = d3.scaleLinear()
-            .domain([0, 25])
+  var chi_x = d3.scaleLinear()
+            .domain([-0, 40])
             .range([0, width]);
-  svg.append("g")
+            
+  chi_svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(chi_x));
+
+  // add the x Axis
+  var t_x = d3.scaleLinear()
+            .domain([-20, 20])
+            .range([0, width]);
+            
+  t_svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(t_x));
 
   // add the y Axis
   var y = d3.scaleLinear()
             .range([height, 0])
-            .domain([0, 0.1]);
-  svg.append("g")
+            .domain([0, 0.5]);
+            
+  chi_svg.append("g")
       .call(d3.axisLeft(y));
+  
+  
+  var t_y = d3.scaleLinear()
+            .range([height, 5])
+            .domain([0, 0.5]);
+                
+  t_svg.append("g")
+      .call(d3.axisLeft(t_y));
 
   // Plot the area
-  var curve = svg
+  var chi_curve = chi_svg
     .append('g')
     .append("path")
-      .attr("class", "mypath")
       .datum(data)
-      .attr("fill", "#69b3a2")
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
       .attr("opacity", ".8")
       .attr("stroke", "#000")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.chi_3); })
+          .x(function(d) { return chi_x(d.chi_x); })
+          .y(function(d) { return y(d["chi_5"]); })
+      );
+      
+  // Plot the area
+  var t_curve = t_svg
+    .append('g')
+    .append("path")
+      .datum(data)
+      .attr("fill", "#EDA137")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return t_x(d.t_x); })
+          .y(function(d) { return t_y(d["t_5"]); })
       );
 
   // A function that update the chart when slider is moved?
-  function updateChart(binNumber) {
+  function updateChart(n) {
     // update the chart
-    curve
+    chi_curve
       .datum(data)
       .transition()
       .duration(1000)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.chi_9); })
+          .x(function(d) { return chi_x(d.chi_x); })
+          .y(function(d) { return y(d["chi_" + n]); })
+      );
+    t_curve
+      .datum(data)
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return t_x(d.t_x); })
+          .y(function(d) { return t_y(d["t_" + n]); })
       );
   }
 
-  // Listen to the slider?
-  d3.select("#mySlider").on("change", function(d){
+  // Listen to the slider
+  d3.select("#ddof_slider").on("change", function(d){
     selectedValue = this.value
     updateChart(selectedValue)
   })
