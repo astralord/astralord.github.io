@@ -184,6 +184,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
 
 <div id='d3div'></div>
 
+<script src="https://d3js.org/d3.v3.min.js"></script>
 <script>
   
 var width = $("#d3div").width(),
