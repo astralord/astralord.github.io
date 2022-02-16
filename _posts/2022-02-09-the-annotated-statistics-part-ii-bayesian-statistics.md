@@ -46,7 +46,7 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
 
 The right hand side of the equation above is call the **Bayes risk**.
-???
+!!!
 
 <script>
 
@@ -202,7 +202,7 @@ var svg = d3.select("#d3div").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-d3.json("../../../../assets/jazz_scales_network_minCTs6.json", function(error, graph) {
+d3.json("../../../../assets/jazz_scales_network_minCTs6.json", function(graph) {
 
   force
       .nodes(graph.nodes)
