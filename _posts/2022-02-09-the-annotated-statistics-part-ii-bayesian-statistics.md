@@ -46,7 +46,7 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
 
 The right hand side of the equation above is call the **Bayes risk**.
-!!!
+???
 
 <script>
 
@@ -78,7 +78,8 @@ var t_svg = chi_svg
           "translate(" + margin.left + "," + margin.top + ")");
 
 // get the data
-d3.csv("../../../../assets/chi-t.csv", function(data) {
+d3.csv("../../../../assets/chi-t.csv", function(error, data) {
+  if (error) throw error;
 
   // add the x Axis
   var chi_x = d3.scaleLinear()
@@ -202,7 +203,6 @@ var svg = d3.select("#d3div").append("svg")
     .attr("height", height);
 
 d3.json("../../../../assets/jazz_scales_network_minCTs6.json", function(error, graph) {
-  if (error) throw error;
 
   force
       .nodes(graph.nodes)
