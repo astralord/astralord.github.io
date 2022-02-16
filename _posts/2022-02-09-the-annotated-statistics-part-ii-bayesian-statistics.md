@@ -46,7 +46,7 @@ $$ R(\pi, \tilde{g}) = \inf_{g \in \mathcal{K}} R(\pi, g). $$
 
 
 The right hand side of the equation above is call the **Bayes risk**.
-12345
+00000
 
 <script>
 
