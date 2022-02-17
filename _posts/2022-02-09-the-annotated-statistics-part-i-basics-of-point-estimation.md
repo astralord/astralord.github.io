@@ -30,7 +30,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 ![Drug experiment]({{'/assets/img/drug-efficiency.gif'|relative_url}})
 *Fig. 1. Visualization of statistical experiments. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
 
-Formally, we can define **parameter space** $\Theta$ with $\vert \Theta \vert \geq 2$ and family of probability measures $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. Then we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. 
+Formally, we can define **parameter space** $\Theta$ with $\vert \Theta \vert \geq 2$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. Then we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. 
 
 Recall from probability theory that random variable $X$ is a mapping from set of all possible outcomes $\Omega$ to a **sample space** $\mathcal{X}$. On the basis of given sample $x = X(\omega)$, $\omega \in \Omega$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above
 
@@ -96,7 +96,7 @@ $$ B_\vartheta(g) = 0 \quad \forall \vartheta \in \Theta.$$
  
 It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in 
 
-$$ \mathcal{E}_\gamma = \{ g \in \mathcal{K} \mid B_\vartheta(g) = 0 \}.$$
+$$ \mathcal{E}_\gamma = \lbrace g \in \mathcal{K} \mid B_\vartheta(g) = 0 \rbrace.$$
 
 Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Variance of $g$ can be chosen as our metric for goodness. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
 
@@ -347,7 +347,7 @@ So far we figured the unbiasedness of $g(X) = \overline{X}_n$. But how can we te
 
 Given a set of unbiased estimators, it is not an easy task to determine which one provides the smallest variance. Luckily, we have a theorem which gives us a lower bound for an estimator variance.
 
-Suppose we have a family of densities $f(\cdot, \vartheta)$, such that set $M_f=\{x \in \mathcal{X} \mid f(x, \vartheta) > 0 \}$ doesn't depend on $\vartheta$ and derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. Let's define function
+Suppose we have a family of densities $f(\cdot, \vartheta)$, such that set $M_f=\lbrace x \in \mathcal{X} \mid f(x, \vartheta) > 0 \rbrace$ doesn't depend on $\vartheta$ and derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. Let's define function
 
 $$ U_\vartheta(x) = \left\{\begin{array}{ll}
 	\frac{\partial}{\partial \vartheta} \log f(x, \vartheta), & \text{if } x \in M_f, \\
@@ -379,7 +379,7 @@ The resulting inequality:
 
 $$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)]\big)^2}{I(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
 
-gives us **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \{P_\vartheta \mid \vartheta \in \Theta \}$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
+gives us **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
 
 This theorem gives a lower bound for the variance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions (e.g. invariance of $M_f$) are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
 
@@ -478,7 +478,7 @@ Then equality in Cramér–Rao theorem holds for $g(x) = T(x)$.
 <summary>Proof</summary>
 First let us note that $\int_{\mathcal{X}}f(x)\mu(dx) = 1$ for all $\vartheta \in \Theta$, hence
 
-$$ c(\vartheta)=\Big( \int_{\mathcal{X}} h(x)\exp \{ \vartheta T(x) \} \mu(dx) \Big)^{-1} $$
+$$ c(\vartheta)=\Big( \int_{\mathcal{X}} h(x)\exp (\vartheta T(x) ) dx \Big)^{-1} $$
 
 and
 
@@ -551,7 +551,7 @@ Denoting $Q(\vartheta) = (Q_1(\vartheta), \dots, Q_k(\vartheta))^T$ we get trans
 
 It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with joint density
 
-$$ f(x,\vartheta) = c(\vartheta) \exp \Big\{ -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) + \frac{n\mu}{\sigma^2}\Big( \frac{1}{n}x_i \Big) \Big\},$$
+$$ f(x,\vartheta) = c(\vartheta) \exp \Big( -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) + \frac{n\mu}{\sigma^2}\Big( \frac{1}{n}x_i \Big) \Big),$$
 
 then estimator 
 
@@ -571,7 +571,7 @@ If distribution doesn't belong to exponential family, then for such case there e
   
   $$ \hat{\gamma} (X) = f(\hat{m}_1, \dots, \hat{m}_k),$$
   
-  where $m_j = \frac{1}{n}\sum_{i=1}^nX_i^j$. Due to Law of Large Numbers under additional conditions we have convergence $\hat m_j\xrightarrow{\mathbb{P}} m_j$.
+  where $m_j = \frac{1}{n}\sum_{i=1}^nX_i^j$. 
   
 * **Maximum likelihood method**. Say $\gamma(\vartheta) = \vartheta \in \mathbb{R}^k$. Then $\hat{\vartheta}(x)$ is a **maximum likelihood estimator** if
 
@@ -581,4 +581,4 @@ Again in example $X_1, \dots X_n$ i.i.d. $\sim \mathcal {N}(\mu, \sigma^2)$ an e
 
 $$ \hat{\gamma}(\vartheta)=(\hat{m}_1, \hat{m}_2-\hat{m}_1^2)^T=(\overline{x}_n, \hat{s}_n^2)^T. $$
 
-It's not hard to prove that this estimator coincides with the estimation obtained by the maximum likelihood method.
+Aand.. I'm going to leave it as an exercise to prove that this estimator coincides with the estimation obtained by the maximum likelihood method.
