@@ -433,7 +433,7 @@ $$ U_\vartheta = \Big(\frac{\partial}{\partial \mu} \log f^1(X_1,\vartheta), \fr
 	
 Fisher information then
 
-$$ I(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta, U_\vartheta^T]=
+$$ I(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta U_\vartheta^T]=
 	\begin{pmatrix}
 	\sigma^{-2} & 0 \\
 	0 & \frac{1}{2}\sigma^{-4}
@@ -443,14 +443,14 @@ $$ I(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta, U_\vartheta^T]=
 If $g(X)$ is an unbiased estimator, then $G(\vartheta)$ is identity matrix and Cramér–Rao bound then
 
 $$ \begin{aligned}
-\operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  I^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= I^{-1}(f(\cdot, \vartheta)) \\ &=
+\operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  I^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= I^{-1}(f(\cdot, \vartheta)) =
 	 \begin{pmatrix}
 	 \frac{\sigma^{2}}{n} & 0 \\
 	 0 & \frac{\sigma^{4}}{n}
 	 \end{pmatrix}. 
 	\end{aligned}$$
 
-In particular for an estimator 
+In particular for an unbiased estimator 
 
 $$ \widetilde{g}(X)=\Big(\overline{X}_n, \frac{1}{n-1} \sum_{i=1}^n(X_j-\overline{X}_n)^2 \Big)^T $$
 
@@ -513,11 +513,13 @@ $$ \frac{\Big(\frac{\partial}{\partial\vartheta}\mathbb{E}[T(X)] \Big)^2}{I(f(\c
 
 </details>
 
-Formally, family $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$ is called an **exponential family** if there exist mappings $c, Q_1, \dots Q_k: \Theta \rightarrow \mathbb{R}$ and $h, T_1, \dots T_k: \mathcal{X} \rightarrow \mathbb{R}$ such that
+Formally, family $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace $ is called an **exponential family** if there exist mappings $c, Q_1, \dots Q_k: \Theta \rightarrow \mathbb{R}$ and $h, T_1, \dots T_k: \mathcal{X} \rightarrow \mathbb{R}$ such that
 
 $$ f(x,\vartheta) = c(\vartheta) h(x) \exp \Big( \sum_{j=1}^k Q_j(\vartheta) T_j(x) \Big).$$
 
-$\mathcal{P}$ is called **$k$-parametric exponential family** if functions $1, Q_1, \dots Q_k$ and $1, T_1, \dots T_k$ are linear independent. Then we have equality to Cramér–Rao bound for $g = (T_1, \dots T_k)^T$. Here are some examples:
+$\mathcal{P}$ is called **$k$-parametric exponential family** if functions $1, Q_1, \dots Q_k$ and $1, T_1, \dots T_k$ are linearly independent. Then we have equality to Cramér–Rao bound for $g = (T_1, \dots T_k)^T$. 
+
+Here are some examples:
 
 * If $X \sim \operatorname{Bin}(n, \vartheta)$, then
 
@@ -544,14 +546,14 @@ $\mathcal{P}$ is called **$k$-parametric exponential family** if functions $1, Q
 Denoting $Q(\vartheta) = (Q_1(\vartheta), \dots, Q_k(\vartheta))^T$ we get transformed parametric space $ \Theta^* =  Q(\Theta) $, which we call **natural parametric space**. In examples above
 
 * $X \sim \operatorname{Bin}(n, \vartheta)$: $\Theta^* = \{ \log \frac{\vartheta}{1-\vartheta} \mid \vartheta \in (0, 1) \} = \mathbb{R}$.
-* $X \sim \mathcal{N}(\mu, \sigma^2)$: $\Theta^* = \big\{ \big( \frac{\mu}{\sigma^2}, -\frac{1}{\sigma^2} \big) \mid \mu \in \mathbb{R}, \sigma^2 \in \mathbb{R}^+ \big\} = \mathbb{R} \times \mathbb{R}^-.$
+* $X \sim \mathcal{N}(\mu, \sigma^2)$: $\Theta^* = \big\lbrace \big( \frac{\mu}{\sigma^2}, -\frac{1}{\sigma^2} \big) \mid \mu \in \mathbb{R}, \sigma^2 \in \mathbb{R}^+ \big\rbrace = \mathbb{R} \times \mathbb{R}^-.$
 * $X \sim \operatorname{Poisson}(\lambda)$: $\Theta^* = \{ \log \lambda \mid \lambda \in \mathbb{R}^+ \} = \mathbb{R}$.
 
-It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$, then joint density
+It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with joint density
 
-$$ f(x,\vartheta) = c(\vartheta) \exp \Big\{ -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) + \frac{n\mu}{\sigma^2}\Big( \frac{1}{n}x_i \Big) \Big\}. $$
+$$ f(x,\vartheta) = c(\vartheta) \exp \Big\{ -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) + \frac{n\mu}{\sigma^2}\Big( \frac{1}{n}x_i \Big) \Big\},$$
 
-Then estimator 
+then estimator 
 
 $$ T(X) = \Big( \frac{1}{n} \sum_{i=1}^n X_i, \frac{1}{n} \sum_{i=1}^n X_i^2  \Big) $$
 
