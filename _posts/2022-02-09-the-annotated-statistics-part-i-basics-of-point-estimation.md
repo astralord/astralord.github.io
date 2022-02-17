@@ -420,7 +420,49 @@ where
 
 $$ I(f(\cdot, \vartheta))=\Big( \mathbb{E}\Big[\frac{\partial}{\partial \vartheta_i} \log f(X, \vartheta) \cdot \frac{\partial}{\partial \vartheta_j} \log f(X, \vartheta) \Big]  \Big)_{i,j=1}^d \in \mathbb{R}^{d \times d}. $$
 
-EXAMPLE:....
+For an example with $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with density
+
+$$ f^1(x,\vartheta)=\frac{1}{\sqrt{2\pi \sigma^2}} \exp \Big(-\frac{(x-\mu)^2}{2\sigma^2}\Big) $$
+
+we have
+
+$$ U_\vartheta = \Big(\frac{\partial}{\partial \mu} \log f^1(X_1,\vartheta), \frac{\partial}{\partial \sigma^2} \log f^1(X_1,\vartheta)\Big)^T = \begin{pmatrix}
+	(X_1-\mu)/\sigma^2 \\
+	-\frac{1}{2\sigma^2}+\frac{1}{\sigma^4}(X_1-\mu)^2
+	\end{pmatrix}. $$ 
+	
+Fisher information then
+
+$$ I(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta, U_\vartheta^T]=
+	\begin{pmatrix}
+	\sigma^{-2} & 0 \\
+	0 & \frac{1}{2}\sigma^{-4}
+	\end{pmatrix}
+	= \frac{1}{n}I(f(\cdot, \vartheta)). $$
+	
+If $g(X)$ is an unbiased estimator, then $G(\vartheta)$ is identity matrix and Cramér–Rao bound then
+
+$$ \begin{aligned}
+\operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  I^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= I^{-1}(f(\cdot, \vartheta)) \\ &=
+	 \begin{pmatrix}
+	 \frac{\sigma^{2}}{n} & 0 \\
+	 0 & \frac{\sigma^{4}}{n}
+	 \end{pmatrix}. 
+	\end{aligned}$$
+
+In particular for an estimator 
+
+$$ \widetilde{g}(X)=\Big(\overline{X}_n, \frac{1}{n-1} \sum_{i=1}^n(X_j-\overline{X}_n)^2 \Big)^T $$
+
+the following inequality holds
+
+$$ \operatorname{Cov}_\vartheta(\widetilde{g}(X)) = 
+	 \begin{pmatrix}
+	 \frac{\sigma^{2}}{n} & 0 \\
+      0 & \frac{\sigma^{4}}{n-1}
+	 \end{pmatrix} \geq I(f(\cdot, \vartheta)), $$
+	 
+therefore $\widetilde{g}$ is not effective. 
 
 ### Exponential family
 
@@ -434,7 +476,41 @@ Then equality in Cramér–Rao theorem holds for $g(x) = T(x)$.
 
 <details>
 <summary>Proof</summary>
-TBD
+First let us note that $\int_{\mathcal{X}}f(x)\mu(dx) = 1$ for all $\vartheta \in \Theta$, hence
+
+$$ c(\vartheta)=\Big( \int_{\mathcal{X}} h(x)\exp \{ \vartheta T(x) \} \mu(dx) \Big)^{-1} $$
+
+and
+
+$$ \begin{aligned}
+	0 & = \frac{\partial}{\partial \vartheta} \int_{\mathcal{X}} c(\vartheta) h(x) \exp ( \vartheta T(x) ) dx \\
+	& = \int_{\mathcal{X}} (c'(\vartheta)+c(\vartheta)T(x)) h(x) \exp ( \vartheta T(x) ) dx.
+	\end{aligned} $$
+
+Using these two equations we get
+
+$$ \begin{aligned} 
+\mathbb{E}[T(X)] & = c(\vartheta) \int_{\mathcal{X}} h(x) T(x) \exp ( \vartheta T(x)) dx \\
+	 & = -c'(\vartheta) \int_{\mathcal{X}}h(x) \exp ( \vartheta T(x) ) dx \\
+	 & = -\frac{c'(\vartheta)}{c(\vartheta)}=(-\log c(\vartheta))'.
+	 \end{aligned} $$
+
+Fisher information:
+
+$$ I(f(\cdot, \vartheta)) = \mathbb{E}\Big[\Big( \frac{\partial}{\partial \vartheta} \log f(X, \vartheta) \Big)^2\Big]=\mathbb{E}[(T(X)+(\log c(\vartheta))')^2]=\operatorname{Var}(T(X)). $$
+
+Also
+
+$$ \begin{aligned}
+	 \frac{\partial}{\partial \vartheta} \mathbb{E}[T(X)] & =\int_{\mathcal{X}} c'(\vartheta) h(x) T(x) \exp ( \vartheta T(x) ) dx + \int_{\mathcal{X}} c(\vartheta) h(x) T^2(x) \exp ( \vartheta T(x) ) dx \\
+	 & = \frac{c'(\vartheta)}{c(\vartheta)} \int_{\mathcal{X}} c(\vartheta) h(x) T(x) \exp ( \vartheta T(x) ) dx + \mathbb{E}[(T(X))^2] \\
+	 & = \mathbb{E}[(T(X))^2] - (\mathbb{E}[T(X)])^2.
+	 \end{aligned} $$
+	 
+Therefore, 
+
+$$ \frac{\Big(\frac{\partial}{\partial\vartheta}\mathbb{E}[T(X)] \Big)^2}{I(f(\cdot, \vartheta))}= \operatorname{Var}(T(X)). $$
+
 </details>
 
 Formally, family $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$ is called an **exponential family** if there exist mappings $c, Q_1, \dots Q_k: \Theta \rightarrow \mathbb{R}$ and $h, T_1, \dots T_k: \mathcal{X} \rightarrow \mathbb{R}$ such that
@@ -468,7 +544,7 @@ $\mathcal{P}$ is called **$k$-parametric exponential family** if functions $1, Q
 Denoting $Q(\vartheta) = (Q_1(\vartheta), \dots, Q_k(\vartheta))^T$ we get transformed parametric space $ \Theta^* =  Q(\Theta) $, which we call **natural parametric space**. In examples above
 
 * $X \sim \operatorname{Bin}(n, \vartheta)$: $\Theta^* = \{ \log \frac{\vartheta}{1-\vartheta} \mid \vartheta \in (0, 1) \} = \mathbb{R}$.
-* $X \sim \mathcal{N}(\mu, \sigma^2)$: $\Theta^* = \big\{ \big( \frac{\mu}{\sigma^2}, -\frac{1}{\sigma^2} \big) \mid \mu \in \mathbb{R}, \sigma^2 \in \mathbb{R}^+ \big \} = \mathbb{R} \times \mathbb{R}^-.$
+* $X \sim \mathcal{N}(\mu, \sigma^2)$: $\Theta^* = \big\{ \big( \frac{\mu}{\sigma^2}, -\frac{1}{\sigma^2} \big) \mid \mu \in \mathbb{R}, \sigma^2 \in \mathbb{R}^+ \big\} = \mathbb{R} \times \mathbb{R}^-.$
 * $X \sim \operatorname{Poisson}(\lambda)$: $\Theta^* = \{ \log \lambda \mid \lambda \in \mathbb{R}^+ \} = \mathbb{R}$.
 
 It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$, then joint density
