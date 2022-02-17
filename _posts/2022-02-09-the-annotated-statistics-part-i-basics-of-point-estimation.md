@@ -7,7 +7,7 @@ tags: [statistics, parameter-estimation, exponential-family, cramer-rao-inequali
 math: true
 ---
 
-> This series of posts is a guidance to statistics for those who already have knowledge in probability theory and would like to become familiar with mathematical statistics. Part I focuses on point estimation of parameters for the most frequently used probability distributions.
+> This series of posts is a guidance for those who already have knowledge in probability theory and would like to become familiar with mathematical statistics. Part I focuses on point estimators of parameters and their characteristics.
 
 
 ### Intro
@@ -94,9 +94,13 @@ This value in is called **bias** of $g$ and estimator $g$ is called **unbiased**
   
 $$ B_\vartheta(g) = 0 \quad \forall \vartheta \in \Theta.$$
  
-It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in $\mathcal{E}_\gamma = \{ g \in \mathcal{K} \mid B_\vartheta(g) = 0 \}.$ Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Our metric for goodness then might be the variance of $g$. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
+It is reasonable (at least at the start) to put constraint on unbiasedness for $g$ and search only in 
 
-  $$\operatorname{Var}(\tilde{g}(X)) = \mathbb{E}[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
+$$ \mathcal{E}_\gamma = \{ g \in \mathcal{K} \mid B_\vartheta(g) = 0 \}.$$
+
+Surely there can be infinite number of unbiased estimators, and we not only interested in expected value of $g$, but also in how $g$ can vary from it. Variance of $g$ can be chosen as our metric for goodness. We call estimator $\tilde{g}$ **uniformly minimum variance unbiased (UMVU)** if
+
+$$\operatorname{Var}(\tilde{g}(X)) = \mathbb{E}[(\tilde{g}(X) - \gamma(\theta))^2] = \inf_{g \in \mathcal{E}_\gamma} \operatorname{Var}(g(X)).$$
 
 In general, if we choose $L(x, y) = (x - y)^2$, then
 
@@ -269,10 +273,39 @@ $$ \frac{(n-1)(\overline{X}_n-\mu)}{\sqrt{n}s_n^2(X)} \sim t_{n-1}.$$
 
 <details>
 <summary>Proof</summary>
-TBD
+Distribution of $\overline{X}_n$ follows from properties of Normal distribution. Let
+
+$$ Y_i = \frac{X_i - \mu}{\sigma} \sim \mathcal{N}(0, 1)$$
+
+and $Y = (Y_1, \dots, Y_n)^T$. Choose orthogonal matrix $A$ such that its last row:
+
+$$ v^T = \Big( \frac{1}{\sqrt{n}} \dots \frac{1}{\sqrt{n}} \Big).$$
+
+Then for $Z = AY$ the following equality holds:
+
+$$ \sum_{i=1}^n Z_i^2 = Z^TZ = Y^TA^TAY = Y^TY= \sum_{i=1}^n Y_i^2.$$
+
+From $\operatorname{Cov}(Z)=A^TA = \mathbb{I}_n$ we have $Z \sim \mathcal{N}(0, \mathbb{I}_n).$ Also
+
+$$ \begin{aligned}
+	\sqrt{n} \overline{X}_n &= \frac{1}{\sqrt{n}} \sum_{i=1}^n (\sigma Y_i + \mu) \\ 
+& = \sigma v^T Y + \sqrt{n} \mu \\
+&= \sigma Z_n + \sqrt{n} \mu
+	\end{aligned} $$
+	
+and
+
+$$ \begin{aligned}
+	n \hat{s}_n^2(X) &= \sum_{i=1}^n (X_i - \overline{X}_n)^2  = \sigma^2 \sum_{i=1}^n(Y_i - \overline{Y}_n)^2 \\
+& = \sigma^2 \big(\sum_{i=1}^n Y_i^2 - n \overline{Y}_n^2\big) = \sigma^2 \big(\sum_{i=1}^n Y_i^2 -  \big(\frac{1}{n} \sum_{i=1}^n Y_i^2 \big)^2 \big) \\
+& = \sigma^2 (\sum_{i=1}^n Z_i^2 - Z_n^2) = \sigma^2 \sum_{i=1}^{n-1} Z_i^2 \sim \chi_{n-1}^2.
+	\end{aligned} $$
+
+Both estimators are independent as functions of $Z_n$ and $Z_1, \dots, Z_{n-1}$ respectively.
+
 </details>
 
-Let's check which of these estimators are unbiased. We get $\mathbb{E}[\overline{X}_n] = \mu$, therefore $\overline{X}_n$ is unbiased. On the other hand
+Let's check which of these estimators are unbiased. We have $\mathbb{E}[\overline{X}_n] = \mu$, therefore $\overline{X}_n$ is unbiased. On the other hand
 
 $$ \mathbb{E}[s_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
@@ -346,7 +379,7 @@ The resulting inequality:
 
 $$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)]\big)^2}{I(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
 
-is called **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \{P_\vartheta \mid \vartheta \in \Theta \}$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
+gives us **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \{P_\vartheta \mid \vartheta \in \Theta \}$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
 
 This theorem gives a lower bound for the variance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions (e.g. invariance of $M_f$) are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
 
@@ -391,4 +424,83 @@ EXAMPLE:....
 
 ### Exponential family
 
-In the previous examples, we consider without proof the fulfillment of all regularity conditions of the Rao-Kramer inequality. Next, we will discuss a family of distributions for which the Rao-Kramer inequality turns into an equality.
+In the previous examples, we consider without proof the fulfillment of all regularity conditions of the Cramér–Rao inequality. Next, we will discuss a family of distributions for which the Cramér–Rao inequality turns into an equality.
+
+Proposition: let $P_\vartheta$ be distribution with density
+
+$$ f(x, \vartheta) = c(\vartheta) h(x) \exp(\vartheta T(x)) \quad \forall \vartheta \in \Theta.$$
+
+Then equality in Cramér–Rao theorem holds for $g(x) = T(x)$.
+
+<details>
+<summary>Proof</summary>
+TBD
+</details>
+
+Formally, family $\mathcal{P} = \{ P_\vartheta \mid \vartheta \in \Theta \}$ is called an **exponential family** if there exist mappings $c, Q_1, \dots Q_k: \Theta \rightarrow \mathbb{R}$ and $h, T_1, \dots T_k: \mathcal{X} \rightarrow \mathbb{R}$ such that
+
+$$ f(x,\vartheta) = c(\vartheta) h(x) \exp \Big( \sum_{j=1}^k Q_j(\vartheta) T_j(x) \Big).$$
+
+$\mathcal{P}$ is called **$k$-parametric exponential family** if functions $1, Q_1, \dots Q_k$ and $1, T_1, \dots T_k$ are linear independent. Then we have equality to Cramér–Rao bound for $g = (T_1, \dots T_k)^T$. Here are some examples:
+
+* If $X \sim \operatorname{Bin}(n, \vartheta)$, then
+
+  $$ \begin{aligned}
+  f(x, \vartheta) &= \binom n x \vartheta^x (1-\vartheta)^{n-x} \\
+  &= (1-\vartheta)^n \binom n x \exp \Big(x \log \frac{\vartheta}{1-\vartheta} \Big).
+  \end{aligned} $$
+  
+  Here $c(\vartheta) = (1-\vartheta)^n$, $h(x) = \binom n x$, $T_1(x) = x$ and $Q_1(\vartheta) = \log \frac{\vartheta}{1-\vartheta}$.
+
+* If $X \sim \mathcal{N}(\mu, \sigma^2)$, then $\vartheta = (\mu, \sigma^2)^T$ and
+
+  $$ \begin{aligned}
+  f(x, \vartheta) &= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\Big( \frac{(x-\mu)^2}{2\sigma^2} \Big) \\
+  &= \frac{1}{\sqrt{2\pi\sigma^2}} \exp \Big( -\frac{\mu^2}{2\sigma^2} \Big) \exp\Big( -\frac{x^2}{2\sigma^2} + \frac{\mu x}{\sigma^2} \Big),
+  \end{aligned} $$
+  
+  where $c(\vartheta) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \big( -\frac{\mu^2}{2\sigma^2} \big) $, $Q_1(\vartheta) = -\frac{1}{2\sigma^2}$, $Q_2(\vartheta) = \frac{\mu}{\sigma^2}$, $T_1(x)=x^2$ and $T_2(x)=x$.
+  
+* If $X \sim \operatorname{Poisson}(\lambda)$, then
+
+ $$ f(x, \lambda) = \frac{\lambda^x e^{-\lambda}}{x!} = e^{-\lambda} \frac{1}{x!} \exp \big(x \log \lambda \big). $$
+ 
+Denoting $Q(\vartheta) = (Q_1(\vartheta), \dots, Q_k(\vartheta))^T$ we get transformed parametric space $ \Theta^* =  Q(\Theta) $, which we call **natural parametric space**. In examples above
+
+* $X \sim \operatorname{Bin}(n, \vartheta)$: $\Theta^* = \{ \log \frac{\vartheta}{1-\vartheta} \mid \vartheta \in (0, 1) \} = \mathbb{R}$.
+* $X \sim \mathcal{N}(\mu, \sigma^2)$: $\Theta^* = \big\{ \big( \frac{\mu}{\sigma^2}, -\frac{1}{\sigma^2} \big) \mid \mu \in \mathbb{R}, \sigma^2 \in \mathbb{R}^+ \big \} = \mathbb{R} \times \mathbb{R}^-.$
+* $X \sim \operatorname{Poisson}(\lambda)$: $\Theta^* = \{ \log \lambda \mid \lambda \in \mathbb{R}^+ \} = \mathbb{R}$.
+
+It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$, then joint density
+
+$$ f(x,\vartheta) = c(\vartheta) \exp \Big\{ -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) + \frac{n\mu}{\sigma^2}\Big( \frac{1}{n}x_i \Big) \Big\}. $$
+
+Then estimator 
+
+$$ T(X) = \Big( \frac{1}{n} \sum_{i=1}^n X_i, \frac{1}{n} \sum_{i=1}^n X_i^2  \Big) $$
+
+is effective for $(\mu, \mu^2 + \sigma^2)^T$.
+
+### Common estimation methods
+
+If distribution doesn't belong to exponential family, then for such case there exist two classical estimation methods:
+
+* **Method of moments**. Let $X_1, \dots X_n$ i.i.d. $\sim P_\vartheta$ and 
+
+  $$ \gamma(\vartheta) = f(m_1, \dots, m_k), $$
+  
+  where $m_j = \mathbb{E}[X_1^j]$. Then **estimation by method of moments** will be
+  
+  $$ \hat{\gamma} (X) = f(\hat{m}_1, \dots, \hat{m}_k),$$
+  
+  where $m_j = \frac{1}{n}\sum_{i=1}^nX_i^j$. Due to Law of Large Numbers under additional conditions we have convergence $\hat m_j\xrightarrow{\mathbb{P}} m_j$.
+  
+* **Maximum likelihood method**. Say $\gamma(\vartheta) = \vartheta \in \mathbb{R}^k$. Then $\hat{\vartheta}(x)$ is a **maximum likelihood estimator** if
+
+  $$ f(x, \hat{\vartheta}) = \sup_{\vartheta \in \Theta} f(x, \vartheta).$$
+  
+Again in example $X_1, \dots X_n$ i.i.d. $\sim \mathcal {N}(\mu, \sigma^2)$ an estimator for $\vartheta = (\mu, \sigma^2)^T = (m_1, m_2 - m_1^2)^T$ by method of moments will be
+
+$$ \hat{\gamma}(\vartheta)=(\hat{m}_1, \hat{m}_2-\hat{m}_1^2)^T=(\overline{x}_n, \hat{s}_n^2)^T. $$
+
+It's not hard to prove that this estimator coincides with the estimation obtained by the maximum likelihood method.
