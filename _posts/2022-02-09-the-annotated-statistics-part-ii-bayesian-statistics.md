@@ -117,19 +117,14 @@ $$
 		\end{aligned}
 $$
 
-<button onclick="update()">Sample $X$</button>
+<button>Sample $X$</button>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
-
-<link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-<a class="btn btn-secondary">Sample $X$</a>
 
 <div id="bin_bayes_plt"></div> 
 <script>
 
-var margin = {top: 20, right: 50, bottom: 30, left: 30},
+var margin = {top: 10, right: 50, bottom: 30, left: 30},
     width = 250 - margin.left - margin.right,
     height = 175 - margin.top - margin.bottom;
 
@@ -157,23 +152,37 @@ var x = d3.scaleLinear()
 prior_svg.append("g")
   .attr("transform", "translate(0," + height + ")")
   .call(d3.axisBottom(x));
+
+function update() {}
+
+d3.json("../assets/beta.json", function(error, data) {
+  if (error) throw error;
+  var sample = 3;
+  var n = 10;
+  var posterior_data = [];
+  for (var i = -0.25; i < 0; i += 0.01) {
+      posterior_data.push({x: i, y: 0});
+  }
+  posterior_data.push({x: 0, y: 0});
   
+  for (var i = 0; i < 1; i += 0.01) {
+  	   posterior_data.push({x: i, y: Math.pow(i, sample) * Math.pow(1-i, n-sample) / data[n][sample] });
+  }
+
+  posterior_data.push({x: 1, y: Math.pow(1, sample) * Math.pow(0, n-sample) });
+	
+  for (var i = 1; i <= 1.25; i += 0.01) {
+	   posterior_data.push({x: i, y: 0});
+  }
+	
 var y = d3.scaleLinear()
         .range([height, 0])
-        .domain([0, 1.25]);
+        .domain([d3.min(posterior_data, function(d) { return d.y }), d3.max(posterior_data, function(d) { return d.y }) ])
         
 prior_svg.append("g")
-  .call(d3.axisLeft(y).ticks(5));
+  .call(d3.axisLeft(y).ticks(7));
   
-
-prior_svg.append("text")
-.attr("text-anchor", "start")
-.attr("y", -5)
-.attr("x", 0)
-.text(function(d){ return('Prior')})
-.attr("font-family", function(d,i) {return "Saira"; })
-
-prior_svg
+  var prior_curve = prior_svg
     .append('g')
     .append("path")
       .datum(prior_data)
@@ -188,7 +197,23 @@ prior_svg
           .y(function(d) { return y(d.y); })
       );
       
-function update() {}
+  var posterior_curve = prior_svg
+    .append('g')
+    .append("path")
+      .datum(posterior_data)
+      .attr("fill", "#EDA137")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+  
+});
 
 </script>
 
