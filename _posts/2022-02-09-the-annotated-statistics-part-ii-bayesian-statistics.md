@@ -26,7 +26,7 @@ The right hand side of the equation above is call the **Bayes risk**. The functi
 
 In the following we will denote conditional distribution of $X$ (under condition $\theta = \vartheta$) as 
 
-$$ P^\vartheta = Q^{X \mid \theta=\vartheta} $$
+$$ P_\vartheta = Q^{X \mid \theta=\vartheta} $$
 
 and joint distribution of $(X, \theta)$ as $Q^{X, \theta}$: 
 
@@ -36,7 +36,108 @@ Before experiment we have $\pi = Q^\theta$, marginal distribution of $\theta$ un
 
 ### Posterior risk
 
-Definition and examples
+Recall that risk function is an expected value of a loss function $L$:
+
+$$ R(\vartheta, g) =  \int_{\mathcal{X}} L(\gamma(\vartheta), g(x)) P_\vartheta(dx). $$
+
+Then 
+
+$$ \begin{aligned}
+R(\pi,g) & =\int_\Theta R(\vartheta, g) \pi(d\vartheta) \\
+&=\int_{\Theta} \int_{\mathcal{X}} L(\gamma(\vartheta), g(x)) P_\vartheta(dx) \pi(d\vartheta)\\
+& = \int_{\Theta \times \mathcal{X}} L(\gamma(\vartheta), g(x)) Q^{X,\theta} (dx, d\vartheta) \\
+&=\int_{\mathcal{X}}\color{Salmon} { \int_{\Theta} L(\gamma(\vartheta), g(x)) Q^{\theta \mid X = x} (d\vartheta)} Q^X(dx) \\
+& = \int_{\mathcal{X}} \color{Salmon}{R_{\pi}^x(g)} Q^X(dx).
+\end{aligned} $$
+
+The term
+
+$$ R_{\pi}^x(g) :=\int_{\Theta} L(\gamma(\vartheta), g(x)) Q^{\theta | X = x} (d\vartheta) $$
+
+is called a **posterior risk** of $g$ with given $X=x$. It can be shown that for an estimator $g^*$ of $\vartheta$ to be Bayes, it must provide minimum posterior risk:
+
+$$ R_{\pi}^x(g^*)=\inf_{g \in \mathcal{K}}R_{\pi}^x(g)=\inf_{a \in \Theta} \int L(\vartheta, a) Q^{\theta \mid X = x}(d\vartheta), $$
+
+because $R(\pi, g)$ is minimal if and only if $R_\pi^x(g)$ is minimal. In particular, for quadratic loss $L(\vartheta,a) = (\vartheta-a)^2$ Bayes estimator is
+
+$$ g^*(x) = \mathbb{E}[\theta \mid X = x] = \int_{\Theta} \vartheta Q^{\theta \mid X=x} (d \vartheta). $$
+
+Say for $P_\vartheta$ we have density function $f(x | \vartheta)$, and for $\pi$ density is $h(\vartheta)$. Then posterior distribution of $Q^{\theta \mid X=x}$ has density 
+
+$$ f(\vartheta|x) = \frac{f(x|\vartheta) h(\vartheta)}{ \int_\Theta f(x|\vartheta) h(\vartheta) d\vartheta }. $$
+
+Posterior and Bayes risks respectively
+
+$$ R_\pi^x(g) = \frac{\int_\Theta L(\vartheta, g(x))f(x|\vartheta) h(\vartheta) d\vartheta}{\int_\Theta f(x|\vartheta) h(\vartheta) d\vartheta} $$
+
+and 
+
+$$ R(\pi, g)=\int_{\mathcal{X}}\int_\Theta L(\vartheta, g(x))f(x|\vartheta) h(\vartheta) d\vartheta dx. $$	
+
+Let's consider an example of an estimation of probability parameter for binomial distribution. Let $\Theta = (0, 1)$, $\mathcal{X} = \lbrace 0, \dots, n \rbrace$ and
+
+$$ P_\vartheta(X=x) = \binom n x \vartheta^x (1-\vartheta)^{n-x}. $$
+
+We take quadratic loss function $L(x,y)=(x-y)^2$. Say we only have observed one sample $X=x$. From previous post we know that binomial distribution belongs to exponential family and therefore $g(x) = \frac{x}{n}$ is an UMVU estimator for $\vartheta$ with
+
+$$ \operatorname{Var}(g(X)) = \frac{\vartheta(1-\vartheta)}{n}. $$
+
+On the other hand, we have density
+
+$$ f(x | \vartheta) = \binom n x \vartheta^x (1-\vartheta)^{n-x} 1_{ \lbrace 0, \dots n \rbrace }(x). $$
+
+If we take prior uniform distribution $\pi \sim \mathcal{U}(0, 1)$, then
+
+$$ h(\vartheta) = 1_{(0, 1)}(\vartheta) $$
+
+and posterior density
+
+$$ f(\vartheta \mid x) = \frac{\vartheta^x (1-\vartheta)^{n-x} 1_{(0,1)}(\vartheta)}{B(x+1, n-x+1)}, $$ 
+
+where we have beta-function in denominator:
+
+$$ B(a,b)=\int_{0}^{1} \vartheta^{a-1} (1-\vartheta)^{b-1} d \vartheta. $$
+
+Then Bayes estimator will be
+
+$$ \begin{aligned}
+g^*(x)&=\mathbb{E}[\theta|X=x]\\
+&=\int_0^1 \frac{\vartheta^{x+1}(1-\vartheta^{n-x})}{B(x+1, n-x+1)}\\
+&=\frac{B(x+2, n-x+1)}{B(x+1, n-x+1)} =\frac{x+1}{n+2},
+\end{aligned} $$
+
+and Bayes risk:
+
+$$
+\begin{aligned}
+			R(\pi,g^*) & =\int_0^1 R(\vartheta, g^*) d\vartheta\\
+			&=\int_0^1 \mathbb{E}\Big[\Big(\frac{X+1}{n+2}-\vartheta \Big)^2\Big]d\vartheta \\
+			 & =\frac{1}{(n+2)^2} \int_0^1 (n\vartheta - n\vartheta^2+1-4\vartheta+4\vartheta^2)\ d\vartheta\\
+			 &=\frac{1}{6(n+2)}.  
+		\end{aligned}
+$$
+
+HERE: JS EXAMPLE FOR BINOMIAL
+
+Let's take another example: $X_1, \dots X_n$ i.i.d. $\sim P_\mu^1 = \mathcal{N}(\mu, \sigma^2)$ with $\sigma^2$ known in advance. Take for $\mu$ prior distribution with gaussian density
+
+$$ h(\mu) = \frac{1}{\sqrt{2 \pi \tau^2}} \exp \Big( -\frac{(\mu-\mu_0)^2}{2\tau^2} \Big). $$
+
+Taking density for $X$
+
+$$ f(x|\mu)=\Big( \frac{1}{\sqrt{2\pi \sigma^2}}\Big)^n \exp \Big( \frac{1}{2\sigma^2}\sum_{j=1}^n(x_j-\mu)^2 \Big ), $$
+
+we get posterior distribution
+
+$$ Q^{\mu|X=x} \sim \mathcal{N} \Big( g_{\mu_0, \tau^2}(x), \Big( \frac{n}{\sigma^2} + \frac{1}{\tau^2}\Big)^{-1}  \Big), $$
+
+where
+
+$$ g_{\mu_0, \tau^2}(x)=\Big( 1 + \frac{\sigma^2}{n \tau^2} \Big)^{-1} \overline{x}_n+\Big( \frac{n \tau^2}{\sigma^2}+1 \Big)^{-1} \mu_0. $$
+
+For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) \approx \overline{x}_n$. Otherwise,  $g_{\mu_0, \tau^2}(x) \approx \mu_0$.
+
+HERE: JS EXAMPLE FOR NORMAL
 
 ### Minimax estimator
 

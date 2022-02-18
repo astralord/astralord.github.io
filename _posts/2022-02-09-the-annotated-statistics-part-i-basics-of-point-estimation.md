@@ -34,11 +34,11 @@ Formally, we can define **parameter space** $\Theta$ with $\vert \Theta \vert \g
 
 Recall from probability theory that random variable $X$ is a mapping from set of all possible outcomes $\Omega$ to a **sample space** $\mathcal{X}$. On the basis of given sample $x = X(\omega)$, $\omega \in \Omega$ we make a decision about the unknown $P$. By identifying family $\mathcal{P}$ with the parameter space $\Theta$, a decision for $P$ is equivalent to a decision for $\vartheta$. In our example above
 
-$$ Y_i \sim \operatorname{Bin}(1, 1 - e^{-\vartheta X_i}) = P_i^\vartheta $$ 
+$$ Y_i \sim \operatorname{Bin}(1, 1 - e^{-\vartheta X_i}) = P_\vartheta^i $$ 
 
 and
 
-$$ \mathcal{X} = \{0, 1\}^n, \quad \Theta=\left[0, \infty\right), \quad \mathcal{P}=\{\otimes_{i=1}^nP_i^{\vartheta} \mid \vartheta>0 \}. $$
+$$ \mathcal{X} = \{0, 1\}^n, \quad \Theta=\left[0, \infty\right), \quad \mathcal{P}=\{\otimes_{i=1}^nP_{\vartheta}^i \mid \vartheta>0 \}. $$
 
 
 ### Uniformly best estimator
