@@ -121,6 +121,11 @@ $$
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
+<link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<a class="btn btn-secondary">Sample $X$</a>
+
 <div id="bin_bayes_plt"></div> 
 <script>
 
@@ -168,7 +173,6 @@ prior_svg.append("text")
 .text(function(d){ return('Prior')})
 .attr("font-family", function(d,i) {return "Saira"; })
 
- 
 prior_svg
     .append('g')
     .append("path")
@@ -204,7 +208,7 @@ where
 
 $$ g_{\mu_0, \tau^2}(x)=\Big( 1 + \frac{\sigma^2}{n \tau^2} \Big)^{-1} \overline{x}_n+\Big( \frac{n \tau^2}{\sigma^2}+1 \Big)^{-1} \mu_0. $$
 
-For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) = \overline{x}_n$. Otherwise,  $g_{\mu_0, \tau^2}(x) = \mu_0$.
+For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x)$ $\approx \overline{x}_n$. Otherwise,  $g_{\mu_0, \tau^2}(x)$ $\approx \mu_0$.
 
 HERE: JS EXAMPLE FOR NORMAL
 
