@@ -122,17 +122,17 @@ $$
 <div id="bin_bayes_plt"></div> 
 <script>
 
-var margin = {top: 10, right: 50, bottom: 30, left: 30},
-    width = 250 - margin.left - margin.right,
-    height = 175 - margin.top - margin.bottom;
-
+var margin = {top: 25, right: 350, bottom: 25, left: 25},
+    width = 800 - margin.left - margin.right,
+    height = 150 - margin.top - margin.bottom,
+    fig_width = 150;
+    
 var prior_svg = d3.select("#bin_bayes_plt")
   .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
   .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 var prior_data = [
    {x: -0.25, y: 0},
@@ -143,43 +143,24 @@ var prior_data = [
    {x: 1.25, y: 0}
 ];
 
+var sample = 0;
+var n = 1;
+
 var x = d3.scaleLinear()
         .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
-        .range([0, width]);
+        .range([0, fig_width]);
         
 prior_svg.append("g")
   .attr("transform", "translate(0," + height + ")")
   .call(d3.axisBottom(x));
 
-function update() {}
-
-d3.json("../../../../assets/beta.json", function(error, data) {
-  if (error) throw error;
-  var sample = 3;
-  var n = 10;
-  var posterior_data = [];
-  for (var i = -0.25; i < 0; i += 0.01) {
-      posterior_data.push({x: i, y: 0});
-  }
-  posterior_data.push({x: 0, y: 0});
-  
-  for (var i = 0; i < 1; i += 0.01) {
-  	   posterior_data.push({x: i, y: Math.pow(i, sample) * Math.pow(1-i, n-sample) / data[n][sample] });
-  }
-
-  posterior_data.push({x: 1, y: Math.pow(1, sample) * Math.pow(0, n-sample) });
-	
-  for (var i = 1; i <= 1.25; i += 0.01) {
-	   posterior_data.push({x: i, y: 0});
-  }
-	
-  var y = d3.scaleLinear()
+var y = d3.scaleLinear()
         .range([height, 0])
-        .domain([d3.min(posterior_data, function(d) { return d.y }), d3.max(posterior_data, function(d) { return d.y }) ]);
+        .domain([0, 4]);
 
-  prior_svg.append("g").call(d3.axisLeft(y).ticks(7));
+prior_svg.append("g").call(d3.axisLeft(y).ticks(7));
   
-  var prior_curve = prior_svg
+var prior_curve = prior_svg
     .append('g')
     .append("path")
       .datum(prior_data)
@@ -194,7 +175,89 @@ d3.json("../../../../assets/beta.json", function(error, data) {
           .y(function(d) { return y(d.y); })
       );
       
-  var posterior_curve = prior_svg
+margin = {top: 0, right: 10, bottom: 35, left: 200};
+
+rect_data = [];
+for (var i = 0; i <= n; i++) {
+  rect_data.push({x: i, y: (i == sample ? 1 : 0)});
+}
+
+var smpl_svg = prior_svg
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var smpl_x = d3.scaleBand()
+        .domain([0, 10])
+        .range([0, fig_width])
+        .domain(rect_data.map(function(d) { return d.x; }));
+        
+smpl_svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(smpl_x));
+  
+var smpl_y = d3.scaleLinear()
+        .range([height, 0])
+        .domain([0, 1]);
+      
+smpl_svg.append("g").call(d3.axisLeft(smpl_y).ticks(1));
+
+smpl_svg.selectAll("rect")
+  .data(rect_data)
+  .enter()
+  .append("rect")
+    .attr("x", function(d) { return smpl_x(d.x); })
+    .attr("y", function(d) { return smpl_y(d.y); })
+    .attr("width", smpl_x.bandwidth())
+    .attr("border", 0)
+    .attr("opacity", ".8")
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .attr("stroke-linejoin", "round")
+    .attr("height", function(d) { return height - smpl_y(d.y); })
+    .attr("fill", "#65ad69");
+
+margin = {top: 0, right: 10, bottom: 35, left: 200};
+    
+var post_svg = smpl_svg
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+        
+post_svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x));
+
+post_svg.append("g").call(d3.axisLeft(y).ticks(7));
+
+
+function update() {}
+
+d3.json("../assets/beta.json", function(error, data) {
+  if (error) throw error;
+  var posterior_data = [];
+  for (var i = -0.25; i < 0; i += 0.01) {
+      posterior_data.push({x: i, y: 0});
+  }
+  posterior_data.push({x: 0, y: 0});
+  
+  for (var i = 0; i < 1; i += 0.01) {
+  	   posterior_data.push({x: i, y: Math.pow(i, sample) * Math.pow(1-i, n-sample) / data[n][sample] });
+  }
+
+  posterior_data.push({x: 1, y: (sample < n ? 0 : 1) / data[n][sample] });
+	
+  for (var i = 1; i <= 1.25; i += 0.01) {
+	   posterior_data.push({x: i, y: 0});
+  }
+      
+  var posterior_curve = post_svg
     .append('g')
     .append("path")
       .datum(posterior_data)
