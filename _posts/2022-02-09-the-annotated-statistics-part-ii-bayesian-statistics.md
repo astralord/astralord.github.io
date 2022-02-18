@@ -117,8 +117,6 @@ $$
 		\end{aligned}
 $$
 
-<button>Sample $X$</button>
-
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
 <div id="bin_bayes_plt"></div> 
@@ -233,7 +231,9 @@ where
 
 $$ g_{\mu_0, \tau^2}(x)=\Big( 1 + \frac{\sigma^2}{n \tau^2} \Big)^{-1} \overline{x}_n+\Big( \frac{n \tau^2}{\sigma^2}+1 \Big)^{-1} \mu_0. $$
 
-For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x)$ $\approx \overline{x}_n$. Otherwise,  $g_{\mu_0, \tau^2}(x)$ $\approx \mu_0$.
+For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) \approx$ $\overline{x}_n$. 
+
+Otherwise, $g_{\mu_0, \tau^2}(x)$ $\approx \mu_0$.
 
 HERE: JS EXAMPLE FOR NORMAL
 
