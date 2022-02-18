@@ -173,12 +173,11 @@ d3.json("../assets/beta.json", function(error, data) {
 	   posterior_data.push({x: i, y: 0});
   }
 	
-var y = d3.scaleLinear()
+  var y = d3.scaleLinear()
         .range([height, 0])
-        .domain([d3.min(posterior_data, function(d) { return d.y }), d3.max(posterior_data, function(d) { return d.y }) ])
-        
-prior_svg.append("g")
-  .call(d3.axisLeft(y).ticks(7));
+        .domain([d3.min(posterior_data, function(d) { return d.y }), d3.max(posterior_data, function(d) { return d.y }) ]);
+
+  prior_svg.append("g").call(d3.axisLeft(y).ticks(7));
   
   var prior_curve = prior_svg
     .append('g')
@@ -231,9 +230,7 @@ where
 
 $$ g_{\mu_0, \tau^2}(x)=\Big( 1 + \frac{\sigma^2}{n \tau^2} \Big)^{-1} \overline{x}_n+\Big( \frac{n \tau^2}{\sigma^2}+1 \Big)^{-1} \mu_0. $$
 
-For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) \approx$ $\overline{x}_n$. 
-
-Otherwise, $g_{\mu_0, \tau^2}(x)$ $\approx \mu_0$.
+For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) \approx \overline{x}_n$. Otherwise, $g_{\mu_0, \tau^2}(x)$ $\approx \mu_0$.
 
 HERE: JS EXAMPLE FOR NORMAL
 
