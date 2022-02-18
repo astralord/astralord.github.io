@@ -132,7 +132,6 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
   $$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
 
-
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
 <input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">

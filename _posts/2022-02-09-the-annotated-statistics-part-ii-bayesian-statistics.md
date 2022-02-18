@@ -46,8 +46,8 @@ $$ \begin{aligned}
 R(\pi,g) & =\int_\Theta R(\vartheta, g) \pi(d\vartheta) \\
 &=\int_{\Theta} \int_{\mathcal{X}} L(\gamma(\vartheta), g(x)) P_\vartheta(dx) \pi(d\vartheta)\\
 & = \int_{\Theta \times \mathcal{X}} L(\gamma(\vartheta), g(x)) Q^{X,\theta} (dx, d\vartheta) \\
-&=\int_{\mathcal{X}}\color{Salmon} { \int_{\Theta} L(\gamma(\vartheta), g(x)) Q^{\theta \mid X = x} (d\vartheta)} Q^X(dx) \\
-& = \int_{\mathcal{X}} \color{Salmon}{R_{\pi}^x(g)} Q^X(dx).
+&=\int_{\mathcal{X}} {\color{Salmon}{ \int_{\Theta} L(\gamma(\vartheta), g(x)) Q^{\theta \mid X = x} (d\vartheta)}} Q^X(dx) \\
+& = \int_{\mathcal{X}} {\color{Salmon}{R_{\pi}^x(g)}} Q^X(dx).
 \end{aligned} $$
 
 The term
@@ -62,7 +62,7 @@ because $R(\pi, g)$ is minimal if and only if $R_\pi^x(g)$ is minimal. In partic
 
 $$ g^*(x) = \mathbb{E}[\theta \mid X = x] = \int_{\Theta} \vartheta Q^{\theta \mid X=x} (d \vartheta). $$
 
-Say for $P_\vartheta$ we have density function $f(x | \vartheta)$, and for $\pi$ density is $h(\vartheta)$. Then posterior distribution of $Q^{\theta \mid X=x}$ has density 
+Say for $P_\vartheta$ we have density function $f(x \mid \vartheta)$, and for $\pi$ density is $h(\vartheta)$. Then posterior distribution of $Q^{\theta \mid X=x}$ has density 
 
 $$ f(\vartheta|x) = \frac{f(x|\vartheta) h(\vartheta)}{ \int_\Theta f(x|\vartheta) h(\vartheta) d\vartheta }. $$
 
@@ -117,7 +117,76 @@ $$
 		\end{aligned}
 $$
 
-HERE: JS EXAMPLE FOR BINOMIAL
+<button onclick="update()">Sample $X$</button>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<div id="bin_bayes_plt"></div> 
+<script>
+
+var margin = {top: 20, right: 50, bottom: 30, left: 30},
+    width = 250 - margin.left - margin.right,
+    height = 175 - margin.top - margin.bottom;
+
+var prior_svg = d3.select("#bin_bayes_plt")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var prior_data = [
+   {x: -0.25, y: 0},
+   {x: 0, y: 0},
+   {x: 0, y: 1},
+   {x: 1, y: 1},
+   {x: 1, y: 0},
+   {x: 1.25, y: 0}
+];
+
+var x = d3.scaleLinear()
+        .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
+        .range([0, width]);
+        
+prior_svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x));
+  
+var y = d3.scaleLinear()
+        .range([height, 0])
+        .domain([0, 1.25]);
+        
+prior_svg.append("g")
+  .call(d3.axisLeft(y).ticks(5));
+  
+
+prior_svg.append("text")
+.attr("text-anchor", "start")
+.attr("y", -5)
+.attr("x", 0)
+.text(function(d){ return('Prior')})
+.attr("font-family", function(d,i) {return "Saira"; })
+
+ 
+prior_svg
+    .append('g')
+    .append("path")
+      .datum(prior_data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+      
+function update() {}
+
+</script>
 
 Let's take another example: $X_1, \dots X_n$ i.i.d. $\sim P_\mu^1 = \mathcal{N}(\mu, \sigma^2)$ with $\sigma^2$ known in advance. Take for $\mu$ prior distribution with gaussian density
 
@@ -135,7 +204,7 @@ where
 
 $$ g_{\mu_0, \tau^2}(x)=\Big( 1 + \frac{\sigma^2}{n \tau^2} \Big)^{-1} \overline{x}_n+\Big( \frac{n \tau^2}{\sigma^2}+1 \Big)^{-1} \mu_0. $$
 
-For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) \approx \overline{x}_n$. Otherwise,  $g_{\mu_0, \tau^2}(x) \approx \mu_0$.
+For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) = \overline{x}_n$. Otherwise,  $g_{\mu_0, \tau^2}(x) = \mu_0$.
 
 HERE: JS EXAMPLE FOR NORMAL
 
