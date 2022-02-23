@@ -115,14 +115,17 @@ $$
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
+<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+
 <div id="bin_bayes_plt"></div>
+
+
 <script>
 
-
-d3.json("../../../../assets/beta.json", function(error, data) {
+d3.json("../assets/beta.json", function(error, data) {
   if (error) throw error;
-  var sample = 4;
-  var n = 7;
+  var sample = 1;
+  var n = 8;
   
 var margin = {top: 25, right: 350, bottom: 25, left: 25},
     width = 800 - margin.left - margin.right,
@@ -155,9 +158,9 @@ prior_svg.append("g")
 
 var y = d3.scaleLinear()
         .range([height, 0])
-        .domain([0, 11]);
+        .domain([0, 12]);
 
-prior_svg.append("g").call(d3.axisLeft(y).ticks(7));
+prior_svg.append("g").call(d3.axisLeft(y).ticks(3));
   
 var prior_curve = prior_svg
     .append('g')
@@ -173,6 +176,17 @@ var prior_curve = prior_svg
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
       );
+      
+
+  prior_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 25)
+    .attr("x", 55)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .text("Prior")
+    .style("fill", "#348ABD")
       
 margin = {top: 0, right: 10, bottom: 35, left: 200};
 
@@ -217,7 +231,7 @@ smpl_svg.selectAll("sample")
     .attr("stroke-width", 1)
     .attr("stroke-linejoin", "round")
     .attr("height", function(d) { return height - smpl_y(d.y); })
-    .attr("fill", "#65ad69")
+    .attr("fill", "#65AD69")
     .on('mouseover', function(d, i) {
       d3.select(this)
         .transition()
@@ -238,6 +252,18 @@ smpl_svg.selectAll("sample")
       updatePosteriorCurve();
     });
     
+
+  smpl_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("transform", "rotate(270)")
+    .attr("y", -7)
+    .attr("x", -75)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .text("Sample")
+    .style("fill", "#65AD69")
+    
 margin = {top: 0, right: 10, bottom: 35, left: 200};
     
 var post_svg = smpl_svg
@@ -252,7 +278,17 @@ post_svg.append("g")
   .attr("transform", "translate(0," + height + ")")
   .call(d3.axisBottom(x).ticks(4));
 
-post_svg.append("g").call(d3.axisLeft(y).ticks(7));
+  post_svg.append("g").call(d3.axisLeft(y).ticks(3));
+  
+  post_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 25)
+    .attr("x", 40)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .text("Posterior")
+    .style("fill", "#EDA137")
   
   var posterior_data = [];
   updatePosteriorData();
@@ -272,6 +308,31 @@ post_svg.append("g").call(d3.axisLeft(y).ticks(7));
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
       );
+     
+  var umvu_x = sample / n;
+  var umvu_y = Math.pow(sample / n, sample) * Math.pow(1-sample / n, n-sample) / data[n][sample];
+      
+  var umvu_dash = post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: umvu_x, y: umvu_y}, {x: umvu_x, y: 0}])
+        .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); }));
+      
+  var umvu_dot = post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: umvu_x, y: umvu_y}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return x(d.x); } )
+      .attr("cy", function (d) { return y(d.y); } )
+      .attr("r", 3)
+      .style("fill", "#E86456")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
   
   function updatePosteriorData() {
     posterior_data = [];
@@ -289,10 +350,15 @@ post_svg.append("g").call(d3.axisLeft(y).ticks(7));
     for (var i = 1; i <= 1.25; i += 0.01) {
 	   posterior_data.push({x: i, y: 0});
     }
+    
+    umvu_x = sample / n;
+    umvu_y = Math.pow(sample / n, sample) * Math.pow(1-sample / n, n-sample) / data[n][sample];
+    
   }
   
 	function updatePosteriorCurve() {
 	  updatePosteriorData();
+	  
 	  posterior_curve
 	    .datum(posterior_data)
 	    .transition()
@@ -302,6 +368,24 @@ post_svg.append("g").call(d3.axisLeft(y).ticks(7));
 	      .x(function(d) { return x(d.x); })
 	      .y(function(d) { return y(d.y); })
 	  );
+	  
+     umvu_dot	
+       .transition()
+	    .duration(1000)
+       .attr("cx", function (d) { return x(umvu_x); } )
+       .attr("cy", function (d) { return y(umvu_y); } );
+       
+       
+	 umvu_dash
+	    .datum([{x: umvu_x, y: 0}, {x: umvu_x, y: umvu_y}])
+       .transition()
+	    .duration(1000)
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	    );
+
 	}
 
 });
@@ -360,7 +444,7 @@ Again we use quadratic loss, but only this time we take parameterized beta distr
 
 $$ h(\vartheta) = \frac{\vartheta^{a-1}(1-\vartheta)^{b-1}1_{[0,1]}(\vartheta)}{B(a, b)}. $$
 
-Note that for $a = b = 1$ we have $\theta \sim \mathcal{U}(0, 1)$. Now posterior distribution will be $Q^{\vartheta|X=x} \sim B(x+a,n-x+b)$ with density
+Note that for $a = b = 1$ we have $\theta \sim \mathcal{U}(0, 1)$. Now posterior distribution will be $Q^{\vartheta \mid X=x} \sim B(x+a,n-x+b)$ with density
 
 $$  f(\vartheta | x)= \frac{\vartheta^{x+a-1}(1-\vartheta)^{n-x+b-1}1_{[0,1](\vartheta)}}{B(x+a,n-x+b)}. $$
 
@@ -376,10 +460,10 @@ is a Bayes estimator and it provides risk
 
 $$ \begin{aligned} R(\vartheta, g_{a,b})&=\mathbb{E}[(g_{a,b}(X)-\vartheta)^2] \\ &=\frac{\vartheta^2(-n+(a+b)^2+\vartheta(n-2a(a+b))+a^2}{(n+a+b)^2}. \end{aligned}$$
 
-If we choose $a^*=b^*=\sqrt{n}/2$ then risk will be
+If we choose $\hat{a}=\hat{b}=\frac{\sqrt{n}}{2}$ then risk will be
 
-$$  R(\vartheta, g_{a^*,b^*})=\frac{1}{4(\sqrt{n} + 1)^2}. $$
+$$  R(\vartheta, g_{\hat{a}, \hat{b}})=\frac{1}{4(\sqrt{n} + 1)^2}. $$
 
-Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{a^*,b^*}(x) = \frac{x+\sqrt{n}/2}{n+\sqrt{n}}$ is minimax and $B(a^*, b^*)$ is least favorable prior.
+Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat{b}}(x) = \frac{x+\sqrt{n}/2}{n+\sqrt{n}}$ is minimax and $B(\hat{a}, \hat{b})$ is least favorable prior.
 
 VISUALIAZATION OF THIS EXAMPLE
