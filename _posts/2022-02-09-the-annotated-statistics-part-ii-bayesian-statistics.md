@@ -86,11 +86,7 @@ On the other hand, we have density
 
 $$ f(x | \vartheta) = \binom n x \vartheta^x (1-\vartheta)^{n-x} 1_{ \lbrace 0, \dots n \rbrace }(x). $$
 
-If we take prior uniform distribution $\pi \sim \mathcal{U}(0, 1)$, then
-
-$$ h(\vartheta) = 1_{(0, 1)}(\vartheta) $$
-
-and posterior density
+If we take prior uniform distribution $\pi \sim \mathcal{U}(0, 1)$, then $ h(\vartheta) = 1_{(0, 1)}(\vartheta)$ and posterior density
 
 $$ f(\vartheta \mid x) = \frac{\vartheta^x (1-\vartheta)^{n-x} 1_{(0,1)}(\vartheta)}{B(x+1, n-x+1)}, $$ 
 
@@ -119,7 +115,7 @@ $$
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
-<div id="bin_bayes_plt"></div> 
+<div id="bin_bayes_plt"></div>
 <script>
 
 var margin = {top: 25, right: 350, bottom: 25, left: 25},
@@ -143,8 +139,8 @@ var prior_data = [
    {x: 1.25, y: 0}
 ];
 
-var sample = 0;
-var n = 1;
+var sample = 5;
+var n = 7;
 
 var x = d3.scaleLinear()
         .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
@@ -239,8 +235,9 @@ post_svg.append("g").call(d3.axisLeft(y).ticks(7));
 
 function update() {}
 
-d3.json("../assets/beta.json", function(error, data) {
+d3.json("../../../../assets/beta.json", function(error, data) {
   if (error) throw error;
+  
   var posterior_data = [];
   for (var i = -0.25; i < 0; i += 0.01) {
       posterior_data.push({x: i, y: 0});
@@ -301,3 +298,54 @@ HERE: JS EXAMPLE FOR NORMAL
 
 ### Minimax estimator
 
+For an estimator $g$
+
+$$ R^*(g) = \sup_{\vartheta \in \Theta} R(\vartheta, g)$$
+
+is called the **maximum risk** and
+
+$$ R^*(g^*) = \inf_{g \in \mathcal{K}} R^*(g) $$
+
+is **minimax risk** and corresponding $g$ - **minimax estimator**. The use of minimax estimator is aimed at protecting against large losses. Also it's not hard to see, that
+
+$$ R^*(g) = \sup_{\pi \in \mathcal{M}} R(\pi, g), $$
+
+where $\mathcal{M}$ is a set of all prior measures $\pi$. If for some $\pi^*$ we have
+
+$$ \inf_{g \in \mathcal{K}} R(\pi^*, g) \geq \inf_{g \in \mathcal{K}} R(\pi, g) \quad \forall \pi \in \mathcal{M}, $$
+
+then $\pi^*$ is called the **least favorable prior**.
+
+THEOREM
+
+Let's get back to an example with binomial distribution:
+
+$$ P_\vartheta(X = x) = \binom{n}{x} \vartheta^x (1-\vartheta)^{n-x}. $$
+
+Again we use quadratic loss, but only this time we take parameterized beta distrubution $B(a, b)$ as our prior:
+
+$$ h(\vartheta) = \frac{\vartheta^{a-1}(1-\vartheta)^{b-1}1_{[0,1]}(\vartheta)}{B(a, b)}. $$
+
+Note that for $a = b = 1$ we have $\theta \sim \mathcal{U}(0, 1)$. Now posterior distribution will be $Q^{\vartheta|X=x} \sim B(x+a,n-x+b)$ with density
+
+$$  f(\vartheta | x)= \frac{\vartheta^{x+a-1}(1-\vartheta)^{n-x+b-1}1_{[0,1](\vartheta)}}{B(x+a,n-x+b)}. $$
+
+We pretend that we know (or it's not hard to show) that for random variable $Z \sim B(p, q)$
+
+$$ \mathbb{E}[Z] = \frac{p}{p+q} \quad \text{and} \quad \operatorname{Var}(Z)=\frac{pq}{(p+q)^2(p+q+1)}. $$
+
+Recall that for quadratic loss expected value of $\theta$ is Bayes estimator. Therefore,
+
+$$ g_{a,b}(x)=\frac{x+a}{n+a+b} $$
+
+is a Bayes estimator and it provides risk
+
+$$ \begin{aligned} R(\vartheta, g_{a,b})&=\mathbb{E}[(g_{a,b}(X)-\vartheta)^2] \\ &=\frac{\vartheta^2(-n+(a+b)^2+\vartheta(n-2a(a+b))+a^2}{(n+a+b)^2}. \end{aligned}$$
+
+If we choose $a^*=b^*=\sqrt{n}/2$ then risk will be
+
+$$  R(\vartheta, g_{a^*,b^*})=\frac{1}{4(\sqrt{n} + 1)^2}. $$
+
+Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{a^*,b^*}(x) = \frac{x+\sqrt{n}/2}{n+\sqrt{n}}$ is minimax and $B(a^*, b^*)$ is least favorable prior.
+
+VISUALIAZATION OF THIS EXAMPLE
