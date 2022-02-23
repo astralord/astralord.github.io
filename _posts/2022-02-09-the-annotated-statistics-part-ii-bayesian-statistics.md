@@ -186,7 +186,7 @@ var prior_curve = prior_svg
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Prior")
-    .style("fill", "#348ABD")
+    .style("fill", "#348ABD");
       
 margin = {top: 0, right: 10, bottom: 35, left: 200};
 
@@ -262,7 +262,7 @@ smpl_svg.selectAll("sample")
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Sample")
-    .style("fill", "#65AD69")
+    .style("fill", "#65AD69");
     
 margin = {top: 0, right: 10, bottom: 35, left: 200};
     
@@ -365,7 +365,7 @@ post_svg.append("g")
       .attr("r", 3)
       .style("fill", "#E86456")
       .attr("stroke", "#000")
-      .attr("stroke-width", 1)
+      .attr("stroke-width", 1);
   
   function updatePosteriorData() {
     posterior_data = [];
