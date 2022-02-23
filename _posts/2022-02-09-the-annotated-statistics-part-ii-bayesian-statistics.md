@@ -288,8 +288,41 @@ post_svg.append("g")
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Posterior")
-    .style("fill", "#EDA137")
+    .style("fill", "#EDA137");
+    
+  post_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 40)
+    .attr("x", 155)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .attr("font-size", 8)
+    .text("UMVU")
+    .style("fill", "#E86456");
+      
+  post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: 145, y: 30}, {x: 145, y: 45}])
+        .attr("d",  d3.line()
+          .x(function(d) { return d.x; })
+          .y(function(d) { return d.y; }));
   
+  post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: 145, y: 30}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return d.x; } )
+      .attr("cy", function (d) { return d.y; } )
+      .attr("r", 3)
+      .style("fill", "#E86456")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+          
   var posterior_data = [];
   updatePosteriorData();
         
