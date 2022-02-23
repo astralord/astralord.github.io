@@ -122,7 +122,7 @@ $$
 
 <script>
 
-d3.json("../assets/beta.json", function(error, data) {
+d3.json("../../../../assets/beta.json", function(error, data) {
   if (error) throw error;
   var sample = 1;
   var n = 8;
