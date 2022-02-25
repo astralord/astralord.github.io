@@ -153,9 +153,30 @@ where $\mathcal{M}$ is a set of all prior measures $\pi$. If for some $\pi^*$ we
 
 $$ \inf_{g \in \mathcal{K}} R(\pi^*, g) \geq \inf_{g \in \mathcal{K}} R(\pi, g) \quad \forall \pi \in \mathcal{M}, $$
 
-then $\pi^*$ is called the **least favorable prior**.
+then $\pi^*$ is called the **least favorable prior**. If $g_\pi$ is a Bayes estimator for prior $\pi$ and also
 
-THEOREM
+$$ R(\pi, g_\pi) = \sup_{\vartheta \in \Theta} R(\vartheta, g_\pi),$$ 
+
+then for any $g \in \mathcal{K}$:
+
+$$ \sup_{\vartheta \in \Theta}R(\vartheta, g) \geq \int_{\Theta}R(\vartheta, g)\pi(d\vartheta) \geq \int_{\Theta}R(\vartheta, g_\pi)\pi(d\vartheta)=R(\pi, g_\pi)=\sup_{\vartheta \in \Theta}R(\vartheta, g_\pi) $$
+
+and therefore $g_\pi$ is a minimax estimator. Also, $\pi$ is a least favorable prior, because for any distribution $\mu$
+
+$$ 
+\begin{aligned}
+\inf_{g \in \mathcal{K}} \int_{\Theta} R(\vartheta, g)\mu(d\vartheta) &\leq \int_{\Theta}R(\vartheta, g_\pi)\mu(d\vartheta) \\& \leq \sup_{\vartheta \in \Theta} R(\vartheta, g_\pi) \\&= R(\pi, g_\pi) \\ &= \inf_{g \in \mathcal{K}} \int_{\Theta}R(\vartheta, g) \pi(d\vartheta).
+\end{aligned} $$
+
+Sometimes Bayes risk can be constant:
+
+$$ R(\vartheta, g_\pi) = c \quad \forall \vartheta \in \Theta. $$
+
+Then
+
+$$ \sup_{\vartheta \in \Theta} R(\vartheta, g_\pi) = c = \int_{\Theta} R(\vartheta, g_\pi) \pi(d\vartheta) = R(\pi, g_\pi), $$
+
+$g_\pi$ is minimax and $\pi$ is least favorable prior.
 
 Let's get back to an example with binomial distribution:
 
@@ -360,7 +381,7 @@ var post_svg = smpl_svg
   post_svg
     .append("text")
     .attr("text-anchor", "start")
-    .attr("y", 55)
+    .attr("y", 40)
     .attr("x", 65)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
@@ -371,7 +392,7 @@ var post_svg = smpl_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 55)
-    .attr("x", 172)
+    .attr("x", 207)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .attr("font-size", 10)
@@ -383,14 +404,14 @@ var post_svg = smpl_svg
         .style("stroke-dasharray", ("3, 3"))
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
-        .datum([{x: 165, y: 45}, {x: 165, y: 60}])
+        .datum([{x: 200, y: 45}, {x: 200, y: 60}])
         .attr("d",  d3.line()
           .x(function(d) { return d.x; })
           .y(function(d) { return d.y; }));
   
   post_svg.append('g')
     .selectAll("dot")
-    .data([{x: 165, y: 45}])
+    .data([{x: 200, y: 45}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -404,7 +425,7 @@ var post_svg = smpl_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 85)
-    .attr("x", 172)
+    .attr("x", 207)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .attr("font-size", 10)
@@ -416,14 +437,14 @@ var post_svg = smpl_svg
         .style("stroke-dasharray", ("3, 3"))
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
-        .datum([{x: 165, y: 75}, {x: 165, y: 90}])
+        .datum([{x: 200, y: 75}, {x: 200, y: 90}])
         .attr("d",  d3.line()
           .x(function(d) { return d.x; })
           .y(function(d) { return d.y; }));
   
   post_svg.append('g')
     .selectAll("dot")
-    .data([{x: 165, y: 75}])
+    .data([{x: 200, y: 75}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -437,7 +458,7 @@ var post_svg = smpl_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 115)
-    .attr("x", 172)
+    .attr("x", 207)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .attr("font-size", 10)
@@ -449,14 +470,14 @@ var post_svg = smpl_svg
         .style("stroke-dasharray", ("3, 3"))
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
-        .datum([{x: 165, y: 105}, {x: 165, y: 120}])
+        .datum([{x: 200, y: 105}, {x: 200, y: 120}])
         .attr("d",  d3.line()
           .x(function(d) { return d.x; })
           .y(function(d) { return d.y; }));
   
   post_svg.append('g')
     .selectAll("dot")
-    .data([{x: 165, y: 105}])
+    .data([{x: 200, y: 105}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
