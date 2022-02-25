@@ -1,9 +1,9 @@
 ---
 layout: post
-title: 'The Annotated Statistics. Part I: Basics of Point Estimation'
-date: 2022-02-09 03:13 +0800
+title: 'Visual Guide to Statistics. Part I: Basics of Point Estimation'
+date: 2022-02-25 03:13 +0800
 categories: [Statistics]
-tags: [statistics, parameter-estimation, exponential-family, cramer-rao-inequality, fisher-information]
+tags: [statistics, parameter-estimation, frequentist-inference, exponential-family, cramer-rao-inequality, fisher-information]
 math: true
 ---
 
