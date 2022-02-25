@@ -203,10 +203,10 @@ d3.json("../../../../assets/beta.json", function(error, data) {
   var sample = 1;
   var n = 8;
   
-var margin = {top: 25, right: 350, bottom: 25, left: 25},
+var margin = {top: 25, right: 0, bottom: 25, left: 25},
     width = 800 - margin.left - margin.right,
     height = 200 - margin.top - margin.bottom,
-    fig_width = 150;
+    fig_width = 200;
     
 var prior_svg = d3.select("#bin_bayes_plt")
   .append("svg")
@@ -253,18 +253,17 @@ var prior_curve = prior_svg
           .y(function(d) { return y(d.y); })
       );
       
-
   prior_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 40)
-    .attr("x", 55)
+    .attr("x", 80)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Prior")
     .style("fill", "#348ABD");
       
-    margin = {top: 0, right: 10, bottom: 35, left: 200};
+    margin = {top: 0, right: 0, bottom: 35, left: 250};
 
 	 var smpl_svg = prior_svg
 	  .append("svg")
@@ -342,7 +341,7 @@ var prior_curve = prior_svg
     .text("Sample")
     .style("fill", "#65AD69");
     
-margin = {top: 0, right: 10, bottom: 35, left: 200};
+margin = {top: 0, right: 0, bottom: 35, left: 250};
     
 var post_svg = smpl_svg
   .append("svg")
@@ -362,7 +361,7 @@ var post_svg = smpl_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 55)
-    .attr("x", 40)
+    .attr("x", 65)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Posterior")
@@ -375,7 +374,7 @@ var post_svg = smpl_svg
     .attr("x", 172)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
-    .attr("font-size", 8)
+    .attr("font-size", 10)
     .text("UMVU")
     .style("fill", "#E86456");
       
@@ -408,7 +407,7 @@ var post_svg = smpl_svg
     .attr("x", 172)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
-    .attr("font-size", 8)
+    .attr("font-size", 10)
     .text("Bayes")
     .style("fill", "#348ABD");
       
@@ -441,7 +440,7 @@ var post_svg = smpl_svg
     .attr("x", 172)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
-    .attr("font-size", 8)
+    .attr("font-size", 10)
     .text("Minimax")
     .style("fill", "#F5CC18");
       
