@@ -113,318 +113,6 @@ $$
 		\end{aligned}
 $$
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
-
-<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
-
-<div id="bin_bayes_plt"></div>
-
-
-<script>
-
-d3.json("../../../../assets/beta.json", function(error, data) {
-  if (error) throw error;
-  var sample = 1;
-  var n = 8;
-  
-var margin = {top: 25, right: 350, bottom: 25, left: 25},
-    width = 800 - margin.left - margin.right,
-    height = 150 - margin.top - margin.bottom,
-    fig_width = 150;
-    
-var prior_svg = d3.select("#bin_bayes_plt")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-var prior_data = [
-   {x: -0.2, y: 0},
-   {x: 0, y: 0},
-   {x: 0, y: 1},
-   {x: 1, y: 1},
-   {x: 1, y: 0},
-   {x: 1.2, y: 0}
-];
-
-var x = d3.scaleLinear()
-        .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
-        .range([0, fig_width]);
-        
-prior_svg.append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(d3.axisBottom(x).ticks(4));
-
-var y = d3.scaleLinear()
-        .range([height, 0])
-        .domain([0, 12]);
-
-prior_svg.append("g").call(d3.axisLeft(y).ticks(3));
-  
-var prior_curve = prior_svg
-    .append('g')
-    .append("path")
-      .datum(prior_data)
-      .attr("fill", "#348ABD")
-      .attr("border", 0)
-      .attr("opacity", ".8")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-      );
-      
-
-  prior_svg
-    .append("text")
-    .attr("text-anchor", "start")
-    .attr("y", 25)
-    .attr("x", 55)
-    .attr("font-family", "Arvo")
-    .attr("font-weight", 700)
-    .text("Prior")
-    .style("fill", "#348ABD");
-      
-margin = {top: 0, right: 10, bottom: 35, left: 200};
-
-rect_data = [];
-for (var i = 0; i <= n; i++) {
-    rect_data.push({x: i, y: 1});
-}
-
-var smpl_svg = prior_svg
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
-var smpl_x = d3.scaleBand()
-        .domain([0, 10])
-        .range([0, fig_width])
-        .domain(rect_data.map(function(d) { return d.x; }));
-        
-smpl_svg.append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(d3.axisBottom(smpl_x));
-  
-var smpl_y = d3.scaleLinear()
-        .range([height, 0])
-        .domain([0, 1]);
-      
-smpl_svg.append("g").call(d3.axisLeft(smpl_y).ticks(0));
-
-smpl_svg.selectAll("sample")
-  .data(rect_data)
-  .enter()
-  .append("rect")
-    .attr("x", function(d) { return smpl_x(d.x); })
-    .attr("y", function(d) { return smpl_y(d.y); })
-    .attr("width", smpl_x.bandwidth())
-    .attr("border", 0)
-    .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; })
-    .attr("stroke", "#000")
-    .attr("stroke-width", 1)
-    .attr("stroke-linejoin", "round")
-    .attr("height", function(d) { return height - smpl_y(d.y); })
-    .attr("fill", "#65AD69")
-    .on('mouseover', function(d, i) {
-      d3.select(this)
-        .transition()
-        .attr("opacity", function(d) { return d.x == sample ? ".8" : ".4"; });
-    })
-    .on('mouseout', function(d, i) {
-      d3.select(this)
-        .transition()
-        .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
-    })
-    .on('click', function(d, i) {
-      sample = i;
-      d3.selectAll("rect")
-        .transition()
-	     .attr("x", function(d) { return smpl_x(d.x); })
-	     .attr("y", function(d) { return smpl_y(d.y); })
-        .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
-      updatePosteriorCurve();
-    });
-    
-
-  smpl_svg
-    .append("text")
-    .attr("text-anchor", "start")
-    .attr("transform", "rotate(270)")
-    .attr("y", -7)
-    .attr("x", -75)
-    .attr("font-family", "Arvo")
-    .attr("font-weight", 700)
-    .text("Sample")
-    .style("fill", "#65AD69");
-    
-margin = {top: 0, right: 10, bottom: 35, left: 200};
-    
-var post_svg = smpl_svg
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-        
-post_svg.append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(d3.axisBottom(x).ticks(4));
-
-  post_svg.append("g").call(d3.axisLeft(y).ticks(3));
-  
-  post_svg
-    .append("text")
-    .attr("text-anchor", "start")
-    .attr("y", 25)
-    .attr("x", 40)
-    .attr("font-family", "Arvo")
-    .attr("font-weight", 700)
-    .text("Posterior")
-    .style("fill", "#EDA137");
-    
-  post_svg
-    .append("text")
-    .attr("text-anchor", "start")
-    .attr("y", 40)
-    .attr("x", 155)
-    .attr("font-family", "Arvo")
-    .attr("font-weight", 700)
-    .attr("font-size", 8)
-    .text("UMVU")
-    .style("fill", "#E86456");
-      
-  post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1)
-        .datum([{x: 145, y: 30}, {x: 145, y: 45}])
-        .attr("d",  d3.line()
-          .x(function(d) { return d.x; })
-          .y(function(d) { return d.y; }));
-  
-  post_svg.append('g')
-    .selectAll("dot")
-    .data([{x: 145, y: 30}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return d.x; } )
-      .attr("cy", function (d) { return d.y; } )
-      .attr("r", 3)
-      .style("fill", "#E86456")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1);
-          
-  var posterior_data = [];
-  updatePosteriorData();
-        
-  var posterior_curve = post_svg
-    .append('g')
-    .append("path")
-      .datum(posterior_data)
-      .attr("fill", "#EDA137")
-      .attr("border", 0)
-      .attr("opacity", ".8")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-      );
-     
-  var umvu_x = sample / n;
-  var umvu_y = Math.pow(sample / n, sample) * Math.pow(1-sample / n, n-sample) / data[n][sample];
-      
-  var umvu_dash = post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1)
-        .datum([{x: umvu_x, y: umvu_y}, {x: umvu_x, y: 0}])
-        .attr("d",  d3.line()
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); }));
-      
-  var umvu_dot = post_svg.append('g')
-    .selectAll("dot")
-    .data([{x: umvu_x, y: umvu_y}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return x(d.x); } )
-      .attr("cy", function (d) { return y(d.y); } )
-      .attr("r", 3)
-      .style("fill", "#E86456")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1);
-  
-  function updatePosteriorData() {
-    posterior_data = [];
-    for (var i = -0.25; i < 0; i += 0.01) {
-      posterior_data.push({x: i, y: 0});
-    }
-    posterior_data.push({x: 0, y: 0});
-  
-    for (var i = 0; i < 1; i += 0.01) {
-  	   posterior_data.push({x: i, y: Math.pow(i, sample) * Math.pow(1-i, n-sample) / data[n][sample] });
-    }
-
-    posterior_data.push({x: 1, y: (sample < n ? 0 : 1) / data[n][sample] });
-	
-    for (var i = 1; i <= 1.25; i += 0.01) {
-	   posterior_data.push({x: i, y: 0});
-    }
-    
-    umvu_x = sample / n;
-    umvu_y = Math.pow(sample / n, sample) * Math.pow(1-sample / n, n-sample) / data[n][sample];
-    
-  }
-  
-	function updatePosteriorCurve() {
-	  updatePosteriorData();
-	  
-	  posterior_curve
-	    .datum(posterior_data)
-	    .transition()
-	    .duration(1000)
-	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	  );
-	  
-     umvu_dot	
-       .transition()
-	    .duration(1000)
-       .attr("cx", function (d) { return x(umvu_x); } )
-       .attr("cy", function (d) { return y(umvu_y); } );
-       
-       
-	 umvu_dash
-	    .datum([{x: umvu_x, y: 0}, {x: umvu_x, y: umvu_y}])
-       .transition()
-	    .duration(1000)
-	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	    );
-
-	}
-
-});
-
-</script>
-
 Let's take another example: $X_1, \dots X_n$ i.i.d. $\sim P_\mu^1 = \mathcal{N}(\mu, \sigma^2)$ with $\sigma^2$ known in advance. Take for $\mu$ prior distribution with gaussian density
 
 $$ h(\mu) = \frac{1}{\sqrt{2 \pi \tau^2}} \exp \Big( -\frac{(\mu-\mu_0)^2}{2\tau^2} \Big). $$
@@ -499,4 +187,482 @@ $$  R(\vartheta, g_{\hat{a}, \hat{b}})=\frac{1}{4(\sqrt{n} + 1)^2}. $$
 
 Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat{b}}(x) = \frac{x+\sqrt{n}/2}{n+\sqrt{n}}$ is minimax and $B(\hat{a}, \hat{b})$ is least favorable prior.
 
-VISUALIAZATION OF THIS EXAMPLE
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+
+<div id="bin_bayes_plt"></div>
+
+<input type="range" name="n_slider" id=n_slider min="1" max="10" value="8">
+
+<script>
+
+d3.json("../../../../assets/beta.json", function(error, data) {
+  if (error) throw error;
+  var sample = 1;
+  var n = 8;
+  
+var margin = {top: 25, right: 350, bottom: 25, left: 25},
+    width = 800 - margin.left - margin.right,
+    height = 200 - margin.top - margin.bottom,
+    fig_width = 150;
+    
+var prior_svg = d3.select("#bin_bayes_plt")
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var prior_data = [
+   {x: -0.05, y: 0},
+   {x: 0, y: 0},
+   {x: 0, y: 1},
+   {x: 1, y: 1},
+   {x: 1, y: 0},
+   {x: 1.05, y: 0}
+];
+
+var x = d3.scaleLinear()
+        .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
+        .range([0, fig_width]);
+        
+prior_svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x).ticks(4));
+
+var y = d3.scaleLinear()
+        .range([height, 0])
+        .domain([0, 12]);
+
+prior_svg.append("g").call(d3.axisLeft(y).ticks(3));
+  
+var prior_curve = prior_svg
+    .append('g')
+    .append("path")
+      .datum(prior_data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+      
+
+  prior_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 40)
+    .attr("x", 55)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .text("Prior")
+    .style("fill", "#348ABD");
+      
+    margin = {top: 0, right: 10, bottom: 35, left: 200};
+
+	 var smpl_svg = prior_svg
+	  .append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	    .attr("transform",
+	          "translate(" + margin.left + "," + margin.top + ")");
+	 
+	 var smpl_x = d3.scaleBand()
+	        .range([0, fig_width]);
+	 var smpl_x_axis = smpl_svg.append("g")
+	  .attr("transform", "translate(0," + height + ")");
+	 var smpl_y = d3.scaleLinear().range([height, 0]).domain([0, 1]);
+	 var smpl_y_axis = smpl_svg.append("g").call(d3.axisLeft(smpl_y).ticks(0)); 
+    
+    
+  function updateRectSample() { 
+    var rect_data = [];
+    for (var i = 0; i <= n; i++) {
+       rect_data.push({x: i, y: 1});
+    }
+
+	 smpl_x.domain(rect_data.map(function(d) { return d.x; }));
+	 smpl_x_axis.call(d3.axisBottom(smpl_x));
+	
+	 var rect_sample = smpl_svg.selectAll("rect").data(rect_data);
+	  
+    rect_sample.enter()
+	    .append("rect")
+	      .merge(rect_sample)
+	      .attr("x", function(d) { return smpl_x(d.x); })
+	      .attr("y", function(d) { return smpl_y(d.y); })
+	      .attr("width", smpl_x.bandwidth())
+	      .attr("border", 0)
+	      .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; })
+	      .attr("stroke", "#000")
+	      .attr("stroke-width", 1)
+	      .attr("stroke-linejoin", "round")
+	      .attr("height", function(d) { return height - smpl_y(d.y); })
+	      .attr("fill", "#65AD69")
+	      .on('mouseover', function(d, i) {
+	        d3.select(this)
+	          .transition()
+	          .attr("opacity", function(d) { return d.x == sample ? ".8" : ".4"; });
+	      })
+	      .on('mouseout', function(d, i) {
+	        d3.select(this)
+	          .transition()
+	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
+	      })
+	      .on('click', function(d, i) {
+	        sample = i;
+	        d3.selectAll("rect")
+	          .transition()
+		       .attr("x", function(d) { return smpl_x(d.x); })
+		       .attr("y", function(d) { return smpl_y(d.y); })
+	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
+	        updatePosteriorCurve();
+	    });
+    
+     rect_sample.exit().remove();
+  }
+    	
+    updateRectSample();
+	    
+  smpl_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("transform", "rotate(270)")
+    .attr("y", -7)
+    .attr("x", -100)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .text("Sample")
+    .style("fill", "#65AD69");
+    
+margin = {top: 0, right: 10, bottom: 35, left: 200};
+    
+var post_svg = smpl_svg
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+        
+  post_svg.append("g")
+    .attr("transform", "translate(0, " + height + ")")
+    .call(d3.axisBottom(x).ticks(4));
+  
+  post_svg.append("g").call(d3.axisLeft(y).ticks(3));
+  
+  post_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 55)
+    .attr("x", 40)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .text("Posterior")
+    .style("fill", "#EDA137");
+    
+  post_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 55)
+    .attr("x", 172)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .attr("font-size", 8)
+    .text("UMVU")
+    .style("fill", "#E86456");
+      
+  post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: 165, y: 45}, {x: 165, y: 60}])
+        .attr("d",  d3.line()
+          .x(function(d) { return d.x; })
+          .y(function(d) { return d.y; }));
+  
+  post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: 165, y: 45}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return d.x; } )
+      .attr("cy", function (d) { return d.y; } )
+      .attr("r", 3)
+      .style("fill", "#E86456")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+    
+  post_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 85)
+    .attr("x", 172)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .attr("font-size", 8)
+    .text("Bayes")
+    .style("fill", "#348ABD");
+      
+  post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: 165, y: 75}, {x: 165, y: 90}])
+        .attr("d",  d3.line()
+          .x(function(d) { return d.x; })
+          .y(function(d) { return d.y; }));
+  
+  post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: 165, y: 75}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return d.x; } )
+      .attr("cy", function (d) { return d.y; } )
+      .attr("r", 3)
+      .style("fill", "#348ABD")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+      
+  post_svg
+    .append("text")
+    .attr("text-anchor", "start")
+    .attr("y", 115)
+    .attr("x", 172)
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .attr("font-size", 8)
+    .text("Minimax")
+    .style("fill", "#F5CC18");
+      
+  post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: 165, y: 105}, {x: 165, y: 120}])
+        .attr("d",  d3.line()
+          .x(function(d) { return d.x; })
+          .y(function(d) { return d.y; }));
+  
+  post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: 165, y: 105}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return d.x; } )
+      .attr("cy", function (d) { return d.y; } )
+      .attr("r", 3)
+      .style("fill", "#F5CC18")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+          
+  var posterior_data = [];
+  updatePosteriorData();
+        
+  var posterior_curve = post_svg
+    .append('g')
+    .append("path")
+      .datum(posterior_data)
+      .attr("fill", "#EDA137")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+     
+  var umvu_x = sample / n;
+  var umvu_y = Math.pow(umvu_x, sample) * Math.pow(1-umvu_x, n-sample) / data[n][sample];
+      
+  var umvu_dash = post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: umvu_x, y: umvu_y}, {x: umvu_x, y: 0}])
+        .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); }));
+      
+  var umvu_dot = post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: umvu_x, y: umvu_y}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return x(d.x); } )
+      .attr("cy", function (d) { return y(d.y); } )
+      .attr("r", 3)
+      .style("fill", "#E86456")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+      
+  var bayes_x = (sample + 1) / (n + 2);
+  var bayes_y = Math.pow(bayes_x, sample) * Math.pow(1-bayes_x, n-sample) / data[n][sample];
+    
+  var bayes_dash = post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: bayes_x, y: bayes_y}, {x: bayes_x, y: 0}])
+        .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); }));
+      
+  var bayes_dot = post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: bayes_x, y: bayes_y}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return x(d.x); } )
+      .attr("cy", function (d) { return y(d.y); } )
+      .attr("r", 3)
+      .style("fill", "#348ABD")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+      
+  var minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
+  var minimax_y = Math.pow(minimax_x, sample) * Math.pow(1-minimax_x, n-sample) / data[n][sample];
+      
+  var minimax_dash = post_svg.append("path")
+        .attr("class", "line")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .datum([{x: minimax_x, y: minimax_y}, {x: minimax_x, y: 0}])
+        .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); }));
+      
+  var minimax_dot = post_svg.append('g')
+    .selectAll("dot")
+    .data([{x: minimax_x, y: minimax_y}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return x(d.x); } )
+      .attr("cy", function (d) { return y(d.y); } )
+      .attr("r", 3)
+      .style("fill", "#F5CC18")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+  
+  function updatePosteriorData() {
+    posterior_data = [];
+    for (var i = -0.05; i < 0; i += 0.01) {
+      posterior_data.push({x: i, y: 0});
+    }
+    posterior_data.push({x: 0, y: 0});
+  
+    for (var i = 0; i < 1; i += 0.01) {
+  	   posterior_data.push({x: i, y: Math.pow(i, sample) * Math.pow(1-i, n-sample) / data[n][sample] });
+    }
+
+    posterior_data.push({x: 1, y: (sample < n ? 0 : 1) / data[n][sample] });
+	
+    for (var i = 1; i <= 1.05; i += 0.01) {
+	   posterior_data.push({x: i, y: 0});
+    }
+    
+    umvu_x = sample / n;
+    umvu_y = Math.pow(umvu_x, sample) * Math.pow(1-umvu_x, n-sample) / data[n][sample];
+    
+    bayes_x = (sample + 1) / (n + 2);
+    bayes_y = Math.pow(bayes_x, sample) * Math.pow(1-bayes_x, n-sample) / data[n][sample];
+    
+    minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
+    minimax_y = Math.pow(minimax_x, sample) * Math.pow(1-minimax_x, n-sample) / data[n][sample];
+  }
+  
+	function updatePosteriorCurve() {
+	  updatePosteriorData();
+	  
+	  posterior_curve
+	    .datum(posterior_data)
+	    .transition()
+	    .duration(1000)
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	  );
+	  
+     umvu_dot	
+       .transition()
+	    .duration(1000)
+       .attr("cx", function (d) { return x(umvu_x); } )
+       .attr("cy", function (d) { return y(umvu_y); } );
+       
+	 umvu_dash
+	    .datum([{x: umvu_x, y: 0}, {x: umvu_x, y: umvu_y}])
+       .transition()
+	    .duration(1000)
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	    );
+	    
+    bayes_dot	
+      .transition()
+      .duration(1000)
+      .attr("cx", function (d) { return x(bayes_x); } )
+      .attr("cy", function (d) { return y(bayes_y); } );
+        
+	bayes_dash
+	   .datum([{x: bayes_x, y: 0}, {x: bayes_x, y: bayes_y}])
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+         .curve(d3.curveBasis)
+         .x(function(d) { return x(d.x); })
+         .y(function(d) { return y(d.y); })
+      );
+	    
+    minimax_dot	
+      .transition()
+      .duration(1000)
+      .attr("cx", function (d) { return x(minimax_x); } )
+      .attr("cy", function (d) { return y(minimax_y); } );
+        
+	minimax_dash
+	   .datum([{x: minimax_x, y: 0}, {x: minimax_x, y: minimax_y}])
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+         .curve(d3.curveBasis)
+         .x(function(d) { return x(d.x); })
+         .y(function(d) { return y(d.y); })
+      );
+
+	}
+  
+  function updateN(value) {
+    n = parseInt(value);
+    sample = Math.min(sample, n);
+    updateRectSample();
+    updatePosteriorCurve();
+  }
+	
+  d3.select("#n_slider").on("change", function(d) {
+    selectedValue = this.value;
+    updateN(selectedValue);
+  })
+
+});
+
+</script>
