@@ -196,7 +196,7 @@ t_svg.append("text")
     .attr('dx', '.1em')
     .attr('dy', '.9em');
     
-d3.csv("../assets/chi-t.csv", function(error, data) {
+d3.csv("../../../../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
 
   var chi_x = d3.scaleLinear()
