@@ -136,13 +136,16 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
 <input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">
 
+<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+
 <div id="chi_t_plt"></div> 
 <script>
 
-var margin = {top: 10, right: 350, bottom: 30, left: 30},
-    width = 600 - margin.left - margin.right,
-    height = 200 - margin.top - margin.bottom;
-
+var margin = {top: 20, right: 0, bottom: 30, left: 30},
+    width = 700 - margin.left - margin.right,
+    height = 200 - margin.top - margin.bottom,
+    fig_width = 300;
+    
 var chi_svg = d3.select("#chi_t_plt")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -151,7 +154,25 @@ var chi_svg = d3.select("#chi_t_plt")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-var margin = {top: 0, right: 10, bottom: 35, left: 300};
+chi_svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 60)
+  .attr("x", 225)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .text("χ")
+  .style("fill", "#348ABD").append('tspan')
+    .text('2')
+    .style('font-size', '.6rem')
+    .attr('dx', '.1em')
+    .attr('dy', '-.9em').append('tspan')
+    .text('5')
+    .style('font-size', '.6rem')
+    .attr('dx', '-.6em')
+    .attr('dy', '1.9em');
+
+var margin = {top: 0, right: 0, bottom: 35, left: 350};
     
 var t_svg = chi_svg
   .append("svg")
@@ -160,13 +181,27 @@ var t_svg = chi_svg
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
-
-d3.csv("../../../../assets/chi-t.csv", function(error, data) {
+     
+t_svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 60)
+  .attr("x", 225)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .text("t")
+  .style("fill", "#EDA137").append('tspan')
+    .text('5')
+    .style('font-size', '.6rem')
+    .attr('dx', '.1em')
+    .attr('dy', '.9em');
+    
+d3.csv("../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
 
   var chi_x = d3.scaleLinear()
             .domain([-0, 40])
-            .range([0, width]);
+            .range([0, fig_width]);
             
   chi_svg.append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -174,7 +209,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
 
   var t_x = d3.scaleLinear()
             .domain([-20, 20])
-            .range([0, width]);
+            .range([0, fig_width]);
             
   t_svg.append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -246,6 +281,15 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
           .x(function(d) { return t_x(d.t_x); })
           .y(function(d) { return t_y(d["t_" + n]); })
       );
+      
+    chi_svg.selectAll("text")
+      .selectAll('tspan')
+      .selectAll('tspan')
+      .text(n);
+      
+    t_svg.selectAll("text")
+      .selectAll('tspan')
+      .text(n);
   }
 
   d3.select("#ddof_slider").on("change", function(d) {
