@@ -216,6 +216,8 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 <div id="bin_bayes_plt"></div>
 
 <input type="range" name="n_slider" id=n_slider min="1" max="10" value="8">
+<input type="range" name="a_slider" id=a_slider min="1" max="30" value="10">
+<input type="range" name="b_slider" id=b_slider min="1" max="30" value="10">
 
 <script>
 
@@ -223,6 +225,8 @@ d3.json("../assets/beta.json", function(error, data) {
   if (error) throw error;
   var sample = 1;
   var n = 8;
+  var a = 1, b = 1;
+  var a_key = 10, b_key = 10;
   
 var margin = {top: 25, right: 0, bottom: 25, left: 25},
     width = 800 - margin.left - margin.right,
@@ -236,14 +240,8 @@ var prior_svg = d3.select("#bin_bayes_plt")
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var prior_data = [
-   {x: -0.05, y: 0},
-   {x: 0, y: 0},
-   {x: 0, y: 1},
-   {x: 1, y: 1},
-   {x: 1, y: 0},
-   {x: 1.05, y: 0}
-];
+var prior_data = [];
+updatePriorData();
 
 var x = d3.scaleLinear()
         .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
@@ -270,10 +268,11 @@ var prior_curve = prior_svg
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
+          .curve(d3.curveBasis)
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
       );
-      
+     
   prior_svg
     .append("text")
     .attr("text-anchor", "start")
@@ -392,7 +391,7 @@ var post_svg = smpl_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 55)
-    .attr("x", 207)
+    .attr("x", 217)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .attr("font-size", 10)
@@ -404,14 +403,14 @@ var post_svg = smpl_svg
         .style("stroke-dasharray", ("3, 3"))
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
-        .datum([{x: 200, y: 45}, {x: 200, y: 60}])
+        .datum([{x: 210, y: 45}, {x: 210, y: 60}])
         .attr("d",  d3.line()
           .x(function(d) { return d.x; })
           .y(function(d) { return d.y; }));
   
   post_svg.append('g')
     .selectAll("dot")
-    .data([{x: 200, y: 45}])
+    .data([{x: 210, y: 45}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -425,7 +424,7 @@ var post_svg = smpl_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 85)
-    .attr("x", 207)
+    .attr("x", 217)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .attr("font-size", 10)
@@ -437,14 +436,14 @@ var post_svg = smpl_svg
         .style("stroke-dasharray", ("3, 3"))
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
-        .datum([{x: 200, y: 75}, {x: 200, y: 90}])
+        .datum([{x: 210, y: 75}, {x: 210, y: 90}])
         .attr("d",  d3.line()
           .x(function(d) { return d.x; })
           .y(function(d) { return d.y; }));
   
   post_svg.append('g')
     .selectAll("dot")
-    .data([{x: 200, y: 75}])
+    .data([{x: 210, y: 75}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -458,7 +457,7 @@ var post_svg = smpl_svg
     .append("text")
     .attr("text-anchor", "start")
     .attr("y", 115)
-    .attr("x", 207)
+    .attr("x", 217)
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .attr("font-size", 10)
@@ -470,14 +469,14 @@ var post_svg = smpl_svg
         .style("stroke-dasharray", ("3, 3"))
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
-        .datum([{x: 200, y: 105}, {x: 200, y: 120}])
+        .datum([{x: 210, y: 105}, {x: 210, y: 120}])
         .attr("d",  d3.line()
           .x(function(d) { return d.x; })
           .y(function(d) { return d.y; }));
   
   post_svg.append('g')
     .selectAll("dot")
-    .data([{x: 200, y: 105}])
+    .data([{x: 210, y: 105}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -507,7 +506,7 @@ var post_svg = smpl_svg
       );
      
   var umvu_x = sample / n;
-  var umvu_y = Math.pow(umvu_x, sample) * Math.pow(1-umvu_x, n-sample) / data[n][sample];
+  var umvu_y = Math.pow(umvu_x, sample+a-1) * Math.pow(1-umvu_x, n-sample+b-1) / data[n][a_key][b_key][sample];
       
   var umvu_dash = post_svg.append("path")
         .attr("class", "line")
@@ -532,7 +531,7 @@ var post_svg = smpl_svg
       .attr("stroke-width", 1);
       
   var bayes_x = (sample + 1) / (n + 2);
-  var bayes_y = Math.pow(bayes_x, sample) * Math.pow(1-bayes_x, n-sample) / data[n][sample];
+  var bayes_y = Math.pow(bayes_x, sample+a-1) * Math.pow(1-bayes_x, n-sample+b-1) / data[n][a_key][b_key][sample];
     
   var bayes_dash = post_svg.append("path")
         .attr("class", "line")
@@ -557,7 +556,7 @@ var post_svg = smpl_svg
       .attr("stroke-width", 1);
       
   var minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
-  var minimax_y = Math.pow(minimax_x, sample) * Math.pow(1-minimax_x, n-sample) / data[n][sample];
+  var minimax_y = Math.pow(minimax_x, sample+a-1) * Math.pow(1-minimax_x, n-sample+b-1) / data[n][a_key][b_key][sample];
       
   var minimax_dash = post_svg.append("path")
         .attr("class", "line")
@@ -581,25 +580,61 @@ var post_svg = smpl_svg
       .attr("stroke", "#000")
       .attr("stroke-width", 1);
   
+  
+  function updatePriorData() {
+    prior_data = [];
+    prior_data.push({x: 0, y: 0});
+    prior_data.push({x: 0, y: (a == 1 ? 1 : 0) / data[0][a_key][b_key][0] });
+    
+    for (var i = 0.002; i < 1; i += 0.002) {
+  	   prior_data.push({x: i, y: Math.pow(i, a-1) * Math.pow(1-i, b-1) / data[0][a_key][b_key][0] });
+    }
+
+    prior_data.push({x: 1, y: (b == 1 ? 1 : 0) / data[0][a_key][b_key][0] });
+    prior_data.push({x: 1, y: 0});
+  }
+  
+  
+  function updatePriorCurve() {
+	  updatePriorData();
+	  
+	  prior_curve
+	    .datum(prior_data)
+	    .transition()
+	    .duration(1000)
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	  );
+  }
+  
+  
   function updatePosteriorData() {
     posterior_data = [];
     posterior_data.push({x: 0, y: 0});
+    posterior_data.push({x: 0, y: (sample < 1 - a ? 1 : 0) / data[n][a_key][b_key][sample] });
   
-    for (var i = 0; i < 1; i += 0.002) {
-  	   posterior_data.push({x: i, y: Math.pow(i, sample) * Math.pow(1-i, n-sample) / data[n][sample] });
+    for (var i = 0.002; i < 1; i += 0.002) {
+  	   posterior_data.push({x: i, y: Math.pow(i, sample+a-1) * Math.pow(1-i, n-sample+b-1) / data[n][a_key][b_key][sample] });
     }
 
-    posterior_data.push({x: 1, y: (sample < n ? 0 : 1) / data[n][sample] });
+    posterior_data.push({x: 1, y: (sample < n + b - 1 ? 0 : 1) / data[n][a_key][b_key][sample] });
     posterior_data.push({x: 1, y: 0});
         
     umvu_x = sample / n;
-    umvu_y = Math.pow(umvu_x, sample) * Math.pow(1-umvu_x, n-sample) / data[n][sample];
+    if ((umvu_x == 0 && sample < 1 - a) || (umvu_x == 1 && n - sample < 1 - b)) {
+      umvu_y = 13;
+    }
+    else {
+      umvu_y = Math.pow(umvu_x, sample+a-1) * Math.pow(1-umvu_x, n-sample+b-1) / data[n][a_key][b_key][sample];
+    }
     
-    bayes_x = (sample + 1) / (n + 2);
-    bayes_y = Math.pow(bayes_x, sample) * Math.pow(1-bayes_x, n-sample) / data[n][sample];
+    bayes_x = (sample + a) / (n + a + b);
+    bayes_y = Math.pow(bayes_x, sample+a-1) * Math.pow(1-bayes_x, n-sample+b-1) / data[n][a_key][b_key][sample];
     
     minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
-    minimax_y = Math.pow(minimax_x, sample) * Math.pow(1-minimax_x, n-sample) / data[n][sample];
+    minimax_y = Math.pow(minimax_x, sample+a-1) * Math.pow(1-minimax_x, n-sample+b-1) / data[n][a_key][b_key][sample];
   }
   
 	function updatePosteriorCurve() {
@@ -671,11 +706,27 @@ var post_svg = smpl_svg
     updateRectSample();
     updatePosteriorCurve();
   }
+  
+  function updatePrior(a_val, b_val) {
+    a_key = parseInt(a_val);
+    b_key = parseInt(b_val);
+    a = 0.1 * a_key;
+    b = 0.1 * b_key;
+    updatePriorCurve();
+    updatePosteriorCurve();
+  }
 	
+  d3.select("#a_slider").on("change", function(d) {
+    updatePrior(this.value, b_key.toString());
+  });
+  
+  d3.select("#b_slider").on("change", function(d) {
+    updatePrior(a_key.toString(), this.value);
+  });
+  
   d3.select("#n_slider").on("change", function(d) {
-    selectedValue = this.value;
-    updateN(selectedValue);
-  })
+    updateN(this.value);
+  });
 
 });
 
