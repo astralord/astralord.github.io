@@ -190,7 +190,7 @@ Note that for $a = b = 1$ we have $\theta \sim \mathcal{U}(0, 1)$. Now posterior
 
 $$  f(\vartheta | x)= \frac{\vartheta^{x+a-1}(1-\vartheta)^{n-x+b-1}1_{[0,1](\vartheta)}}{B(x+a,n-x+b)}. $$
 
-We pretend that we know (or it's not hard to show) that for random variable $Z \sim B(p, q)$
+We use our prior knowledge that for random variable $Z \sim B(p, q)$
 
 $$ \mathbb{E}[Z] = \frac{p}{p+q} \quad \text{and} \quad \operatorname{Var}(Z)=\frac{pq}{(p+q)^2(p+q+1)}. $$
 
@@ -219,7 +219,7 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 
 <script>
 
-d3.json("../../../../assets/beta.json", function(error, data) {
+d3.json("../assets/beta.json", function(error, data) {
   if (error) throw error;
   var sample = 1;
   var n = 8;
@@ -583,21 +583,15 @@ var post_svg = smpl_svg
   
   function updatePosteriorData() {
     posterior_data = [];
-    for (var i = -0.05; i < 0; i += 0.01) {
-      posterior_data.push({x: i, y: 0});
-    }
     posterior_data.push({x: 0, y: 0});
   
-    for (var i = 0; i < 1; i += 0.01) {
+    for (var i = 0; i < 1; i += 0.002) {
   	   posterior_data.push({x: i, y: Math.pow(i, sample) * Math.pow(1-i, n-sample) / data[n][sample] });
     }
 
     posterior_data.push({x: 1, y: (sample < n ? 0 : 1) / data[n][sample] });
-	
-    for (var i = 1; i <= 1.05; i += 0.01) {
-	   posterior_data.push({x: i, y: 0});
-    }
-    
+    posterior_data.push({x: 1, y: 0});
+        
     umvu_x = sample / n;
     umvu_y = Math.pow(umvu_x, sample) * Math.pow(1-umvu_x, n-sample) / data[n][sample];
     
