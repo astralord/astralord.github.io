@@ -133,7 +133,203 @@ For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can 
 
 Otherwise, $g_{\mu_0, \tau^2}(x)$ $\approx \mu_0$.
 
-HERE: JS EXAMPLE FOR NORMAL
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+
+<div id="gauss_bayes_plt"></div>
+
+<input type="range" name="mu_slider" id=mu_slider min="-3" max="3" value="0">
+<input type="range" name="sigma_slider" id=sigma_slider min="1" max="7" value="3">
+<input type="range" name="mu_0_slider" id=mu_0_slider min="-3" max="3" value="0">
+<input type="range" name="tau_slider" id=tau_slider min="1" max="7" value="1">
+
+<script>
+var mu = 0,
+    sigma = 1,
+    mu_0 = 0,
+    tau = 1,
+    avg = 0,
+    n = 5;
+  
+function randn_bm() {
+    var u = 0, v = 0;
+    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
+
+var margin = {top: 25, right: 0, bottom: 25, left: 25},
+    width = 600 - margin.left - margin.right,
+    height = 200 - margin.top - margin.bottom;
+    
+var svg = d3.select("#gauss_bayes_plt")
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var prior_data = [], posterior_data = [];
+updatePriorData();
+updatePosteriorData();
+
+var x = d3.scaleLinear()
+        .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
+        .range([0, width]);
+        
+svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x).ticks(4));
+
+var y = d3.scaleLinear()
+        .range([height, 0])
+        .domain([0, 1]);
+
+svg.append("g").call(d3.axisLeft(y).ticks(3));
+  
+function updatePriorData() {
+  prior_data = [{x: -7, y: 0}];
+  for (var i = -7; i < 7; i += 0.01) {
+      prior_data.push({x: i, y: Math.exp(-0.5 * ((i - mu_0) / tau) ** 2) / (tau * Math.sqrt(2 * Math.PI)) });
+  }
+  prior_data.push({x: 7, y: 0});
+}
+
+function updatePosteriorData() {
+  posterior_data = [{x: -7, y: 0}];
+  g = avg / (1 + sigma ** 2 / (n * tau ** 2)) + mu_0 / (1 + (n * tau ** 2) / sigma ** 2);
+  post_std = 1 / Math.sqrt(n / sigma ** 2 + 1 / tau ** 2);
+  for (var i = -7; i < 7; i += 0.01) {
+      posterior_data.push({x: i, y: Math.exp(-0.5 * ((i - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI)) });
+  }
+  posterior_data.push({x: 7, y: 0});
+}
+
+function updatePriorCurve() {
+    updatePriorData();
+    prior_curve
+      .datum(prior_data)
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+      );
+}
+
+function updatePosteriorCurve() {
+    updatePosteriorData();
+    posterior_curve
+      .datum(posterior_data)
+      .transition()
+      .duration(1000)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+      );
+}
+
+var prior_curve = svg
+    .append('g')
+    .append("path")
+      .datum(prior_data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+      
+var posterior_curve = svg
+    .append('g')
+    .append("path")
+      .datum(posterior_data)
+      .attr("fill", "#EDA137")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+
+svg.append("path")
+   .attr("stroke", "#348ABD")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: 470, y: -5}, {x: 495, y: -5}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: 470, y: -7}, {x: 495, y: -7}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+      
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 0)
+  .attr("x", 500)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("Prior")
+  .style("fill", "#348ABD");
+ 
+svg.append("path")
+   .attr("stroke", "#EDA137")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: 470, y: 15}, {x: 495, y: 15}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: 470, y: 13}, {x: 495, y: 13}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+      
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 20)
+  .attr("x", 500)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("Posterior")
+  .style("fill", "#EDA137");
+    
+d3.select("#mu_0_slider").on("change", function(d) {
+    mu_0 = parseInt(this.value);
+    updatePriorCurve();
+    updatePosteriorCurve();
+});
+
+d3.select("#tau_slider").on("change", function(d) {
+    tau = parseInt(this.value);
+    updatePriorCurve();
+    updatePosteriorCurve();
+});
+
+</script>
 
 ### Minimax estimator
 
@@ -209,10 +405,6 @@ $$  R(\vartheta, g_{\hat{a}, \hat{b}})=\frac{1}{4(\sqrt{n} + 1)^2}. $$
 Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat{b}}(x) = \frac{x+\sqrt{n}/2}{n+\sqrt{n}}$ is minimax and $B(\hat{a}, \hat{b})$ is least favorable prior.
 
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
-
-<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
-
 <div id="bin_bayes_plt"></div>
 
 <input type="range" name="n_slider" id=n_slider min="1" max="10" value="8">
@@ -221,7 +413,7 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 
 <script>
 
-d3.json("../assets/beta.json", function(error, data) {
+d3.json("../../../../assets/beta.json", function(error, data) {
   if (error) throw error;
   var sample = 1;
   var n = 8;
