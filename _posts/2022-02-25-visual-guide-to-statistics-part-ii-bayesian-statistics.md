@@ -189,7 +189,6 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
 #sample-button:hover {
   background-color: #696969;
-  opacity: 1.0;
 }
 
 #n-text {
@@ -227,7 +226,7 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 25, right: 0, bottom: 25, left: 25},
+var margin = {top: 50, right: 0, bottom: 25, left: 25},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom,
     fig_height = 200;
