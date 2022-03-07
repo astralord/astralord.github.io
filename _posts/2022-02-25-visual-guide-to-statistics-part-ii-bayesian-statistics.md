@@ -180,11 +180,11 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
   border: none;
   color: white;
   margin: 0;
-  padding: 0 12px;
+  padding: 0 1px;
   width: 60px;
-  height: 30px;
+  height: 25px;
   font-family: Arvo;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 #sample-button:hover {
@@ -194,12 +194,12 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
 #n-text {
   font-family: Arvo;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 #n-num {
   font-family: Arvo;
-  font-size: 10px;
+  font-size: 11px;
 }
     
 </style>
@@ -227,7 +227,7 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 25, right: 0, bottom: 25, left: 50},
+var margin = {top: 25, right: 0, bottom: 25, left: 25},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom,
     fig_height = 200;
@@ -725,11 +725,11 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
   border: none;
   color: white;
   margin: 0;
-  padding: 0 12px;
+  padding: 0 1px;
   width: 90px;
-  height: 30px;
+  height: 25px;
   font-family: Arvo;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 #minimax-button:hover {
