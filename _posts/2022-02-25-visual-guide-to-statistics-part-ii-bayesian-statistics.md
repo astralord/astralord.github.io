@@ -172,8 +172,8 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 }
 
 #sample-button {
-  top: 140px;
-  left: 50px;
+  top: 15px;
+  left: 15px;
   background: #65AD69;
   padding-right: 26px;
   border-radius: 3px;
@@ -184,6 +184,7 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
   width: 60px;
   height: 30px;
   font-family: Arvo;
+  font-size: 10px;
 }
 
 #sample-button:hover {
@@ -193,10 +194,12 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
 #n-text {
   font-family: Arvo;
+  font-size: 10px;
 }
 
 #n-num {
   font-family: Arvo;
+  font-size: 10px;
 }
     
 </style>
@@ -712,8 +715,32 @@ $$  R(\vartheta, g_{\hat{a}, \hat{b}})=\frac{1}{4(\sqrt{n} + 1)^2}. $$
 
 Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat{b}}(x) = \frac{x+\sqrt{n}/2}{n+\sqrt{n}}$ is minimax and $B(\hat{a}, \hat{b})$ is least favorable prior.
 
+<style>
+  #minimax-button {
+  top: 15px;
+  left: 15px;
+  background: #F5CC18;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 12px;
+  width: 90px;
+  height: 30px;
+  font-family: Arvo;
+  font-size: 10px;
+}
 
-<div id="bin_bayes_plt"></div>
+#minimax-button:hover {
+  background-color: #696969;
+}
+</style>
+
+
+<div id="bin_bayes_plt">
+  <button id="minimax-button">Least fav. prior</button>
+</div>
 
 <input type="range" name="n_slider" id=n_slider min="1" max="10" value="8">
 <input type="range" name="a_slider" id=a_slider min="1" max="30" value="10">
