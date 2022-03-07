@@ -588,9 +588,9 @@ Here are some examples:
  
 Denoting $Q(\vartheta) = (Q_1(\vartheta), \dots, Q_k(\vartheta))^T$ we get transformed parametric space $ \Theta^* =  Q(\Theta) $, which we call **natural parametric space**. In examples above
 
-* $X \sim \operatorname{Bin}(n, \vartheta)$: $\Theta^* = \{ \log \frac{\vartheta}{1-\vartheta} \mid \vartheta \in (0, 1) \} = \mathbb{R}$.
+* $X \sim \operatorname{Bin}(n, \vartheta)$: $\Theta^* = \lbrace \log \frac{\vartheta}{1-\vartheta} \mid \vartheta \in (0, 1) \rbrace = \mathbb{R}$.
 * $X \sim \mathcal{N}(\mu, \sigma^2)$: $\Theta^* = \big\lbrace \big( \frac{\mu}{\sigma^2}, -\frac{1}{\sigma^2} \big) \mid \mu \in \mathbb{R}, \sigma^2 \in \mathbb{R}^+ \big\rbrace = \mathbb{R} \times \mathbb{R}^-.$
-* $X \sim \operatorname{Poisson}(\lambda)$: $\Theta^* = \{ \log \lambda \mid \lambda \in \mathbb{R}^+ \} = \mathbb{R}$.
+* $X \sim \operatorname{Poisson}(\lambda)$: $\Theta^* = \lbrace \log \lambda \mid \lambda \in \mathbb{R}^+ \rbrace = \mathbb{R}$.
 
 It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with joint density
 

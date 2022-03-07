@@ -115,7 +115,7 @@ $$
 
 Let's take another example: $X_1, \dots X_n$ i.i.d. $\sim P_\mu^1 = \mathcal{N}(\mu, \sigma^2)$ with $\sigma^2$ known in advance. Take for $\mu$ prior distribution with gaussian density
 
-$$ h(\mu) = \frac{1}{\sqrt{2 \pi \tau^2}} \exp \Big( -\frac{(\mu-\mu_0)^2}{2\tau^2} \Big). $$
+$$ h(\mu) = \frac{1}{\sqrt{2 \pi \tau^2}} \exp \Big( -\frac{(\mu-\nu)^2}{2\tau^2} \Big). $$
 
 Taking density for $X$
 
@@ -123,44 +123,78 @@ $$ f(x|\mu)=\Big( \frac{1}{\sqrt{2\pi \sigma^2}}\Big)^n \exp \Big( \frac{1}{2\si
 
 we get posterior distribution
 
-$$ Q^{\mu|X=x} \sim \mathcal{N} \Big( g_{\mu_0, \tau^2}(x), \Big( \frac{n}{\sigma^2} + \frac{1}{\tau^2}\Big)^{-1}  \Big), $$
+$$ Q^{\mu|X=x} \sim \mathcal{N} \Big( g_{\nu, \tau^2}(x), \Big( \frac{n}{\sigma^2} + \frac{1}{\tau^2}\Big)^{-1}  \Big), $$
 
 where
 
-$$ g_{\mu_0, \tau^2}(x)=\Big( 1 + \frac{\sigma^2}{n \tau^2} \Big)^{-1} \overline{x}_n+\Big( \frac{n \tau^2}{\sigma^2}+1 \Big)^{-1} \mu_0. $$
+$$ g_{\nu, \tau^2}(x)=\Big( 1 + \frac{\sigma^2}{n \tau^2} \Big)^{-1} \overline{x}_n+\Big( \frac{n \tau^2}{\sigma^2}+1 \Big)^{-1} \nu. $$
 
-For quadratic loss function $g_{\mu_0, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\mu_0, \tau^2}(x) \approx \overline{x}_n$. 
+For quadratic loss function $g_{\nu, \tau^2}(x)$ is a Bayes estimator. It can be interpreted as following: for large values of $\tau$ (not enough prior information) estimator $g_{\nu, \tau^2}(x) \approx \overline{x}_n$. 
 
-Otherwise, $g_{\mu_0, \tau^2}(x)$ $\approx \mu_0$.
+Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
+
+<style>
+
+.ticks {
+  font: 10px sans-serif;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 7px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 5px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 1px;
+}
+
+</style>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <div id="gauss_bayes_plt"></div>
 
-<input type="range" name="mu_slider" id=mu_slider min="-3" max="3" value="0">
-<input type="range" name="sigma_slider" id=sigma_slider min="1" max="7" value="3">
-<input type="range" name="mu_0_slider" id=mu_0_slider min="-3" max="3" value="0">
-<input type="range" name="tau_slider" id=tau_slider min="1" max="7" value="1">
-
 <script>
-var mu = 0,
-    sigma = 1,
-    mu_0 = 0,
-    tau = 1,
+var mu = -3,
+    sigma = 0.5,
+    nu = -3,
+    tau = 0.5,
     avg = 0,
     n = 5;
   
 function randn_bm() {
     var u = 0, v = 0;
-    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(u === 0) u = Math.random();
     while(v === 0) v = Math.random();
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 25, right: 0, bottom: 25, left: 25},
+var margin = {top: 25, right: 0, bottom: 25, left: 50},
     width = 600 - margin.left - margin.right,
-    height = 200 - margin.top - margin.bottom;
+    height = 400 - margin.top - margin.bottom,
+    fig_height = 200;
     
 var svg = d3.select("#gauss_bayes_plt")
   .append("svg")
@@ -178,26 +212,28 @@ var x = d3.scaleLinear()
         .range([0, width]);
         
 svg.append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(d3.axisBottom(x).ticks(4));
+  .attr("transform", "translate(0," + fig_height + ")")
+  .call(d3.axisBottom(x).ticks(8));
 
 var y = d3.scaleLinear()
-        .range([height, 0])
-        .domain([0, 1]);
+        .range([fig_height, 0])
+        .domain([0,
+                 d3.max(posterior_data, function(d) { return d.y }) ]);
 
-svg.append("g").call(d3.axisLeft(y).ticks(3));
-  
+var yAxis = svg.append("g").call(d3.axisLeft(y).ticks(3));
+
+
 function updatePriorData() {
   prior_data = [{x: -7, y: 0}];
   for (var i = -7; i < 7; i += 0.01) {
-      prior_data.push({x: i, y: Math.exp(-0.5 * ((i - mu_0) / tau) ** 2) / (tau * Math.sqrt(2 * Math.PI)) });
+      prior_data.push({x: i, y: Math.exp(-0.5 * ((i - nu) / tau) ** 2) / (tau * Math.sqrt(2 * Math.PI)) });
   }
   prior_data.push({x: 7, y: 0});
 }
 
 function updatePosteriorData() {
   posterior_data = [{x: -7, y: 0}];
-  g = avg / (1 + sigma ** 2 / (n * tau ** 2)) + mu_0 / (1 + (n * tau ** 2) / sigma ** 2);
+  g = avg / (1 + sigma ** 2 / (n * tau ** 2)) + nu / (1 + (n * tau ** 2) / sigma ** 2);
   post_std = 1 / Math.sqrt(n / sigma ** 2 + 1 / tau ** 2);
   for (var i = -7; i < 7; i += 0.01) {
       posterior_data.push({x: i, y: Math.exp(-0.5 * ((i - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI)) });
@@ -229,6 +265,13 @@ function updatePosteriorCurve() {
         .x(function(d) { return x(d.x); })
         .y(function(d) { return y(d.y); })
       );
+     
+     y.domain([0,
+               d3.max(posterior_data, function(d) { return d.y }) ]);
+     yAxis
+        .transition()
+        .duration(1000)
+        .call(d3.axisLeft(y));
 }
 
 var prior_curve = svg
@@ -267,7 +310,7 @@ svg.append("path")
    .attr("stroke", "#348ABD")
    .attr("stroke-width", 4)
    .attr("opacity", ".8")
-   .datum([{x: 470, y: -5}, {x: 495, y: -5}])
+   .datum([{x: 420, y: -5}, {x: 445, y: -5}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -275,7 +318,7 @@ svg.append("path")
 svg.append("path")
    .attr("stroke", "#000")
    .attr("stroke-width", 1)
-   .datum([{x: 470, y: -7}, {x: 495, y: -7}])
+   .datum([{x: 420, y: -7}, {x: 445, y: -7}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -284,7 +327,7 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 0)
-  .attr("x", 500)
+  .attr("x", 450)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Prior")
@@ -294,7 +337,7 @@ svg.append("path")
    .attr("stroke", "#EDA137")
    .attr("stroke-width", 4)
    .attr("opacity", ".8")
-   .datum([{x: 470, y: 15}, {x: 495, y: 15}])
+   .datum([{x: 420, y: 15}, {x: 445, y: 15}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -302,7 +345,7 @@ svg.append("path")
 svg.append("path")
    .attr("stroke", "#000")
    .attr("stroke-width", 1)
-   .datum([{x: 470, y: 13}, {x: 495, y: 13}])
+   .datum([{x: 420, y: 13}, {x: 445, y: 13}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -311,25 +354,95 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 20)
-  .attr("x", 500)
+  .attr("x", 450)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Posterior")
   .style("fill", "#EDA137");
-    
-d3.select("#mu_0_slider").on("change", function(d) {
-    mu_0 = parseInt(this.value);
-    updatePriorCurve();
-    updatePosteriorCurve();
-});
 
-d3.select("#tau_slider").on("change", function(d) {
-    tau = parseInt(this.value);
-    updatePriorCurve();
-    updatePosteriorCurve();
-});
+var mu_x = d3.scaleLinear()
+    .domain([-3, 3])
+    .range([0, width / 3])
+    .clamp(true);
+    
+var sigma_x = d3.scaleLinear()
+    .domain([0.5, 1.5])
+    .range([0, width / 3])
+    .clamp(true);
+
+var nu_x = d3.scaleLinear()
+    .domain([-3, 3])
+    .range([0, width / 3])
+    .clamp(true);
+    
+var tau_x = d3.scaleLinear()
+    .domain([0.5, 3])
+    .range([0, width / 3])
+    .clamp(true);
+
+function createSlider(parameter_update, x, loc_x, loc_y, letter, color) {
+    var slider = svg.append("g")
+      .attr("class", "slider")
+      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
+      
+	slider.append("line")
+	    .attr("class", "track")
+	    .attr("x1", x.range()[0])
+	    .attr("x2", x.range()[1])
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-inset")
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-overlay")
+	    .call(d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() { 
+	          handle.attr("cx", x(x.invert(d3.event.x)));        
+	          parameter_update(x.invert(d3.event.x));
+	          updatePriorCurve();
+	          updatePosteriorCurve();
+	         }));
+
+	slider.insert("g", ".track-overlay")
+    .attr("class", "ticks")
+    .attr("transform", "translate(0," + 18 + ")")
+  .selectAll("text")
+  .data(x.ticks(6))
+  .enter().append("text")
+    .attr("x", x)
+    .attr("text-anchor", "middle")
+    .attr("font-family", "Arvo")
+    .text(function(d) { return d; });
+
+    var handle = slider.insert("circle", ".track-overlay")
+      .attr("class", "handle")
+      .attr("r", 7);
+    
+	svg
+	  .append("text")
+	  .attr("text-anchor", "middle")
+	  .attr("y", loc_y + 3)
+	  .attr("x", loc_x - 21)
+	  .attr("font-family", "Arvo")
+	  .attr("font-size", 17)
+	  .text(letter)
+	  .style("fill", color); 
+	  
+	 return slider;
+}
+
+function updateNu(x) { nu = x; }
+function updateTau(x) { tau = x; }
+function updateMu(x) { mu = x; }
+function updateSigma(x) { sigma = x; }
+
+createSlider(updateMu, mu_x, margin.left, 0.75 * height, "μ", "#65AD69");
+createSlider(updateSigma, sigma_x, margin.left, 0.9 * height, "σ", "#65AD69");
+createSlider(updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", "#348ABD");
+createSlider(updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD");
+
 
 </script>
+
 
 ### Minimax estimator
 
