@@ -211,11 +211,11 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 </div>
 
 <script>
-var mu = -3,
-    sigma = 0.5,
-    nu = -3,
-    tau = 0.5,
-    avg = -3,
+var mu = 1,
+    sigma = 2,
+    nu = -1,
+    tau = 1,
+    avg = 0,
     n = 10;
     sample_n = 10;
   
@@ -227,7 +227,7 @@ function randn_bm() {
 }
 
 var margin = {top: 25, right: 0, bottom: 25, left: 25},
-    width = 600 - margin.left - margin.right,
+    width = 700 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom,
     fig_height = 200;
     
@@ -421,12 +421,14 @@ var mode_dot = svg.append('g')
     .style("fill", "#348ABD")
     .attr("stroke", "#000")
     .attr("stroke-width", 1);
-      
+
+var labels_x = 550;
+
 svg.append("path")
    .attr("stroke", "#348ABD")
    .attr("stroke-width", 4)
    .attr("opacity", ".8")
-   .datum([{x: 420, y: -5}, {x: 445, y: -5}])
+   .datum([{x: labels_x, y: -5}, {x: labels_x + 25, y: -5}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -434,7 +436,7 @@ svg.append("path")
 svg.append("path")
    .attr("stroke", "#000")
    .attr("stroke-width", 1)
-   .datum([{x: 420, y: -7}, {x: 445, y: -7}])
+   .datum([{x: labels_x, y: -7}, {x: labels_x + 25, y: -7}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -443,7 +445,7 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 0)
-  .attr("x", 450)
+  .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Prior")
@@ -453,7 +455,7 @@ svg.append("path")
    .attr("stroke", "#EDA137")
    .attr("stroke-width", 4)
    .attr("opacity", ".8")
-   .datum([{x: 420, y: 15}, {x: 445, y: 15}])
+   .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -461,7 +463,7 @@ svg.append("path")
 svg.append("path")
    .attr("stroke", "#000")
    .attr("stroke-width", 1)
-   .datum([{x: 420, y: 13}, {x: 445, y: 13}])
+   .datum([{x: labels_x, y: 13}, {x: labels_x + 25, y: 13}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -470,7 +472,7 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 20)
-  .attr("x", 450)
+  .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Posterior")
@@ -480,7 +482,7 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 40)
-  .attr("x", 450)
+  .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 11)
@@ -492,14 +494,14 @@ svg.append("path")
     .style("stroke-dasharray", ("3, 3"))
     .attr("stroke", "#000")
     .attr("stroke-width", 1)
-    .datum([{x: 440, y: 30}, {x: 440, y: 43}])
+    .datum([{x: labels_x + 20, y: 30}, {x: labels_x + 20, y: 43}])
     .attr("d",  d3.line()
       .x(function(d) { return d.x; })
       .y(function(d) { return d.y; }));
   
 svg.append('g')
     .selectAll("dot")
-    .data([{x: 440, y: 30}])
+    .data([{x: labels_x + 20, y: 30}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -513,7 +515,7 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 60)
-  .attr("x", 450)
+  .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 12)
@@ -525,14 +527,14 @@ svg.append("path")
     .style("stroke-dasharray", ("3, 3"))
     .attr("stroke", "#000")
     .attr("stroke-width", 1)
-    .datum([{x: 440, y: 50}, {x: 440, y: 63}])
+    .datum([{x: labels_x + 20, y: 50}, {x: labels_x + 20, y: 63}])
     .attr("d",  d3.line()
       .x(function(d) { return d.x; })
       .y(function(d) { return d.y; }));
   
 svg.append('g')
     .selectAll("dot")
-    .data([{x: 440, y: 50}])
+    .data([{x: labels_x + 20, y: 50}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -548,7 +550,7 @@ var mu_x = d3.scaleLinear()
     .clamp(true);
     
 var sigma_x = d3.scaleLinear()
-    .domain([0.5, 1.5])
+    .domain([0.1, 3])
     .range([0, width / 3])
     .clamp(true);
 
@@ -558,16 +560,24 @@ var nu_x = d3.scaleLinear()
     .clamp(true);
     
 var tau_x = d3.scaleLinear()
-    .domain([0.5, 3])
+    .domain([0.1, 3])
     .range([0, width / 3])
     .clamp(true);
 
-function createSlider(parameter_update, x, loc_x, loc_y, letter, color) {
+function createSlider(parameter_update, x, loc_x, loc_y, letter, color, init_val) {
     var slider = svg.append("g")
       .attr("class", "slider")
       .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
-      
-	slider.append("line")
+    
+    var drag = d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() { 
+	          handle.attr("cx", x(x.invert(d3.event.x)));  
+	          parameter_update(x.invert(d3.event.x));
+	          updateCurves();
+	         });
+	         
+    slider.append("line")
 	    .attr("class", "track")
 	    .attr("x1", x.range()[0])
 	    .attr("x2", x.range()[1])
@@ -575,13 +585,7 @@ function createSlider(parameter_update, x, loc_x, loc_y, letter, color) {
 	    .attr("class", "track-inset")
 	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
 	    .attr("class", "track-overlay")
-	    .call(d3.drag()
-	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { 
-	          handle.attr("cx", x(x.invert(d3.event.x)));  
-	          parameter_update(x.invert(d3.event.x));
-	          updateCurves();
-	         }));
+	    .call(drag);
 
 	slider.insert("g", ".track-overlay")
     .attr("class", "ticks")
@@ -596,7 +600,7 @@ function createSlider(parameter_update, x, loc_x, loc_y, letter, color) {
 
    var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
-      .attr("r", 7);
+      .attr("r", 6).attr("cx", x(init_val));
       
 	svg
 	  .append("text")
@@ -606,9 +610,9 @@ function createSlider(parameter_update, x, loc_x, loc_y, letter, color) {
 	  .attr("font-family", "Arvo")
 	  .attr("font-size", 17)
 	  .text(letter)
-	  .style("fill", color); 
-	  
-	 return slider;
+	  .style("fill", color);
+	  	  
+	return slider;
 }
 
 function updateNu(x) { nu = x; }
@@ -616,10 +620,10 @@ function updateTau(x) { tau = x; }
 function updateMu(x) { mu = x; }
 function updateSigma(x) { sigma = x; }
 
-createSlider(updateMu, mu_x, margin.left, 0.75 * height, "μ", "#65AD69");
-createSlider(updateSigma, sigma_x, margin.left, 0.9 * height, "σ", "#65AD69");
-createSlider(updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", "#348ABD");
-createSlider(updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD");
+createSlider(updateMu, mu_x, margin.left, 0.75 * height, "μ", "#65AD69", mu);
+createSlider(updateSigma, sigma_x, margin.left, 0.9 * height, "σ", "#65AD69", sigma);
+createSlider(updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", "#348ABD", nu);
+createSlider(updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD", tau);
 
 d3.select("#n-num").on("input", function() {
     sample_n = this.value;
