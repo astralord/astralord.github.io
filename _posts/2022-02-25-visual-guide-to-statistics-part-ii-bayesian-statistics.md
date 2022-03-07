@@ -133,11 +133,12 @@ For quadratic loss function $g_{\nu, \tau^2}(x)$ is a Bayes estimator. It can be
 
 Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
+<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <style>
 
 .ticks {
-  font: 10px sans-serif;
+  font: 10px arvo;
 }
 
 .track,
@@ -170,19 +171,51 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
   stroke-width: 1px;
 }
 
+#sample-button {
+  top: 140px;
+  left: 50px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 12px;
+  width: 60px;
+  height: 30px;
+  font-family: Arvo;
+}
+
+#sample-button:hover {
+  background-color: #696969;
+  opacity: 1.0;
+}
+
+#n-text {
+  font-family: Arvo;
+}
+
+#n-num {
+  font-family: Arvo;
+}
+    
 </style>
 <script src="https://d3js.org/d3.v4.min.js"></script>
-<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
-<div id="gauss_bayes_plt"></div>
+<div id="gauss_bayes_plt">
+  <button id="sample-button">Sample</button>
+  <label id="n-text">n:</label>
+  <input type="number" min="1" max="100" step="1" value="10" id="n-num">
+</div>
 
 <script>
 var mu = -3,
     sigma = 0.5,
     nu = -3,
     tau = 0.5,
-    avg = 0,
-    n = 5;
+    avg = -3,
+    n = 10;
+    sample_n = 10;
   
 function randn_bm() {
     var u = 0, v = 0;
@@ -204,16 +237,18 @@ var svg = d3.select("#gauss_bayes_plt")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 var prior_data = [], posterior_data = [];
-updatePriorData();
-updatePosteriorData();
+updateData();
 
 var x = d3.scaleLinear()
         .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
         .range([0, width]);
         
-svg.append("g")
+var xAxis = svg.append("g")
   .attr("transform", "translate(0," + fig_height + ")")
   .call(d3.axisBottom(x).ticks(8));
+ 
+xAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
 
 var y = d3.scaleLinear()
         .range([fig_height, 0])
@@ -221,17 +256,18 @@ var y = d3.scaleLinear()
                  d3.max(posterior_data, function(d) { return d.y }) ]);
 
 var yAxis = svg.append("g").call(d3.axisLeft(y).ticks(3));
+yAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
 
+var g, post_std, avg_y, mode_y;
 
-function updatePriorData() {
+function updateData() {
   prior_data = [{x: -7, y: 0}];
   for (var i = -7; i < 7; i += 0.01) {
       prior_data.push({x: i, y: Math.exp(-0.5 * ((i - nu) / tau) ** 2) / (tau * Math.sqrt(2 * Math.PI)) });
   }
   prior_data.push({x: 7, y: 0});
-}
 
-function updatePosteriorData() {
   posterior_data = [{x: -7, y: 0}];
   g = avg / (1 + sigma ** 2 / (n * tau ** 2)) + nu / (1 + (n * tau ** 2) / sigma ** 2);
   post_std = 1 / Math.sqrt(n / sigma ** 2 + 1 / tau ** 2);
@@ -239,10 +275,24 @@ function updatePosteriorData() {
       posterior_data.push({x: i, y: Math.exp(-0.5 * ((i - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI)) });
   }
   posterior_data.push({x: 7, y: 0});
+  
+  avg_y = Math.exp(-0.5 * ((avg - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI));
+  
+  mode_y = 1 / (post_std * Math.sqrt(2 * Math.PI));
 }
 
-function updatePriorCurve() {
-    updatePriorData();
+function updateCurves() {
+    updateData();
+     
+    y.domain([0,
+               d3.max(posterior_data, function(d) { return d.y }) ]);
+    yAxis
+        .transition()
+        .duration(1000)
+        .call(d3.axisLeft(y).ticks(3))
+        .selectAll(".tick text")
+        .attr("font-family", "Arvo");
+    
     prior_curve
       .datum(prior_data)
       .transition()
@@ -252,10 +302,7 @@ function updatePriorCurve() {
         .x(function(d) { return x(d.x); })
         .y(function(d) { return y(d.y); })
       );
-}
-
-function updatePosteriorCurve() {
-    updatePosteriorData();
+      
     posterior_curve
       .datum(posterior_data)
       .transition()
@@ -265,13 +312,36 @@ function updatePosteriorCurve() {
         .x(function(d) { return x(d.x); })
         .y(function(d) { return y(d.y); })
       );
-     
-     y.domain([0,
-               d3.max(posterior_data, function(d) { return d.y }) ]);
-     yAxis
-        .transition()
-        .duration(1000)
-        .call(d3.axisLeft(y));
+      
+	 avg_dash.datum([{x: avg, y: 0}, {x: avg, y: avg_y}])
+       .transition()
+	    .duration(1000)
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	    );
+	    
+	 avg_dot
+       .transition()
+	    .duration(1000)
+       .attr("cx", function (d) { return x(avg); } )
+       .attr("cy", function (d) { return y(avg_y); } );
+       
+	 mode_dash.datum([{x: g, y: 0}, {x: g, y: mode_y}])
+       .transition()
+	    .duration(1000)
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	    );
+	    
+	 mode_dot
+       .transition()
+	    .duration(1000)
+       .attr("cx", function (d) { return x(g); } )
+       .attr("cy", function (d) { return y(mode_y); } );
 }
 
 var prior_curve = svg
@@ -305,7 +375,51 @@ var posterior_curve = svg
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
       );
+  
+var avg_dash = svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: avg, y: avg_y}, {x: avg, y: 0}])
+    .attr("d",  d3.line()
+      .x(function(d) { return x(d.x); })
+      .y(function(d) { return y(d.y); }));
+      
+var avg_dot = svg.append('g')
+    .selectAll("dot")
+    .data([{x: avg, y: avg_y}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return x(d.x); } )
+      .attr("cy", function (d) { return y(d.y); } )
+      .attr("r", 3)
+      .style("fill", "#E86456")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
 
+var mode_dash = svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: g, y: mode_y}, {x: g, y: 0}])
+    .attr("d",  d3.line()
+      .x(function(d) { return x(d.x); })
+      .y(function(d) { return y(d.y); }));
+      
+var mode_dot = svg.append('g')
+  .selectAll("dot")
+  .data([{x: g, y: mode_y}])
+  .enter()
+  .append("circle")
+    .attr("cx", function (d) { return x(d.x); } )
+    .attr("cy", function (d) { return y(d.y); } )
+    .attr("r", 3)
+    .style("fill", "#348ABD")
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1);
+      
 svg.append("path")
    .attr("stroke", "#348ABD")
    .attr("stroke-width", 4)
@@ -360,6 +474,72 @@ svg
   .text("Posterior")
   .style("fill", "#EDA137");
 
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 40)
+  .attr("x", 450)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 11)
+  .text("UMVU")
+  .style("fill", "#E86456");
+      
+svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: 440, y: 30}, {x: 440, y: 43}])
+    .attr("d",  d3.line()
+      .x(function(d) { return d.x; })
+      .y(function(d) { return d.y; }));
+  
+svg.append('g')
+    .selectAll("dot")
+    .data([{x: 440, y: 30}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return d.x; } )
+      .attr("cy", function (d) { return d.y; } )
+      .attr("r", 3)
+      .style("fill", "#E86456")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+      
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 60)
+  .attr("x", 450)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .text("Bayes")
+  .style("fill", "#348ABD");
+      
+svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: 440, y: 50}, {x: 440, y: 63}])
+    .attr("d",  d3.line()
+      .x(function(d) { return d.x; })
+      .y(function(d) { return d.y; }));
+  
+svg.append('g')
+    .selectAll("dot")
+    .data([{x: 440, y: 50}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return d.x; } )
+      .attr("cy", function (d) { return d.y; } )
+      .attr("r", 3)
+      .style("fill", "#348ABD")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+
 var mu_x = d3.scaleLinear()
     .domain([-3, 3])
     .range([0, width / 3])
@@ -396,10 +576,9 @@ function createSlider(parameter_update, x, loc_x, loc_y, letter, color) {
 	    .call(d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
 	        .on("start drag", function() { 
-	          handle.attr("cx", x(x.invert(d3.event.x)));        
+	          handle.attr("cx", x(x.invert(d3.event.x)));  
 	          parameter_update(x.invert(d3.event.x));
-	          updatePriorCurve();
-	          updatePosteriorCurve();
+	          updateCurves();
 	         }));
 
 	slider.insert("g", ".track-overlay")
@@ -413,10 +592,10 @@ function createSlider(parameter_update, x, loc_x, loc_y, letter, color) {
     .attr("font-family", "Arvo")
     .text(function(d) { return d; });
 
-    var handle = slider.insert("circle", ".track-overlay")
+   var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
       .attr("r", 7);
-    
+      
 	svg
 	  .append("text")
 	  .attr("text-anchor", "middle")
@@ -440,6 +619,22 @@ createSlider(updateSigma, sigma_x, margin.left, 0.9 * height, "σ", "#65AD69");
 createSlider(updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", "#348ABD");
 createSlider(updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD");
 
+d3.select("#n-num").on("input", function() {
+    sample_n = this.value;
+});
+
+var sampleButton = d3.select("#sample-button");
+sampleButton
+    .on("click", function() {
+    n = sample_n;
+    avg = 0;
+    for (var i = 0; i <= n; i++) {
+      avg += randn_bm();
+    }
+    avg /= n;
+    avg = mu + sigma * avg;
+    updateCurves();
+});
 
 </script>
 
