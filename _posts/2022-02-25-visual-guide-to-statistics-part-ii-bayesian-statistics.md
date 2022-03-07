@@ -204,10 +204,10 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 </style>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
+<button id="sample-button">Sample</button>
+<label id="n-text">n:</label>
+<input type="number" min="1" max="100" step="1" value="10" id="n-num">
 <div id="gauss_bayes_plt">
-  <button id="sample-button">Sample</button>
-  <label id="n-text">n:</label>
-  <input type="number" min="1" max="100" step="1" value="10" id="n-num">
 </div>
 
 <script>
@@ -226,7 +226,7 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 75, right: 0, bottom: 25, left: 25},
+var margin = {top: 25, right: 0, bottom: 25, left: 25},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom,
     fig_height = 200;
@@ -748,7 +748,7 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 
 <script>
 
-d3.json("../assets/beta.json", function(error, data) {
+d3.json("../../../../assets/beta.json", function(error, data) {
   if (error) throw error;
   var sample = 1;
   var n = 8;
