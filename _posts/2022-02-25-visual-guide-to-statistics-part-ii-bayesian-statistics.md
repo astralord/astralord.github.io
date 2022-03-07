@@ -226,7 +226,7 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 50, right: 0, bottom: 25, left: 25},
+var margin = {top: 75, right: 0, bottom: 25, left: 25},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom,
     fig_height = 200;
@@ -626,16 +626,17 @@ d3.select("#n-num").on("input", function() {
 });
 
 var sampleButton = d3.select("#sample-button");
+
 sampleButton
     .on("click", function() {
-    n = sample_n;
-    avg = 0;
-    for (var i = 0; i <= n; i++) {
-      avg += randn_bm();
-    }
-    avg /= n;
-    avg = mu + sigma * avg;
-    updateCurves();
+      n = sample_n;
+      avg = 0;
+      for (var i = 0; i <= n; i++) {
+        avg += randn_bm();
+      }
+      avg /= n;
+      avg = mu + sigma * avg;
+      updateCurves();
 });
 
 </script>
@@ -747,7 +748,7 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 
 <script>
 
-d3.json("../../../../assets/beta.json", function(error, data) {
+d3.json("../assets/beta.json", function(error, data) {
   if (error) throw error;
   var sample = 1;
   var n = 8;
@@ -773,15 +774,21 @@ var x = d3.scaleLinear()
         .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
         .range([0, fig_width]);
         
-prior_svg.append("g")
+var xAxis = prior_svg.append("g")
   .attr("transform", "translate(0," + height + ")")
   .call(d3.axisBottom(x).ticks(4));
 
+xAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
+     
 var y = d3.scaleLinear()
         .range([height, 0])
         .domain([0, 12]);
 
-prior_svg.append("g").call(d3.axisLeft(y).ticks(3));
+var yAxis = prior_svg.append("g").call(d3.axisLeft(y).ticks(3));
+
+yAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
   
 var prior_curve = prior_svg
     .append('g')
@@ -823,6 +830,7 @@ var prior_curve = prior_svg
 	        .range([0, fig_width]);
 	 var smpl_x_axis = smpl_svg.append("g")
 	  .attr("transform", "translate(0," + height + ")");
+	 
 	 var smpl_y = d3.scaleLinear().range([height, 0]).domain([0, 1]);
 	 var smpl_y_axis = smpl_svg.append("g").call(d3.axisLeft(smpl_y).ticks(0)); 
     
@@ -835,6 +843,7 @@ var prior_curve = prior_svg
 
 	 smpl_x.domain(rect_data.map(function(d) { return d.x; }));
 	 smpl_x_axis.call(d3.axisBottom(smpl_x));
+	 smpl_x_axis.selectAll(".tick text").attr("font-family", "Arvo");
 	
 	 var rect_sample = smpl_svg.selectAll("rect").data(rect_data);
 	  
@@ -897,12 +906,17 @@ var post_svg = smpl_svg
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
         
-  post_svg.append("g")
+  xAxis = post_svg.append("g")
     .attr("transform", "translate(0, " + height + ")")
     .call(d3.axisBottom(x).ticks(4));
-  
-  post_svg.append("g").call(d3.axisLeft(y).ticks(3));
-  
+    
+  xAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+    
+  yAxis = post_svg.append("g").call(d3.axisLeft(y).ticks(3));
+  yAxis.selectAll(".tick text")
+       .attr("font-family", "Arvo");
+    
   post_svg
     .append("text")
     .attr("text-anchor", "start")
@@ -1242,17 +1256,26 @@ var post_svg = smpl_svg
     updatePosteriorCurve();
   }
 	
-  d3.select("#a_slider").on("change", function(d) {
+  var a_slider = d3.select("#a_slider").on("change", function(d) {
     updatePrior(this.value, b_key.toString());
   });
   
-  d3.select("#b_slider").on("change", function(d) {
+  var b_slider = d3.select("#b_slider").on("change", function(d) {
     updatePrior(a_key.toString(), this.value);
   });
   
   d3.select("#n_slider").on("change", function(d) {
     updateN(this.value);
   });
+  
+  var minimaxButton = d3.select("#minimax-button");
+
+  minimaxButton
+    .on("click", function() {
+    var value = Math.round(10 * Math.sqrt(n) / 2);
+    updatePrior(value, value);
+  });
+
 
 });
 
