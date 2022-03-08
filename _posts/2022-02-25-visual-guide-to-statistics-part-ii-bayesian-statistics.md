@@ -206,18 +206,17 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
 <button id="sample-button">Sample</button>
 <label id="n-text">n:</label>
-<input type="number" min="1" max="100" step="1" value="10" id="n-num">
+<input type="number" min="1" max="100" step="1" value="1" id="n-num">
 <div id="gauss_bayes_plt">
 </div>
 
 <script>
-var mu = 1,
+var mu = -1,
     sigma = 2,
     nu = -1,
     tau = 1,
     avg = 0,
-    n = 10;
-    sample_n = 10;
+    n = 1;
   
 function randn_bm() {
     var u = 0, v = 0;
@@ -279,8 +278,8 @@ function updateData() {
   posterior_data.push({x: 7, y: 0});
   
   avg_y = Math.exp(-0.5 * ((avg - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI));
-  
   mode_y = 1 / (post_std * Math.sqrt(2 * Math.PI));
+  mu_y = Math.exp(-0.5 * ((mu - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI));
 }
 
 function updateCurves() {
@@ -344,6 +343,21 @@ function updateCurves() {
 	    .duration(1000)
        .attr("cx", function (d) { return x(g); } )
        .attr("cy", function (d) { return y(mode_y); } );
+       
+	 mu_dash.datum([{x: mu, y: 0}, {x: mu, y: mu_y}])
+       .transition()
+	    .duration(1000)
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	    );
+	    
+	 mu_dot
+       .transition()
+	    .duration(1000)
+       .attr("cx", function (d) { return x(mu); } )
+       .attr("cy", function (d) { return y(mu_y); } );
 }
 
 var prior_curve = svg
@@ -419,6 +433,28 @@ var mode_dot = svg.append('g')
     .attr("cy", function (d) { return y(d.y); } )
     .attr("r", 3)
     .style("fill", "#348ABD")
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1);
+
+var mu_dash = svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: mu, y: mu_y}, {x: mu, y: 0}])
+    .attr("d",  d3.line()
+      .x(function(d) { return x(d.x); })
+      .y(function(d) { return y(d.y); }));
+      
+var mu_dot = svg.append('g')
+  .selectAll("dot")
+  .data([{x: mu, y: mu_y}])
+  .enter()
+  .append("circle")
+    .attr("cx", function (d) { return x(d.x); } )
+    .attr("cy", function (d) { return y(d.y); } )
+    .attr("r", 3)
+    .style("fill", "#65AD69")
     .attr("stroke", "#000")
     .attr("stroke-width", 1);
 
@@ -543,6 +579,38 @@ svg.append('g')
       .style("fill", "#348ABD")
       .attr("stroke", "#000")
       .attr("stroke-width", 1);
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 80)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .text("μ")
+  .style("fill", "#65AD69");
+      
+svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: labels_x + 20, y: 70}, {x: labels_x + 20, y: 83}])
+    .attr("d",  d3.line()
+      .x(function(d) { return d.x; })
+      .y(function(d) { return d.y; }));
+  
+svg.append('g')
+    .selectAll("dot")
+    .data([{x: labels_x + 20, y: 70}])
+    .enter()
+    .append("circle")
+      .attr("cx", function (d) { return d.x; } )
+      .attr("cy", function (d) { return d.y; } )
+      .attr("r", 3)
+      .style("fill", "#65AD69")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
 
 var mu_x = d3.scaleLinear()
     .domain([-3, 3])
@@ -627,25 +695,21 @@ createSlider(svg, updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", 
 createSlider(svg, updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD", tau, trivialRound);
 
 d3.select("#n-num").on("input", function() {
-    sample_n = this.value;
+    n = this.value;
+    updateCurves();
 });
 
 var sampleButton = d3.select("#sample-button");
 
 sampleButton
     .on("click", function() {
-      n = sample_n;
-      avg = 0;
-      for (var i = 0; i <= n; i++) {
-        avg += randn_bm();
-      }
-      avg /= n;
-      avg = mu + sigma * avg;
+      avg = mu + sigma / n * randn_bm();
       updateCurves();
 });
 
 </script>
 
+*Fig. 1. Bayesian inference for normal distribution. *
 
 ### Minimax estimator
 
@@ -1303,3 +1367,5 @@ var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#34
 });
 
 </script>
+
+*Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators are the same. *
