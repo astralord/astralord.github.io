@@ -397,6 +397,7 @@ createSlider(slider_svg, updateChart, n_x, 160, 0.1 * height, "n", "#696969", 5,
 
 </script>
 
+![](.)
 *Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions.*
 
 It can now be shown that

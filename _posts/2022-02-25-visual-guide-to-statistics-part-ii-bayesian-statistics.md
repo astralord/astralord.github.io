@@ -501,7 +501,7 @@ svg
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 12)
+  .attr("font-size", 15)
   .text("μ")
   .style("fill", "#65AD69");
   
@@ -524,7 +524,7 @@ svg
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 15)
+  .attr("font-size", 17)
   .text("x̄ₙ")
   .style("fill", "#E86456");
       
@@ -557,7 +557,7 @@ svg
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 12)
+  .attr("font-size", 13)
   .text("Bayes")
   .style("fill", "#348ABD");
       
@@ -680,6 +680,7 @@ sampleButton
 
 </script>
 
+![](.)
 *Fig. 1. Bayesian inference for normal distribution. *
 
 ### Minimax estimator
@@ -1339,4 +1340,5 @@ var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#34
 
 </script>
 
+![](.)
 *Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators are the same. *
