@@ -564,15 +564,15 @@ var tau_x = d3.scaleLinear()
     .range([0, width / 3])
     .clamp(true);
 
-function createSlider(parameter_update, x, loc_x, loc_y, letter, color, init_val) {
-    var slider = svg.append("g")
+function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
+    var slider = svg_.append("g")
       .attr("class", "slider")
       .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
     
     var drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
 	        .on("start drag", function() { 
-	          handle.attr("cx", x(x.invert(d3.event.x)));  
+	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
 	          parameter_update(x.invert(d3.event.x));
 	          updateCurves();
 	         });
@@ -602,7 +602,7 @@ function createSlider(parameter_update, x, loc_x, loc_y, letter, color, init_val
       .attr("class", "handle")
       .attr("r", 6).attr("cx", x(init_val));
       
-	svg
+	svg_
 	  .append("text")
 	  .attr("text-anchor", "middle")
 	  .attr("y", loc_y + 3)
@@ -612,18 +612,19 @@ function createSlider(parameter_update, x, loc_x, loc_y, letter, color, init_val
 	  .text(letter)
 	  .style("fill", color);
 	  	  
-	return slider;
+	return handle;
 }
 
 function updateNu(x) { nu = x; }
 function updateTau(x) { tau = x; }
 function updateMu(x) { mu = x; }
 function updateSigma(x) { sigma = x; }
+function trivialRound(x) { return x; }
 
-createSlider(updateMu, mu_x, margin.left, 0.75 * height, "μ", "#65AD69", mu);
-createSlider(updateSigma, sigma_x, margin.left, 0.9 * height, "σ", "#65AD69", sigma);
-createSlider(updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", "#348ABD", nu);
-createSlider(updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD", tau);
+createSlider(svg, updateMu, mu_x, margin.left, 0.75 * height, "μ", "#65AD69", mu, trivialRound);
+createSlider(svg, updateSigma, sigma_x, margin.left, 0.9 * height, "σ", "#65AD69", sigma, trivialRound);
+createSlider(svg, updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", "#348ABD", nu, trivialRound);
+createSlider(svg, updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD", tau, trivialRound);
 
 d3.select("#n-num").on("input", function() {
     sample_n = this.value;
@@ -746,10 +747,6 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
   <button id="minimax-button">Least fav. prior</button>
 </div>
 
-<input type="range" name="n_slider" id=n_slider min="1" max="10" value="8">
-<input type="range" name="a_slider" id=a_slider min="1" max="30" value="10">
-<input type="range" name="b_slider" id=b_slider min="1" max="30" value="10">
-
 <script>
 
 d3.json("../../../../assets/beta.json", function(error, data) {
@@ -759,7 +756,7 @@ d3.json("../../../../assets/beta.json", function(error, data) {
   var a = 1, b = 1;
   var a_key = 10, b_key = 10;
   
-var margin = {top: 25, right: 0, bottom: 25, left: 25},
+var margin = {top: 25, right: 0, bottom: 25, left: 20},
     width = 800 - margin.left - margin.right,
     height = 200 - margin.top - margin.bottom,
     fig_width = 200;
@@ -1260,23 +1257,45 @@ var post_svg = smpl_svg
     updatePosteriorCurve();
   }
 	
-  var a_slider = d3.select("#a_slider").on("change", function(d) {
-    updatePrior(this.value, b_key.toString());
-  });
-  
-  var b_slider = d3.select("#b_slider").on("change", function(d) {
-    updatePrior(a_key.toString(), this.value);
-  });
-  
-  d3.select("#n_slider").on("change", function(d) {
-    updateN(this.value);
-  });
+var slider_svg = d3.select("#bin_bayes_plt")
+  .append("svg")
+  .attr("width", width + 20)
+  .attr("height", 100)
+  .append("g")
+  .attr("transform", "translate(" + 25 + "," + 20 + ")");
+
+var n_x = d3.scaleLinear()
+    .domain([1, 10])
+    .range([0, width * 0.22])
+    .clamp(true);
+
+var a_x = d3.scaleLinear()
+    .domain([0.1, 3])
+    .range([0, width * 0.22])
+    .clamp(true);
+
+var b_x = d3.scaleLinear()
+    .domain([0.1, 3])
+    .range([0, width * 0.22])
+    .clamp(true);
+
+function roundN(x) { return Math.round(x - 0.5); }
+function roundAB(x) { return 0.1 * Math.round(10 * x - 0.5); }
+
+function updateA(x) { updatePrior(10 * x, b_key.toString()); }
+function updateB(x) { updatePrior(a_key.toString(), 10 * x); }
+
+createSlider(slider_svg, updateN, n_x, 260, 0.05 * height, "n", "#65AD69", n, roundN);
+var handleA = createSlider(slider_svg, updateA, a_x, 10, 0.05 * height, "a", "#348ABD", a, roundAB);
+var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#348ABD", b, roundAB);
   
   var minimaxButton = d3.select("#minimax-button");
 
   minimaxButton
     .on("click", function() {
     var value = Math.round(10 * Math.sqrt(n) / 2);
+    handleA.attr("cx", a_x(0.1 * value));  
+    handleB.attr("cx", b_x(0.1 * value));
     updatePrior(value, value);
   });
 
