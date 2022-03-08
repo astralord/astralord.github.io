@@ -132,9 +132,45 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
   $$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
+<style>
 
-<input type="range" name="ddof_slider" id=ddof_slider min="1" max="12" value="5">
+.ticks {
+  font: 10px arvo;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 7px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 5px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 1px;
+}
+   
+</style>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
 
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
@@ -161,16 +197,8 @@ chi_svg.append("text")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 20)
-  .text("χ")
-  .style("fill", "#348ABD").append('tspan')
-    .text('2')
-    .style('font-size', '.6rem')
-    .attr('dx', '.1em')
-    .attr('dy', '-.9em').append('tspan')
-    .text('5')
-    .style('font-size', '.6rem')
-    .attr('dx', '-.6em')
-    .attr('dy', '1.9em');
+  .text("χ²₅")
+  .style("fill", "#348ABD");
 
 var margin = {top: 0, right: 0, bottom: 35, left: 350};
     
@@ -182,6 +210,8 @@ var t_svg = chi_svg
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
      
+var subscript_symbols = ['₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉', '₁₀', '₁₁', '₁₂'];
+
 t_svg.append("text")
   .attr("text-anchor", "start")
   .attr("y", 60)
@@ -189,12 +219,8 @@ t_svg.append("text")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 20)
-  .text("t")
-  .style("fill", "#EDA137").append('tspan')
-    .text('5')
-    .style('font-size', '.6rem')
-    .attr('dx', '.1em')
-    .attr('dy', '.9em');
+  .text("t" + subscript_symbols[4])
+  .style("fill", "#EDA137");
     
 d3.csv("../../../../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
@@ -203,32 +229,43 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
             .domain([-0, 40])
             .range([0, fig_width]);
             
-  chi_svg.append("g")
+  var xAxis = chi_svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(chi_x));
+  
+  xAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
 
   var t_x = d3.scaleLinear()
             .domain([-20, 20])
             .range([0, fig_width]);
             
-  t_svg.append("g")
+  xAxis = t_svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(t_x));
+       
+  xAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
 
   var y = d3.scaleLinear()
             .range([height, 0])
             .domain([0, 0.5]);
             
-  chi_svg.append("g")
-      .call(d3.axisLeft(y));
+  var yAxis = chi_svg.append("g")
+      .call(d3.axisLeft(y).ticks(5));
   
-  
+  yAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
+     
   var t_y = d3.scaleLinear()
             .range([height, 5])
             .domain([0, 0.5]);
                 
-  t_svg.append("g")
-      .call(d3.axisLeft(t_y));
+  yAxis = t_svg.append("g")
+      .call(d3.axisLeft(t_y).ticks(5));
+      
+  yAxis.selectAll(".tick text")
+     .attr("font-family", "Arvo");
 
   var chi_curve = chi_svg
     .append('g')
@@ -263,6 +300,8 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
       );
 
   function updateChart(n) {
+    n = parseInt(n);
+    
     chi_curve
       .datum(data)
       .transition()
@@ -272,6 +311,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
           .x(function(d) { return chi_x(d.chi_x); })
           .y(function(d) { return y(d["chi_" + n]); })
       );
+      
     t_curve
       .datum(data)
       .transition()
@@ -282,20 +322,77 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
           .y(function(d) { return t_y(d["t_" + n]); })
       );
       
-    chi_svg.selectAll("text")
-      .selectAll('tspan')
-      .selectAll('tspan')
-      .text(n);
-      
-    t_svg.selectAll("text")
-      .selectAll('tspan')
-      .text(n);
+    chi_svg.select("text").text("χ²" + subscript_symbols[n - 1]);
+    t_svg.select("text").text("t" + subscript_symbols[n - 1]);
   }
+  
+var slider_svg = d3.select("#chi_t_plt")
+  .append("svg")
+  .attr("width", width + 20)
+  .attr("height", 70)
+  .append("g")
+  .attr("transform", "translate(" + 25 + "," + 20 + ")");
 
-  d3.select("#ddof_slider").on("change", function(d) {
-    selectedValue = this.value;
-    updateChart(selectedValue);
-  })
+var n_x = d3.scaleLinear()
+    .domain([1, 12])
+    .range([0, width / 2])
+    .clamp(true);
+    
+function roundN(x) { return Math.round(x - 0.5); }
+
+function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
+    var slider = svg_.append("g")
+      .attr("class", "slider")
+      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
+    
+    var drag = d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() { 
+	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
+	          parameter_update(x.invert(d3.event.x));
+	          updateCurves();
+	         });
+	         
+    slider.append("line")
+	    .attr("class", "track")
+	    .attr("x1", x.range()[0])
+	    .attr("x2", x.range()[1])
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-inset")
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-overlay")
+	    .call(drag);
+
+	slider.insert("g", ".track-overlay")
+    .attr("class", "ticks")
+    .attr("transform", "translate(0," + 18 + ")")
+  .selectAll("text")
+  .data(x.ticks(6))
+  .enter().append("text")
+    .attr("x", x)
+    .attr("text-anchor", "middle")
+    .attr("font-family", "Arvo")
+    .text(function(d) { return d; });
+
+   var handle = slider.insert("circle", ".track-overlay")
+      .attr("class", "handle")
+      .attr("r", 6).attr("cx", x(init_val));
+      
+	svg_
+	  .append("text")
+	  .attr("text-anchor", "middle")
+	  .attr("y", loc_y + 3)
+	  .attr("x", loc_x - 21)
+	  .attr("font-family", "Arvo")
+	  .attr("font-size", 17)
+	  .text(letter)
+	  .style("fill", color);
+	  	  
+	return handle;
+}
+
+createSlider(slider_svg, updateChart, n_x, 160, 0.1 * height, "n", "#696969", 5, roundN);
+
 });
 
 </script>

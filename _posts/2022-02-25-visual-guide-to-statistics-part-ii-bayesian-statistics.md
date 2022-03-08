@@ -226,7 +226,7 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 25, right: 0, bottom: 25, left: 25},
+var margin = {top: 20, right: 0, bottom: 25, left: 25},
     width = 700 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom,
     fig_height = 200;
@@ -377,7 +377,7 @@ var posterior_curve = svg
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
       );
-  
+
 var avg_dash = svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
@@ -485,8 +485,8 @@ svg
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 11)
-  .text("UMVU")
+  .attr("font-size", 15)
+  .text("x̄ₙ")
   .style("fill", "#E86456");
       
 svg.append("path")
