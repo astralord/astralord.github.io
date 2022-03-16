@@ -27,7 +27,182 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
-![Drug experiment]({{'/assets/img/drug-efficiency.gif'|relative_url}})
+
+<style>
+
+.ticks {
+  font: 10px arvo;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 7px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 5px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 1px;
+}
+
+
+#sample-button {
+  top: 15px;
+  left: 15px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button:hover {
+  background-color: #696969;
+}
+   
+</style>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+
+<button id="sample-button">Sample</button>
+<div id="drug_exp"></div> 
+
+<script>
+var theta = 0.2;
+
+var margin = {top: 10, right: 0, bottom: 30, left: 30},
+    width = 700 - margin.left - margin.right,
+    height = 150 - margin.top - margin.bottom,
+    fig_height = 125 - margin.top - margin.bottom,
+    fig_width = 600;
+    
+var svg = d3.select("#drug_exp")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear()
+          .domain([0, 10])
+          .range([10, fig_width]);
+            
+var xAxis = svg.append("g")
+   .attr("transform", "translate(0," + fig_height + ")")
+   .call(d3.axisBottom(x));
+  
+xAxis.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+var y = d3.scaleLinear()
+          .range([fig_height - 10, 0])
+          .domain([0, 1]);
+            
+var yAxis = svg.append("g")
+    .call(d3.axisLeft(y).ticks(1));
+  
+yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 125)
+  .attr("x", 275)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 13)
+  .text("Dose Xᵢ")
+  .style("fill", "#696969");
+  
+svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 40)
+  .attr("x", -20)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 13)
+  .text("Yᵢ")
+  .style("fill", "#696969");
+  
+var figs = [];
+for (var i = 0; i < 11; i += 1) {
+  if (Math.random() < 1 - Math.exp(-theta * i)) {
+    figs.push(svg.append("path")
+    .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+    .attr("transform", function(d) { return "translate(" + x(i) + "," + y(1) + ")"; })
+    .style("fill", "#65AD69")
+    .style('stroke', 'black')
+    .style('stroke-width', '0.7')
+    .style('opacity', 0.8));
+  }
+  else {
+    figs.push(svg.append("path")
+    .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+    .attr("transform", function(d) { return "translate(" + x(i) + "," + y(0) + ") rotate(-45)"; })
+    .style("fill", "#E86456")
+    .style('stroke', 'black')
+    .style('stroke-width', '0.7')
+    .style('opacity', 0.8));
+  }
+}
+    
+function updateSymbols() {
+  for (var i = 0; i < 11; i += 1) {
+    if (Math.random() < 1 - Math.exp(-theta * i)) {
+      figs[i].transition()
+             .duration(1000)
+             .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+             .attr("transform", function(d) { return "translate(" + x(i) + "," + y(1) + ")"; })
+             .style("fill", "#65AD69");
+    }
+    else {
+      figs[i].transition()
+             .duration(1000)
+             .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+             .attr("transform", function(d) { return "translate(" + x(i) + "," +y(0) + ") rotate(-45)"; })
+             .style("fill", "#E86456");
+    }
+  }
+}
+
+var sampleButton = d3.select("#sample-button");
+
+sampleButton
+    .on("click", function() {
+      updateSymbols();
+});
+
+
+</script>
+
 *Fig. 1. Visualization of statistical experiments. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
 
 Formally, we can define **parameter space** $\Theta$ with $\vert \Theta \vert \geq 2$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. Then we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. 
@@ -132,48 +307,6 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
   $$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
 
-<style>
-
-.ticks {
-  font: 10px arvo;
-}
-
-.track,
-.track-inset,
-.track-overlay {
-  stroke-linecap: round;
-}
-
-.track {
-  stroke: #000;
-  stroke-opacity: 0.8;
-  stroke-width: 7px;
-}
-
-.track-inset {
-  stroke: #ddd;
-  stroke-width: 5px;
-}
-
-.track-overlay {
-  pointer-events: stroke;
-  stroke-width: 50px;
-  stroke: transparent;
-}
-
-.handle {
-  fill: #fff;
-  stroke: #000;
-  stroke-opacity: 0.8;
-  stroke-width: 1px;
-}
-   
-</style>
-
-<script src="https://d3js.org/d3.v4.min.js"></script>
-
-<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
-
 <div id="chi_t_plt"></div> 
 <script>
 
@@ -197,8 +330,13 @@ chi_svg.append("text")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 20)
-  .text("χ²₅")
-  .style("fill", "#348ABD");
+  .text("χ₅")
+  .style("fill", "#348ABD").append('tspan')
+    .text('2')
+    .style('font-size', '.6rem')
+    .attr('dx', '-.6em')
+    .attr('dy', '-.9em')
+    .attr("font-weight", 700);
 
 var margin = {top: 0, right: 0, bottom: 35, left: 350};
     
@@ -398,7 +536,7 @@ createSlider(slider_svg, updateChart, n_x, 160, 0.1 * height, "n", "#696969", 5,
 </script>
 
 ![](.)
-*Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions.*
+*Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions. Move slider to observe how they look for different degrees of freedom $n$. Note that with large $n$ $t_n$ converges to normal distribution.*
 
 It can now be shown that
 
