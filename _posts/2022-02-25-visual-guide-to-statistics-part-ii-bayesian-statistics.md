@@ -133,6 +133,7 @@ For quadratic loss function $g_{\nu, \tau^2}(x)$ is a Bayes estimator. It can be
 
 Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
+<script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <style>
@@ -202,15 +203,14 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 }
     
 </style>
-<script src="https://d3js.org/d3.v4.min.js"></script>
 
 <button id="sample-button">Sample</button>
 <label id="n-text">n:</label>
 <input type="number" min="1" max="100" step="1" value="3" id="n-num">
-<div id="gauss_bayes_plt">
-</div>
+<div id="gauss_bayes_plt"></div>
 
 <script>
+
 var mu = -1,
     sigma = 3,
     nu = 0,
@@ -674,14 +674,14 @@ var sampleButton = d3.select("#sample-button");
 
 sampleButton
     .on("click", function() {
-      avg = mu + sigma / n * randn_bm();
+      avg = mu + sigma / Math.sqrt(n) * randn_bm();
       updateCurves();
 });
 
 </script>
 
 ![](.)
-*Fig. 1. Bayesian inference for normal distribution. *
+*Fig. 1. Bayesian inference for normal distribution.*
 
 ### Minimax estimator
 
@@ -1341,4 +1341,4 @@ var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#34
 </script>
 
 ![](.)
-*Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators coincide regardless of the sample value. *
+*Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators coincide regardless of the sample value.*

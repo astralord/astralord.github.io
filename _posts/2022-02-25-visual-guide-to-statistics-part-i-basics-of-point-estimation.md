@@ -97,7 +97,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 <script>
 var theta = 0.2;
 
-var margin = {top: 10, right: 0, bottom: 30, left: 30},
+var margin = {top: 10, right: 0, bottom: 10, left: 30},
     width = 750 - margin.left - margin.right,
     height = 150 - margin.top - margin.bottom,
     fig_height = 125 - margin.top - margin.bottom,
@@ -134,7 +134,7 @@ yAxis.selectAll(".tick text")
 
 svg.append("text")
   .attr("text-anchor", "start")
-  .attr("y", 125)
+  .attr("y", 135)
   .attr("x", 310)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -144,7 +144,7 @@ svg.append("text")
   
 svg.append("text")
   .attr("text-anchor", "start")
-  .attr("y", 40)
+  .attr("y", 50)
   .attr("x", -20)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
