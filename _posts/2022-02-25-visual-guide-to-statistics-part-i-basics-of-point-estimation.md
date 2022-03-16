@@ -98,10 +98,10 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 var theta = 0.2;
 
 var margin = {top: 10, right: 0, bottom: 30, left: 30},
-    width = 700 - margin.left - margin.right,
+    width = 750 - margin.left - margin.right,
     height = 150 - margin.top - margin.bottom,
     fig_height = 125 - margin.top - margin.bottom,
-    fig_width = 600;
+    fig_width = 650;
     
 var svg = d3.select("#drug_exp")
   .append("svg")
@@ -135,7 +135,7 @@ yAxis.selectAll(".tick text")
 svg.append("text")
   .attr("text-anchor", "start")
   .attr("y", 125)
-  .attr("x", 275)
+  .attr("x", 310)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 13)
@@ -203,6 +203,7 @@ sampleButton
 
 </script>
 
+![](.)
 *Fig. 1. Visualization of statistical experiments. The question arises: how do we estimate the value of $\vartheta$ based on our observations?*
 
 Formally, we can define **parameter space** $\Theta$ with $\vert \Theta \vert \geq 2$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$, where $P_\vartheta \neq P_{\vartheta'} \ \forall \vartheta \neq \vartheta'$. Then we are interested in the true distribution $P \in \mathcal{P}$ of random variable $X$. 
@@ -460,8 +461,14 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
           .y(function(d) { return t_y(d["t_" + n]); })
       );
       
-    chi_svg.select("text").text("χ²" + subscript_symbols[n - 1]);
+    chi_svg.select("text").text("χ" + subscript_symbols[n - 1]).append('tspan')
+    .text('2')
+    .style('font-size', '.6rem')
+    .attr('dx', '-.6em')
+    .attr('dy', '-.9em')
+    .attr("font-weight", 700);
     t_svg.select("text").text("t" + subscript_symbols[n - 1]);
+    
   }
   
 var slider_svg = d3.select("#chi_t_plt")

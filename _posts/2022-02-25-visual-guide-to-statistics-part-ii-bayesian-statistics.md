@@ -1341,4 +1341,4 @@ var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#34
 </script>
 
 ![](.)
-*Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators are the same. *
+*Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators coincide regardless of the sample value. *
