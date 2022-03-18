@@ -620,7 +620,7 @@ Both estimators are independent as functions of $Z_n$ and $Z_1, \dots, Z_{n-1}$ 
 
 Let's check which of these estimators are unbiased. We have $\mathbb{E}[\overline{X}_n] = \mu$, therefore $\overline{X}_n$ is unbiased. On the other hand
 
-$$ \mathbb{E}[s_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
+$$ \mathbb{E}[\hat{s}_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
 
 <button id="sample-button-2">Sample</button>
@@ -631,7 +631,7 @@ function biasedness() {
 
 var mu = 0,
     sigma = 1,
-    n = 10,
+    n = 6,
     xn_dots = [],
     sn_dots = [];
 
@@ -747,6 +747,43 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
 }
 
 );
+
+var xn_sum = 0,
+    sn_sum = 0;
+    
+var xn_avg_curve = svg
+    .append('g')
+    .append("path")
+      .datum([{x: xn_sum, y: 0}, {x: xn_sum, y: -2}])
+      .attr("fill", "none")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-dasharray", "3 3")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+   );
+    
+var sn_avg_curve = svg
+    .append('g')
+    .append("path")
+      .datum([{x: sn_sum, y: -4}, {x: sn_sum, y: -6}])
+      .attr("fill", "none")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-dasharray", "3 3")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.y); })
+          .y(function(d) { return y(d.x); })
+   );
 
 function sample() {
   random_samples = [];
@@ -901,6 +938,30 @@ function sample() {
    
    xn_dots.push(xn_dot);
    sn_dots.push(sn_dot);
+   xn_sum += average;
+   sn_sum += average_y;
+   
+   xn_avg_curve
+     .datum([{x: xn_sum / xn_dots.length, y: 0}, {x: xn_sum / xn_dots.length, y: -2}])
+     .transition()
+     .delay(avg_dur)
+     .duration(avg_dur)
+     .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+   
+   sn_avg_curve
+     .datum([{x: sn_sum / sn_dots.length, y: -4}, {x: sn_sum / sn_dots.length, y: -6}])
+     .transition()
+     .delay(5 * avg_dur)
+     .duration(avg_dur)
+     .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.y); })
+          .y(function(d) { return y(d.x); })
+      );
 }
 
 var sampleButton = d3.select("#sample-button-2");
