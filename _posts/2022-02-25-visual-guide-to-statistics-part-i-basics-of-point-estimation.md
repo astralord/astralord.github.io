@@ -27,8 +27,23 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
-
 <style>
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
+}
 
 .ticks {
   font: 10px arvo;
@@ -124,10 +139,15 @@ var margin = {top: 10, right: 0, bottom: 10, left: 30},
     fig_height = 125 - margin.top - margin.bottom,
     fig_width = 650;
     
-var svg = d3.select("#drug_exp")
+var svg = d3.select("div#drug_exp")
+  .append("div")
+  .classed("svg-container", true) 
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 720 180")
+    .classed("svg-content-responsive", true)
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
