@@ -729,9 +729,6 @@ var xn_curve = svg
 d3.csv("../../../../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
   
- 
-  var std_data = [];
-  
   var std_curve = svg
     .append('g')
     .append("path")
@@ -752,7 +749,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
 );
 
 function sample() {
-  random_samples = []
+  random_samples = [];
   smpl_dots = [];
   smpl_copy_dots = [];
   var average = 0;
