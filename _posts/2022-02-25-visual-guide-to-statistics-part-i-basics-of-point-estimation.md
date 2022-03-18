@@ -64,8 +64,27 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
   stroke-width: 1px;
 }
 
-
 #sample-button {
+  top: 15px;
+  left: 15px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button-2:hover {
+  background-color: #696969;
+}
+
+#sample-button-2 {
   top: 15px;
   left: 15px;
   background: #65AD69;
@@ -95,6 +114,8 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 <div id="drug_exp"></div> 
 
 <script>
+function drug_exp() {
+
 var theta = 0.2;
 
 var margin = {top: 10, right: 0, bottom: 10, left: 30},
@@ -200,6 +221,9 @@ sampleButton
       updateSymbols();
 });
 
+}
+
+drug_exp();
 
 </script>
 
@@ -310,6 +334,7 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
 <div id="chi_t_plt"></div> 
 <script>
+function chi_t_plts() {
 
 var margin = {top: 20, right: 0, bottom: 30, left: 30},
     width = 700 - margin.left - margin.right,
@@ -332,7 +357,7 @@ chi_svg.append("text")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .text("χ₅")
-  .style("fill", "#348ABD").append('tspan')
+  .style("fill", "#EDA137").append('tspan')
     .text('2')
     .style('font-size', '.6rem')
     .attr('dx', '-.6em')
@@ -359,7 +384,7 @@ t_svg.append("text")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .text("t" + subscript_symbols[4])
-  .style("fill", "#EDA137");
+  .style("fill", "#E86456");
     
 d3.csv("../../../../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
@@ -410,7 +435,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     .append('g')
     .append("path")
       .datum(data)
-      .attr("fill", "#348ABD")
+      .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
       .attr("stroke", "#000")
@@ -426,7 +451,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     .append('g')
     .append("path")
       .datum(data)
-      .attr("fill", "#EDA137")
+      .attr("fill", "#E86456")
       .attr("border", 0)
       .attr("opacity", ".8")
       .attr("stroke", "#000")
@@ -539,11 +564,14 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 createSlider(slider_svg, updateChart, n_x, 160, 0.1 * height, "n", "#696969", 5, roundN);
 
 });
+}
+
+chi_t_plts();
 
 </script>
 
 ![](.)
-*Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions. Move slider to observe how they look for different degrees of freedom $n$. Note that with large $n$ $t_n$ converges to normal distribution.*
+*Fig. 3. Probability density functions for $\chi_n^2$ and $t_n$-distributions. Move slider to observe how they look for different degrees of freedom $n$. Note that with large $n$ $t_n$ converges to normal distribution.*
 
 It can now be shown that
 
@@ -594,6 +622,306 @@ Both estimators are independent as functions of $Z_n$ and $Z_1, \dots, Z_{n-1}$ 
 Let's check which of these estimators are unbiased. We have $\mathbb{E}[\overline{X}_n] = \mu$, therefore $\overline{X}_n$ is unbiased. On the other hand
 
 $$ \mathbb{E}[s_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
+
+
+<button id="sample-button-2">Sample</button>
+<div id="biased_viz"></div> 
+
+<script>
+function biasedness() {
+
+var mu = 0,
+    sigma = 1,
+    n = 10,
+    xn_dots = [],
+    sn_dots = [];
+
+var avg_dur = 1200;
+
+function randn_bm() {
+    var u = 0, v = 0;
+    while(u === 0) u = Math.random();
+    while(v === 0) v = Math.random();
+    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
+
+var margin = {top: 10, right: 0, bottom: 5, left: 30},
+    width = 750 - margin.left - margin.right,
+    height = 350 - margin.top - margin.bottom,
+    fig_height = 250 - margin.top - margin.bottom,
+    fig_width = 450,
+    cfs = 100;
+    
+var svg = d3.select("#biased_viz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear()
+          .domain([-4, 4])
+          .range([cfs, fig_width + cfs]);
+            
+var xAxis = svg.append("g")
+   .attr("transform", "translate(0," + fig_height + ")")
+   .call(d3.axisBottom(x));
+  
+xAxis.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+var y = d3.scaleLinear()
+          .range([fig_height, 0])
+          .domain([0, 5]);
+            
+var yAxis = svg.append("g")
+   .attr("transform", "translate(" + cfs + ",0)")
+   .call(d3.axisLeft(y).ticks(5));
+  
+yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+  
+var gauss_data = [{x: -4, y: 0}];
+for (var i = -4; i < 4; i += 0.01) {
+  gauss_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) });
+}
+gauss_data.push({x: 4, y: 0});
+  
+var gauss_curve = svg
+  .append('g')
+  .append("path")
+    .datum(gauss_data)
+    .attr("fill", "#65AD69")
+    .attr("border", 0)
+    .attr("opacity", ".8")
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .attr("stroke-linejoin", "round")
+    .attr("d",  d3.line()
+      .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+);
+  
+var xn_max = Math.min(16 / n, 4);  
+var xn_data = [{x: -xn_max, y: 0}];
+for (var i = -xn_max; i < xn_max; i += 0.01) {
+    xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
+}
+xn_data.push({x: xn_max, y: 0});
+  
+var xn_curve = svg
+  .append('g')
+  .append("path")
+    .datum(xn_data)
+    .attr("fill", "#348ABD")
+    .attr("border", 0)
+    .attr("opacity", ".8")
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .attr("stroke-linejoin", "round")
+    .attr("d",  d3.line()
+      .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(-d.y - 0.5); })
+);
+
+d3.csv("../../../../assets/chi-t.csv", function(error, data) {
+  if (error) throw error;
+  
+ 
+  var std_data = [];
+  
+  var std_curve = svg
+    .append('g')
+    .append("path")
+      .datum(data)
+      .attr("fill", "#EDA137")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(-(n - 1) * d["chi_" + (n-1)] - 4.5); })
+          .y(function(d) { return y(d.chi_x / n); })
+   );
+}
+
+);
+
+function sample() {
+  random_samples = []
+  smpl_dots = [];
+  smpl_copy_dots = [];
+  var average = 0;
+  
+  var sq_curve = svg
+    .append('g')
+    .append("path");
+    
+  for (var i = 0; i < n; i += 1) {
+    random_samples.push(mu + sigma * randn_bm());
+    
+    smpl_dots.push(svg.append('g')
+      .selectAll("dot")
+      .data([{x: random_samples[i], y: 5}])
+      .enter()
+      .append("circle")
+        .attr("cx", function (d) { return x(d.x); } )
+        .attr("cy", function (d) { return y(d.y); } )
+        .attr("r", 3)
+        .style("fill", "#65AD69")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1));
+        
+    smpl_copy_dots.push(svg.append('g')
+      .selectAll("dot")
+      .data([{x: random_samples[i], y: 0}])
+      .enter()
+      .append("circle")
+        .attr("cx", function (d) { return x(d.x); } )
+        .attr("cy", function (d) { return y(d.y); } )
+        .attr("r", 0)
+        .style("fill", "#65AD69")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1));
+        
+     smpl_dots[i].transition()
+           .duration(avg_dur)
+           .attr("cx", function (d) { return x(random_samples[i]); } )
+           .attr("cy", function (d) { return y(0); } );
+     
+     average += random_samples[i];
+   }
+   average /= n;
+   
+   for (var i = 0; i < n; i += 1) {
+     smpl_copy_dots[i]
+           .transition()
+           .delay(avg_dur) 
+           .duration(0)
+           .attr("r", 3);
+     
+     smpl_copy_dots[i]
+           .transition()
+           .delay(avg_dur) 
+           .duration(avg_dur)
+           .style("fill", "#348ABD")
+           .attr("cx", function (d) { return x(average); } )
+           .attr("cy", function (d) { return y(0); } );
+     
+     smpl_dots[i]
+           .transition()
+           .delay(3 * avg_dur) 
+           .duration(avg_dur)
+           .attr("cx", function (d) { return x(random_samples[i]); } )
+           .attr("cy", function (d) { return y( (random_samples[i] - average) ** 2); } );
+   }
+   
+   var xn_dot = svg.append('g')
+      .selectAll("dot")
+      .data([{x: average, y: 0}])
+      .enter()
+      .append("circle")
+        .attr("cx", function (d) { return x(d.x); } )
+        .attr("cy", function (d) { return y(d.y); } )
+        .attr("r", 0)
+        .style("fill", "#348ABD")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1);
+   
+   xn_dot.transition().delay(2 * avg_dur).attr("r", 3);
+      
+   var sq_data = [];
+   for (var i = -4; i <= 4; i += 0.1) {
+       sq_data.push({x: i, y: (i - average) ** 2 });
+   }
+   
+   sq_curve
+      .datum(sq_data)
+      .attr("fill", "none")
+      .attr("border", 0)
+      .attr("opacity", ".9")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+   
+   var average_y = 0;
+   for (var i = 0; i < n; i += 1) {
+       average_y += (random_samples[i] - average) ** 2;
+   }
+   average_y /= n;
+   
+   for (var i = 0; i < n; i += 1) {
+       smpl_dots[i]
+           .transition()
+           .delay(4 * avg_dur) 
+           .duration(avg_dur)
+           .attr("cx", function (d) { return x(-4); } )
+           .attr("cy", function (d) { return y( (random_samples[i] - average) ** 2); } );
+           
+       smpl_dots[i]
+           .transition()
+           .delay(5 * avg_dur) 
+           .duration(avg_dur)
+           .attr("cx", function (d) { return x(-4); } )
+           .attr("cy", function (d) { return y(average_y);  } );
+   }
+      
+   var totalLength = sq_curve.node().getTotalLength();
+   sq_curve.attr("stroke-dasharray", totalLength + " " + totalLength)
+           .attr("stroke-dashoffset", totalLength)
+           .transition().duration(4 * avg_dur)
+           .attr("stroke-dashoffset", 0);
+    
+   sq_curve.transition().delay(6 * avg_dur).remove();
+   
+   var sn_dot = svg.append('g')
+      .selectAll("dot")
+      .data([{x: -4, y: average_y}])
+      .enter()
+      .append("circle")
+        .attr("cx", function (d) { return x(d.x); } )
+        .attr("cy", function (d) { return y(d.y); } )
+        .attr("r", 0)
+        .style("fill", "#EDA137")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1);
+   
+   sn_dot.transition().delay(6 * avg_dur).attr("r", 3);
+   
+   for (var i = 0; i < n; i += 1) {
+      smpl_dots[i].transition().delay(6 * avg_dur).remove();
+      smpl_copy_dots[i].transition().delay(2 * avg_dur).remove();
+   }
+   
+   xn_dots.push(xn_dot);
+   sn_dots.push(sn_dot);
+}
+
+var sampleButton = d3.select("#sample-button-2");
+
+sampleButton
+    .on("click", function() {
+      sample();
+});
+
+}
+
+biasedness();
+
+</script>
+
+![](.)
+*Fig. 2. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$.*
 
 We can easily check the (un-)biasedness of these estimators. Let's fix number of samples, for example $n=10$, and run sufficiently large amount of experiments, say $10000$. Then wash, rinse, repeat again $10$ times to observe multiple outputs.
 
