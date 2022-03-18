@@ -140,14 +140,9 @@ var margin = {top: 10, right: 0, bottom: 10, left: 30},
     fig_width = 650;
     
 var svg = d3.select("div#drug_exp")
-  .append("div")
-  .classed("svg-container", true) 
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 720 180")
-    .classed("svg-content-responsive", true)
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
