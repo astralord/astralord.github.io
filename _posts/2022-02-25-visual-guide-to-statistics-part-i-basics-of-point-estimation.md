@@ -520,7 +520,6 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	        .on("start drag", function() { 
 	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
 	          parameter_update(x.invert(d3.event.x));
-	          updateCurves();
 	         });
 	         
     slider.append("line")
