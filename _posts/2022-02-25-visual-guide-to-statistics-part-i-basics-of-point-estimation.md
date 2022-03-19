@@ -735,19 +735,18 @@ var gauss_curve = svg
         .x(function(d) { return x(d.x); })
         .y(function(d) { return y(d.y); })
 );
-  
-var xn_max = Math.min(16 / n, 4);  
-var xn_data = [{x: -xn_max, y: 0}];
-for (var i = -xn_max; i < xn_max; i += 0.01) {
+    
+var xn_data = [{x: -3, y: 0}];
+for (var i = -3; i < 3; i += 0.01) {
     xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
 }
-xn_data.push({x: xn_max, y: 0});
+xn_data.push({x: 3, y: 0});
   
 var xn_curve = svg
   .append('g')
   .append("path")
     .datum(xn_data)
-    .attr("fill", "#348ABD")
+    .attr("fill", "#E86456")
     .attr("border", 0)
     .attr("opacity", ".8")
     .attr("stroke", "#000")
@@ -812,7 +811,7 @@ svg.append("text")
   .style("fill", "#65AD69");
 
 svg.append("path")
-   .attr("stroke", "#348ABD")
+   .attr("stroke", "#E86456")
    .attr("stroke-width", 4)
    .attr("opacity", ".8")
    .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
@@ -835,7 +834,7 @@ svg.append("text")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("X̄ₙ")
-  .style("fill", "#348ABD");
+  .style("fill", "#E86456");
 
 svg.append("path")
    .attr("stroke", "#EDA137")
@@ -968,7 +967,7 @@ function sample() {
            .transition()
            .delay(avg_dur) 
            .duration(avg_dur)
-           .style("fill", "#348ABD")
+           .style("fill", "#E86456")
            .attr("cx", function (d) { return x(average); } )
            .attr("cy", function (d) { return y(0); } );
      
@@ -988,7 +987,7 @@ function sample() {
         .attr("cx", function (d) { return x(d.x); } )
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 0)
-        .style("fill", "#348ABD")
+        .style("fill", "#E86456")
         .attr("stroke", "#000")
         .attr("stroke-width", 1);
    
@@ -1031,6 +1030,7 @@ function sample() {
            .transition()
            .delay(5 * avg_dur) 
            .duration(avg_dur)
+           .style("fill", "#EDA137")
            .attr("cx", function (d) { return x(-4); } )
            .attr("cy", function (d) { return y(average_y);  } );
    }
@@ -1070,17 +1070,16 @@ function updateNGauss(new_n) {
    n = new_n;
    reset();
    
-   xn_max = Math.min(16 / n, 4);  
-   xn_data = [{x: -xn_max, y: 0}];
-   for (var i = -xn_max; i < xn_max; i += 0.01) {
+   xn_data = [{x: -3, y: 0}];
+   for (var i = -3; i < 3; i += 0.01) {
        xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
     }
-   xn_data.push({x: xn_max, y: 0});
+   xn_data.push({x: 3, y: 0});
 
    xn_curve
+      .datum(xn_data)
       .transition()
       .duration(1000)
-      .datum(xn_data)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
           .x(function(d) { return x(d.x); })
