@@ -124,7 +124,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 MathJax.Hub.Config({
   tex2jax: {
     inlineMath: [['$','$'], ['\\(','\\)']],
