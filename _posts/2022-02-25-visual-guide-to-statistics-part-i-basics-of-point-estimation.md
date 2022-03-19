@@ -124,13 +124,20 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    processEscapes: true
+  }
+});
+</script>
+
 <button id="sample-button">Sample</button>
 <div id="drug_exp"></div> 
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_SVG">
 <script>
 function drug_exp() {
-
 var theta = 0.2;
 
 var margin = {top: 10, right: 0, bottom: 10, left: 30},
@@ -174,8 +181,10 @@ svg.append("text")
   .attr("x", 310)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 13)
-  .text("$\\frac" + "{\\pi}4$")
+  .attr("font-size", 13).html(function(d) {
+    setTimeout(function(){MathJax.Hub.Queue(["Typeset",MathJax.Hub]);}, 10);
+    return "$ax^2 + bx + " + " = 0$" + "<br/>" + "\\(x_1 = 132\\)";
+})
   .style("fill", "#696969");
   
 svg.append("text")
@@ -235,32 +244,6 @@ sampleButton
     .on("click", function() {
       updateSymbols();
 });
-
-setTimeout(() => {
-  
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      processEscapes: true
-    }
-  });
-  
-  MathJax.Hub.Register.StartupHook("End", function() {
-    setTimeout(() => {
-          svg.selectAll('.tick').each(function(){
-          var self = d3.select(this),
-              g = self.select('text>span>svg');
-          g.remove();
-          self.append(function(){
-            return g.node();
-          });
-        });
-      }, 1);
-    });
-  
-  MathJax.Hub.Queue(["Typeset", MathJax.Hub, svg.node()]);
-  
-}, 1);
 
 }
 
