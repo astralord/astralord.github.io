@@ -761,7 +761,7 @@ var xn_curve = svg
 
 var std_curve;
 
-d3.csv("../assets/chi-t.csv", function(error, chi_data) {
+d3.csv("../../../../assets/chi-t.csv", function(error, chi_data) {
   if (error) throw error;
   
   std_curve = svg
@@ -1070,7 +1070,24 @@ function updateNGauss(new_n) {
    n = new_n;
    reset();
    
-   d3.csv("../assets/chi-t.csv", function(error, chi_data) {
+   xn_max = Math.min(16 / n, 4);  
+   xn_data = [{x: -xn_max, y: 0}];
+   for (var i = -xn_max; i < xn_max; i += 0.01) {
+       xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
+    }
+   xn_data.push({x: xn_max, y: 0});
+
+   xn_curve
+      .transition()
+      .duration(1000)
+      .datum(xn_data)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(-d.y - 0.5); })
+   );
+
+   d3.csv("../../../../assets/chi-t.csv", function(error, chi_data) {
      if (error) throw error;
   
      std_curve
@@ -1433,16 +1450,20 @@ $$ \hat{\gamma}(\vartheta)=(\hat{m}_1, \hat{m}_2-\hat{m}_1^2)^T=(\overline{x}_n,
 
 I'm going to leave it as an exercise to prove that this estimator coincides with the estimation obtained by the maximum likelihood method.
 
-Let's take another example, $X_1, \dots X_n$ i.i.d. and distributed uniformly: $\sim \mathcal{U}(0, \vartheta)$, where estimated parameter $\vartheta > 0$. One can show that estimator
+Let's take another example, $X_1, \dots X_n$ i.i.d. $\sim \mathcal{U}(0, \vartheta)$, where estimated parameter $\vartheta > 0$. One can show that estimator
 
 $$g_{ML}(X) = X_{(n)} = \max \lbrace X_1, \dots X_n \rbrace $$
 
-is a maximum-likelihood estimator. On the other hand, $g_{MM}(X) = 2 \overline{X}_n$ is an estimator by method of moments. Also, maximum-likelihood estimator follows scaled Beta-distribution, $g_{ML}(X) \sim \vartheta B(n, 1)$, and therefore it is biased:
+is a maximum-likelihood estimator. On the other hand, 
+
+$$g_{MM}(X) = 2 \overline{X}_n$$
+
+is an estimator by method of moments. Also, maximum-likelihood estimator follows scaled Beta-distribution, $g_{ML}(X) \sim \vartheta B(n, 1)$, and therefore it is biased:
 
 $$\mathbb{E}[g_{ML}(X)] = \vartheta\frac{n}{n+1}.$$
 
-UMVU estimator is $g_{UMVU}(X) = X_{(n)} (1 + \frac{1}{n})$, and its variance:
+UMVU estimator is $g(X) = X_{(n)} (1 + \frac{1}{n})$, and its variance:
 
-$$\operatorname{Var}[g_{UMVU}(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
+$$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
 
 However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is another exercise to figure out why Cramér-Rao inequality here is not satisfied.
