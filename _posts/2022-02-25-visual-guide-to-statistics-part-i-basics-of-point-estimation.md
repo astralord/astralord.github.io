@@ -759,13 +759,15 @@ var xn_curve = svg
         .y(function(d) { return y(-d.y - 0.5); })
 );
 
-d3.csv("../../../../assets/chi-t.csv", function(error, data) {
+var std_curve;
+
+d3.csv("../assets/chi-t.csv", function(error, chi_data) {
   if (error) throw error;
   
-  var std_curve = svg
+  std_curve = svg
     .append('g')
     .append("path")
-      .datum(data)
+      .datum(chi_data)
       .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
@@ -775,7 +777,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
           .x(function(d) { return x(-(n - 1) * d["chi_" + (n-1)] - 4.5); })
-          .y(function(d) { return y(d.chi_x / n); })
+          .y(function(d) { return y(Math.min(4, d.chi_x / n)); })
    );
 }
 
@@ -806,7 +808,7 @@ svg.append("text")
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("𝓝(0, 1)")
+  .text("X~𝓝(0, 1)")
   .style("fill", "#65AD69");
 
 svg.append("path")
@@ -1068,10 +1070,24 @@ function updateNGauss(new_n) {
    n = new_n;
    reset();
    
+   d3.csv("../assets/chi-t.csv", function(error, chi_data) {
+     if (error) throw error;
+  
+     std_curve
+        .datum(chi_data)
+        .transition()
+        .duration(1000)
+        .attr("d",  d3.line()
+          .curve(d3.curveBasis)
+            .x(function(d) { return x(-(n - 1) * d["chi_" + (n-1)] - 4.5); })
+            .y(function(d) { return y(Math.min(4, d.chi_x / n)); })
+         );
+   });
+   
    sn_avg_curve
      .datum([{x: 1 - 1/n, y: -4}, {x: 1-1/n, y: -6}, {x: 1.5-1/n, y: -6}])
      .transition()
-     .duration(avg_dur)
+     .duration(1000)
      .attr("d",  d3.line()
         .x(function(d) { return x(d.y); })
         .y(function(d) { return y(d.x); })
@@ -1079,7 +1095,7 @@ function updateNGauss(new_n) {
       
    sn_avg_txt
      .transition()
-     .duration(avg_dur)
+     .duration(1000)
      .attr("y", y(1.6-1/n))
      .attr("x", x(-6.5));
 }
@@ -1108,7 +1124,7 @@ resetButton
 });
 
 var ng_x = d3.scaleLinear()
-    .domain([1, 13])
+    .domain([2, 13])
     .range([0, width / 2])
     .clamp(true);
     
