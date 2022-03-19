@@ -1189,39 +1189,7 @@ biasedness();
 </script>
 
 ![](.)
-*Fig. 3. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$.*
-
-We can easily check the (un-)biasedness of these estimators. Let's fix number of samples, for example $n=10$, and run sufficiently large amount of experiments, say $10000$. Then wash, rinse, repeat again $10$ times to observe multiple outputs.
-
-```python
-print(' Mean   Var ')
-n = 10
-for _ in range(10):
-    means = []
-    stds = []
-    for experiment in range(10000):
-        x = np.random.normal(0, 1, n)
-        means.append(np.mean(x))
-        stds.append(np.std(x) ** 2)
-    print("{:6.3f}".format(np.mean(means)), "{:6.3f}".format(np.mean(stds)))
-```
-Output:
-
-```
- Mean   Var 
--0.003  0.901
- 0.000  0.897
- 0.001  0.899
--0.001  0.900
- 0.001  0.906
- 0.002  0.905
--0.002  0.903
- 0.001  0.900
- 0.004  0.892
--0.001  0.904
-```
-
-We see here that while $\overline{X}_n$ varies around $\mu=0$, expected value of estimator $\hat{s}_n^2(X)$ is near $0.9 \neq \sigma^2$.
+*Fig. 3. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$. We see here that while $\overline{X}_n$ varies around $\mu=0$, expected value of estimator $\hat{s}_n^2(X)$ is lower than $\sigma^2 = 1$.*
 
 So far we figured the unbiasedness of $g(X) = \overline{X}_n$. But how can we tell if $\overline{X}_n$ is an UMVU estimator? Can we find an estimator of $\mu$ with variance lower than $\frac{\sigma^2}{n}$?
 
@@ -1238,7 +1206,7 @@ $$ U_\vartheta(x) = \left\{\begin{array}{ll}
 
 and function
 
-$$ I(f(\cdot, \vartheta))=\mathbb{E}_\vartheta \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]. $$
+$$ I(f(\cdot, \vartheta))=\mathbb{E} \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]. $$
 
 Under mild regularity conditions we have
 
@@ -1251,7 +1219,7 @@ $$ \operatorname{Var}(U_\vartheta(X)) = \mathbb{E}[(U_\vartheta(X))^2]=I(f(\cdot
 Then using Cauchy-Schwartz inequality we get 
 
 $$ \begin{aligned}
-	\big( \frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)] \big)^2 &= \big( \mathbb{E}_\vartheta[g(X) \cdot U_\vartheta(X)] \big)^2 \\ 
+	\big( \frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)] \big)^2 &= \big( \mathbb{E}[g(X) \cdot U_\vartheta(X)] \big)^2 \\ 
 & = \big(\operatorname{Cov}(g(X), U_\vartheta(X)) \big)^2 \\
 & \leq \operatorname{Var}(g(X))\cdot \operatorname{Var}(U_\vartheta(X)) \\ 
 &= I(f(\cdot, \vartheta))\cdot \operatorname{Var}(g(X)).
@@ -1259,7 +1227,7 @@ $$ \begin{aligned}
 	
 The resulting inequality:
 
-$$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)]\big)^2}{I(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
+$$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)]\big)^2}{I(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
 
 gives us **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
 
@@ -1292,7 +1260,7 @@ Therefore, $g(x) = \overline{x}_n$ is an UMVU estimator.
 
 Define function 
 
-$$ G(\vartheta)=\Big( \frac{\partial}{\partial \vartheta_j} \mathbb{E}_\vartheta[g_i(X)] \Big)_{i,j} \in \mathbb{R}^{k \times d}. $$
+$$ G(\vartheta)=\Big( \frac{\partial}{\partial \vartheta_j} \mathbb{E}[g_i(X)] \Big)_{i,j} \in \mathbb{R}^{k \times d}. $$
 
 Then with multidimensional Cauchy-Shwartz inequality one can prove that under similar regularity conditions we have:
 
@@ -1463,4 +1431,18 @@ Again in example $X_1, \dots X_n$ i.i.d. $\sim \mathcal {N}(\mu, \sigma^2)$ an e
 
 $$ \hat{\gamma}(\vartheta)=(\hat{m}_1, \hat{m}_2-\hat{m}_1^2)^T=(\overline{x}_n, \hat{s}_n^2)^T. $$
 
-Aand.. I'm going to leave it as an exercise to prove that this estimator coincides with the estimation obtained by the maximum likelihood method.
+I'm going to leave it as an exercise to prove that this estimator coincides with the estimation obtained by the maximum likelihood method.
+
+Let's take another example, $X_1, \dots X_n$ i.i.d. and distributed uniformly: $\sim \mathcal{U}(0, \vartheta)$, where estimated parameter $\vartheta > 0$. One can show that estimator
+
+$$g_{ML}(X) = X_{(n)} = \max \lbrace X_1, \dots X_n \rbrace $$
+
+is a maximum-likelihood estimator. On the other hand, $g_{MM}(X) = 2 \overline{X}_n$ is an estimator by method of moments. Also, maximum-likelihood estimator follows scaled Beta-distribution, $g_{ML}(X) \sim \vartheta B(n, 1)$, and therefore it is biased:
+
+$$\mathbb{E}[g_{ML}(X)] = \vartheta\frac{n}{n+1}.$$
+
+UMVU estimator is $g_{UMVU}(X) = X_{(n)} (1 + \frac{1}{n})$, and its variance:
+
+$$\operatorname{Var}[g_{UMVU}(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
+
+However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is another exercise to figure out why Cramér-Rao inequality here is not satisfied.
