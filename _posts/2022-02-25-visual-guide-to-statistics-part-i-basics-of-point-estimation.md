@@ -95,7 +95,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
   font-size: 11px;
 }
 
-#sample-button-2:hover {
+#sample-button:hover {
   background-color: #696969;
 }
 
@@ -115,7 +115,27 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
   font-size: 11px;
 }
 
-#sample-button:hover {
+#sample-button-2:hover {
+  background-color: #696969;
+}
+
+#reset-button {
+  top: 15px;
+  left: 15px;
+  background: #E86456;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#reset-button:hover {
   background-color: #696969;
 }
    
@@ -533,7 +553,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	        .on("start.interrupt", function() { slider.interrupt(); })
 	        .on("start drag", function() { 
 	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
-	          parameter_update(x.invert(d3.event.x));
+	          parameter_update(round_fun(x.invert(d3.event.x)));
 	         });
 	         
     slider.append("line")
@@ -636,7 +656,7 @@ Let's check which of these estimators are unbiased. We have $\mathbb{E}[\overlin
 
 $$ \mathbb{E}[\hat{s}_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
-<button id="sample-button-2">Sample</button>
+<button id="sample-button-2">Sample</button> <button id="reset-button">Reset</button>
 <div id="biased_viz"></div> 
 
 <script>
@@ -657,11 +677,11 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 20, right: 0, bottom: 5, left: 50},
+var margin = {top: 20, right: 0, bottom: 5, left: 70},
     width = 750 - margin.left - margin.right,
-    height = 350 - margin.top - margin.bottom,
+    height = 400 - margin.top - margin.bottom,
     fig_height = 250 - margin.top - margin.bottom,
-    fig_width = 450,
+    fig_width = 500,
     cfs = 100;
     
 var svg = d3.select("#biased_viz")
@@ -761,7 +781,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
 
 );
 
-var labels_x = 450;
+var labels_x = 550;
 
 svg.append("path")
    .attr("stroke", "#65AD69")
@@ -786,7 +806,7 @@ svg.append("text")
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("X distribution")
+  .text("𝓝(0, 1)")
   .style("fill", "#65AD69");
 
 svg.append("path")
@@ -812,7 +832,7 @@ svg.append("text")
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("X̄ₙ distribution")
+  .text("X̄ₙ")
   .style("fill", "#348ABD");
 
 svg.append("path")
@@ -838,7 +858,7 @@ svg.append("text")
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("ŝₙ²(X) distribution")
+  .text("ŝₙ²(X)")
   .style("fill", "#EDA137");
   
 var xn_avg_curve = svg
@@ -860,7 +880,7 @@ var xn_avg_curve = svg
 var xn_avg_txt = svg.append("text")
   .attr("text-anchor", "start")
   .attr("y", y(-2.1))
-  .attr("x", x(-1.1))
+  .attr("x", x(-1.2))
   .attr("font-family", "Arvo")
   .text("𝔼[X̄ₙ]")
   .style("fill", "#696969");
@@ -1044,11 +1064,13 @@ function sample() {
    sn_dots.push(sn_dot);
 }
 
-function updateNGauss() { 
+function updateNGauss(new_n) { 
+   n = new_n;
+   reset();
+   
    sn_avg_curve
      .datum([{x: 1 - 1/n, y: -4}, {x: 1-1/n, y: -6}, {x: 1.5-1/n, y: -6}])
      .transition()
-     .delay(5 * avg_dur)
      .duration(avg_dur)
      .attr("d",  d3.line()
         .x(function(d) { return x(d.y); })
@@ -1057,7 +1079,6 @@ function updateNGauss() {
       
    sn_avg_txt
      .transition()
-     .delay(5 * avg_dur)
      .duration(avg_dur)
      .attr("y", y(1.6-1/n))
      .attr("x", x(-6.5));
@@ -1069,6 +1090,81 @@ sampleButton
     .on("click", function() {
       sample();
 });
+
+function reset() {
+   for (var i = 0; i < xn_dots.length; i += 1) {
+       xn_dots[i].remove();
+       sn_dots[i].remove();
+   }
+   xn_dots = [];
+   sn_dots = [];
+}
+
+var resetButton = d3.select("#reset-button");
+
+resetButton
+    .on("click", function() {
+      reset();
+});
+
+var ng_x = d3.scaleLinear()
+    .domain([1, 13])
+    .range([0, width / 2])
+    .clamp(true);
+    
+function roundN(x) { return Math.round(x - 0.5); }
+
+function createSlider(svg_, parameter_update, slider_x, loc_x, loc_y, letter, color, init_val, round_fun) {
+    var slider = svg_.append("g")
+      .attr("class", "slider")
+      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
+    
+    var drag = d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() { 
+	          handle.attr("cx", slider_x(round_fun(slider_x.invert(d3.event.x))));  
+	          parameter_update(round_fun(slider_x.invert(d3.event.x)));
+	         });
+	         
+    slider.append("line")
+	    .attr("class", "track")
+	    .attr("x1", slider_x.range()[0])
+	    .attr("x2", slider_x.range()[1])
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-inset")
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-overlay")
+	    .call(drag);
+
+	slider.insert("g", ".track-overlay")
+    .attr("class", "ticks")
+    .attr("transform", "translate(0," + 18 + ")")
+  .selectAll("text")
+  .data(slider_x.ticks(6))
+  .enter().append("text")
+    .attr("x", slider_x)
+    .attr("text-anchor", "middle")
+    .attr("font-family", "Arvo")
+    .text(function(d) { return d; });
+
+   var handle = slider.insert("circle", ".track-overlay")
+      .attr("class", "handle")
+      .attr("r", 6).attr("cx", slider_x(init_val));
+      
+	svg_
+	  .append("text")
+	  .attr("text-anchor", "middle")
+	  .attr("y", loc_y + 3)
+	  .attr("x", loc_x - 21)
+	  .attr("font-family", "Arvo")
+	  .attr("font-size", 17)
+	  .text(letter)
+	  .style("fill", color);
+	  	  
+	return handle;
+}
+
+createSlider(svg, updateNGauss, ng_x, 150, 350, "n", "#696969", 6, roundN);
 
 }
 
