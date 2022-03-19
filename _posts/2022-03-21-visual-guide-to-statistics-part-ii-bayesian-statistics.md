@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Visual Guide to Statistics. Part II: Bayesian Statistics'
-date: 2022-02-25 03:22 +0800
+date: 2022-03-21 03:22 +0800
 categories: [Statistics]
 tags: [statistics, parameter-estimation, bayesian-inference, bayes-estimator, minimax-estimator, least-favorable-prior]
 math: true
