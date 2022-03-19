@@ -501,7 +501,6 @@ svg
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 15)
   .text("μ")
   .style("fill", "#65AD69");
   
@@ -524,8 +523,7 @@ svg
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 17)
-  .text("x̄ₙ")
+  .text("X̄ₙ")
   .style("fill", "#E86456");
       
 svg.append("path")
@@ -557,7 +555,6 @@ svg
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 13)
   .text("Bayes")
   .style("fill", "#348ABD");
       

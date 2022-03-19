@@ -124,15 +124,6 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-MathJax.Hub.Config({
-  tex2jax: {
-    inlineMath: [['$','$'], ['\\(','\\)']],
-    processEscapes: true
-  }
-});
-</script>
-
 <button id="sample-button">Sample</button>
 <div id="drug_exp"></div> 
 
@@ -181,10 +172,8 @@ svg.append("text")
   .attr("x", 310)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 13).html(function(d) {
-    setTimeout(function(){MathJax.Hub.Queue(["Typeset",MathJax.Hub]);}, 10);
-    return "$ax^2 + bx + " + " = 0$" + "<br/>" + "\\(x_1 = 132\\)";
-})
+  .attr("font-size", 13)
+  .text("Dose Xᵢ")
   .style("fill", "#696969");
   
 svg.append("text")
@@ -196,7 +185,7 @@ svg.append("text")
   .attr("font-size", 13)
   .text("Yᵢ")
   .style("fill", "#696969");
-  
+    
 var figs = [];
 for (var i = 0; i < 11; i += 1) {
   if (Math.random() < 1 - Math.exp(-theta * i)) {
@@ -669,7 +658,7 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 10, right: 0, bottom: 5, left: 30},
+var margin = {top: 10, right: 0, bottom: 10, left: 50},
     width = 750 - margin.left - margin.right,
     height = 350 - margin.top - margin.bottom,
     fig_height = 250 - margin.top - margin.bottom,
@@ -779,7 +768,7 @@ var xn_sum = 0,
 var xn_avg_curve = svg
     .append('g')
     .append("path")
-      .datum([{x: xn_sum, y: 0}, {x: xn_sum, y: -2}])
+      .datum([{x: xn_sum, y: 0}, {x: xn_sum, y: -2.3}])
       .attr("fill", "none")
       .attr("border", 0)
       .attr("opacity", ".8")
@@ -792,7 +781,16 @@ var xn_avg_curve = svg
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
    );
-    
+
+var xn_avg_txt = svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", y(-2) + 11)
+  .attr("x", x(xn_sum) - 46)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("𝔼ₘ[X̄ₙ]")
+  .style("fill", "#696969");
+   
 var sn_avg_curve = svg
     .append('g')
     .append("path")
@@ -809,6 +807,15 @@ var sn_avg_curve = svg
           .x(function(d) { return x(d.y); })
           .y(function(d) { return y(d.x); })
    );
+   
+var sn_avg_txt = svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", y(sn_sum) - 5)
+  .attr("x", x(-6.5))
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("𝔼ₘ[ŝₙ²(X)]")
+  .style("fill", "#696969");
 
 function sample() {
   random_samples = [];
@@ -976,6 +983,13 @@ function sample() {
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
       );
+      
+   xn_avg_txt
+     .transition()
+     .delay(avg_dur)
+     .duration(avg_dur)
+     .attr("y", y(-2) + 11)
+     .attr("x", x(xn_sum / xn_dots.length) - 46);   
    
    sn_avg_curve
      .datum([{x: sn_sum / sn_dots.length, y: -4}, {x: sn_sum / sn_dots.length, y: -6}])
@@ -987,6 +1001,13 @@ function sample() {
           .x(function(d) { return x(d.y); })
           .y(function(d) { return y(d.x); })
       );
+      
+   sn_avg_txt
+     .transition()
+     .delay(5 * avg_dur)
+     .duration(avg_dur)
+     .attr("y", y(sn_sum / sn_dots.length) - 5)
+     .attr("x", x(-6.5));
 }
 
 var sampleButton = d3.select("#sample-button-2");
@@ -1003,7 +1024,7 @@ biasedness();
 </script>
 
 ![](.)
-*Fig. 3. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$. Estimated mean for statistic $T(x)$ is $\tilde{\mathbb{E}}_m[T(X)] = \frac{1}{m} \sum_{i=1}^m T(X^i)$, where $X^i$ are samples drawn in $i$-th experiment and $m$ is a total number of experiments. By Law of Large Numbers $\tilde{\mathbb{E}}_m[T(X)] \xrightarrow[m \rightarrow \infty]{} \mathbb{E}[T(X)]$.*
+*Fig. 3. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$. Estimated mean for statistic $T(x)$ is $\mathbb{E}_m[T(X)] = \frac{1}{m} \sum_{i=1}^m T(X^i)$, where $X^i$ are samples drawn in $i$-th experiment and $m$ is a total number of experiments. By Law of Large Numbers we have convergence $\mathbb{E}_m[T(X)] \xrightarrow[m \rightarrow \infty]{} \mathbb{E}[T(X)]$.*
 
 We can easily check the (un-)biasedness of these estimators. Let's fix number of samples, for example $n=10$, and run sufficiently large amount of experiments, say $10000$. Then wash, rinse, repeat again $10$ times to observe multiple outputs.
 
