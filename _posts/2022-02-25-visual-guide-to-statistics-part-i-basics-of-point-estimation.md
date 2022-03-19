@@ -122,12 +122,12 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
-
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <button id="sample-button">Sample</button>
 <div id="drug_exp"></div> 
 
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_SVG">
 <script>
 function drug_exp() {
 
@@ -175,7 +175,7 @@ svg.append("text")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 13)
-  .text("Dose Xᵢ")
+  .text("$\\frac" + "{\\pi}4$")
   .style("fill", "#696969");
   
 svg.append("text")
@@ -235,6 +235,32 @@ sampleButton
     .on("click", function() {
       updateSymbols();
 });
+
+setTimeout(() => {
+  
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+  
+  MathJax.Hub.Register.StartupHook("End", function() {
+    setTimeout(() => {
+          svg.selectAll('.tick').each(function(){
+          var self = d3.select(this),
+              g = self.select('text>span>svg');
+          g.remove();
+          self.append(function(){
+            return g.node();
+          });
+        });
+      }, 1);
+    });
+  
+  MathJax.Hub.Queue(["Typeset", MathJax.Hub, svg.node()]);
+  
+}, 1);
 
 }
 
@@ -348,6 +374,7 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
   $$ f_{t_n}(x) = \frac{\Gamma \big( \frac{n+1}{2} \big) } { \sqrt{n \pi} \Gamma \big( \frac{n}{2} \big) } \Big( 1 + \frac{x^2}{n} \Big)^{\frac{n+1}{2}}. $$
 
 <div id="chi_t_plt"></div> 
+
 <script>
 function chi_t_plts() {
 
@@ -585,7 +612,7 @@ chi_t_plts();
 </script>
 
 ![](.)
-*Fig. 3. Probability density functions for $\chi_n^2$ and $t_n$-distributions. Move slider to observe how they look for different degrees of freedom $n$. Note that with large $n$ $t_n$ converges to normal distribution.*
+*Fig. 2. Probability density functions for $\chi_n^2$ and $t_n$-distributions. Move slider to observe how they look for different degrees of freedom $n$. Note that with large $n$ $t_n$ converges to normal distribution.*
 
 It can now be shown that
 
@@ -993,7 +1020,7 @@ biasedness();
 </script>
 
 ![](.)
-*Fig. 2. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$.*
+*Fig. 3. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$. Estimated mean for statistic $T(x)$ is $\tilde{\mathbb{E}}_m[T(X)] = \frac{1}{m} \sum_{i=1}^m T(X^i)$, where $X^i$ are samples drawn in $i$-th experiment and $m$ is a total number of experiments. By Law of Large Numbers $\tilde{\mathbb{E}}_m[T(X)] \xrightarrow[m \rightarrow \infty]{} \mathbb{E}[T(X)]$.*
 
 We can easily check the (un-)biasedness of these estimators. Let's fix number of samples, for example $n=10$, and run sufficiently large amount of experiments, say $10000$. Then wash, rinse, repeat again $10$ times to observe multiple outputs.
 
