@@ -636,7 +636,6 @@ Let's check which of these estimators are unbiased. We have $\mathbb{E}[\overlin
 
 $$ \mathbb{E}[\hat{s}_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
-
 <button id="sample-button-2">Sample</button>
 <div id="biased_viz"></div> 
 
@@ -658,7 +657,7 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-var margin = {top: 10, right: 0, bottom: 10, left: 50},
+var margin = {top: 20, right: 0, bottom: 5, left: 50},
     width = 750 - margin.left - margin.right,
     height = 350 - margin.top - margin.bottom,
     fig_height = 250 - margin.top - margin.bottom,
@@ -762,13 +761,90 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
 
 );
 
-var xn_sum = 0,
-    sn_sum = 0;
-    
+var labels_x = 450;
+
+svg.append("path")
+   .attr("stroke", "#65AD69")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: -5}, {x: labels_x + 25, y: -5}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: -7}, {x: labels_x + 25, y: -7}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 0)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("X distribution")
+  .style("fill", "#65AD69");
+
+svg.append("path")
+   .attr("stroke", "#348ABD")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: 13}, {x: labels_x + 25, y: 13}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 20)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("X̄ₙ distribution")
+  .style("fill", "#348ABD");
+
+svg.append("path")
+   .attr("stroke", "#EDA137")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: 35}, {x: labels_x + 25, y: 35}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: 33}, {x: labels_x + 25, y: 33}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+  
+svg.append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 40)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("ŝₙ²(X) distribution")
+  .style("fill", "#EDA137");
+  
 var xn_avg_curve = svg
     .append('g')
     .append("path")
-      .datum([{x: xn_sum, y: 0}, {x: xn_sum, y: -2.3}])
+      .datum([{x: 0, y: 0}, {x: 0, y: -2}, {x: -0.5, y: -2}])
       .attr("fill", "none")
       .attr("border", 0)
       .attr("opacity", ".8")
@@ -777,24 +853,22 @@ var xn_avg_curve = svg
       .attr("stroke-linejoin", "round")
       .attr("stroke-dasharray", "3 3")
       .attr("d",  d3.line()
-        .curve(d3.curveBasis)
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(d.y); })
    );
 
 var xn_avg_txt = svg.append("text")
   .attr("text-anchor", "start")
-  .attr("y", y(-2) + 11)
-  .attr("x", x(xn_sum) - 46)
+  .attr("y", y(-2.1))
+  .attr("x", x(-1.1))
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .text("𝔼ₘ[X̄ₙ]")
+  .text("𝔼[X̄ₙ]")
   .style("fill", "#696969");
    
 var sn_avg_curve = svg
     .append('g')
     .append("path")
-      .datum([{x: sn_sum, y: -4}, {x: sn_sum, y: -6}])
+      .datum([{x: 1 - 1/n, y: -4}, {x: 1 - 1 / n, y: -6}, {x: 1.5 - 1/n, y: -6}])
       .attr("fill", "none")
       .attr("border", 0)
       .attr("opacity", ".8")
@@ -803,18 +877,16 @@ var sn_avg_curve = svg
       .attr("stroke-linejoin", "round")
       .attr("stroke-dasharray", "3 3")
       .attr("d",  d3.line()
-        .curve(d3.curveBasis)
           .x(function(d) { return x(d.y); })
           .y(function(d) { return y(d.x); })
    );
    
 var sn_avg_txt = svg.append("text")
   .attr("text-anchor", "start")
-  .attr("y", y(sn_sum) - 5)
+  .attr("y", y(1.6 - 1/n))
   .attr("x", x(-6.5))
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .text("𝔼ₘ[ŝₙ²(X)]")
+  .text("𝔼[ŝₙ²(X)]")
   .style("fill", "#696969");
 
 function sample() {
@@ -970,43 +1042,24 @@ function sample() {
    
    xn_dots.push(xn_dot);
    sn_dots.push(sn_dot);
-   xn_sum += average;
-   sn_sum += average_y;
-   
-   xn_avg_curve
-     .datum([{x: xn_sum / xn_dots.length, y: 0}, {x: xn_sum / xn_dots.length, y: -2}])
-     .transition()
-     .delay(avg_dur)
-     .duration(avg_dur)
-     .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-      );
-      
-   xn_avg_txt
-     .transition()
-     .delay(avg_dur)
-     .duration(avg_dur)
-     .attr("y", y(-2) + 11)
-     .attr("x", x(xn_sum / xn_dots.length) - 46);   
-   
+}
+
+function updateNGauss() { 
    sn_avg_curve
-     .datum([{x: sn_sum / sn_dots.length, y: -4}, {x: sn_sum / sn_dots.length, y: -6}])
+     .datum([{x: 1 - 1/n, y: -4}, {x: 1-1/n, y: -6}, {x: 1.5-1/n, y: -6}])
      .transition()
      .delay(5 * avg_dur)
      .duration(avg_dur)
      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(d.y); })
-          .y(function(d) { return y(d.x); })
-      );
+        .x(function(d) { return x(d.y); })
+        .y(function(d) { return y(d.x); })
+   );
       
    sn_avg_txt
      .transition()
      .delay(5 * avg_dur)
      .duration(avg_dur)
-     .attr("y", y(sn_sum / sn_dots.length) - 5)
+     .attr("y", y(1.6-1/n))
      .attr("x", x(-6.5));
 }
 
@@ -1024,7 +1077,7 @@ biasedness();
 </script>
 
 ![](.)
-*Fig. 3. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$. Estimated mean for statistic $T(x)$ is $\mathbb{E}_m[T(X)] = \frac{1}{m} \sum_{i=1}^m T(X^i)$, where $X^i$ are samples drawn in $i$-th experiment and $m$ is a total number of experiments. By Law of Large Numbers we have convergence $\mathbb{E}_m[T(X)] \xrightarrow[m \rightarrow \infty]{} \mathbb{E}[T(X)]$.*
+*Fig. 3. Statistical experiments in estimating $\sigma$ for $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(0, 1)$.*
 
 We can easily check the (un-)biasedness of these estimators. Let's fix number of samples, for example $n=10$, and run sufficiently large amount of experiments, say $10000$. Then wash, rinse, repeat again $10$ times to observe multiple outputs.
 
