@@ -31,23 +31,19 @@ description: >-                        # used by seo meta and the atom feed
 url: 'https://astralord.github.io'
 
 github:
-  username: github_username             # change to your github username
-
-twitter:
-  username: twitter_username            # change to your twitter username
+  username: astralord             # change to your github username
 
 social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
-  name: astralord
+  name: Aleksandr Samarin
   email: samarin_ad@mail.ru             # change to your email address
   links:
     # The first element serves as the copyright owner's link
-    - https://twitter.com/username      # change to your twitter homepage
-    - https://github.com/username       # change to your github homepage
+    - https://github.com/astralord       # change to your github homepage
     # Uncomment below to add more social links
     # - https://www.facebook.com/username
-    # - https://www.linkedin.com/in/username
+    - https://www.linkedin.com/in/aleksandr-samarin-b8a35496/
 
 google_site_verification: google_meta_tag_verification # change to your verification string
 
