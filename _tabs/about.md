@@ -4,5 +4,8 @@ icon: fas fa-info
 order: 4
 ---
 
+### Hi there 👋, my name is Aleksandr 
 
-> **Note**: Add Markdown syntax content to file `_tabs/about.md` and it will show up on this page.
+- 🔭 I'm currently working at Research Department of Huawei in St.Petersburg (Russia)
+- 🤖 I have a huge interest in Deep Reinforcement Learning
+- :zap:⚡ Fun fact: I have two cats, one can be spotted on my avatar pic
