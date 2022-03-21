@@ -1449,8 +1449,11 @@ $$R(\mu, g^*)=\mathbb{E}[(\overline{X}_n-\mu)^2]=\frac{\sigma^2}{n},$$
 
 $g^*(x)$ is minimax and $\pi_{m}$ is sequence of least favorable priors.
 
-[^LDCT]: 
-  Suppose there is measurable space $X$ with measure $\mu$. Also let $\{ f_n \}_{n=1}^\infty$ and $f$ be measurable functions on $X$ and $f_n(x) \rightarrow f(x)$ almost everywhere. Then if there exists an integrable function $g$ defined on the same space such that
-   $$|f_n(x)| \leq g(x) \quad \forall n \in \mathbb{N}$$ 
-   almost everywhere, then $f_n$ and $f$ are integrable and 
-   $$\lim\limits_{n \rightarrow \infty} \int_X f_n(x) \mu(dx) = \int_X f(x) \mu(dx).$$
+   
+[^LDCT]: Suppose there is measurable space $X$ with measure $\mu$. Also let $\lbrace f_n \rbrace_{n=1}^\infty$ and $f$ be measurable functions on $X$ and $f_n(x) \rightarrow f(x)$ almost everywhere. Then if there exists an integrable function $g$ defined on the same space such that
+
+    $$|f_n(x)| \leq g(x) \quad \forall n \in \mathbb{N}$$ 
+
+    almost everywhere, then $f_n$ and $f$ are integrable and 
+
+    $$\lim\limits_{n \rightarrow \infty} \int_X f_n(x) \mu(dx) = \int_X f(x) \mu(dx).$$
