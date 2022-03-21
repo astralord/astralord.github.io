@@ -1391,3 +1391,62 @@ var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#34
 
 ![](.)
 *Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators coincide regardless of the sample value.*
+
+### Least favorable sequence of priors
+
+Let 
+
+$$r_\pi = \inf_{g \in \mathcal{K}} R(\pi, g), \quad \pi \in \mathcal{M}.$$
+
+Then sequence $(\pi_m)_{m \in \mathbb{N}}$ in $\mathcal{M}$ is called **least favorable sequence of priors** if
+
+* $\lim_{m \rightarrow \infty} r_{\pi_m} = r$,
+* $r_\pi \leq r\ $ $\ \forall \pi \in \mathcal{M}$.
+
+Let $(\pi_m)$ in $\mathcal{M}$ be a sequence, such that $r_{\pi_m} \rightarrow r \in \mathbb{R}$. Also let there be an estimator $g^* \in \mathcal{K}$, such that
+
+$$\sup_{\vartheta \in \Theta}R(\theta, g^*) = r.$$
+
+Then 
+
+$$\sup_{\vartheta \in \Theta} R(\vartheta, g) \geq \int_{\Theta} R(\vartheta, g) \pi_m(d \vartheta) \geq r_{\pi_m} \rightarrow r = \sup_{\vartheta \in \Theta}R(\theta, g^*)$$
+
+and therefore $g^*$ is minimax. Also for any $\pi \in \mathcal{M}$
+
+$$r_\pi \leq R(\pi, g^*) = \int_\Theta R(\vartheta, g^*) \pi (d\vartheta) \leq \sup_{\vartheta \in \Theta} R(\vartheta, g^*) = r,$$
+
+hence $(\pi_m)$ is a least favorable sequence of priors.
+
+Let's get back to our previous example of estimating mean for normal distribution with known $\sigma^2$. Say, we have prior distribution 
+
+$$h_m(\mu)=\frac{1}{\sqrt{2 \pi m}} \exp \Big \{ -\frac{(\mu-\nu)^2}{2m}\Big \}.$$ 
+
+with $m \in \mathbb{N}$. Recall that Bayes estimator is
+
+$$ g_{\nu, m}(x)=\Big( 1 + \frac{\sigma^2}{n m} \Big)^{-1} \overline{x}_n+\Big( \frac{n m}{\sigma^2}+1 \Big)^{-1} \nu. $$
+
+For any $\mu \in \mathbb{R}$
+
+$$
+	\begin{aligned}
+	R(\mu, g_{\nu, m}) & = \mathbb{E}[(g_{\nu, m}(X)-\mu)^2] \\
+	& = \mathbb{E}\Bigg[\bigg(\Big( 1 + \frac{\sigma^2}{n m} \Big)^{-1} (\overline{X}_n-\mu)+\Big( \frac{n m}{\sigma^2}+1 \Big)^{-1} (\nu-\mu)\bigg)^2\Bigg] \\
+	& = \Big(1 + \frac{\sigma^2}{nm}\Big)^{-2} \frac{\sigma^2}{n} + \Big( 1+\frac{nm}{\sigma^2} \Big)^{-2}(\nu-\mu)^2 \xrightarrow[m \ \rightarrow \infty]{} \frac{\sigma^2}{n}
+	\end{aligned}
+$$
+
+Since the risk is bounded from above:
+
+$$R(\mu, g_{\nu, m}) \leq \frac{\sigma^2}{n} + (\mu - \nu)^2,$$
+
+by Lebesgue Dominated Convergence Theorem [^LDCT] we have
+m
+$$r_{\pi_{m}}=R(\pi_{m}, g_{\nu, m})=\int_{\mathbb{R}}R(\mu, g_{\nu, m})\pi_{m}(d\mu) \longrightarrow \frac{\sigma^2}{n}.$$
+
+Since estimator $g^*(x)=\overline{x}_n$ satisfies the equality
+
+$$R(\mu, g^*)=\mathbb{E}[(\overline{X}_n-\mu)^2]=\frac{\sigma^2}{n},$$
+
+$g^*(x)$ is minimax and $\pi_{m}$ is sequence of least favorable priors.
+
+[^LDCT]: Suppose there is measurable space $X$ with measure $\mu$. Also let $\{ f_n \}_{n=1}^\infty$ and $f$ be measurable functions on $X$ and $f_n(x) \rightarrow f(x)$ almost everywhere. Then if there exists an integrable function $g$ defined on the same space such that $$|f_n(x)| \leq g(x) \quad \forall n \in \mathbb{N}$$ almost everywhere, then $f_n$ and $f$ are integrable and $$\lim\limits_{n \rightarrow \infty} \int_X f_n(x) \mu(dx) = \int_X f(x) \mu(dx).$$

@@ -8,4 +8,4 @@ order: 4
 
 - 🔭 I'm currently working at Research Department of Huawei in St.Petersburg (Russia)
 - 🤖 I have a huge interest in Deep Reinforcement Learning
-- :zap:⚡ Fun fact: I have two cats, one can be spotted on my avatar pic
+- ⚡ Fun fact: I have two cats, one can be spotted on my avatar pic
