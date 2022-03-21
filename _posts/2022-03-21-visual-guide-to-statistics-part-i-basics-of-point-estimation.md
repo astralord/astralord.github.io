@@ -286,7 +286,7 @@ Let $X_1, \dots, X_n$ i.i.d. $\sim F$, where $F(x) = \mathbb{P}(X \leq x)$ is un
 
 $$\gamma(F) = F(k).$$ 
 
-Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{X_i \leq k\}}$.
+Then a point estimator could be $g(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\lbrace X_i \leq k \rbrace }$.
 
 Now we are ready to construct formal definition of parameter estimation. Let's define measurable space $\Gamma$ and mapping $\gamma: \Theta \rightarrow \Gamma$. Then measurable function $ g: \mathcal{X} \rightarrow \Gamma $ is called **(point) estimation** of $\gamma(\vartheta)$. 
 
@@ -418,7 +418,7 @@ t_svg.append("text")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .text("t" + subscript_symbols[4])
-  .style("fill", "#E86456");
+  .style("fill", "#348ABD");
     
 d3.csv("../../../../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
@@ -485,7 +485,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     .append('g')
     .append("path")
       .datum(data)
-      .attr("fill", "#E86456")
+      .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".8")
       .attr("stroke", "#000")
