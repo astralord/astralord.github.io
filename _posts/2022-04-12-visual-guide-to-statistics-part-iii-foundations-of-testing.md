@@ -10,11 +10,11 @@ published: false
 
 > In this chapter we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
 
-Let's discuss a simplified clinical study, in which we want to decide whether a newly invented drug $B$ is better than a well-known drug $A$ or not. Suppose that you know from previous years that $A$ has a chance of healing about $65$%. The new drug $B$ was tested on $100$ persons and $80$ became healthy. Do we choose $A$ or $B$? In terms of mathematics we test
+Let's discuss a simplified clinical study, in which we want to decide whether a newly invented drug $B$ is better than a well-known drug $A$ or not. Suppose that you know from previous years that $A$ has a chance of healing about $p_a$. The new drug $B$ was tested on $n$ persons and $m$ became healthy. Do we choose $A$ or $B$? In terms of mathematics we test
 
-$$H: p \leq 0.65 \quad \text{vs} \quad K: p > 0.65, $$
+$$H: p_b \leq p_a \quad \text{vs} \quad K: p_b > p_a, $$
 
-where $p$ is the unknown chance of healing with $B$.
+where $p_b$ is the unknown chance of healing with $B$.
 
 Let $\Theta = \Theta_H \cup \Theta_K$ be a partition of $\Theta$.
 
@@ -42,51 +42,27 @@ When deciding for $H$ or $K$ using $\varphi$, two errors can occur:
 
 Both errors occur with certain probabilities. In our example the probability of a decision for $K$ is
 
-$$P_p(\varphi(X)=1)=P_p(\overline{X}_n > c).$$
+$$P(\varphi(X)=1)=P(\overline{X}_n > c).$$
 
 In practice, we can use approximation by normal distribution
 
 $$
 \begin{aligned}
-	P_p(\overline{X}_n > c) & = P_p\bigg(\frac{\sqrt{n}(\overline{X}_n - p)}{\sqrt{p(1-p)}} > \frac{\sqrt{n}(c - p)}{\sqrt{p(1-p)}}\bigg) \\
+	P(\overline{X}_n > c) & = P\bigg(\frac{\sqrt{n}(\overline{X}_n - p)}{\sqrt{p(1-p)}} > \frac{\sqrt{n}(c - p)}{\sqrt{p(1-p)}}\bigg) \\
 	\color{Salmon}{\text{Central Limit Theorem} \rightarrow} & \approx P\bigg(\mathcal{N}(0,1) > \frac{\sqrt{n}(c - p)}{\sqrt{p(1-p)}}\bigg) \\& = \Phi\bigg(\frac{\sqrt{n}(p - c)}{\sqrt{p(1-p)}}\bigg),
 	\end{aligned}	
 $$
 
-where $\Phi$ is the distribution function of $\mathcal{N}(0, 1)$. [Slutsky's Lemma](https://en.wikipedia.org/wiki/Slutsky%27s_theorem) tells that we may replace $p$ by $\overline{X}_n$ in the denominator. With $n=100$ and $\overline{X}_n=0.8$ we get
+where $\Phi$ is the distribution function of $\mathcal{N}(0, 1)$. The probability of error is bounded from above:
 
-$$P_p(\varphi(X)=1) \approx \Phi(25(p-c)).$$
-
-For example, if $p \leq 0.65$ we get
-
-$$ P_p(\text{Error of the 1st kind}) \approx
-	\left \{
-	\begin{array}{cl}
-	0, & p = 0.5, \\
-	0.006, &  p = 0.6
-	\end{array}
-	\right.
 $$
-
-This probability if bounded from above:
-
-$$P_p(\text{Error of the 1st kind}) \leq P_{0.65}(\text{Error of the 1st kind}) \approx \Phi(1.25) \approx 0.106.$$
+\begin{aligned}
+P(\text{Error of the 1st kind}) &= P(\overline{X}_n > c \mid p_b \leq p_a) \\ &\leq P(\overline{X}_n > c \mid p_b = p_a) \\ & =\Phi\bigg(\frac{\sqrt{n}(p_a - c)}{\sqrt{p_a(1-p_a)}}\bigg).
+\end{aligned}	$$
 
 By symmetry,
 
-$$P_p(\text{Error of 2nd kind}) \approx
-	\left \{
-	\begin{array}{cl}
-	0, & p = 0.9 \\
-	0.006, &  p = 0.8 \\
-	0.5, & p = c
-	\end{array}
-	\right.
-$$
-
-and
-
-$$ P_p(\text{Error of 2nd kind}) \leq P_{0.65}(\text{Error of 2nd kind}) \approx 0.894.$$
+$$ P(\text{Error of 2nd kind}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(p_a - c)}{\sqrt{p_a(1-p_a)}}\bigg).$$
 
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -97,11 +73,11 @@ $$ P_p(\text{Error of 2nd kind}) \leq P_{0.65}(\text{Error of 2nd kind}) \approx
 <script>
 function basic_test() {
 var n = 100;
-var c = 0.7;
-var p_a = 0.65;
+var c = 0.55;
+var p_a = 0.5;
 
 var margin = {top: 30, right: 0, bottom: 20, left: 30},
-    width = 500 - margin.left - margin.right,
+    width = 700 - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom,
     fig_height = 200 - margin.top - margin.bottom,
     fig_width = 450;
@@ -385,10 +361,121 @@ function dragged_c(d) {
   updateErrCurves();
 }
 
+var labels_x = 470;
+
+svg.append("path")
+   .attr("stroke", "#65AD69")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: -5}, {x: labels_x + 25, y: -5}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: -7}, {x: labels_x + 25, y: -7}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 0)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("P(Error of the 1st kind)")
+  .style("fill", "#65AD69");
+  
+svg.append("path")
+   .attr("stroke", "#EDA137")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: 13}, {x: labels_x + 25, y: 13}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 20)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("P(Error of the 2nd kind)")
+  .style("fill", "#EDA137");
+ 
+svg.append('g')
+   .selectAll("dot")
+   .data([{'x': labels_x + 14, 'y': 35}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#E86456")
+     .attr("stroke", "#000")
+     .attr("stroke-width", 1);
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 40)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("pₐ")
+  .style("fill", "#E86456");
+       
+svg.append("path")
+   .attr("stroke", "#348ABD")
+   .attr("stroke-width", 3)
+   .attr("opacity", "1")
+   .datum([{x: labels_x + 5, y: 55}, {x: labels_x + 25, y: 55}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+ 
+svg.append('g')
+   .selectAll("dot")
+   .data([{'x': labels_x + 7, 'y': 55}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2);
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 60)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("φ(x)")
+  .style("fill", "#348ABD");
 }
 
 basic_test();
 
 </script>
+
+![](.)
+*Fig. 1. Visualization of basic test experiment. Parameters $p_a$ and $c$ are draggable.*
 
 Ideally we want to minimize both errors simulaneously and pick the optimal test. The problem is
