@@ -262,7 +262,7 @@ var yAxis = svg.append("g").call(d3.axisLeft(y).ticks(3));
 yAxis.selectAll(".tick text")
      .attr("font-family", "Arvo");
 
-var g, post_std, avg_y, mode_y;
+var g, post_std, avg_y, mode_y, mu_y;
 
 function updateData() {
   prior_data = [{x: -7, y: 0}];
@@ -281,6 +281,7 @@ function updateData() {
   
   avg_y = Math.exp(-0.5 * ((avg - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI));
   mode_y = 1 / (post_std * Math.sqrt(2 * Math.PI));
+  mu_y = Math.exp(-0.5 * ((mu - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI));
 }
 
 function updateCurves(delay) {
@@ -323,7 +324,6 @@ function updateCurves(delay) {
        .delay(delay) 
 	    .duration(avg_dur)
 	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
 	      .x(function(d) { return x(d.x); })
 	      .y(function(d) { return y(d.y); })
 	    );
@@ -340,7 +340,6 @@ function updateCurves(delay) {
        .delay(delay) 
 	    .duration(avg_dur)
 	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
 	      .x(function(d) { return x(d.x); })
 	      .y(function(d) { return y(d.y); })
 	    );
@@ -351,12 +350,22 @@ function updateCurves(delay) {
 	    .duration(avg_dur)
        .attr("cx", function (d) { return x(g); } )
        .attr("cy", function (d) { return y(mode_y); } );
+       
+	 mu_dash.datum([{x: mu, y: 0}, {x: mu, y: mu_y}])
+       .transition()
+       .delay(delay) 
+	    .duration(avg_dur)
+	    .attr("d",  d3.line()
+	      .x(function(d) { return x(d.x); })
+	      .y(function(d) { return y(d.y); })
+	    );
     
     mu_dot
        .transition()
-	    .duration(0)
+       .delay(delay)
+       .duration(avg_dur)
        .attr("cx", function (d) { return x(mu); } )
-       .attr("cy", function (d) { return y(0); } );
+       .attr("cy", function (d) { return y(mu_y); } );
 }
 
 var prior_curve = svg
@@ -410,15 +419,25 @@ var mode_dash = svg.append("path")
     .attr("d",  d3.line()
       .x(function(d) { return x(d.x); })
       .y(function(d) { return y(d.y); }));
+
+var mu_dash = svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: mu, y: mu_y}, {x: mu, y: 0}])
+    .attr("d",  d3.line()
+      .x(function(d) { return x(d.x); })
+      .y(function(d) { return y(d.y); }));
       
 var mu_dot = svg.append('g')
   .selectAll("dot")
-  .data([{x: mu, y: 0}])
+  .data([{x: mu, y: mu_y}])
   .enter()
   .append("circle")
     .attr("cx", function (d) { return x(d.x); } )
     .attr("cy", function (d) { return y(d.y); } )
-    .attr("r", 6)
+    .attr("r", 3)
     .style("fill", "#65AD69")
     .attr("stroke", "#000")
     .attr("stroke-width", 1);
@@ -506,21 +525,32 @@ svg
 svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 37)
+  .attr("y", 40)
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("μ")
+  .attr("font-size", 12)
   .style("fill", "#65AD69");
+      
+svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", ("3, 3"))
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .datum([{x: labels_x + 20, y: 30}, {x: labels_x + 20, y: 45}])
+    .attr("d",  d3.line()
+      .x(function(d) { return d.x; })
+      .y(function(d) { return d.y; }));
   
 svg.append('g')
     .selectAll("dot")
-    .data([{x: labels_x + 20, y: 33}])
+    .data([{x: labels_x + 20, y: 30}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
       .attr("cy", function (d) { return d.y; } )
-      .attr("r", 6)
+      .attr("r", 3)
       .style("fill", "#65AD69")
       .attr("stroke", "#000")
       .attr("stroke-width", 1);
@@ -528,11 +558,12 @@ svg.append('g')
 svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 58)
+  .attr("y", 70)
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("X̄ₙ")
+  .attr("font-size", 12)
   .style("fill", "#E86456");
       
 svg.append("path")
@@ -540,14 +571,14 @@ svg.append("path")
     .style("stroke-dasharray", ("3, 3"))
     .attr("stroke", "#000")
     .attr("stroke-width", 1)
-    .datum([{x: labels_x + 20, y: 48}, {x: labels_x + 20, y: 63}])
+    .datum([{x: labels_x + 20, y: 60}, {x: labels_x + 20, y: 75}])
     .attr("d",  d3.line()
       .x(function(d) { return d.x; })
       .y(function(d) { return d.y; }));
   
 svg.append('g')
     .selectAll("dot")
-    .data([{x: labels_x + 20, y: 48}])
+    .data([{x: labels_x + 20, y: 60}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
@@ -560,11 +591,12 @@ svg.append('g')
 svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 80)
+  .attr("y", 100)
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Bayes")
+  .attr("font-size", 10)
   .style("fill", "#348ABD");
       
 svg.append("path")
@@ -572,14 +604,14 @@ svg.append("path")
     .style("stroke-dasharray", ("3, 3"))
     .attr("stroke", "#000")
     .attr("stroke-width", 1)
-    .datum([{x: labels_x + 20, y: 70}, {x: labels_x + 20, y: 85}])
+    .datum([{x: labels_x + 20, y: 90}, {x: labels_x + 20, y: 105}])
     .attr("d",  d3.line()
       .x(function(d) { return d.x; })
       .y(function(d) { return d.y; }));
   
 svg.append('g')
     .selectAll("dot")
-    .data([{x: labels_x + 20, y: 70}])
+    .data([{x: labels_x + 20, y: 90}])
     .enter()
     .append("circle")
       .attr("cx", function (d) { return d.x; } )
