@@ -66,13 +66,130 @@ By symmetry,
 
 $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(p_a - c)}{\sqrt{p_a(1-p_a)}}\bigg).$$
 
-
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+
+<style>
+
+.ticks {
+  font: 10px arvo;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 7px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 5px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 1px;
+}
+
+#sample-button {
+  top: 15px;
+  left: 15px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button:hover {
+  background-color: #696969;
+}
+
+#n-text {
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#n-num {
+  font-family: Arvo;
+  font-size: 11px;
+}
+    
+</style>
 
 <div id="basic_test"></div> 
 
 <script>
+
+function erf(x) {
+    if (Math.abs(x) > 3) {
+      return x / Math.abs(x);
+    }
+    var m = 1.00;
+    var s = 1.00;
+    var sum = x * 1.0;
+    for(var i = 1; i < 50; i++){
+        m *= i;
+        s *= -1;
+        sum += (s * Math.pow(x, 2.0 * i + 1.0)) / (m * (2.0 * i + 1.0));
+    }  
+    return 1.1283791671 * sum;
+}
+
+function Phi(x) {
+    return 0.5 * (1 + erf(x / 1.41421356237));
+}
+
+function erfinv(x){
+    var z;
+    var a = 0.147;                                                   
+    var the_sign_of_x;
+    if (0 == x) {
+        the_sign_of_x = 0;
+    } else if (x > 0) {
+        the_sign_of_x = 1;
+    } else {
+        the_sign_of_x = -1;
+    }
+
+    if (0 != x) {
+        var ln_1minus_x_sqrd = Math.log(1 - x * x);
+        var ln_1minusxx_by_a = ln_1minus_x_sqrd / a;
+        var ln_1minusxx_by_2 = ln_1minus_x_sqrd / 2;
+        var ln_etc_by2_plus2 = ln_1minusxx_by_2 + (2/(Math.PI * a));
+        var first_sqrt = Math.sqrt((ln_etc_by2_plus2 * ln_etc_by2_plus2) - ln_1minusxx_by_a);
+        var second_sqrt = Math.sqrt(first_sqrt - ln_etc_by2_plus2);
+        z = second_sqrt * the_sign_of_x;
+    } else {
+        z = 0;
+    }
+    return z;
+}
+
+function PhiInv(y) {
+    return 1.41421356237 * erfinv(2 * y - 1);
+}
+
 function basic_test() {
 var n = 100;
 var c = 0.55;
@@ -133,25 +250,6 @@ var yAxisBtm = svg.append("g")
   
 yAxisBtm.selectAll(".tick text")
     .attr("font-family", "Arvo");
-    
-function erf(x) {
-    if (Math.abs(x) > 3) {
-      return x / Math.abs(x);
-    }
-    var m = 1.00;
-    var s = 1.00;
-    var sum = x * 1.0;
-    for(var i = 1; i < 50; i++){
-        m *= i;
-        s *= -1;
-        sum += (s * Math.pow(x, 2.0 * i + 1.0)) / (m * (2.0 * i + 1.0));
-    }  
-    return 2 * sum / Math.sqrt(3.14159265358979);
-}
-
-function Phi(x) {
-    return 0.5 * (1 + erf(x / Math.sqrt(2)));
-}
 
 var err1_data = [{'x': p_a, 'y': 0}];
 for (var p = p_a; p > 0; p -= 0.001) {
@@ -593,6 +691,8 @@ $$\alpha := 1 - \beta_{\varphi^*}(\vartheta_0) < 1 - \beta_{\varphi^*}(\vartheta
 Take test $\varphi \equiv \alpha$. It has significance level $\alpha$ and since $\varphi^*$ is UMP, we have $1-\beta_\varphi(\vartheta_1) \leq 1-\beta_{\varphi^*}(\vartheta_1)$. If $\alpha = 1-\beta_{\varphi^*}(\vartheta_1) < 1$, then $\varphi \equiv \alpha$ is UMP. Since every UMP test is an NP test, we know that $p_1(x) = c^*p_0(x)$ for almost all $x$. Therefore, $c^*=1$ and $p_1 = p_0$ a.s. and also $P_{\vartheta_0} = P_{\vartheta_1}$, which is contradictory.
 </details>
 
+### Confidence interval
+
 Let $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu,\sigma^2)$ with $\sigma^2$ known. We test
 
 $$H \colon \mu = \mu_0 \quad \text{vs} \quad K \colon \mu = \mu_1$$
@@ -620,7 +720,7 @@ $$\begin{aligned}
 	&\quad \sim \mathcal{N}(0, 1)
 	\end{aligned}$$
 
-If we call $u_p$ the **p-quantile** of $\mathcal{N}(0, 1)$, which is the value such that $\Phi(u_q)=q$, then we get
+If we call $u_p$ the **p-quantile** of $\mathcal{N}(0, 1)$, which is the value such that $\Phi(u_p)=p$, then we get
 
 $$\frac{\sqrt{n}(c - \mu_0)}{\sigma} = u_{1-\alpha} \quad \Longleftrightarrow \quad c = \mu_0 + u_{1-\alpha}\frac{\sigma}{\sqrt{n}}.$$
 
@@ -629,6 +729,416 @@ The NP-test becomes
 $$\varphi^*(x) = 1_{\{\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\sqrt{n}}  \} }.$$
 
 
+<div id="simple_hypothesis"></div> 
+
+<script>
+
+function gauss_data(mu, sigma) {
+  var data = [{x: -4, y: 0}];
+  for (var i = -4; i < 4; i += 0.01) {
+      data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) });
+  }
+  data.push({x: 4, y: 0});
+  return data;
+}
+
+function quantile_data() {
+  var data = [{x: 0, y: 0}];
+  for (var i = 0; i < 3.5; i += 0.01) {
+      data.push({x: i, y: 1 - Phi(i) });
+  }
+  data.push({x: 3.5, y: 0});
+  return data;
+}
+
+
+function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
+    var slider = svg_.append("g")
+      .attr("class", "slider")
+      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
+    
+    var drag = d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() { 
+	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
+	          parameter_update(x.invert(d3.event.x));	         });
+	         
+    slider.append("line")
+	    .attr("class", "track")
+	    .attr("x1", x.range()[0])
+	    .attr("x2", x.range()[1])
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-inset")
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-overlay")
+	    .call(drag);
+
+	slider.insert("g", ".track-overlay")
+    .attr("class", "ticks")
+    .attr("transform", "translate(0," + 18 + ")")
+  .selectAll("text")
+  .data(x.ticks(6))
+  .enter().append("text")
+    .attr("x", x)
+    .attr("text-anchor", "middle")
+    .attr("font-family", "Arvo")
+    .text(function(d) { return d; });
+
+   var handle = slider.insert("circle", ".track-overlay")
+      .attr("class", "handle")
+      .attr("r", 6).attr("cx", x(init_val));
+      
+	svg_
+	  .append("text")
+	  .attr("text-anchor", "middle")
+	  .attr("y", loc_y + 3)
+	  .attr("x", loc_x - 21)
+	  .attr("font-family", "Arvo")
+	  .attr("font-size", 17)
+	  .text(letter)
+	  .style("fill", color);
+	  	  
+	return handle;
+}
+
+function simple_hypothesis() {
+
+var mu0 = -1,
+    mu1 = 1,
+    sigma = 1,
+    alpha = 0.05,
+    n = 10;
+
+var margin = {top: 30, right: 0, bottom: 20, left: 30},
+    width = 750 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    fig_height = 200 - margin.top - margin.bottom,
+    fig_width = 350;
+    
+var svg = d3.select("div#simple_hypothesis")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear()
+          .domain([-4, 4])
+          .range([0, fig_width]);
+            
+var xAxisTop = svg.append("g")
+   .attr("transform", "translate(0," + fig_height + ")")
+   .call(d3.axisBottom(x));
+  
+xAxisTop.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+   
+var xBtm = d3.scaleLinear()
+          .domain([-4, 4])
+          .range([0, fig_width]);
+            
+var xAxisBtm = svg.append("g")
+   .attr("transform", "translate(0," + 1.6 * fig_height + ")")
+   .call(d3.axisBottom(xBtm));
+  
+xAxisBtm.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+
+var xRight = d3.scaleLinear()
+          .domain([0, 3.5])
+          .range([1.2 * fig_width, 1.9 * fig_width]);
+          
+var xAxisRight = svg.append("g")
+   .attr("transform", "translate(0," + 1.6 * fig_height + ")")
+   .call(d3.axisBottom(xRight).ticks(5));
+  
+xAxisRight.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+   
+   
+   
+var y = d3.scaleLinear()
+          .range([fig_height, 0])
+          .domain([0, 1]);
+            
+var yAxisTop = svg.append("g")
+    .call(d3.axisLeft(y).ticks(4));
+  
+yAxisTop.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+
+
+var yBtm = d3.scaleLinear()
+          .range([1.6 * fig_height, 1.3 * fig_height])
+          .domain([0, 1]);
+            
+var yAxisBtm = svg.append("g")
+    .call(d3.axisLeft(yBtm).ticks(1));
+  
+yAxisBtm.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+            
+
+var yRight = d3.scaleLinear()
+          .range([1.6 * fig_height, 0])
+          .domain([0, 0.5]);
+            
+var yAxisRight = svg.append("g")
+   .attr("transform", "translate(" + 1.2 * fig_width + ",0)")
+    .call(d3.axisLeft(yRight).ticks(4));
+  
+yAxisRight.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+    
+    
+    
+var mu0_data = gauss_data(mu0, sigma);
+
+var mu0_curve = svg
+  .append('g')
+  .append("path")
+      .datum(mu0_data)
+      .attr("fill", "#65AD69")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+   );
+   
+var mu1_data = gauss_data(mu1, sigma);
+
+var mu1_curve = svg
+  .append('g')
+  .append("path")
+      .datum(mu1_data)
+      .attr("fill", "#EDA137")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+   );
+
+var q_data = quantile_data();
+var quantile_curve = svg
+  .append('g')
+  .append("path")
+      .datum(q_data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d.x); })
+          .y(function(d) { return yRight(d.y); })
+   );
+
+function dragged_u(d) {
+  var u_x = Math.min(xRight(3.5), Math.max(d3.event.x, xRight(0)));
+  u_q = xRight.invert(u_x);
+  alpha = 1 - Phi(u_q);
+  var u_y = yRight(alpha);
+  d3.select(this).attr("cx", d.x = u_x).attr("cy", d.y = u_y);
+  updatePhiLine();
+}
+
+var u_q = PhiInv(1 - alpha);
+var u_dot = svg.append('g')
+   .selectAll("dot")
+   .data([{'x': xRight(u_q), 'y': yRight(alpha)}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2)
+     .on("mouseover", function (d) {d3.select(this).style("cursor", "pointer");})
+     .on("mouseout", function (d) {})
+     .call(d3.drag()
+       .on("drag", dragged_u)
+     );
+     
+function updatePhiLine() {
+  c = mu0 + u_q * sigma / Math.sqrt(n);
+  var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
+  var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
+  var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+      
+  phi_dot
+      .transition()
+      .duration(0)
+      .attr("cx", xBtm(c) );
+       
+  phi_curve_0
+      .datum(phi_data_0)
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+      );
+      
+  phi_curve_1
+      .datum(phi_data_1)
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+      );
+      
+  phi_curve_dash
+      .datum(phi_data_dash)
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+      );
+}
+
+var c = mu0 + u_q * sigma / Math.sqrt(n);
+var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
+var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
+var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+
+var phi_curve_0 = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_0)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 2.5)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+   );
+   
+var phi_curve_1 = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_1)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 2.5)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+   );
+   
+var phi_curve_dash = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_dash)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 1)
+      .style("stroke-dasharray", ("3, 3"))
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+   );
+
+var phi_dot = svg.append('g')
+   .selectAll("dot")
+   .data([{'x': xBtm(c), 'y': yBtm(1)}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2);
+     
+function updateCurves(delay) {
+    mu0_data = gauss_data(mu0, sigma);
+    mu1_data = gauss_data(mu1, sigma);
+    
+    mu0_curve
+      .datum(mu0_data)
+      .transition()
+      .delay(delay) 
+      .duration(0)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+      );
+      
+    mu1_curve
+      .datum(mu1_data)
+      .transition()
+      .delay(delay) 
+      .duration(0)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+      );
+}
+
+function updateSigma(x) {
+    sigma = x;
+    updateCurves(0); 
+    updatePhiLine();
+}
+
+function trivialRound(x) { return x; }
+
+var sigma_x = d3.scaleLinear()
+    .domain([0.4, 1.4])
+    .range([0, width * 0.4])
+    .clamp(true);
+    
+createSlider(svg, updateSigma, sigma_x, margin.left, 0.7 * height, "σ", "#A9A750", sigma, trivialRound);
+
+}
+
+simple_hypothesis();
+
+</script>
+
+Simple hypotheses like that are not relevant in practice, <ins>but</ins>:
+
+* They explain intuitively how to construct a test. One needs a so called **confidence interval** $c(X) \subset \Theta$ in which the unknown parameter lies with probability $1-\alpha$. In example above we used that for $c(X) = [\overline{X}_n - u_{1-\alpha} \frac{\sigma}{\sqrt{n}}, \infty)$:
+$$P_{\mu_0}(\mu_0 \in c(X)) = P_{\mu_0}(\overline{X}_n \leq \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}) = 1-\alpha.$$
+Any such $c(X)$ can be used to construct a test, for example,
+$$c'(X) =\Big[\overline{X}_n -u_{1-\frac{\alpha}{2}} \frac{\sigma}{\sqrt{n}}, \overline{X}_n + u_{1-\frac{\alpha}{2}} \frac{\sigma}{\sqrt{n}} \Big].$$
+In addition, simple hypotheses tell you on which side the alternative lies.
+
+* Formal results like the NP lemma are useful to derive more relevant results. 
+
+
+### Monotone likelihood ratio
+
+Let $\Theta = \mathbb{R}$, $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ and $T\colon \mathcal{X} \rightarrow \mathbb{R}$ be some statistic. Family $\mathcal{P}$ is called **class with monotone (isotonic) likelihood ratio** if for every $\vartheta < \vartheta_1$ there exists monotonically increasing function $H_{\vartheta_0, \vartheta_1} \colon \mathbb{R} \rightarrow [0, \infty)$, such that
+
+$$\frac{p_{\vartheta_1}(x)}{p_{\vartheta_0}(x)} =H_{\vartheta_0, \vartheta_1}(T(x)) \quad P_{\vartheta_0} + P_{\vartheta_1}\text{-a.s.}$$
 
 
 TODO: p-value

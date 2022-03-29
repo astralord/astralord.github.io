@@ -503,7 +503,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     chi_curve
       .datum(data)
       .transition()
-      .duration(1000)
+      .duration(0)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
           .x(function(d) { return chi_x(d.chi_x); })
@@ -513,7 +513,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     t_curve
       .datum(data)
       .transition()
-      .duration(1000)
+      .duration(0)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
           .x(function(d) { return t_x(d.t_x); })
@@ -1196,7 +1196,7 @@ function createSlider(svg_, parameter_update, slider_x, loc_x, loc_y, letter, co
 	return handle;
 }
 
-createSlider(svg, updateNGauss, ng_x, 150, 350, "n", "#696969", 6, roundN);
+createSlider(svg, updateNGauss, ng_x, 190, 350, "n", "#696969", 6, roundN);
 
 }
 
