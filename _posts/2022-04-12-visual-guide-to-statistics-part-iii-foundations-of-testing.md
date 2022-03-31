@@ -3,7 +3,7 @@ layout: post
 title: 'Visual Guide to Statistics. Part III: Foundations of Testing'
 date: 2022-04-12 03:13 +0800
 categories: [Statistics]
-tags: [statistics, hypothesis-test, significance-level, power-of-a-test, neyman-pearson-criterion]
+tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, monotone-likelihood-ratio, one-tailed-gauss-test, one-tailed-t-test]
 math: true
 published: false
 ---
@@ -22,12 +22,12 @@ Let $\Theta = \Theta_H \cup \Theta_K$ be a partition of $\Theta$.
 
 * $\Theta_H$ is called **(null) hypothesis**, $\Theta_K$ is called the **alternative**.
 * A **randomized test** is a measurable map $\varphi: \mathcal{X} \rightarrow [0, 1]$. Here $\varphi(x)$ is the probability of a decision for $\Theta_K$ when $x=X(\omega)$ is observed.
-* For a test $\varphi$ we call $\mathcal{K}= \{x \mid \varphi(x)=1 \}$ the **critical region** and $\mathcal{R}= \{x \mid \varphi(x) \in (0,1) \}$ - the **region of randomization**. A test $\varphi$ is called **non-randomized** if $\mathcal{R} = \emptyset$.
+* For a test $\varphi$ we call $\mathcal{K}= \lbrace x \mid \varphi(x)=1 \rbrace$ the **critical region** and $\mathcal{R}= \lbrace x \mid \varphi(x) \in (0,1) \rbrace$ - the **region of randomization**. A test $\varphi$ is called **non-randomized** if $\mathcal{R} = \emptyset$.
 
 In our example we know that the statistic $\overline{X}_n$ is the UMVU estimator for $p$. A reasonable decision rule is to decide for $K$ if $\overline{X}_n$ is "large". For example,
 
 $$\varphi(x) =
-	\left \{
+	\left \lbrace
 	\begin{array}{cl}
 	1, & \overline{X}_n > c, \\
 	0, & \overline{X}_n \leq c 
@@ -105,7 +105,7 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
   stroke-width: 1px;
 }
 
-#sample-button {
+#sample-button-h {
   top: 15px;
   left: 15px;
   background: #65AD69;
@@ -121,7 +121,46 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
   font-size: 11px;
 }
 
-#sample-button:hover {
+#sample-button-h:hover {
+  background-color: #696969;
+  
+}#sample-button-k {
+  top: 15px;
+  left: 15px;
+  background: #EDA137;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button-k:hover {
+  background-color: #696969;
+}
+
+#reset-button {
+  top: 15px;
+  left: 15px;
+  background: #E86456;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#reset-button:hover {
   background-color: #696969;
 }
 
@@ -134,7 +173,9 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
   font-family: Arvo;
   font-size: 11px;
 }
-    
+  		
+}
+
 </style>
 
 <div id="basic_test"></div> 
@@ -461,13 +502,15 @@ function dragged_c(d) {
   updateErrCurves();
 }
 
-var labels_x = 470;
+var labels_x = 450;
+var labels_y = 0;
+var labels_v = 18;
 
 svg.append("path")
    .attr("stroke", "#65AD69")
    .attr("stroke-width", 4)
    .attr("opacity", ".8")
-   .datum([{x: labels_x, y: -5}, {x: labels_x + 25, y: -5}])
+   .datum([{x: labels_x, y: labels_y}, {x: labels_x + 25, y: labels_y}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -475,7 +518,7 @@ svg.append("path")
 svg.append("path")
    .attr("stroke", "#000")
    .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: -7}, {x: labels_x + 25, y: -7}])
+   .datum([{x: labels_x, y: labels_y - 2}, {x: labels_x + 25, y: labels_y - 2}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -483,18 +526,18 @@ svg.append("path")
 svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 0)
+  .attr("y", labels_y + 5)
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("P(reject H | H is true)")
+  .text("P( reject H | H is true)")
   .style("fill", "#65AD69");
   
 svg.append("path")
    .attr("stroke", "#EDA137")
    .attr("stroke-width", 4)
    .attr("opacity", ".8")
-   .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
+   .datum([{x: labels_x, y: labels_y + labels_v}, {x: labels_x + 25, y: labels_y + labels_v}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -502,7 +545,7 @@ svg.append("path")
 svg.append("path")
    .attr("stroke", "#000")
    .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: 13}, {x: labels_x + 25, y: 13}])
+   .datum([{x: labels_x, y: labels_y + labels_v - 2}, {x: labels_x + 25, y: labels_y + labels_v - 2}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
@@ -510,7 +553,7 @@ svg.append("path")
 svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 20)
+  .attr("y", labels_y + labels_v + 5)
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -519,7 +562,7 @@ svg
  
 svg.append('g')
    .selectAll("dot")
-   .data([{'x': labels_x + 14, 'y': 35}])
+   .data([{'x': labels_x + 14, 'y': labels_y + 2 * labels_v - 3}])
    .enter()
    .append("circle")
      .attr("cx", function (d) { return d.x; } )
@@ -532,7 +575,7 @@ svg.append('g')
 svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 40)
+  .attr("y", labels_y + 2 * labels_v)
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -543,14 +586,14 @@ svg.append("path")
    .attr("stroke", "#348ABD")
    .attr("stroke-width", 3)
    .attr("opacity", "1")
-   .datum([{x: labels_x + 5, y: 55}, {x: labels_x + 25, y: 55}])
+   .datum([{x: labels_x + 5, y: labels_y + 3 * labels_v - 5}, {x: labels_x + 25, y: labels_y + 3 * labels_v - 5}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
  
 svg.append('g')
    .selectAll("dot")
-   .data([{'x': labels_x + 7, 'y': 55}])
+   .data([{'x': labels_x + 7, 'y': labels_y + 3 * labels_v - 5}])
    .enter()
    .append("circle")
      .attr("cx", function (d) { return d.x; } )
@@ -563,7 +606,7 @@ svg.append('g')
 svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 60)
+  .attr("y", labels_y + 3 * labels_v)
   .attr("x", labels_x + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -574,7 +617,7 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", fig_height + 5)
-  .attr("x", labels_x - 5)
+  .attr("x", labels_x + 15)
   .attr("font-family", "Arvo")
   .text("p")
   .style("fill", "#000")
@@ -588,7 +631,7 @@ svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 1.6 * fig_height + 5)
-  .attr("x", labels_x - 5)
+  .attr("x", labels_x + 15)
   .attr("font-family", "Arvo")
   .text("x")
   .style("fill", "#000");
@@ -610,16 +653,16 @@ Now suppose $\varphi$ is a test for $H \colon \vartheta \in \Theta_H$ vs $K \col
 
 $$\beta_\varphi(\vartheta) = 1 - \mathbb{E}_\vartheta[\varphi(X)].$$
 
-The function $1 - \beta_\varphi(\vartheta)$ is called **power of a test** $\varphi$. Note that for non-randomized test $\varphi$ we have
+Note that for non-randomized test $\varphi$ we have
 
-$$1-\beta_\varphi(\vartheta) = P_\vartheta(\varphi(x) = 1),$$
+$$\beta_\varphi(\vartheta) = P_\vartheta(\varphi(x) = 0),$$
 
-which is the probability to decide for $K$. In particular, 
+which is the probability to decide for $H$. In particular, 
 
 * $\vartheta \in \Theta_H$: $1 - \beta_\varphi(\vartheta)$ is the probability of an error of the 1st kind,
 * $\vartheta \in \Theta_K$: $\beta_\varphi(\vartheta)$ is the probability of an error of the 2nd kind.
 
-The same intuition holds for randomized tests. Test $\varphi$ is called a test with **significance level** $\alpha \in [0, 1]$ if 
+The function $1 - \beta_\varphi(\vartheta)$ for $\vartheta \in \Theta_K$, which is the probability of correctly rejecting hypothesis $H$, when alterntative $K$ is true, is called **power of a test** $\varphi$. The same intuition holds for randomized tests. Test $\varphi$ is called a test with **significance level** $\alpha \in [0, 1]$ if 
 
 $$1 - \beta_\varphi(\vartheta) \leq \alpha \quad \forall \vartheta \in \Theta_H.$$
 
@@ -654,7 +697,7 @@ $$1-\beta_\varphi(\vartheta_0) = \mathbb{E}_{\vartheta_0}[\varphi(X)] = \int_{\m
 In the situation of simple hypotheses a test $\varphi$ is called **a Neyman-Pearson test (NP test)** if $c\in[0, \infty)$ exists such that
 
 $$\varphi(x):
-	\left \{
+	\left \lbrace
 	\begin{array}{cl}
 	1, & p_1(x) > cp_0(x), \\
 	0, & p_1(x) < cp_0(x).
@@ -680,7 +723,7 @@ There are also other parts of this lemma which I will state here without proof:
 * For any $\alpha \in [0, 1]$ there is an NP-test $\varphi$ with $\mathbb{E}_{\vartheta_0}[\varphi(X)] = \alpha$.
 * If $\varphi'$ is UMP with level $\alpha$, then $\varphi'$ is (a.s.) an NP-test. If $\mathbb{E}_{\vartheta_0}[\varphi'(X)] < \alpha$, then $\mathbb{E}_{\vartheta_1}[\varphi'(X)]=1$.
 
-An NP-test $\varphi^*$ for $H \colon \vartheta = \vartheta_0$ vs $K \colon \vartheta = \vartheta_1$ is uniquely defined outside of $S_= =\{x\ |\ p_1(x) = c^*p_0(x) \}$. On $S_=$ set the test can be chosen such that $\beta_{\varphi^*}(\vartheta_0) = \alpha$.
+An NP-test $\varphi^*$ for $H \colon \vartheta = \vartheta_0$ vs $K \colon \vartheta = \vartheta_1$ is uniquely defined outside of $S_= =\lbrace x\ |\ p_1(x) = c^*p_0(x) \rbrace$. On $S_=$ set the test can be chosen such that $\beta_{\varphi^*}(\vartheta_0) = \alpha$.
 
 Is must also be noted that every NP-test $\varphi^*$ with $\beta_{\varphi^*}(\vartheta_0) \in (0, 1)$ is unbiased. In particular
 
@@ -699,11 +742,11 @@ $$H \colon \mu = \mu_0 \quad \text{vs} \quad K \colon \mu = \mu_1$$
 
 with $\mu_0 < \mu_1$. For the density of $X_1, \dots X_n$ it holds
 
-$$p_j(x) = (2 \pi \sigma^2)^{-n/2} \exp \Big \{ -\frac{1}{2\sigma^2} \Big( \sum_{i=1}^{n} X_i^2 - 2 \mu_j \sum_{i=1}^{n}X_i + n\mu_j^2  \Big)\Big \}, \quad j = 0, 1.$$
+$$p_j(x) = (2 \pi \sigma^2)^{-n/2} \exp \Big( -\frac{1}{2\sigma^2} \Big( \sum_{i=1}^{n} X_i^2 - 2 \mu_j \sum_{i=1}^{n}X_i + n\mu_j^2  \Big)\Big), \quad j = 0, 1.$$
 
 As the inequality for the likelihood ratio which we need for the construction of the NP test, we get
 
-$$\frac{p_1(x)}{p_0(x)} = \exp \Big \{ \frac{1}{\sigma^2} \sum_{i=1}^{n} x_i(\mu_1 - \mu_0) \Big \} \cdot f(\sigma^2, \mu_1, \mu_0) > c^*,$$
+$$\frac{p_1(x)}{p_0(x)} = \exp \Big( \frac{1}{\sigma^2} \sum_{i=1}^{n} x_i(\mu_1 - \mu_0) \Big) \cdot f(\sigma^2, \mu_1, \mu_0) > c^*,$$
 
 where the known constant $f(\sigma^2, \mu_1, \mu_0)$ is positive. This inequality is equivalent to
 
@@ -726,12 +769,24 @@ $$\frac{\sqrt{n}(c - \mu_0)}{\sigma} = u_{1-\alpha} \quad \Longleftrightarrow \q
 
 The NP-test becomes
 
-$$\varphi^*(x) = 1_{\{\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\sqrt{n}}  \} }.$$
+$$\varphi^*(x) = 1_{\lbrace\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\sqrt{n}}  \rbrace }.$$
 
 
+
+<button id="sample-button-h">Sample H</button> <button id="sample-button-k">Sample K</button> <label id="n-text">n:</label><input type="number" min="1" max="100" step="1" value="10" id="n-num"> <button id="reset-button">Reset</button>
+
+
+ 
 <div id="simple_hypothesis"></div> 
 
 <script>
+  
+function randn_bm() {
+    var u = 0, v = 0;
+    while(u === 0) u = Math.random();
+    while(v === 0) v = Math.random();
+    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
 
 function gauss_data(mu, sigma) {
   var data = [{x: -4, y: 0}];
@@ -751,7 +806,7 @@ function quantile_data() {
   return data;
 }
 
-
+    
 function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
     var slider = svg_.append("g")
       .attr("class", "slider")
@@ -809,6 +864,9 @@ var mu0 = -1,
     alpha = 0.05,
     n = 10;
 
+var u_q = PhiInv(1 - alpha);
+var power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
+
 var margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 750 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom,
@@ -852,7 +910,7 @@ var xRight = d3.scaleLinear()
           .range([1.2 * fig_width, 1.9 * fig_width]);
           
 var xAxisRight = svg.append("g")
-   .attr("transform", "translate(0," + 1.6 * fig_height + ")")
+   .attr("transform", "translate(0," + 2 * fig_height + ")")
    .call(d3.axisBottom(xRight).ticks(5));
   
 xAxisRight.selectAll(".tick text")
@@ -884,7 +942,7 @@ yAxisBtm.selectAll(".tick text")
             
 
 var yRight = d3.scaleLinear()
-          .range([1.6 * fig_height, 0])
+          .range([2 * fig_height, 0])
           .domain([0, 0.5]);
             
 var yAxisRight = svg.append("g")
@@ -949,6 +1007,18 @@ var quantile_curve = svg
           .y(function(d) { return yRight(d.y); })
    );
 
+function updatePower() {
+  var rc = 1000;
+  if (power > 0.999) {
+      rc = 10000;
+  }
+  power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
+  power_text
+    .transition()
+    .duration(500)
+    .text('Power: ' + Math.round(rc * power) / rc);
+}
+
 function dragged_u(d) {
   var u_x = Math.min(xRight(3.5), Math.max(d3.event.x, xRight(0)));
   u_q = xRight.invert(u_x);
@@ -956,9 +1026,17 @@ function dragged_u(d) {
   var u_y = yRight(alpha);
   d3.select(this).attr("cx", d.x = u_x).attr("cy", d.y = u_y);
   updatePhiLine();
+  var rc = 1000;
+  if (alpha < 0.001) {
+    rc = 10000;
+  }
+  alpha_text
+    .transition()
+    .duration(500)
+    .text('Significance level: ' + Math.round(rc * alpha) / rc);
+  updatePower();
 }
 
-var u_q = PhiInv(1 - alpha);
 var u_dot = svg.append('g')
    .selectAll("dot")
    .data([{'x': xRight(u_q), 'y': yRight(alpha)}])
@@ -970,13 +1048,15 @@ var u_dot = svg.append('g')
      .style("fill", "#fff")
      .attr("stroke", "#348ABD")
      .attr("stroke-width", 2)
-     .on("mouseover", function (d) {d3.select(this).style("cursor", "pointer");})
-     .on("mouseout", function (d) {})
+     .on("mouseover", function(d) { d3.select(this)
+                                      .style("cursor", "pointer");})
+     .on("mousemove", function (d) {})
      .call(d3.drag()
        .on("drag", dragged_u)
      );
      
 function updatePhiLine() {
+  reset();
   c = mu0 + u_q * sigma / Math.sqrt(n);
   var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
   var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
@@ -1103,7 +1183,9 @@ function updateCurves(delay) {
 }
 
 function updateSigma(x) {
+    reset();
     sigma = x;
+    updatePower();
     updateCurves(0); 
     updatePhiLine();
 }
@@ -1115,8 +1197,358 @@ var sigma_x = d3.scaleLinear()
     .range([0, width * 0.4])
     .clamp(true);
     
-createSlider(svg, updateSigma, sigma_x, margin.left, 0.7 * height, "σ", "#A9A750", sigma, trivialRound);
+createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "σ", "#A9A750", sigma, trivialRound);
 
+d3.select("#n-num").on("input", function() {
+    n = this.value;
+    updatePhiLine();
+    updatePower();
+});
+
+var table_nums = [0, 0, 0, 0];
+
+function updateTableText() {
+
+  table_text_hh
+    .transition()
+    .duration(500)
+    .text(table_nums[0]);
+
+  table_text_hk
+    .transition()
+    .duration(500)
+    .text(table_nums[1]);
+
+  table_text_kh
+    .transition()
+    .duration(500)
+    .text(table_nums[2]);
+
+  table_text_kk
+    .transition()
+    .duration(500)
+    .text(table_nums[3]);
+}
+
+var avg_dots = [];
+function sampleGauss(mu, color) {
+      var avg_dur = 1200;
+      var random_samples = [];
+      var smpl_dots = [];
+      var avg = 0;
+      for (var i = 0; i < n; i += 1) {
+          random_samples.push(mu + sigma * randn_bm());
+          smpl_dots.push(svg.append('g')
+            .selectAll("dot")
+            .data([{x: random_samples[i], y: 1}])
+            .enter()
+            .append("circle")
+              .attr("cx", function (d) { return x(d.x); } )
+              .attr("cy", function (d) { return y(d.y); } )
+              .attr("r", 3)
+              .style("fill", color)
+              .attr("stroke", "#000")
+              .attr("stroke-width", 1));
+          
+          smpl_dots[i].transition()
+            .duration(avg_dur)
+            .attr("cx", function (d) { return x(random_samples[i]); } )
+            .attr("cy", function (d) { return y(0); } );
+      
+          avg += random_samples[i];
+      }
+      avg /= n;  
+      
+      for (var i = 0; i < n; i += 1) {
+          smpl_dots[i]
+            .transition()
+            .delay(avg_dur) 
+            .duration(avg_dur)
+            .attr("cx", function (d) { return x(avg); } )
+            .attr("cy", function (d) { return y(0); } );
+            
+          if (i > 0) {
+            smpl_dots[i].transition().delay(2 * avg_dur).remove();
+          }
+          else {
+            avg_dots.push(smpl_dots[0]);
+          }
+      }
+      
+      if (avg > c) {
+          smpl_dots[0]
+            .transition()
+            .delay(2 * avg_dur) 
+            .duration(avg_dur)
+            .attr("cy", function (d) { return yBtm(1); } );
+            
+         if (mu == mu0) {
+           table_nums[2] += 1;
+         }
+         else {
+           table_nums[3] += 1;
+         }
+      }
+      else {
+          smpl_dots[0]
+            .transition()
+            .delay(2 * avg_dur) 
+            .duration(avg_dur)
+            .attr("cy", function (d) { return yBtm(0); } );
+            
+         if (mu == mu0) {
+           table_nums[0] += 1;
+         }
+         else {
+           table_nums[1] += 1;
+         }
+      }
+      
+      updateTableText();
+}
+
+d3.select("#sample-button-h").on("click", function() {sampleGauss(mu0, "#65AD69")});
+d3.select("#sample-button-k").on("click", function() {sampleGauss(mu1, "#EDA137")});
+
+function reset() {
+  for (var i = 0; i < avg_dots.length; i += 1) {
+      avg_dots[i].remove();
+  }
+  avg_dots = [];
+  table_nums = [0, 0, 0, 0];
+  updateTableText();
+}
+
+d3.select("#reset-button").on("click", function() { reset(); });
+
+var alpha_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 1.2 * fig_width + 5)
+  .attr("font-family", "Arvo")
+  .text("Significance level: " + alpha)
+  .style("fill", "#348ABD");
+  
+var power_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 1.2 * fig_width + 5)
+  .attr("font-family", "Arvo")
+  .text("Power: " + power)
+  .style("fill", "#348ABD");
+
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 0)
+  .attr("x", 1.2 * fig_width + 5)
+  .attr("font-family", "Arvo")
+  .text("α")
+  .style("fill", "#000");
+  
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2 * fig_height)
+  .attr("x", 1.9 * fig_width + 5)
+  .attr("font-family", "Arvo")
+  .text("u")
+  .style("fill", "#000")
+  .append('tspan')
+    .text('1-α')
+    .style('font-size', '.5rem')
+    .attr('dx', '-.1em')
+    .attr('dy', '.8em');
+
+var labels_x = 250;
+var labels_y = 0;
+
+svg.append("path")
+   .attr("stroke", "#65AD69")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: labels_y}, {x: labels_x + 25, y: labels_y}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: labels_y - 2}, {x: labels_x + 25, y: labels_y - 2}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", labels_y + 5)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("H distribution")
+  .style("fill", "#65AD69");
+  
+svg.append("path")
+   .attr("stroke", "#EDA137")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: labels_y + 15}, {x: labels_x + 25, y: labels_y + 15}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: labels_y + 13}, {x: labels_x + 25, y: labels_y + 13}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", labels_y + 20)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("K distribution")
+  .style("fill", "#EDA137");
+       
+svg.append("path")
+   .attr("stroke", "#348ABD")
+   .attr("stroke-width", 3)
+   .attr("opacity", "1")
+   .datum([{x: labels_x + 5, y: labels_y + 30}, {x: labels_x + 25, y: labels_y + 30}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+ 
+svg.append('g')
+   .selectAll("dot")
+   .data([{'x': labels_x + 7, 'y': labels_y + 30}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2);
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", labels_y + 35)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("φ(x)")
+  .style("fill", "#348ABD");
+
+svg.append("path")
+   .attr("stroke", "#348ABD")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x + fig_width, y: labels_y}, {x: labels_x + fig_width + 25, y: labels_y}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x + fig_width, y: labels_y - 2}, {x: labels_x + fig_width + 25, y: labels_y - 2}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", labels_y + 5)
+  .attr("x", labels_x + fig_width + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("1-Φ(x)")
+  .style("fill", "#348ABD");
+  
+var table_text_acc_h = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.35 * fig_height)
+  .attr("x", 0.5 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("Accepted H")
+  .style("fill", "#65AD69");
+  
+var table_text_rej_h = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.35 * fig_height)
+  .attr("x", 0.85 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("Rejected H")
+  .style("fill", "#EDA137");
+  
+var table_text_true_h = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 0.2 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("H is true")
+  .style("fill", "#65AD69");
+  
+var table_text_true_k = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 0.2 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("K is true")
+  .style("fill", "#EDA137");
+  
+var table_text_hh = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 0.6 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#65AD69");
+  
+var table_text_hk = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 0.6 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#E86456");
+  
+var table_text_kh = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 0.95 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#E86456");
+  
+var table_text_kk = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 0.95 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#EDA137");
+  
 }
 
 simple_hypothesis();
@@ -1140,5 +1572,124 @@ Let $\Theta = \mathbb{R}$, $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in
 
 $$\frac{p_{\vartheta_1}(x)}{p_{\vartheta_0}(x)} =H_{\vartheta_0, \vartheta_1}(T(x)) \quad P_{\vartheta_0} + P_{\vartheta_1}\text{-a.s.}$$
 
+In our example above we had
+
+$$\frac{p_{\mu_1}(x)}{p_{\mu_0}(x)} = \exp \Big( \frac{1}{\sigma^2} \sum_{i=1}^{n} x_i(\mu_1 - \mu_0) \Big) \cdot f(\sigma^2, \mu_1, \mu_0), $$
+
+which is monotonically increasing in $\overline{x}_n$. This can be generalized to one-parametric exponential families.
+
+Let $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ be class with monotone likelihood ratio in $T$, $\vartheta \in \Theta$, $\alpha \in (0, 1)$ and we consider the one-tailed hypothesis
+
+$$H\colon\vartheta \leq \vartheta_0 \quad \text{vs} \quad K\colon\vartheta > \vartheta_0.$$
+
+Let also
+
+$$\varphi^*(x) = 1_{\lbrace t(x) > c\rbrace} + \gamma 1_{\lbrace T(x) = c\rbrace},$$
+
+where $c := \inf \lbrace t\ |\ P_{\vartheta_0}(T(X) > t) \leq \alpha \rbrace$ and
+
+$$\gamma = 
+				\left \lbrace
+				\begin{array}{cl}
+				\frac{\alpha - P_{\vartheta_0}(T(X) > c) }{ P_{\vartheta_0}(T(X) = c) }, & \text{if } P_{\vartheta_0}(T(X) = c) \neq 0  \\
+				0, & \text{otherwise}.
+				\end{array}
+				\right.$$
+
+Then $1-\beta_{\varphi^*}(\vartheta_0) = \alpha$ and $\varphi^*$ is UMP test with significance level $\alpha$. Also for any $\vartheta < \vartheta_0$ we have 
+
+$$\beta_{\varphi^*}(\vartheta) = \sup \lbrace \beta_\varphi(\vartheta)\ |\ 1 - \beta_\varphi(\vartheta_0) = \alpha \rbrace.$$
+
+<details>
+<summary>Proof</summary>
+</details>
+
+Back to our previous example with $X_1, \dots, X_n$ with known $\sigma^2$, we know that 
+
+$$ p_\mu(x) = (2 \pi \sigma^2)^{-\frac{n}{2}} \exp \Big( -\frac{1}{2\sigma^2}\sum_{i=1}^{n}(x_i - \mu)^2 \Big) $$
+
+has a monotone likelihood ratio in $T(X) = \overline{X}_n$. An UMP test with level $\alpha$ is given by
+
+$$\varphi^*(x) = 1_{\lbrace\overline{x}_n > c\rbrace } + \gamma 1_{\lbrace\overline{x}_n = c\rbrace}.$$
+
+Since $P_{\mu_0}(T(X) = c) = 0$, then $\gamma = 0$ and we choose $c$ such that 
+
+$$P_{\mu_0}(\overline{X}_n > c) = \alpha \Longleftrightarrow c = \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}.$$
+
+This UMP test $\varphi^*(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$ is called **the one-tailed Gauss test**.
+
+There is a heuristic how to get to the one-tailed Gauss test: since $\overline{X}_n$ is UMVU for $\mu$, a reasonable strategy is to decide for $K$ if $\overline{X}_n$ is "large enough", so the test shoud be of the form $\varphi(x) = 1_{\lbrace \overline{X}_n > c \rbrace }$. Choosing $c$ happens by controlling the error of the 1st kind. For all $\mu \leq \mu_0$ we have
+
+$$ \begin{aligned}
+\beta_\varphi(\mu) &= P_\mu(\overline{X}_n > c) \\ &= P_\mu \Big( \frac{\sqrt{n}(\overline{X}_n - \mu) }{\sigma} > \frac{\sqrt{n}(c-\mu)}{\sigma}\Big) \\ &= 1 - \Phi\Big(\frac{\sqrt{n}(c-\mu)}{\sigma}\Big) \\&\leq 1 - \Phi\Big(\frac{\sqrt{n}(c-\mu_0)}{\sigma}\Big).
+\end{aligned}$$
+
+So we need to secure that 
+
+$$1- \Phi\Big(\frac{\sqrt{n}(c-\mu_0)}{\sigma}\Big) \leq \alpha \Longleftrightarrow c \geq \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}.$$
+
+We take $c = \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}$ for an error of the 1st kind to be $\alpha$.
+
+This method doesn't tell you anything about optimality, but at least provides a test. Most importantly, it can be applied in more general situations like unknown $\sigma^2$. In this case one can use
+
+$$\hat{\sigma}_n^2 = \frac{1}{n-1}\sum_{i=1}^{n}(X_i - \overline{X}_n)^2.$$
+
+As above we obtain
+
+$$\beta_\varphi(\mu) = P_\mu\Big( \frac{\sqrt{n}(\overline{X}_n - \mu) }{\hat{\sigma}_n} > \frac{\sqrt{n}(c-\mu)}{\hat{\sigma}_n}\Big) = 1 - F_{t_{n-1}}\bigg( \frac{c - \mu}{\sqrt{\hat{\sigma}_n^2 / n}} \bigg),$$
+
+where $F_{t_{n-1}}$ denotes the distribution function of $t_{n-1}$. A reasonable choice is 
+
+$$c = \mu_0 + \frac{\hat{\sigma}_n}{\sqrt{n}}t_{n-1,1-\alpha}, $$
+
+with the corresponding quantile of a $t_{n-1}$ distribution. The test
+
+$$\phi(x) = 1_{\lbrace \overline{x}_n > \mu_0 + \frac{\hat{\sigma}_n}{\sqrt{n}}t_{n-1,1-\alpha} \rbrace} $$
+
+is called **the one-tailed t-test**.
+
+### Two-tailed tests
+
+There are in general no UMP tests for
+
+$$H\colon\vartheta = \vartheta_0 \quad \text{vs} \quad K\colon\vartheta \neq \vartheta_0,$$
+
+because these have to be optimal for all
+
+$$H'\colon\vartheta = \vartheta_0 \quad \text{vs} \quad K'\colon\vartheta = \vartheta_1$$
+
+with $\vartheta_0 \neq \vartheta_1$. In case of monotone likelihood-ratio, the optimal test in this case is 
+$$\varphi(x) = 1_{\lbrace T(x) > c \}} + \gamma(x) 1_{\{T(x) = c\rbrace}$$
+for $\vartheta_1 > \vartheta_0$ and
+ $$\varphi'(x) = 1_{\lbrace T(x) < c'\}} + \gamma'(x) 1_{\{T(x) = c'\rbrace} $$ for $\vartheta_1 < \vartheta_0$. This is not possible.
+
+There exists a theorem for one-parametric exponential family with density
+
+$$p_\vartheta(x) = c(\vartheta)h(x)\exp(Q(\vartheta) T(x))$$
+
+with increasing $Q$: UMPU test for
+
+$$H \colon \vartheta \in [\vartheta_1, \vartheta_2] \quad \text{vs} \quad K\colon\vartheta \notin [\vartheta_1, \vartheta_2]$$
+
+is
+
+$$\varphi^*(x) = 
+	\left \{
+	\begin{array}{cl}
+	1, & \text{if } T(x) \notin [c_1, c_2], \\
+	\gamma_i, & \text{if } T(x) = c_i, \\
+	0, & \text{if } T(x) \in (c_1, c_2),
+	\end{array}
+	\right.$$
+
+where the constants $c_i, \gamma_i$ determined from
+
+$$\beta_\varphi(\vartheta_1) = \beta_\varphi(\vartheta_2) = \alpha.$$
+
+Similar results hold for $k$-parametric exponential families.
+
+HERE: visuaization for exponential distribution
+
+### Asymptotic properties of tests
 
 TODO: p-value
