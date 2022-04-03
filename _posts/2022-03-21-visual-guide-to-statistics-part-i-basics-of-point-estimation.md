@@ -1312,7 +1312,7 @@ $$ \begin{aligned}
 \operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  I^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= I^{-1}(f(\cdot, \vartheta)) =
 	 \begin{pmatrix}
 	 \frac{\sigma^{2}}{n} & 0 \\
-	 0 & \frac{\sigma^{4}}{n}
+	 0 & \frac{2\sigma^{4}}{n}
 	 \end{pmatrix}. 
 	\end{aligned}$$
 
@@ -1325,7 +1325,7 @@ the following inequality holds
 $$ \operatorname{Cov}_\vartheta(\widetilde{g}(X)) = 
 	 \begin{pmatrix}
 	 \frac{\sigma^{2}}{n} & 0 \\
-      0 & \frac{\sigma^{4}}{n-1}
+      0 & \frac{2\sigma^{4}}{n-1}
 	 \end{pmatrix} \geq I(f(\cdot, \vartheta)), $$
 	 
 therefore $\widetilde{g}$ is not effective. 

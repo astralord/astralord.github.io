@@ -1,9 +1,9 @@
 ---
 layout: post
-title: 'Visual Guide to Statistics. Part III: Foundations of Testing'
-date: 2022-04-12 03:13 +0800
+title: 'Visual Guide to Statistics. Part IV: Foundations of Testing'
+date: 2022-05-01 03:13 +0800
 categories: [Statistics]
-tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, monotone-likelihood-ratio, one-tailed-gauss-test, one-tailed-t-test]
+tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, monotone-likelihood-ratio, one-sided-gauss-test, one-sided-t-test, two-sampled-t-test]
 math: true
 published: false
 ---
@@ -1555,6 +1555,9 @@ simple_hypothesis();
 
 </script>
 
+![](.)
+*Fig. 1. Visualization of simple hypothesis testing with $\mu_0 = -1$ and $\mu_1=1$. Parameter $\sigma$ and significance level $\alpha$ are draggable.*
+
 Simple hypotheses like that are not relevant in practice, <ins>but</ins>:
 
 * They explain intuitively how to construct a test. One needs a so called **confidence interval** $c(X) \subset \Theta$ in which the unknown parameter lies with probability $1-\alpha$. In example above we used that for $c(X) = [\overline{X}_n - u_{1-\alpha} \frac{\sigma}{\sqrt{n}}, \infty)$:
@@ -1578,7 +1581,7 @@ $$\frac{p_{\mu_1}(x)}{p_{\mu_0}(x)} = \exp \Big( \frac{1}{\sigma^2} \sum_{i=1}^{
 
 which is monotonically increasing in $\overline{x}_n$. This can be generalized to one-parametric exponential families.
 
-Let $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ be class with monotone likelihood ratio in $T$, $\vartheta \in \Theta$, $\alpha \in (0, 1)$ and we consider the one-tailed hypothesis
+Let $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ be class with monotone likelihood ratio in $T$, $\vartheta \in \Theta$, $\alpha \in (0, 1)$ and we consider the one-sided hypothesis
 
 $$H\colon\vartheta \leq \vartheta_0 \quad \text{vs} \quad K\colon\vartheta > \vartheta_0.$$
 
@@ -1616,9 +1619,9 @@ Since $P_{\mu_0}(T(X) = c) = 0$, then $\gamma = 0$ and we choose $c$ such that
 
 $$P_{\mu_0}(\overline{X}_n > c) = \alpha \Longleftrightarrow c = \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}.$$
 
-This UMP test $\varphi^*(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$ is called **the one-tailed Gauss test**.
+This UMP test $\varphi^*(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$ is called **the one-sided Gauss test**.
 
-There is a heuristic how to get to the one-tailed Gauss test: since $\overline{X}_n$ is UMVU for $\mu$, a reasonable strategy is to decide for $K$ if $\overline{X}_n$ is "large enough", so the test shoud be of the form $\varphi(x) = 1_{\lbrace \overline{X}_n > c \rbrace }$. Choosing $c$ happens by controlling the error of the 1st kind. For all $\mu \leq \mu_0$ we have
+There is a heuristic how to get to the one-sided Gauss test: since $\overline{X}_n$ is UMVU for $\mu$, a reasonable strategy is to decide for $K$ if $\overline{X}_n$ is "large enough", so the test shoud be of the form $\varphi(x) = 1_{\lbrace \overline{X}_n > c \rbrace }$. Choosing $c$ happens by controlling the error of the 1st kind. For all $\mu \leq \mu_0$ we have
 
 $$ \begin{aligned}
 \beta_\varphi(\mu) &= P_\mu(\overline{X}_n > c) \\ &= P_\mu \Big( \frac{\sqrt{n}(\overline{X}_n - \mu) }{\sigma} > \frac{\sqrt{n}(c-\mu)}{\sigma}\Big) \\ &= 1 - \Phi\Big(\frac{\sqrt{n}(c-\mu)}{\sigma}\Big) \\&\leq 1 - \Phi\Big(\frac{\sqrt{n}(c-\mu_0)}{\sigma}\Big).
@@ -1646,9 +1649,9 @@ with the corresponding quantile of a $t_{n-1}$ distribution. The test
 
 $$\phi(x) = 1_{\lbrace \overline{x}_n > \mu_0 + \frac{\hat{\sigma}_n}{\sqrt{n}}t_{n-1,1-\alpha} \rbrace} $$
 
-is called **the one-tailed t-test**.
+is called **the one-sided t-test**.
 
-### Two-tailed tests
+### Two-sided tests
 
 There are in general no UMP tests for
 
@@ -1663,7 +1666,7 @@ $$\varphi(x) = 1_{\lbrace T(x) > c \}} + \gamma(x) 1_{\{T(x) = c\rbrace}$$
 for $\vartheta_1 > \vartheta_0$ and
  $$\varphi'(x) = 1_{\lbrace T(x) < c'\}} + \gamma'(x) 1_{\{T(x) = c'\rbrace} $$ for $\vartheta_1 < \vartheta_0$. This is not possible.
 
-There exists a theorem for one-parametric exponential family with density
+There is a theorem for one-parametric exponential family with density
 
 $$p_\vartheta(x) = c(\vartheta)h(x)\exp(Q(\vartheta) T(x))$$
 
@@ -1673,7 +1676,7 @@ $$H \colon \vartheta \in [\vartheta_1, \vartheta_2] \quad \text{vs} \quad K\colo
 
 is
 
-$$\varphi^*(x) = 
+$$\varphi(x) = 
 	\left \{
 	\begin{array}{cl}
 	1, & \text{if } T(x) \notin [c_1, c_2], \\
@@ -1684,12 +1687,118 @@ $$\varphi^*(x) =
 
 where the constants $c_i, \gamma_i$ determined from
 
-$$\beta_\varphi(\vartheta_1) = \beta_\varphi(\vartheta_2) = \alpha.$$
+$$\beta_\varphi(\vartheta_1) = \beta_\varphi(\vartheta_2) = 1-\alpha.$$
 
 Similar results hold for $k$-parametric exponential families.
 
-HERE: visuaization for exponential distribution
+Consider the example: let $X$ be exponentially distributed random variable: $X \sim \operatorname{Exp}(\vartheta)$ with density
+
+$$f_\vartheta(x) = \vartheta e^{-\vartheta x} 1_{[0, \infty)}(x)$$
+
+and we test
+
+$$H\colon \vartheta \in [1, 2] \quad \text{vs} \quad K\colon\vartheta \notin [1, 2].$$
+
+We have $T(x) = x$, therefore
+
+$$\varphi(x) = 1_{\lbrace X \notin [c_1, c_2] \rbrace}.$$
+
+It is known that for $X$ distribution function is $F(x) = 1 - e^{-\vartheta x}$, therefore
+
+$$P_{1}(X \in [c_1, c_2])=e^{-c_1}-e^{-c_2} = 1-\alpha,$$
+$$P_{2}(X \in [c_1, c_2])=e^{-2 c_1}-e^{-2 c_2} = 1-\alpha.$$
+
+Solving this for $c_1$ and $c_2$ we get
+
+$$c_1 = \ln\frac{2}{2-\alpha}, \quad c_2 = \ln\frac{2}{\alpha}.$$
 
 ### Asymptotic properties of tests
 
-TODO: p-value
+Let $X_1, \dots , X_m$ i.i.d. $\sim \mathcal{N}(\mu_1, \sigma^2)$ and $Y_1, \dots , Y_n$ i.i.d. $\sim \mathcal{N}(\mu_2, \tau^2)$ are two independent samples. We want to test the hypothesis:
+
+$$H\colon \mu_1 \leq \mu_2 \quad \text{vs} \quad K\colon \mu_1 > \mu_2. $$
+
+We reject $H$ if $\overline{Y}_n$ is much smaller than $\overline{X}_m$.
+
+* Let $\sigma^2=\tau^2$, but variance is unknown. We know from [Part I](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/) that
+
+$$\overline{X}_m - \overline{Y}_n=\mathcal{N}\bigg(\mu_1-\mu_2, \sigma^2\bigg( \frac{1}{m}+\frac{1}{n} \bigg)\bigg)$$ 
+
+and **pooled variance**:
+
+$$\hat{\sigma}_{m,n}^2=\frac{1}{m+n-2}\Big( \sum_{i=1}^{m}(X_i-\overline{X}_m)^2+\sum_{i=1}^{n}(Y_i-\overline{Y}_n)^2 \Big) \sim \frac{\sigma^2}{m+n-2} \chi_{m+n-2}^2. $$
+
+For $\mu_1=\mu_2$ we have
+
+$$ T_{m,n}=\sqrt{\frac{mn}{m+n}}\frac{\overline{X}_m-\overline{Y}_n}{\hat{\sigma}_{m,n}} \sim t_{m+n-2}, $$
+
+therefore test
+
+$$ \varphi_{m,n}(x)=1_{\{T_{m,n} > t_{m+n-2, 1-\alpha}\}}$$
+
+is UMPU with significance level $\alpha$. This test is called **two-sampled t-test**.
+
+* Let $\sigma^2 \neq \tau^2$, then
+
+$$  \overline{X}_m - \overline{Y}_n=\mathcal{N}\bigg(\mu_1-\mu_2, \frac{\sigma^2}{m}+\frac{\tau^2}{n} \bigg).$$
+
+Unbiased estimators for variances are
+
+$$ \hat{s}_{m}^2(X)=\frac{1}{m-1}\sum_{i=1}^{m}(X_i-\overline{X}_m)^2, \quad \hat{s}_{n}^2(Y)=\frac{1}{n-1}\sum_{i=1}^{n}(Y_i-\overline{Y}_n)^2. $$
+
+Let also $\hat{s}_{m, n}^2 = \frac{1}{m}\hat{s}_{m}^2(X) + \frac{1}{n}\hat{s}_{n}^2(Y)$. The distribution of random variable 
+
+$$T_{m,n}^*=\frac{\overline{X}_m-\overline{Y}_n}{\hat{s}_{m, n}}$$
+
+was unknown until recently (so called [Behrens-Fisher problem](https://en.wikipedia.org/wiki/Behrens%E2%80%93Fisher_problem)) and can't be expressed in terms of elementary functions, but from TODO: link to part III Central Limit Theorem we know that
+
+$$\frac{\overline{X}_m-\overline{Y}_n - (\mu_1-\mu_2)}{\hat{s}_{m,n}} \xrightarrow[]{\mathcal{L}} \mathcal{N}(0,1),$$
+
+if $m \rightarrow \infty$, $n \rightarrow \infty$ and $\frac{m}{n}\rightarrow \lambda \in (0, \infty)$. Let
+
+$$\varphi_{m,n}^*(x)=1_{\{T_{m,n}^* > u_{1-\alpha}\}},$$
+
+then
+
+$$\begin{aligned}
+		 \beta_{\varphi_{m,n}^*}(\mu_1, \mu_2) & =P_{\mu_1, \mu_2}(T_{m,n}^* \leq u_{1-\alpha})\\&=P_{\mu_1, \mu_2}\Big(\frac{\overline{X}_m-\overline{Y}_n - (\mu_1-\mu_2)}{\hat{s}_{m,n}} \leq \frac{- (\mu_1-\mu_2)}{\hat{s}_{m,n}}+ u_{1-\alpha}\Big) \\
+		  & \xrightarrow[m \rightarrow \infty,\ n \rightarrow \infty,\ \frac{m}{n}\rightarrow \lambda]{}
+		 \left \{
+		 \begin{array}{cl}
+		 0, & \mu_1 > \mu_2, \\
+		  1-\alpha, & \mu_1=\mu_2, \\
+		  1, & \mu_1<\mu_2.
+		 \end{array}
+		 \right.
+		 \end{aligned}$$
+
+* We say that sequence $(\varphi_n)$ has **asymptotic significance level** $\alpha$, if 
+
+$$\lim_{n \rightarrow \infty} \inf_{\vartheta \in \Theta_H} \beta_{\varphi_n}(\vartheta) \geq 1-\alpha.$$ 
+
+* We say that sequence $(\varphi_n)$ is **consistent**, if 
+
+$$\lim_{n \rightarrow \infty} \beta_{\varphi_n}(\vartheta) = 0 \quad \forall \vartheta \in \Theta_K.$$
+
+In our example $\varphi_{m,n}^*(x)$ is consistent and has asymptotic significance level $\alpha$.
+
+### Likelihood ratio
+
+The common principle of building tests for 
+
+$$H\colon\vartheta \in \Theta_H \quad \text{vs} \quad K\colon\vartheta \in \Theta_K $$
+
+is **likelihood ratio method**. Let $f_n(x^{(n)},\vartheta)$ be density of $P_\vartheta^n$. Then 
+
+$$\lambda(x^{(n)})=\frac{\sup_{\vartheta \in \Theta_H}f_n(x^{(n)},\vartheta)}{\sup_{\vartheta \in \Theta}f_n(x^{(n)},\vartheta)}$$
+
+is **likelihood ratio** and
+
+$$\varphi_n(x^{(n)})=1_{\{\lambda(x^{(n)})<c \}}$$
+
+is **likelihood ratio test**. It is common to choose $c$, such that
+
+$$\sup_{\vartheta \in \Theta_H} P_\vartheta(\lambda(X^{(n)})<c) \leq \alpha.$$
+
+Distribution $\lambda(X^{(n)})$ nevertheless can be estimated only asymptotically.
+
