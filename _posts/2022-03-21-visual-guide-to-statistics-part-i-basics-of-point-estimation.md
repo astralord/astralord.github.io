@@ -437,11 +437,11 @@ var span_chi = d3.select("#chi_t_plt")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .style("position", "absolute")
-  .style("left", "42%")
-  .style("top", "10%");
+  .style("left", fig_width * 0.92 + "px")
+  .style("top", height * 0.18 + "px");
   
 
-plt_label_path(t_svg, "#348ABD", fig_width * 0.7, height * 0.13);
+plt_label_path(t_svg, "#348ABD", fig_width * 0.72, height * 0.13);
 
 var span_t = d3.select("#chi_t_plt")
   .append("div")
@@ -453,10 +453,10 @@ var span_t = d3.select("#chi_t_plt")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .style("position", "absolute")
-  .style("left", "95%")
-  .style("top", "10%");
+  .style("left", fig_width * 2.085 + "px")
+  .style("top", height * 0.18 + "px");
     
-d3.csv("../assets/chi-t.csv", function(error, data) {
+d3.csv("../../../../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
 
   var chi_x = d3.scaleLinear()
