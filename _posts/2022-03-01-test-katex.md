@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Test KaTeX'
-date: 2022-03-21 03:22 +0800
+date: 2022-03-01 03:22 +0800
 categories: [Test]
 tags: [test]
 math: true
@@ -11,15 +11,7 @@ published: true
 
 
 
-<script src="https://d3js.org/d3.v7.min.js"></script>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous">
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"
-        onload="renderMathInElement(document.body);">
-</script>
-
+<script src="https://d3js.org/d3.v4.min.js"></script>
 
 <div id="circle_fig">
     Node 1 <span id="node-text">\(\lambda x^2 \)</span>
