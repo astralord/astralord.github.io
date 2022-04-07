@@ -1328,7 +1328,7 @@ $$ \operatorname{Cov}_\vartheta(\widetilde{g}(X)) =
       0 & \frac{2\sigma^{4}}{n-1}
 	 \end{pmatrix} \geq I(f(\cdot, \vartheta)), $$
 	 
-therefore $\widetilde{g}$ is not effective. 
+therefore $\widetilde{g}$ is not efficient. 
 
 ### Exponential family
 
@@ -1423,7 +1423,7 @@ then estimator
 
 $$ T(X) = \Big( \frac{1}{n} \sum_{i=1}^n X_i, \frac{1}{n} \sum_{i=1}^n X_i^2  \Big) $$
 
-is effective for $(\mu, \mu^2 + \sigma^2)^T$.
+is efficient for $(\mu, \mu^2 + \sigma^2)^T$.
 
 ### Common estimation methods
 

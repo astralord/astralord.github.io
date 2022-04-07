@@ -1,11 +1,11 @@
 ---
 layout: post
 title: 'Visual Guide to Statistics. Part III: Asymptotic Properties Of Estimators'
-date: 2022-04-12 03:13 +0800
+date: 2022-03-12 03:13 +0800
 categories: [Statistics]
-tags: [statistics, ]
+tags: [statistics, consistent-estimator, central-limit-theorem, slutsky-lemma, delta-method, asymptotic-efficiency, maximum-likelihood-estimator]
 math: true
-published: false
+published: true
 ---
 
 > Consider random vector $X^{(n)}=(X_1, \dots, X_n)^T$ in $\mathcal{X}_n=\mathcal{X}^n$ with distribution $\mathcal{P}^n=\lbrace P_\vartheta^n \mid \vartheta \in \Theta \rbrace $. For any $n$ let $g_n(X^{(n)})$ be an estimator for $\gamma(\vartheta)$. A minimal condition for a good estimator is that $g_n$ is getting closer to $\gamma(\vartheta)$ with growing $n$. In this post we will focus on asymptotic properties of $g_n$.
@@ -116,8 +116,6 @@ $$ P_p(|\overline{X}_n-p|<\varepsilon) \approx 2 \Phi\Bigg(\varepsilon\sqrt{\fra
 
 where $\Phi$ is cumulative distribution function for $\mathcal{N}(0,1)$.
 
-TODO: visualization
-
 Slutsky's lemma also leads to important asymptotic property of estimator $g_n$, called **Delta-method**. Let $(X_n)$ be sequence of $d$-dimensional random variables, such that 
 
 $$\frac{X_n-\mu}{c_n} \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \Sigma),$$
@@ -193,7 +191,7 @@ $$V = 2
 <details>
 <summary> Sketch of the proof </summary>
 We use Slutsky's Lemma and CLT to show that 
-$$\sqrt{n}(\overline{X}_n, \overline{Y}_n) \xrightarrow[]{\mathbb{P}} 0, \quad \sqrt{n}(\overline{X}_n)^2 \xrightarrow[]{\mathbb{P}} 0, \quad \sqrt{n}(\overline{Y}_n)^2 \xrightarrow[]{\mathbb{P}} 0.  $$
+$$\sqrt{n}(\overline{X}_n \overline{Y}_n) \xrightarrow[]{\mathbb{P}} 0, \quad \sqrt{n}(\overline{X}_n)^2 \xrightarrow[]{\mathbb{P}} 0, \quad \sqrt{n}(\overline{Y}_n)^2 \xrightarrow[]{\mathbb{P}} 0.  $$
 
 Then it is simple to conclude
 
@@ -216,7 +214,7 @@ $$\sqrt{n}(\hat{\rho}_n - \rho) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, DVD^T
 
 TODO: visualization
 
-### Asympotic effectiveness
+### Asympotic efficiency
 
 Let $g_n:\mathcal{X}_n \rightarrow \Gamma \subset \mathbb{R}^l$ be a sequence of estimators with $\mu_n(\vartheta)=\mathbb{E}_\vartheta[g_n] \in \mathbb{R}^l$ and $\Sigma_n(\vartheta)=\operatorname{Cov}(\vartheta) \in \mathbb{R}^{l \times l}$, such that $\|\Sigma_n(\vartheta) \| \rightarrow 0$. Then
 
@@ -230,7 +228,7 @@ $$\Sigma_n^{-\frac{1}{2}}(\vartheta)(g_n-\mu_n(\vartheta)) \xrightarrow[]{\mathc
 
 where $\mathbb{I}_l$ is identity matrix.
 
-Let $f_n: \mathcal{X} \rightarrow \mathbb{R}^l$ be asymptotically unbiased and asymptotically normal sequence of estimators. Under regularity conditions from [Cramér–Rao theorem](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#efficient-estimator) we call $g_n$ **asymptotically effective**, if
+Let $f_n: \mathcal{X} \rightarrow \mathbb{R}^l$ be asymptotically unbiased and asymptotically normal sequence of estimators. Under regularity conditions from [Cramér–Rao theorem](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#efficient-estimator) we call $g_n$ **asymptotically efficient**, if
 
 $$ \lim\limits_{n \rightarrow \infty} \Sigma_n(\vartheta) I(f_n(\cdot, \vartheta))=\mathbb{I}_l \quad \forall \vartheta \in \Theta,  $$
 
@@ -242,7 +240,7 @@ $$\Sigma_n^{-\frac{1}{2}}(\vartheta)(g_n-\mu_n(\vartheta)) \xrightarrow[]{\mathc
 
 we have approximately
 
-$$\operatorname{Cov}_\vartheta(T_n) \approx \Sigma_n(\vartheta) \approx I^{-1}(f_n(\cdot, \vartheta))$$
+$$\operatorname{Cov}_\vartheta(g_n) \approx \Sigma_n(\vartheta) \approx I^{-1}(f_n(\cdot, \vartheta))$$
 
 and $g_n$ is asymptotically unbiased and asymptotically efficient.
 
@@ -268,7 +266,7 @@ $$I^{-1}(f_n(\cdot, \vartheta)) = \begin{pmatrix}
 	0 & 2\sigma^4 / n
 	\end{pmatrix} $$
 	
-and $g_n$ is not effective, but asymptotically effective.
+and $g_n$ is not efficient, but asymptotically efficient.
 
 ### Maximum-likelihood estimators
 
@@ -281,3 +279,129 @@ $$\ell(\cdot, \vartheta) = \log f(\cdot, \vartheta) $$
 $$\begin{aligned}\hat{\theta}_n(X) &= \arg \sup_{\vartheta \in \Theta} f(X, \vartheta) \\&= \arg \sup_{\vartheta \in \Theta} \ell (X, \vartheta) \\&= \arg \sup_{\vartheta \in \Theta} \frac{1}{n} \sum_{i=1}^{n} \ell (X_i, \vartheta) \end{aligned}$$
 
 as **the maximum-likelihood estimator** for $\vartheta$.
+
+MATH-HEAVY STUFF
+
+Take an example: let $X_1, \dots X_n$ be i.i.d. $\sim \operatorname{Exp}(\lambda)$ with joint density
+
+$$f_n(X, \lambda) = \lambda^n \exp \Big(-\lambda \sum_{i=1}^n X_i \Big) \quad \forall x \in \mathbb{R}^+.$$
+
+To find maximum-likelihood estimator one must maximize log-density
+
+$$\ell_n(X, \lambda) = n \log(\lambda) - \lambda \sum_{i=1}^n X_i \quad \forall x \in \mathbb{R}^+$$
+
+with respect to $\lambda$. Taking the derivative and equating it to zero we get
+
+$$\frac{n}{\lambda} = \sum_{i=1}^{n} X_i,$$
+
+and estimator is
+
+$$\hat{\lambda}_n = \frac{1}{\overline{X}_n}.$$
+
+Next, using the fact that
+
+$$\mathbb{E}_\lambda[X] = \lambda^{-1} \quad \text{and} \quad  \operatorname{Var}_\lambda(X) = \lambda^{-2},$$
+
+and $\dot{\ell}_1(X, \lambda) = -(X - \lambda^{-1})$, we calculate Fisher information:
+
+$$I(f(\cdot, \lambda)) = \mathbb{E}_\lambda\Big[\Big(X - \frac{1}{\lambda}\Big)^2\Big]=\frac{1}{\lambda^2}.$$
+	
+By theorem of asymptotic efficiency of ML-estimators we get 
+
+$$\sqrt{n}(\hat{\lambda}_n - \lambda) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \lambda^2),$$
+
+On the other hand by CLT
+
+$$\sqrt{n}\Big(\overline{X}_n - \frac{1}{\lambda}\Big) \xrightarrow[]{\mathcal{L}} \mathcal{N}\Big(0, \frac{1}{\lambda^2}\Big).$$
+
+Using Delta-method for $g(x) = x^{-1}$ we get the same result:
+
+$$\sqrt{n}(\overline{X}_n^{-1} - \lambda) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \lambda^2). $$
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous">
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);">
+</script>
+
+
+<div id="circle_fig">
+    Node <span id="node-text">\(\lambda x^2 \mathbb{E} \chi \)</span>
+</div>
+
+<script>
+function circle_fun() {
+
+const div = d3.select("#circle_fig");
+const span = div.select("#node-text");
+
+const width = 50;
+const height = 50;
+const r = 25;
+
+var container = span.append("span")
+  .style("display", "inline-block"); 
+  
+const svg = container.append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+
+const g = svg.append("g")
+  .attr("id", "node");
+
+
+const circle = g.append("circle")
+  .attr("cx", width/2)
+  .attr("cy", height/2)
+  .attr("r", r)
+  .attr("fill", "#faddcd");
+
+span.style("position", "relative");
+
+container.style("position", "absolute")
+  .style("z-index", -1);
+
+  const span_dim = span.node().getBoundingClientRect();
+  const span_left = span_dim.left;
+  const span_top = span_dim.top;
+
+  var container_dim = container.node().getBoundingClientRect();
+  var container_left = container_dim.left;
+  var container_top = container_dim.top;
+
+  const g_dim = g.node().getBoundingClientRect();
+  const g_left = g_dim.left;
+  const g_top = g_dim.top;
+  const g_width = g_dim.width;
+  const g_height = g_dim.height;
+
+  const delta_g_left = g_left - container_left;
+  const delta_g_top = g_top - container_top;
+
+
+window.addEventListener("load", function(){
+
+  const tex = span.select("span.katex");
+  const tex_dim = tex.node().getBoundingClientRect();
+  const tex_left = tex_dim.left;
+  const tex_top = tex_dim.top;
+  const tex_width = tex_dim.width;
+  const tex_height = tex_dim.height;
+
+  const delta_tex_left = tex_left - span_left;
+  const delta_tex_top = tex_top - span_top;
+
+  container.style("left", delta_tex_left + tex_width/2 - delta_g_left - g_width/2 + "px");
+  container.style("top", delta_tex_top + tex_height/2 - delta_g_top - g_height/2 + "px");
+
+});
+
+}
+
+circle_fun();
+
+</script>
