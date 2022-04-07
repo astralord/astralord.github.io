@@ -687,6 +687,10 @@ $$ \mathbb{E}[\hat{s}_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 <div id="biased_viz"></div> 
 
 <script>
+
+d3.select("#biased_viz")
+  .style("position", "relative");
+  
 function biasedness() {
 
 var mu = 0,
@@ -811,83 +815,50 @@ d3.csv("../../../../assets/chi-t.csv", function(error, chi_data) {
 
 var labels_x = 550;
 
-svg.append("path")
-   .attr("stroke", "#65AD69")
-   .attr("stroke-width", 4)
-   .attr("opacity", ".8")
-   .datum([{x: labels_x, y: -5}, {x: labels_x + 25, y: -5}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("path")
-   .attr("stroke", "#000")
-   .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: -7}, {x: labels_x + 25, y: -7}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 0)
-  .attr("x", labels_x + 30)
+plt_label_path(svg, "#65AD69", labels_x, -7);
+
+var span_sample = d3.select("#biased_viz")
+  .append("span")
+  .text("\\(X \\sim \\mathcal{N}(0, 1)\\)")
+  .style('color', '#65AD69')
+  .style("font-size", "12px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("X~𝓝(0, 1)")
-  .style("fill", "#65AD69");
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + 100 + "px")
+  .style("top", 6 + "px");
 
-svg.append("path")
-   .attr("stroke", "#E86456")
-   .attr("stroke-width", 4)
-   .attr("opacity", ".8")
-   .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
+plt_label_path(svg, "#E86456", labels_x, 13);
        
-svg.append("path")
-   .attr("stroke", "#000")
-   .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: 13}, {x: labels_x + 25, y: 13}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 20)
-  .attr("x", labels_x + 30)
+var span_mean = d3.select("#biased_viz")
+  .append("span")
+  .text("\\( \\overline{X}_n \\)")
+  .style('color', '#E86456')
+  .style("font-size", "12px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("X̄ₙ")
-  .style("fill", "#E86456");
-
-svg.append("path")
-   .attr("stroke", "#EDA137")
-   .attr("stroke-width", 4)
-   .attr("opacity", ".8")
-   .datum([{x: labels_x, y: 35}, {x: labels_x + 25, y: 35}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("path")
-   .attr("stroke", "#000")
-   .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: 33}, {x: labels_x + 25, y: 33}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + 100 + "px")
+  .style("top", 26 + "px");
   
-svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 40)
-  .attr("x", labels_x + 30)
+plt_label_path(svg, "#EDA137", labels_x, 33);
+  
+var span_std = d3.select("#biased_viz")
+  .append("span")
+  .text("\\( \\hat{s}_n^2(X) \\)")
+  .style('color', '#EDA137')
+  .style("font-size", "12px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("ŝₙ²(X)")
-  .style("fill", "#EDA137");
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + 100 + "px")
+  .style("top", 46 + "px");
   
 var xn_avg_curve = svg
     .append('g')
@@ -905,13 +876,18 @@ var xn_avg_curve = svg
           .y(function(d) { return y(d.y); })
    );
 
-var xn_avg_txt = svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", y(-2.1))
-  .attr("x", x(-1.2))
+var span_mean_avg = d3.select("#biased_viz")
+  .append("span")
+  .text("\\( \\mathbb{E}[\\overline{X}_n] \\)")
+  .style('color', '#696969')
+  .style("font-size", "12px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .text("𝔼[X̄ₙ]")
-  .style("fill", "#696969");
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", x(-0.05) + "px")
+  .style("top", y(-2.25) + "px");
    
 var sn_avg_curve = svg
     .append('g')
