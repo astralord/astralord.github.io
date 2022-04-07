@@ -5,7 +5,7 @@ date: 2022-03-12 03:13 +0800
 categories: [Statistics]
 tags: [statistics, consistent-estimator, central-limit-theorem, slutsky-lemma, delta-method, asymptotic-efficiency, maximum-likelihood-estimator]
 math: true
-published: true
+published: false
 ---
 
 > Consider random vector $X^{(n)}=(X_1, \dots, X_n)^T$ in $\mathcal{X}_n=\mathcal{X}^n$ with distribution $\mathcal{P}^n=\lbrace P_\vartheta^n \mid \vartheta \in \Theta \rbrace $. For any $n$ let $g_n(X^{(n)})$ be an estimator for $\gamma(\vartheta)$. A minimal condition for a good estimator is that $g_n$ is getting closer to $\gamma(\vartheta)$ with growing $n$. In this post we will focus on asymptotic properties of $g_n$.
@@ -317,91 +317,3 @@ $$\sqrt{n}\Big(\overline{X}_n - \frac{1}{\lambda}\Big) \xrightarrow[]{\mathcal{L
 Using Delta-method for $g(x) = x^{-1}$ we get the same result:
 
 $$\sqrt{n}(\overline{X}_n^{-1} - \lambda) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \lambda^2). $$
-
-<script src="https://d3js.org/d3.v7.min.js"></script>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous">
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"
-        onload="renderMathInElement(document.body);">
-</script>
-
-
-<div id="circle_fig">
-    Node <span id="node-text">\(\lambda x^2 \mathbb{E} \chi \)</span>
-</div>
-
-<script>
-function circle_fun() {
-
-const div = d3.select("#circle_fig");
-const span = div.select("#node-text");
-
-const width = 50;
-const height = 50;
-const r = 25;
-
-var container = span.append("span")
-  .style("display", "inline-block"); 
-  
-const svg = container.append("svg")
-  .attr("width", width)
-  .attr("height", height);
-
-
-const g = svg.append("g")
-  .attr("id", "node");
-
-
-const circle = g.append("circle")
-  .attr("cx", width/2)
-  .attr("cy", height/2)
-  .attr("r", r)
-  .attr("fill", "#faddcd");
-
-span.style("position", "relative");
-
-container.style("position", "absolute")
-  .style("z-index", -1);
-
-  const span_dim = span.node().getBoundingClientRect();
-  const span_left = span_dim.left;
-  const span_top = span_dim.top;
-
-  var container_dim = container.node().getBoundingClientRect();
-  var container_left = container_dim.left;
-  var container_top = container_dim.top;
-
-  const g_dim = g.node().getBoundingClientRect();
-  const g_left = g_dim.left;
-  const g_top = g_dim.top;
-  const g_width = g_dim.width;
-  const g_height = g_dim.height;
-
-  const delta_g_left = g_left - container_left;
-  const delta_g_top = g_top - container_top;
-
-
-window.addEventListener("load", function(){
-
-  const tex = span.select("span.katex");
-  const tex_dim = tex.node().getBoundingClientRect();
-  const tex_left = tex_dim.left;
-  const tex_top = tex_dim.top;
-  const tex_width = tex_dim.width;
-  const tex_height = tex_dim.height;
-
-  const delta_tex_left = tex_left - span_left;
-  const delta_tex_top = tex_top - span_top;
-
-  container.style("left", delta_tex_left + tex_width/2 - delta_g_left - g_width/2 + "px");
-  container.style("top", delta_tex_top + tex_height/2 - delta_g_top - g_height/2 + "px");
-
-});
-
-}
-
-circle_fun();
-
-</script>
