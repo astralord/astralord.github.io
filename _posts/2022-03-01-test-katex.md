@@ -187,9 +187,9 @@ var span_chi = d3.select("#chi_t_plt").append("span")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .text("\\(\\chi_n^2\\)")
-  .style("position", "relative")
+  .style("position", "absolute")
   .style("left", "290px")
-  .style("bottom", "190px");
+  .style("bottom", "450px");
   
 var span_t = d3.select("#chi_t_plt").append("span")
   .style('color', '#348ABD')
@@ -201,9 +201,9 @@ var span_t = d3.select("#chi_t_plt").append("span")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .text("\\(t_n \\)")
-  .style("position", "relative")
-  .style("left", "620px")
-  .style("bottom", "190px");
+  .style("position", "absolute")
+  .style("left", "650px")
+  .style("bottom", "450px");
     
 chi_svg.append("text")
   .attr("text-anchor", "start")
