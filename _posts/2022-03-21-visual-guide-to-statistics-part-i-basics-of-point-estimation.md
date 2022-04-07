@@ -7,6 +7,13 @@ tags: [statistics, parameter-estimation, frequentist-inference, exponential-fami
 math: true
 ---
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous">
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);">
+</script>
+  
 > This series of posts is a guidance for those who already have knowledge in probability theory and would like to become familiar with mathematical statistics. Part I focuses on point estimators of parameters and their characteristics.
 
 
@@ -374,7 +381,7 @@ var margin = {top: 20, right: 0, bottom: 30, left: 30},
     width = 700 - margin.left - margin.right,
     height = 200 - margin.top - margin.bottom,
     fig_width = 300;
-    
+
 var chi_svg = d3.select("#chi_t_plt")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -419,6 +426,32 @@ t_svg.append("text")
   .attr("font-size", 20)
   .text("t" + subscript_symbols[4])
   .style("fill", "#348ABD");
+
+var span_chi = d3.select("#chi_t_plt")
+  .append("span")
+  .text("\\(f_{\\chi_n^2}(x)\\)")
+  .style('color', '#EDA137')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "relative")
+  .style("left", "250px")
+  .style("bottom", "180px");
+  
+var span_t = d3.select("#chi_t_plt")
+  .append("span")
+  .text("\\(f_{t_n}(x) \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "relative")
+  .style("left", "550px")
+  .style("bottom", "180px");
     
 d3.csv("../../../../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
@@ -526,8 +559,9 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     .attr('dx', '-.6em')
     .attr('dy', '-.9em')
     .attr("font-weight", 700);
-    t_svg.select("text").text("t" + subscript_symbols[n - 1]);
     
+    t_svg.select("text").text("t" + subscript_symbols[n - 1]);
+    span_t.text("\\(f_{t_n}(x) \\)"); 
   }
   
 var slider_svg = d3.select("#chi_t_plt")
