@@ -887,7 +887,7 @@ var span_mean_avg = d3.select("#biased_viz")
   .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", x(-0.05) + "px")
-  .style("top", y(-2.25) + "px");
+  .style("top", y(-2.15) + "px");
    
 var sn_avg_curve = svg
     .append('g')
@@ -904,15 +904,20 @@ var sn_avg_curve = svg
           .x(function(d) { return x(d.y); })
           .y(function(d) { return y(d.x); })
    );
-   
-var sn_avg_txt = svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", y(1.6 - 1/n))
-  .attr("x", x(-6.5))
-  .attr("font-family", "Arvo")
-  .text("𝔼[ŝₙ²(X)]")
-  .style("fill", "#696969");
 
+var span_mean_std = d3.select("#biased_viz")
+  .append("span")
+  .text("\\( \\mathbb{E}[\\hat{s}_n^2(X)] \\)")
+  .style('color', '#696969')
+  .style("font-size", "12px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", x(-5.3) + "px")
+  .style("top", y(1.6 - 1 / n) + "px");
+  
 function sample() {
   random_samples = [];
   smpl_dots = [];
@@ -1111,12 +1116,14 @@ function updateNGauss(new_n) {
         .x(function(d) { return x(d.y); })
         .y(function(d) { return y(d.x); })
    );
-      
-   sn_avg_txt
-     .transition()
-     .duration(1000)
-     .attr("y", y(1.6-1/n))
-     .attr("x", x(-6.5));
+
+     
+    span_mean_std
+      .transition()
+      .duration(1000)
+      .style("left", x(-5.3) + "px")
+      .style("top", y(1.6 - 1 / n) + "px");
+     
 }
 
 var sampleButton = d3.select("#sample-button-2");
@@ -1309,14 +1316,7 @@ $$ I(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta U_\vartheta^T]=
 	\end{pmatrix}
 	= \frac{1}{n}I(f(\cdot, \vartheta)). $$
 	
-If $g(X)$ is an unbiased estimator, then $G(\vartheta)$ is identity matrix and Cramér–Rao bound then
-
-$$ \begin{aligned}
-\operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  I^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= I^{-1}(f(\cdot, \vartheta)) =
-	 \begin{pmatrix}
-	 \frac{\sigma^{2}}{n} & 0 \\
-	 0 & \frac{2\sigma^{4}}{n}
-	 \end{pmatrix}. 
+If $g(X)$ is an unbiased estimator, then $G(\vartheta)$ is idepmatrix}. 
 	\end{aligned}$$
 
 In particular for an unbiased estimator 
@@ -1420,6 +1420,8 @@ Denoting $Q(\vartheta) = (Q_1(\vartheta), \dots, Q_k(\vartheta))^T$ we get trans
 
 It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with joint density
 
+$$ f(x,\vartheta) = c(\vartheta) \exp \Big( -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) +cal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with joint density
+
 $$ f(x,\vartheta) = c(\vartheta) \exp \Big( -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) + \frac{n\mu}{\sigma^2}\Big( \frac{1}{n}x_i \Big) \Big),$$
 
 then estimator 
@@ -1458,13 +1460,12 @@ $$g_{ML}(X) = X_{(n)} = \max \lbrace X_1, \dots X_n \rbrace $$
 
 is a maximum-likelihood estimator. On the other hand, 
 
-$$g_{MM}(X) = 2 \overline{X}_n$$
+$$_{(n)} (1 + \frac{1}{n})$, and its variance:
 
-is an estimator by method of moments. Also, maximum-likelihood estimator follows scaled Beta-distribution, $g_{ML}(X) \sim \vartheta B(n, 1)$, and therefore it is biased:
+$$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
 
-$$\mathbb{E}[g_{ML}(X)] = \vartheta\frac{n}{n+1}.$$
-
-UMVU estimator is $g(X) = X_{(n)} (1 + \frac{1}{n})$, and its variance:
+However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is another exercise to figure out why Cramér-Rao inequality here is not satisfied.
+(n)} (1 + \frac{1}{n})$, and its variance:
 
 $$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
 
