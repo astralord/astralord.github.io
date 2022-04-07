@@ -375,6 +375,31 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 <div id="chi_t_plt"></div> 
 
 <script>
+
+d3.select("#chi_t_plt")
+  .style("position", "relative");
+  
+function plt_label_path(svg, color, x, y) {
+
+	svg.append("path")
+	   .attr("stroke", color)
+	   .attr("stroke-width", 4)
+	   .attr("opacity", ".8")
+	   .datum([{x: x, y: y + 2}, {x: x + 25, y: y + 2}])
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .attr("stroke", "#000")
+	   .attr("stroke-width", 1)
+	   .datum([{x: x, y: y}, {x: x + 25, y: y}])
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+}
+
 function chi_t_plts() {
 
 var margin = {top: 20, right: 0, bottom: 30, left: 30},
@@ -390,21 +415,6 @@ var chi_svg = d3.select("#chi_t_plt")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-chi_svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 60)
-  .attr("x", 225)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
-  .text("χ₅")
-  .style("fill", "#EDA137").append('tspan')
-    .text('2')
-    .style('font-size', '.6rem')
-    .attr('dx', '-.6em')
-    .attr('dy', '-.9em')
-    .attr("font-weight", 700);
-
 var margin = {top: 0, right: 0, bottom: 35, left: 350};
     
 var t_svg = chi_svg
@@ -414,18 +424,8 @@ var t_svg = chi_svg
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
-     
-var subscript_symbols = ['₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉', '₁₀', '₁₁', '₁₂'];
 
-t_svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 60)
-  .attr("x", 225)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
-  .text("t" + subscript_symbols[4])
-  .style("fill", "#348ABD");
+plt_label_path(chi_svg, "#EDA137", fig_width * 0.72, height * 0.13);
 
 var span_chi = d3.select("#chi_t_plt")
   .append("span")
@@ -436,12 +436,15 @@ var span_chi = d3.select("#chi_t_plt")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 20)
-  .style("position", "relative")
-  .style("left", "250px")
-  .style("bottom", "180px");
+  .style("position", "absolute")
+  .style("left", "42%")
+  .style("top", "10%");
   
+
+plt_label_path(t_svg, "#348ABD", fig_width * 0.7, height * 0.13);
+
 var span_t = d3.select("#chi_t_plt")
-  .append("span")
+  .append("div")
   .text("\\(f_{t_n}(x) \\)")
   .style('color', '#348ABD')
   .style("font-size", "17px")
@@ -449,11 +452,11 @@ var span_t = d3.select("#chi_t_plt")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 20)
-  .style("position", "relative")
-  .style("left", "550px")
-  .style("bottom", "180px");
+  .style("position", "absolute")
+  .style("left", "95%")
+  .style("top", "10%");
     
-d3.csv("../../../../assets/chi-t.csv", function(error, data) {
+d3.csv("../assets/chi-t.csv", function(error, data) {
   if (error) throw error;
 
   var chi_x = d3.scaleLinear()
@@ -536,7 +539,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     chi_curve
       .datum(data)
       .transition()
-      .duration(0)
+      .duration(1000)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
           .x(function(d) { return chi_x(d.chi_x); })
@@ -546,22 +549,12 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
     t_curve
       .datum(data)
       .transition()
-      .duration(0)
+      .duration(1000)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
           .x(function(d) { return t_x(d.t_x); })
           .y(function(d) { return t_y(d["t_" + n]); })
       );
-      
-    chi_svg.select("text").text("χ" + subscript_symbols[n - 1]).append('tspan')
-    .text('2')
-    .style('font-size', '.6rem')
-    .attr('dx', '-.6em')
-    .attr('dy', '-.9em')
-    .attr("font-weight", 700);
-    
-    t_svg.select("text").text("t" + subscript_symbols[n - 1]);
-    span_t.text("\\(f_{t_n}(x) \\)"); 
   }
   
 var slider_svg = d3.select("#chi_t_plt")
