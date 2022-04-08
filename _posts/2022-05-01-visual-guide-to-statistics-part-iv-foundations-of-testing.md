@@ -182,6 +182,9 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
 
 <script>
 
+d3.select("#basic_test")
+  .style("position", "relative");
+
 function erf(x) {
     if (Math.abs(x) > 3) {
       return x / Math.abs(x);
@@ -571,16 +574,7 @@ svg.append('g')
      .style("fill", "#E86456")
      .attr("stroke", "#000")
      .attr("stroke-width", 1);
-       
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", labels_y + 2 * labels_v)
-  .attr("x", labels_x + 30)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .text("pₐ")
-  .style("fill", "#E86456");
+   
        
 svg.append("path")
    .attr("stroke", "#348ABD")
@@ -602,39 +596,58 @@ svg.append('g')
      .style("fill", "#fff")
      .attr("stroke", "#348ABD")
      .attr("stroke-width", 2);
-       
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", labels_y + 3 * labels_v)
-  .attr("x", labels_x + 30)
+        
+d3.select("#basic_test")
+  .append("div")
+  .text("\\(p_b\\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("φ(x)")
-  .style("fill", "#348ABD");
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + 15 + margin.left +  "px")
+  .style("top", fig_height + 20 + "px");
   
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", fig_height + 5)
-  .attr("x", labels_x + 15)
+d3.select("#basic_test")
+  .append("div")
+  .text("\\(p_a\\)")
+  .style('color', '#E86456')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .text("p")
-  .style("fill", "#000")
-  .append('tspan')
-    .text('b')
-    .style('font-size', '.5rem')
-    .attr('dx', '-.1em')
-    .attr('dy', '.8em');
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", fig_width + margin.left + 30 + "px")
+  .style("top", labels_y + 2 * labels_v + 16 + "px");
+  
+d3.select("#basic_test")
+  .append("div")
+  .text("\\(\\varphi(x) \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", fig_width + margin.left + 30 + "px")
+  .style("top", labels_y + 3 * labels_v + 16 + "px");
     
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 1.6 * fig_height + 5)
-  .attr("x", labels_x + 15)
+d3.select("#basic_test")
+  .append("div")
+  .text("\\(x\\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .text("x")
-  .style("fill", "#000");
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + 15 + margin.left +  "px")
+  .style("top", 1.6 * fig_height + 20 + "px");
 }
 
 

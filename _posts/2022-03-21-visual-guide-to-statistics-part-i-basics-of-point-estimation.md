@@ -402,7 +402,7 @@ function plt_label_path(svg, color, x, y) {
 
 function chi_t_plts() {
 
-var margin = {top: 20, right: 0, bottom: 30, left: 30},
+var margin = {top: 20, right: 0, bottom: 30, left: 50},
     width = 700 - margin.left - margin.right,
     height = 200 - margin.top - margin.bottom,
     fig_width = 300;
@@ -437,7 +437,7 @@ var span_chi = d3.select("#chi_t_plt")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .style("position", "absolute")
-  .style("left", fig_width * 0.92 + "px")
+  .style("left", fig_width * 0.98 + "px")
   .style("top", height * 0.18 + "px");
   
 
@@ -453,7 +453,7 @@ var span_t = d3.select("#chi_t_plt")
   .attr("font-weight", 700)
   .attr("font-size", 20)
   .style("position", "absolute")
-  .style("left", fig_width * 2.085 + "px")
+  .style("left", fig_width * 2.145 + "px")
   .style("top", height * 0.18 + "px");
     
 d3.csv("../../../../assets/chi-t.csv", function(error, data) {
@@ -813,52 +813,49 @@ d3.csv("../../../../assets/chi-t.csv", function(error, chi_data) {
 
 );
 
-var labels_x = 550;
+var labels_x = 500;
 
-plt_label_path(svg, "#65AD69", labels_x, -7);
+plt_label_path(svg, "#65AD69", labels_x, 0);
 
 var span_sample = d3.select("#biased_viz")
   .append("span")
-  .text("\\(X \\sim \\mathcal{N}(0, 1)\\)")
+  .text("\\(f_X(x) \\sim \\mathcal{N}(0, 1)\\)")
   .style('color', '#65AD69')
-  .style("font-size", "12px")
+  .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + 100 + "px")
-  .style("top", 6 + "px");
+  .style("top", 10 + "px");
 
-plt_label_path(svg, "#E86456", labels_x, 13);
+plt_label_path(svg, "#E86456", labels_x, 25);
        
 var span_mean = d3.select("#biased_viz")
   .append("span")
-  .text("\\( \\overline{X}_n \\)")
+  .text("\\( f_{\\overline{X}_n}(x) \\sim \\mathcal{N}(0, \\frac{1}{n}) \\)")
   .style('color', '#E86456')
-  .style("font-size", "12px")
+  .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + 100 + "px")
-  .style("top", 26 + "px");
+  .style("top", 35 + "px");
   
-plt_label_path(svg, "#EDA137", labels_x, 33);
+plt_label_path(svg, "#EDA137", labels_x, 50);
   
 var span_std = d3.select("#biased_viz")
   .append("span")
-  .text("\\( \\hat{s}_n^2(X) \\)")
+  .text("\\( f_{\\hat{s}_n^2(X)}(x) \\sim \\frac{1}{n} \\chi_{n-1}^2 \\)")
   .style('color', '#EDA137')
-  .style("font-size", "12px")
+  .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + 100 + "px")
-  .style("top", 46 + "px");
+  .style("top", 60 + "px");
   
 var xn_avg_curve = svg
     .append('g')
@@ -880,11 +877,10 @@ var span_mean_avg = d3.select("#biased_viz")
   .append("span")
   .text("\\( \\mathbb{E}[\\overline{X}_n] \\)")
   .style('color', '#696969')
-  .style("font-size", "12px")
+  .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", x(-0.05) + "px")
   .style("top", y(-2.15) + "px");
@@ -909,11 +905,10 @@ var span_mean_std = d3.select("#biased_viz")
   .append("span")
   .text("\\( \\mathbb{E}[\\hat{s}_n^2(X)] \\)")
   .style('color', '#696969')
-  .style("font-size", "12px")
+  .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", x(-5.3) + "px")
   .style("top", y(1.6 - 1 / n) + "px");
@@ -1316,7 +1311,14 @@ $$ I(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta U_\vartheta^T]=
 	\end{pmatrix}
 	= \frac{1}{n}I(f(\cdot, \vartheta)). $$
 	
-If $g(X)$ is an unbiased estimator, then $G(\vartheta)$ is idepmatrix}. 
+If $g(X)$ is an unbiased estimator, then $G(\vartheta)$ is identity matrix and Cramér–Rao bound then
+
+$$ \begin{aligned}
+\operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  I^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= I^{-1}(f(\cdot, \vartheta)) =
+	 \begin{pmatrix}
+	 \frac{\sigma^{2}}{n} & 0 \\
+	 0 & \frac{2\sigma^{4}}{n}
+	 \end{pmatrix}. 
 	\end{aligned}$$
 
 In particular for an unbiased estimator 
@@ -1420,8 +1422,6 @@ Denoting $Q(\vartheta) = (Q_1(\vartheta), \dots, Q_k(\vartheta))^T$ we get trans
 
 It must be noted that for an exponential family $\mathcal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with joint density
 
-$$ f(x,\vartheta) = c(\vartheta) \exp \Big( -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) +cal{P}$ estimator $T(X) = (T_1(X), \dots T_k(X))$ is UMVU for $\mathbb{E}[T(X)]$. For example, if $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with joint density
-
 $$ f(x,\vartheta) = c(\vartheta) \exp \Big( -\frac{n}{2\sigma^2}\Big( \frac{1}{n} \sum_{i=1}^n x_i^2 \Big) + \frac{n\mu}{\sigma^2}\Big( \frac{1}{n}x_i \Big) \Big),$$
 
 then estimator 
@@ -1460,12 +1460,13 @@ $$g_{ML}(X) = X_{(n)} = \max \lbrace X_1, \dots X_n \rbrace $$
 
 is a maximum-likelihood estimator. On the other hand, 
 
-$$_{(n)} (1 + \frac{1}{n})$, and its variance:
+$$g_{MM}(X) = 2 \overline{X}_n$$
 
-$$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
+is an estimator by method of moments. Also, maximum-likelihood estimator follows scaled Beta-distribution, $g_{ML}(X) \sim \vartheta B(n, 1)$, and therefore it is biased:
 
-However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is another exercise to figure out why Cramér-Rao inequality here is not satisfied.
-(n)} (1 + \frac{1}{n})$, and its variance:
+$$\mathbb{E}[g_{ML}(X)] = \vartheta\frac{n}{n+1}.$$
+
+UMVU estimator is $g(X) = X_{(n)} (1 + \frac{1}{n})$, and its variance:
 
 $$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
 
