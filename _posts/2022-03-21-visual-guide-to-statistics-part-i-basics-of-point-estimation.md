@@ -621,7 +621,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	return handle;
 }
 
-createSlider(slider_svg, updateChart, n_x, 160, 0.1 * height, "n", "#696969", 5, roundN);
+createSlider(slider_svg, updateChart, n_x, 190, 0.1 * height, "n", "#696969", 5, roundN);
 
 });
 }
