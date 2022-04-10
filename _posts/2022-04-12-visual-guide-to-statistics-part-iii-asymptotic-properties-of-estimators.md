@@ -79,17 +79,508 @@ This statement is called **Cramér–Wold theorem**.
 
 If $X_1, \dots, X_n$ are i.i.d. with $\mathbb{E}[X_j]=\mu \in \mathbb{R}^d$ and $\operatorname{Cov}(X_j)=\Sigma \in \mathbb{R}^{d \times d}$ (positive-definite, $\Sigma > 0$), then for random vector
 
-$$Z^{(n)} = \frac{1}{n}\sum_{j=1}^n X_j \in \mathbb{R}^d$$
+$$X^{(n)} = \frac{1}{n}\sum_{j=1}^n X_j \in \mathbb{R}^d$$
 
 we know from one-dimensional Central Limit Theorem (CLT) that 
 
-$$\sqrt{n}(y^TZ^{(n)}-y^T\mu) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, y^T\Sigma y) \quad \forall y \in \mathbb{R}^d.$$
+$$\sqrt{n}(y^TX^{(n)} -y^T\mu) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, y^T\Sigma y) \quad \forall y \in \mathbb{R}^d.$$
 
 Applying Cramér–Wold theorem we get
 
-$$\sqrt{n}(Z^{(n)}-\mu) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \Sigma).$$
+$$\sqrt{n}(X^{(n)}-\mu) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \Sigma).$$
 
-We call this statement **Multidimensional Central Limit Theorem**.
+This statement is known as **Multidimensional Central Limit Theorem**.
+
+<style>
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
+}
+
+.ticks {
+  font: 10px arvo;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 7px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 5px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.8;
+  stroke-width: 1px;
+}
+
+#sample-button {
+  top: 15px;
+  left: 15px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button:hover {
+  background-color: #696969;
+}
+
+#sample-button-2 {
+  top: 15px;
+  left: 15px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button-2:hover {
+  background-color: #696969;
+}
+
+#reset-button {
+  top: 15px;
+  left: 15px;
+  background: #E86456;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#reset-button:hover {
+  background-color: #696969;
+}
+   
+</style>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-contour.v1.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
+
+<button id="sample-button">Sample</button>
+<button id="reset-button">Reset</button>
+<div id="mclt"></div> 
+
+<script>
+d3.select("#mclt")
+  .style("position", "relative");
+
+function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
+    
+    var slider = svg_.append("g")
+      .attr("class", "slider")
+      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
+    
+    var drag = d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() { 
+	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
+	          parameter_update(x.invert(d3.event.x));	         });
+	         
+    slider.append("line")
+	    .attr("class", "track")
+	    .attr("x1", x.range()[0])
+	    .attr("x2", x.range()[1])
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-inset")
+	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-overlay")
+	    .call(drag);
+
+	slider.insert("g", ".track-overlay")
+    .attr("class", "ticks")
+    .attr("transform", "translate(0," + 18 + ")")
+  .selectAll("text")
+  .data(x.ticks(6))
+  .enter().append("text")
+    .attr("x", x)
+    .attr("text-anchor", "middle")
+    .attr("font-family", "Arvo")
+    .text(function(d) { return d; });
+
+   var handle = slider.insert("circle", ".track-overlay")
+      .attr("class", "handle")
+      .attr("r", 6).attr("cx", x(init_val));
+      
+	svg_
+	  .append("text")
+	  .attr("text-anchor", "middle")
+	  .attr("y", loc_y + 3)
+	  .attr("x", loc_x - 21)
+	  .attr("font-family", "Arvo")
+	  .attr("font-size", 17)
+	  .text(letter)
+	  .style("fill", color);
+	  	  	  	  
+	return handle;
+}
+
+function erf(x) {
+    if (Math.abs(x) > 3) {
+      return x / Math.abs(x);
+    }
+    var m = 1.00;
+    var s = 1.00;
+    var sum = x * 1.0;
+    for(var i = 1; i < 50; i++){
+        m *= i;
+        s *= -1;
+        sum += (s * Math.pow(x, 2.0 * i + 1.0)) / (m * (2.0 * i + 1.0));
+    }  
+    return 1.1283791671 * sum;
+}
+
+function Phi(x) {
+    return 0.5 * (1 + erf(x / 1.41421356237));
+}
+
+function randn_bm() {
+    var u = 0, v = 0;
+    while(u === 0) u = Math.random();
+    while(v === 0) v = Math.random();
+    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
+
+function biv_uni(r) {
+    var rho = 2 * Math.sin(r * Math.PI / 6);
+    var z1 = randn_bm();
+    var z2 = rho * z1 + Math.sqrt(1 - rho * rho) * randn_bm();
+    return [erf(z1), erf(z2)];
+}
+
+function phi(x, mu, sigma) {
+    var y = (x - mu) / sigma;
+    y *= y;
+    y = Math.exp(-y / 2);
+    y /= (sigma * 1.41421356237 * Math.PI);
+    return y;
+}
+
+
+function mclt() {
+var n = 30,
+    rho = 0;
+
+const margin = {top: 20, right: 0, bottom: 5, left: 70},
+    width = 750 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom,
+    fig_height = 200,
+    fig_width = 250,
+    fig_margin = 100,
+    fig_trans = fig_width + fig_margin;
+    
+const avg_dur = 1000;
+    
+var svg = d3.select("div#mclt")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear()
+          .range([0, fig_width])
+          .domain([-1, 1]);
+            
+var xAxis = svg.append("g")
+   .attr("transform", "translate(0," + fig_height + ")")
+   .call(d3.axisBottom(x).ticks(4));
+  
+xAxis.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+   
+var xAvg = d3.scaleLinear()
+          .range([fig_trans, 2 * fig_width + fig_margin])
+          .domain([-1, 1]);
+
+var xAvgAxis = svg.append("g")
+   .attr("transform", "translate("+ 0 + "," + fig_height + ")")
+   .call(d3.axisBottom(xAvg).ticks(4));
+  
+xAvgAxis.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+var y = d3.scaleLinear()
+          .range([fig_height, 0])
+          .domain([-1, 1]);
+            
+var yAxis = svg.append("g")
+    .call(d3.axisLeft(y).ticks(4));
+  
+yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+var yAvg = d3.scaleLinear()
+          .range([fig_height, 0])
+          .domain([-1, 1]);
+            
+var yAvgAxis = svg.append("g")
+   .attr("transform", "translate("+ fig_trans + ",0)")
+    .call(d3.axisLeft(yAvg).ticks(4));
+  
+yAvgAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+const axs_mrgn = 0.25;
+const uni_data = [{x: -1, y: -1.25}, {x: -1, y: -1.5}, {x: 1, y: -1.5}, {x: 1, y: -1.25}];
+var uni_x_curve = svg
+    .append('g')
+    .append("path")
+      .datum(uni_data)
+      .attr("fill", "#65AD69")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+      
+var uni_y_curve = svg
+    .append('g')
+    .append("path")
+      .datum(uni_data)
+      .attr("fill", "#65AD69")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return x(d.y); })
+          .y(function(d) { return y(d.x); })
+      );
+      
+var gauss_data = [];
+var mu = 0, sigma = 1 / Math.sqrt(3 * n);
+var scale = axs_mrgn * (sigma * 1.41421356237 * Math.PI);
+for (var i = -1; i <= 1; i += 0.01) {
+    gauss_data.push({x: i, y: -1.25 - scale * phi(i, mu, sigma)});
+}
+      
+var gauss_x_curve = svg
+    .append('g')
+    .append("path")
+      .datum(gauss_data)
+      .attr("fill", "#E86456")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xAvg(d.x); })
+          .y(function(d) { return yAvg(d.y); })
+      );
+      
+var gauss_y_curve = svg
+    .append('g')
+    .append("path")
+      .datum(gauss_data)
+      .attr("fill", "#E86456")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xAvg(d.y); })
+          .y(function(d) { return yAvg(d.x); })
+      );
+
+
+var avg_dots = [];
+var gauss_density = [];
+	      
+function sampleUniform() {
+    var uni_data = [], uni_dots = [];
+    var avg_x = 0, avg_y = 0;
+    for (var i = 0; i < n; i += 1) {
+        var uni_point = biv_uni(rho);
+        uni_data.push({x: uni_point[0], y: uni_point[1]});
+        avg_x += uni_data[i].x;
+        avg_y += uni_data[i].y;
+    }
+    avg_x /= n;
+    avg_y /= n;
+    
+    for (var i = 0; i < n; i += 1) {
+        
+	    uni_dots.push(svg.append('g')
+	      .selectAll("dot")
+	      .data(uni_data)
+	      .enter()
+	      .append("circle")
+	        .attr("cx", function (d) { return x(d.x); } )
+	        .attr("cy", function (d) { return y(d.y); } )
+	        .attr("r", 0)
+	        .style("fill", "#65AD69")
+	        .attr("stroke", "#000")
+	        .attr("stroke-width", 1));
+	        
+        uni_dots[i]
+            .transition()
+            .duration(avg_dur)
+	         .attr("r", 3);
+	        
+        uni_dots[i]
+            .transition()
+            .duration(avg_dur)
+            .delay(avg_dur)
+            .style("fill", "#E86456")
+            .attr("cx", function (d) { return x(avg_x); } )
+            .attr("cy", function (d) { return y(avg_y); } );
+            
+        if (i > 0) {
+            uni_dots[i].remove();
+        }
+        else {
+            avg_dots.push(uni_dots[0]);
+        }
+    }
+            
+    avg_dots[avg_dots.length - 1]
+        .transition()
+        .duration(avg_dur)
+        .delay(2 * avg_dur)
+        .attr("cx", function (d) { return xAvg(avg_x); } )
+        .attr("cy", function (d) { return yAvg(avg_y); } );
+
+}
+
+function reset() {
+    for (var i = 0; i < avg_dots.length; i += 1) {
+        avg_dots[i].remove();
+    }
+    avg_dots = [];
+}
+
+var sampleButton = d3.select("#sample-button")
+    .on("click", function() {
+    sampleUniform();
+});
+
+var resetButton = d3.select("#reset-button")
+    .on("click", function() {
+      reset();
+});
+
+var rho_x = d3.scaleLinear()
+    .domain([-1, 1])
+    .range([0, width / 2])
+    .clamp(true);
+    
+function trivialRound(x) { return x; }
+
+function updateRho(r) {
+    rho = r;
+    reset();
+}
+
+createSlider(svg, updateRho, rho_x, fig_width / 2, 0.95 * height, "", "#65AD69", rho, trivialRound);
+
+d3.select("#mclt")
+  .append("div")
+  .text("\\(\\rho \\)")
+  .style('color', '#000')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", fig_width / 2 + 45 + "px")
+  .style("top", 0.95 * height + 5 + "px");
+  
+d3.select("#mclt")
+  .append("div")
+  .text("\\(X \\sim \\mathcal{U}(-1, 1), \\quad \\Sigma = \\frac{1}{\\sqrt{3}} \\begin{pmatrix} 1 & \\rho \\\\ \\rho & 1 \\end{pmatrix} \\)")
+  .style('color', '#65AD69')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", fig_width / 2 - 35 + "px")
+  .style("top", 0.78 * height + "px");
+  
+d3.select("#mclt")
+  .append("div")
+  .text("\\(X^{(n)} \\sim \\mathcal{N}(0, \\Sigma / n) \\)")
+  .style('color', '#E86456')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", 3 * fig_width / 2 + 110 + "px")
+  .style("top", 0.8 * height + "px");
+  
+}
+
+mclt();
+
+</script>
+
+![](.)
+*Fig. 1. Visualization of multidimensional CLT. On the left side there is random vector of two uniformly distributed random variables: $X_1, X_2 \sim \mathcal{U}(-1, 1)$ with mean $\mu=(0, 0)^T$ and covariance $\Sigma$. On the right side is $X^{(n)}$ which has normal distribution with zero mean and covariance $\frac{1}{n} \Sigma$.*
 
 ### Delta-method
 

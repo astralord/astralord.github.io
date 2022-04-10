@@ -794,6 +794,9 @@ $$\varphi^*(x) = 1_{\lbrace\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\
 
 <script>
   
+d3.select("#simple_hypothesis")
+  .style("position", "relative");
+  
 function randn_bm() {
     var u = 0, v = 0;
     while(u === 0) u = Math.random();
@@ -1210,7 +1213,23 @@ var sigma_x = d3.scaleLinear()
     .range([0, width * 0.4])
     .clamp(true);
     
-createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "σ", "#A9A750", sigma, trivialRound);
+createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "", "#A9A750", sigma, trivialRound);
+
+
+d3.select("#simple_hypothesis")
+  .append("div")
+  .text("\\(\\sigma \\)")
+  .style('color', '#A9A750')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", margin.left + "px")
+  .style("top", 2 * fig_height + 15 + "px");
+  
+
 
 d3.select("#n-num").on("input", function() {
     n = this.value;
@@ -1352,29 +1371,33 @@ var power_text = svg
   .text("Power: " + power)
   .style("fill", "#348ABD");
 
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 0)
-  .attr("x", 1.2 * fig_width + 5)
+   
+d3.select("#simple_hypothesis")
+  .append("div")
+  .text("\\(\\alpha \\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .text("α")
-  .style("fill", "#000");
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", 1.2 * fig_width + 5 + margin.left + "px")
+  .style("top", 15 + "px");
   
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2 * fig_height)
-  .attr("x", 1.9 * fig_width + 5)
+d3.select("#simple_hypothesis")
+  .append("div")
+  .text("\\(u_{1-\\alpha} \\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .text("u")
-  .style("fill", "#000")
-  .append('tspan')
-    .text('1-α')
-    .style('font-size', '.5rem')
-    .attr('dx', '-.1em')
-    .attr('dy', '.8em');
-
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", 1.9 * fig_width + 5 + margin.left + "px")
+  .style("top", 2 * fig_height + 15 + "px");
+  
 var labels_x = 250;
 var labels_y = 0;
 
@@ -1452,16 +1475,21 @@ svg.append('g')
      .style("fill", "#fff")
      .attr("stroke", "#348ABD")
      .attr("stroke-width", 2);
-       
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", labels_y + 35)
-  .attr("x", labels_x + 30)
+
+
+d3.select("#simple_hypothesis")
+  .append("div")
+  .text("\\(\\varphi(x) \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("φ(x)")
-  .style("fill", "#348ABD");
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + margin.left + 30 + "px")
+  .style("top", labels_y + 50 + "px");
+
 
 svg.append("path")
    .attr("stroke", "#348ABD")
@@ -1480,15 +1508,18 @@ svg.append("path")
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
        
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", labels_y + 5)
-  .attr("x", labels_x + fig_width + 30)
+d3.select("#simple_hypothesis")
+  .append("div")
+  .text("\\(1-\\Phi(x) \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("1-Φ(x)")
-  .style("fill", "#348ABD");
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + fig_width + margin.left + 30 + "px")
+  .style("top", labels_y + 20 + "px");
   
 var table_text_acc_h = svg
   .append("text")

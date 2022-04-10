@@ -155,6 +155,10 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 <div id="drug_exp"></div> 
 
 <script>
+
+d3.select("#drug_exp")
+  .style("position", "relative");
+  
 function drug_exp() {
 var theta = 0.2;
 
@@ -192,26 +196,30 @@ var yAxis = svg.append("g")
   
 yAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
-
-svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 135)
-  .attr("x", 310)
+    
+d3.select("#drug_exp")
+  .append("div")
+  .text("Dose \\(X_i \\)")
+  .style('color', '#696969')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 13)
-  .text("Dose Xᵢ")
-  .style("fill", "#696969");
+  .style("position", "absolute")
+  .style("left", fig_width / 2 + margin.left - 10 + "px")
+  .style("top", fig_height + margin.top + 15 + "px");
   
-svg.append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 50)
-  .attr("x", -20)
+d3.select("#drug_exp")
+  .append("div")
+  .text("\\(Y_i \\)")
+  .style('color', '#696969')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 13)
-  .text("Yᵢ")
-  .style("fill", "#696969");
+  .style("position", "absolute")
+  .style("left", 10 + "px")
+  .style("top", fig_height / 2 - 5 + "px");
     
 var figs = [];
 for (var i = 0; i < 11; i += 1) {
