@@ -173,7 +173,7 @@ This statement is known as **Multidimensional Central Limit Theorem**.
   color: white;
   margin: 0;
   padding: 0 1px;
-  width: 60px;
+  width: 80px;
   height: 25px;
   font-family: Arvo;
   font-size: 11px;
@@ -210,6 +210,7 @@ This statement is known as **Multidimensional Central Limit Theorem**.
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <button id="sample-button">Sample</button>
+<button id="sample-button-2">Sample 100x</button>
 <button id="reset-button">Reset</button>
 <div id="mclt"></div> 
 
@@ -218,7 +219,6 @@ d3.select("#mclt")
   .style("position", "relative");
 
 function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
-    
     var slider = svg_.append("g")
       .attr("class", "slider")
       .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
@@ -227,7 +227,8 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	        .on("start.interrupt", function() { slider.interrupt(); })
 	        .on("start drag", function() { 
 	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
-	          parameter_update(x.invert(d3.event.x));	         });
+	          parameter_update(round_fun(x.invert(d3.event.x)));
+	         });
 	         
     slider.append("line")
 	    .attr("class", "track")
@@ -263,7 +264,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	  .attr("font-size", 17)
 	  .text(letter)
 	  .style("fill", color);
-	  	  	  	  
+	  	  
 	return handle;
 }
 
@@ -310,7 +311,7 @@ function phi(x, mu, sigma) {
 
 
 function mclt() {
-var n = 30,
+var n = 7,
     rho = 0;
 
 const margin = {top: 20, right: 0, bottom: 5, left: 70},
@@ -344,11 +345,11 @@ xAxis.selectAll(".tick text")
    
 var xAvg = d3.scaleLinear()
           .range([fig_trans, 2 * fig_width + fig_margin])
-          .domain([-1, 1]);
+          .domain([-3, 3]);
 
 var xAvgAxis = svg.append("g")
    .attr("transform", "translate("+ 0 + "," + fig_height + ")")
-   .call(d3.axisBottom(xAvg).ticks(4));
+   .call(d3.axisBottom(xAvg).ticks(5));
   
 xAvgAxis.selectAll(".tick text")
    .attr("font-family", "Arvo");
@@ -365,11 +366,11 @@ yAxis.selectAll(".tick text")
 
 var yAvg = d3.scaleLinear()
           .range([fig_height, 0])
-          .domain([-1, 1]);
+          .domain([-3, 3]);
             
 var yAvgAxis = svg.append("g")
    .attr("transform", "translate("+ fig_trans + ",0)")
-    .call(d3.axisLeft(yAvg).ticks(4));
+    .call(d3.axisLeft(yAvg).ticks(5));
   
 yAvgAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
@@ -407,10 +408,10 @@ var uni_y_curve = svg
       );
       
 var gauss_data = [];
-var mu = 0, sigma = 1 / Math.sqrt(3 * n);
-var scale = axs_mrgn * (sigma * 1.41421356237 * Math.PI);
-for (var i = -1; i <= 1; i += 0.01) {
-    gauss_data.push({x: i, y: -1.25 - scale * phi(i, mu, sigma)});
+var mu = 0, sigma = 1 / Math.sqrt(3);
+var scale = 3 * axs_mrgn * (sigma * 1.41421356237 * Math.PI);
+for (var i = -3; i <= 3; i += 0.01) {
+    gauss_data.push({x: i, y: -3.75 - scale * phi(i, mu, sigma)});
 }
       
 var gauss_x_curve = svg
@@ -450,6 +451,7 @@ var gauss_density = [];
 function sampleUniform() {
     var uni_data = [], uni_dots = [];
     var avg_x = 0, avg_y = 0;
+    var sqrt_n = Math.sqrt(n);
     for (var i = 0; i < n; i += 1) {
         var uni_point = biv_uni(rho);
         uni_data.push({x: uni_point[0], y: uni_point[1]});
@@ -498,8 +500,8 @@ function sampleUniform() {
         .transition()
         .duration(avg_dur)
         .delay(2 * avg_dur)
-        .attr("cx", function (d) { return xAvg(avg_x); } )
-        .attr("cy", function (d) { return yAvg(avg_y); } );
+        .attr("cx", function (d) { return xAvg(sqrt_n * avg_x); } )
+        .attr("cy", function (d) { return yAvg(sqrt_n * avg_y); } );
 
 }
 
@@ -515,6 +517,13 @@ var sampleButton = d3.select("#sample-button")
     sampleUniform();
 });
 
+var sampleButton = d3.select("#sample-button-2")
+    .on("click", function() {
+    for (var i = 0; i < 100; i += 1) {
+        sampleUniform();
+    }
+});
+
 var resetButton = d3.select("#reset-button")
     .on("click", function() {
       reset();
@@ -522,7 +531,7 @@ var resetButton = d3.select("#reset-button")
 
 var rho_x = d3.scaleLinear()
     .domain([-1, 1])
-    .range([0, width / 2])
+    .range([0, width / 4])
     .clamp(true);
     
 function trivialRound(x) { return x; }
@@ -532,19 +541,32 @@ function updateRho(r) {
     reset();
 }
 
-createSlider(svg, updateRho, rho_x, fig_width / 2, 0.95 * height, "", "#65AD69", rho, trivialRound);
+createSlider(svg, updateRho, rho_x, 30, 0.95 * height, "", "#65AD69", rho, trivialRound);
+
+var n_x = d3.scaleLinear()
+    .domain([1, 12])
+    .range([0, width / 4])
+    .clamp(true);
+    
+function roundN(x) { return Math.round(x - 0.5); }
+
+function updateN(num) {
+    n = num;
+    reset();
+}
+
+createSlider(svg, updateN, n_x, 3 * fig_width / 2, 0.95 * height, "n", "#696969", n, roundN);
 
 d3.select("#mclt")
   .append("div")
   .text("\\(\\rho \\)")
-  .style('color', '#000')
+  .style('color', '#696969')
   .style("font-size", "17px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
-  .style("left", fig_width / 2 + 45 + "px")
+  .style("left", 75 + "px")
   .style("top", 0.95 * height + 5 + "px");
   
 d3.select("#mclt")
@@ -555,22 +577,20 @@ d3.select("#mclt")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", fig_width / 2 - 35 + "px")
   .style("top", 0.78 * height + "px");
   
 d3.select("#mclt")
   .append("div")
-  .text("\\(X^{(n)} \\sim \\mathcal{N}(0, \\Sigma / n) \\)")
+  .text("\\(\\sqrt{n} (X^{(n)}-\\mu) \\sim \\mathcal{N}(0, \\Sigma) \\)")
   .style('color', '#E86456')
   .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
-  .style("left", 3 * fig_width / 2 + 110 + "px")
+  .style("left", 3 * fig_width / 2 + 80 + "px")
   .style("top", 0.8 * height + "px");
   
 }
@@ -580,7 +600,7 @@ mclt();
 </script>
 
 ![](.)
-*Fig. 1. Visualization of multidimensional CLT. On the left side there is random vector of two uniformly distributed random variables: $X_1, X_2 \sim \mathcal{U}(-1, 1)$ with mean $\mu=(0, 0)^T$ and covariance $\Sigma$. On the right side is $X^{(n)}$ which has normal distribution with zero mean and covariance $\frac{1}{n} \Sigma$.*
+*Fig. 1. Visualization of multidimensional CLT for two-dimensional case. On the left-hand side there is random vector of two uniformly distributed random variables: $X_1, X_2 \sim \mathcal{U}(-1, 1)$ with mean $\mu=(0, 0)^T$ and correlation $\rho$. On the right-hand side is $\sqrt{n} X^{(n)}$ which for large $n$ has approximately normal distribution with zero mean and covariance $\Sigma$.*
 
 ### Delta-method
 
@@ -703,8 +723,6 @@ In total,
 
 $$\sqrt{n}(\hat{\rho}_n - \rho) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, DVD^T) = \mathcal{N}(0, (1-\rho^2)^2).$$
 
-TODO: visualization
-
 ### Asympotic efficiency
 
 Let $g_n:\mathcal{X}_n \rightarrow \Gamma \subset \mathbb{R}^l$ be a sequence of estimators with $\mu_n(\vartheta)=\mathbb{E}_\vartheta[g_n] \in \mathbb{R}^l$ and $\Sigma_n(\vartheta)=\operatorname{Cov}(\vartheta) \in \mathbb{R}^{l \times l}$, such that $\|\Sigma_n(\vartheta) \| \rightarrow 0$. Then
@@ -808,3 +826,4 @@ $$\sqrt{n}\Big(\overline{X}_n - \frac{1}{\lambda}\Big) \xrightarrow[]{\mathcal{L
 Using Delta-method for $g(x) = x^{-1}$ we get the same result:
 
 $$\sqrt{n}(\overline{X}_n^{-1} - \lambda) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \lambda^2). $$
+

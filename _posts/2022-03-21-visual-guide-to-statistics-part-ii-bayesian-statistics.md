@@ -211,6 +211,9 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
 <script>
 
+d3.select("#gauss_bayes_plt")
+  .style("position", "relative");
+  
 var mu = -1,
     sigma = 3,
     nu = 0,
@@ -467,7 +470,7 @@ var mode_dot = svg.append('g')
     .attr("stroke-width", 1);
 
 var labels_x = 550;
-
+  
 svg.append("path")
    .attr("stroke", "#348ABD")
    .attr("stroke-width", 4)
@@ -521,17 +524,18 @@ svg
   .attr("font-weight", 700)
   .text("Posterior")
   .style("fill", "#EDA137");
-  
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 40)
-  .attr("x", labels_x + 30)
+
+d3.select("#gauss_bayes_plt")
+  .append("div")
+  .text("\\(\\mu \\)")
+  .style('color', '#65AD69')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("μ")
-  .attr("font-size", 12)
-  .style("fill", "#65AD69");
+  .style("position", "absolute")
+  .style("left", labels_x + 55 + "px")
+  .style("top", 45 + "px");
       
 svg.append("path")
     .attr("class", "line")
@@ -554,17 +558,18 @@ svg.append('g')
       .style("fill", "#65AD69")
       .attr("stroke", "#000")
       .attr("stroke-width", 1);
-
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 70)
-  .attr("x", labels_x + 30)
+      
+d3.select("#gauss_bayes_plt")
+  .append("div")
+  .text("\\(\\overline{X}_n \\)")
+  .style('color', '#E86456')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .text("X̄ₙ")
-  .attr("font-size", 12)
-  .style("fill", "#E86456");
+  .style("position", "absolute")
+  .style("left", labels_x + 55 + "px")
+  .style("top", 75 + "px");
       
 svg.append("path")
     .attr("class", "line")
@@ -596,7 +601,7 @@ svg
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Bayes")
-  .attr("font-size", 10)
+  .attr("font-size", 12)
   .style("fill", "#348ABD");
       
 svg.append("path")
@@ -698,10 +703,61 @@ function updateMu(x) { mu = x; }
 function updateSigma(x) { sigma = x; }
 function trivialRound(x) { return x; }
 
-createSlider(svg, updateMu, mu_x, margin.left, 0.75 * height, "μ", "#65AD69", mu, trivialRound);
-createSlider(svg, updateSigma, sigma_x, margin.left, 0.9 * height, "σ", "#65AD69", sigma, trivialRound);
-createSlider(svg, updateNu, nu_x, margin.left + width / 2, 0.75 * height, "ν", "#348ABD", nu, trivialRound);
-createSlider(svg, updateTau, tau_x, margin.left + width / 2, 0.9 * height, "τ", "#348ABD", tau, trivialRound);
+createSlider(svg, updateMu, mu_x, margin.left, 0.75 * height, "", "#65AD69", mu, trivialRound);
+createSlider(svg, updateSigma, sigma_x, margin.left, 0.9 * height, "", "#65AD69", sigma, trivialRound);
+createSlider(svg, updateNu, nu_x, margin.left + width / 2, 0.75 * height, "", "#348ABD", nu, trivialRound);
+createSlider(svg, updateTau, tau_x, margin.left + width / 2, 0.9 * height, "", "#348ABD", tau, trivialRound);
+
+
+d3.select("#gauss_bayes_plt")
+  .append("div")
+  .text("\\(\\mu \\)")
+  .style('color', '#65AD69')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", margin.left+ "px")
+  .style("top", 0.75 * height + 5 + "px");
+
+
+d3.select("#gauss_bayes_plt")
+  .append("div")
+  .text("\\(\\sigma \\)")
+  .style('color', '#65AD69')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", margin.left + "px")
+  .style("top", 0.9 * height + 5 + "px");
+
+
+d3.select("#gauss_bayes_plt")
+  .append("div")
+  .text("\\(\\nu \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", margin.left + width / 2 + "px")
+  .style("top", 0.75 * height + 5 + "px");
+  
+d3.select("#gauss_bayes_plt")
+  .append("div")
+  .text("\\(\\tau \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", margin.left + width / 2 + "px")
+  .style("top", 0.9 * height + 5 + "px");
 
 d3.select("#n-num").on("input", function() {
     n = this.value;
