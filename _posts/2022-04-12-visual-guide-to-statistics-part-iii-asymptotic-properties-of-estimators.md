@@ -8,7 +8,7 @@ math: true
 published: true
 ---
 
-> Consider random vector $X^{(n)}=(X_1, \dots, X_n)^T$ in $\mathcal{X}_n=\mathcal{X}^n$ with distribution $\mathcal{P}^n=\lbrace P_\vartheta^n \mid \vartheta \in \Theta \rbrace $. For any $n$ let $g_n(X^{(n)})$ be an estimator for $\gamma(\vartheta)$. A minimal condition for a good estimator is that $g_n$ is getting closer to $\gamma(\vartheta)$ with growing $n$. In this post we will focus on asymptotic properties of $g_n$.
+> A minimal condition for a good estimator is that it is getting closer to estimated parameter with growing size of sample vector. In this post we will focus on asymptotic properties of estimators.
 
 ### Consistency of estimators
 
@@ -67,7 +67,7 @@ where
 
 $$\hat{m}_j = \frac{1}{n} \sum_{i=1}^{n}X_k^j.$$
 
- If $\mathbb{E}_\vartheta[|X|^k] < \infty$, then by Law of Large Numbers $\hat{m}_j \rightarrow m_j$ a.s. Since $f$ is continuous, we obtain
+By Law of Large Numbers $\hat{m}_j \rightarrow m_j$ a.s. Since $f$ is continuous, we obtain
 
 $$\hat{\gamma}(X) \xrightarrow[]{\text{a.s.}} \gamma(\vartheta).$$
 
@@ -806,7 +806,7 @@ Let $g_n \subset \mathbb{R}^l$ be a sequence of estimators with
 
 $$\mu_n(\vartheta)=\mathbb{E}_\vartheta[g_n] \in \mathbb{R}^l \quad \text{and} \quad \Sigma_n(\vartheta)=\operatorname{Cov}(\vartheta) \in \mathbb{R}^{l \times l},$$
 
-such that $\|\Sigma_n(\vartheta) \| \rightarrow 0$. Then
+such that $\lVert \Sigma_n(\vartheta) \rVert \rightarrow 0$. Then
 
 * $g_n$ is called **asymptotically unbiased** for $\gamma(\vartheta)$ if
 
@@ -873,7 +873,7 @@ as **the maximum-likelihood estimator** for $\vartheta$.
 Now, say the following conditions are satisfied:
 
 1. $\Theta \subset \mathbb{R}^k$ is compact space
-2. $L(\eta, \vartheta) = \mathbb{E}[\ell(X_i, \eta)]$ and $L_n(\eta) = \frac{1}{n}\sum_{i=1}^n\ell(X_i, \eta)$ are a.s. continuos function over $\eta$.
+2. $L(\eta, \vartheta) = \mathbb{E}[\ell(X_i, \eta)]$ and $L_n(\eta) = \frac{1}{n}\sum_{i=1}^n\ell(X_i, \eta)$ are a.s. continuous functions over $\eta$.
 3. $$\sup_{\eta \in \Theta} | L_n(\eta)-L(\eta, \vartheta)|\xrightarrow{\mathcal{L}}0.$$
 
 Then ml-estimator $\hat{\theta}_n$ is consistent.
@@ -895,7 +895,7 @@ Using the fact that function $m_f = \arg\max_{\eta \in \Theta} f(\eta)$ is conti
 
 $$ \vartheta = \arg \max L(\eta, \vartheta)\quad \text{and} \quad \hat{\theta}_n=\arg \max L_n(\eta) $$
 
-and condition (3). 
+and condition 3. 
 
 </details>
 
@@ -905,23 +905,21 @@ Also if the following conditions are satisfied:
 2. $\ell(x, \eta)$ is continuous $\forall \eta \in \Theta$ and twice continuously differentiable over $\vartheta$ for almost every $x \in \mathcal{X}$.
 3. There exist functions $H_0, H_2 \in L^1(P_\vartheta)$ and $H_1 \in L^2(P_\vartheta)$, such that:
 
-$$\sup_{\eta \in \Theta} |\ell(x, \eta)| \leq H_0(x), \quad \sup_{\eta \in \Theta} \|\dot{\ell}(x, \eta)\| \leq H_1(x), \quad \sup_{\eta \in \Theta} \|\ddot{\ell}(x, \eta)\| \leq H_2(x) \quad \forall x \in \mathcal{X}. $$
+$$\sup_{\eta \in \Theta} \|\ell(x, \eta)\| \leq H_0(x), \quad \sup_{\eta \in \Theta} \|\dot{\ell}(x, \eta)\| \leq H_1(x), \quad \sup_{\eta \in \Theta} \|\ddot{\ell}(x, \eta)\| \leq H_2(x) \quad \forall x \in \mathcal{X}. $$
 
 4. Fisher information
 
 $$ \mathcal{I}(f(\cdot, \vartheta))=\mathbb{E}_\vartheta[\dot{\ell}(X,\vartheta)\dot{\ell}(X,\vartheta)^T] $$
 
-is positive definite (and therefore invertible)
+is positive definite (and therefore invertible),
 
 then $\hat{\theta}_n$ is asymptotically normal:
 
 $$\sqrt{n}(\hat{\theta}_n-\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))^{-1}).$$
 
-<details>
-<summary>Math-heavy proof</summary>
-We split this proof in 4 steps:
+We will prove it in 4 steps:
 
-*Step 1.* Prove the constistency of $\hat{\theta}_n$. For this we need to verify that all conditions from theorem about consistency of ml-estimator are satisfied:
+<span style="color:salmon">*Step 1.*</span> Prove the constistency of $\hat{\theta}_n$. For this we need to verify that all conditions from theorem about consistency of ml-estimator are satisfied:
 
 1. Satisfied by the assumption. 
 2. $L_n(\eta)$ is a.s. continuous. Using 2-3 conditions and dominated convergence we get
@@ -935,7 +933,7 @@ $$ \begin{aligned}
 $$
 Because $\Theta$ is compact, function $\ell(X, \eta)$ is a.s. uniformly continuous in $\eta$. As a consequence, the last statement converges to zero for $\delta \rightarrow 0$ (using again dominated convergence).
 	
-*Step 2.* Let $\dot{L}_n(\vartheta) := \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta)$. Prove that $\sqrt{n}\dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))).$ 
+<span style="color:salmon">*Step 2.*</span> Let $\dot{L}_n(\vartheta) := \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta)$. Prove that $\sqrt{n}\dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))).$ 
 
 Let $A_n$ be $k$-dimensional rectangle with vertices in $\hat{\theta}_n$ and $\vartheta$. Because $\hat{\theta}_n \xrightarrow{\mathcal{L}} \vartheta$ and $\vartheta \in \operatorname{int}(\Theta)$, we have $ \mathbb{P}_\vartheta(A_n \subset \operatorname{int}(\Theta)) \rightarrow 1. $ Also 
 
@@ -956,7 +954,7 @@ Then by CLT:
 $$ \sqrt{n} \dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))). $$
 	 
 
-*Step 3.* By Mean Theorem:
+<span style="color:salmon">*Step 3.*</span> By Mean Theorem:
 
 $$ -\dot{L}_n(\vartheta) = \dot{L}_n(\hat{\theta}_n) - \dot{L}_n(\vartheta) = \ddot{L}_n(\widetilde{\theta}_n)(\hat{\theta}_n - \vartheta) $$
 
@@ -980,7 +978,7 @@ $$\lim\limits_{\delta \rightarrow 0} \lim\limits_{n \rightarrow \infty} \mathbb{
 
 and continuity of $\ddot{\ell}$ over $\vartheta$ to finish the proof.
 
-*Step 4.* Now we conclude that
+<span style="color:salmon">*Step 4.*</span> Now we conclude that
 
 $$ \lim\limits_{n \rightarrow \infty} \mathbb{P}_\vartheta(\ddot{L}_n(\widetilde{\theta}_n) \text{ is invertible}) = 1. $$
 
@@ -988,10 +986,9 @@ and applying Slutsky's lemma we get
 
 $$\begin{aligned}
 	\sqrt{n}(\hat{\theta}_n - \vartheta) & = -\ddot{L}_n(\widetilde{\theta}_n)^{-1} \sqrt{n} \dot{L}_n(\vartheta) \\
-	& \rightarrow \mathcal{I}(f(\cdot, \vartheta))^{-1} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))) \\&= \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))^{-1}).
+	& \rightarrow \mathcal{I}(f(\cdot, \vartheta))^{-1} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))) \\&= \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))^{-1}). \color{Salmon}{\square}
 	\end{aligned}$$
 
-</details>
 
 Take an example: let $X_1, \dots X_n$ be i.i.d. $\sim \operatorname{Exp}(\lambda)$ with joint density
 
