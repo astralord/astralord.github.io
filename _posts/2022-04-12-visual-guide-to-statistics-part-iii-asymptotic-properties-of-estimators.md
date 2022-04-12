@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Visual Guide to Statistics. Part III: Asymptotic Properties Of Estimators'
-date: 2022-03-12 03:13 +0800
+date: 2022-04-12 03:13 +0800
 categories: [Statistics]
 tags: [statistics, consistent-estimator, central-limit-theorem, slutsky-lemma, delta-method, asymptotic-efficiency, maximum-likelihood-estimator]
 math: true
@@ -41,7 +41,7 @@ $$
 &X_n \xrightarrow[]{\text{a.s.}} X \quad \Rightarrow \quad f(X_n) \xrightarrow[]{\text{a.s.}} f(X). 
 \end{aligned}$$
 
-Now let $g_n:\mathcal{X}_n \rightarrow \Gamma$ be an estimator of $\gamma(\vartheta)$ with values in metric space. Assume that all experiments are defined on a joint probability space $P_\vartheta$ for all $n$. We say that
+Now let $g_n$ be an estimator of $\gamma(\vartheta)$ with values in metric space. Assume that all experiments are defined on a joint probability space $P_\vartheta$ for all $n$. We say that
 
 * $g_n$ is **(weakly) consistent** if
 
@@ -51,7 +51,11 @@ $$g_n \xrightarrow[]{\mathbb{P}}\gamma(\vartheta) \quad \forall \vartheta \in \T
 
 $$g_n \xrightarrow[]{\text{a.s.}} \gamma(\vartheta)  \quad \forall \vartheta \in \Theta.$$
 
-Recall the method of moments from [Part I](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#common-estimation-methods): $X_1, \dots, X_n$ i.i.d. $\sim P_\vartheta$, $\vartheta \in \Theta \subset \mathbb{R}^k$ and $\gamma: \Theta \rightarrow \Gamma \subset \mathbb{R}^l$. Also $m_j = \mathbb{E}_\vartheta[X_1^j] = \int x^j P_\vartheta(dx)$, $j = 1, \dots, k$ and
+Recall the method of moments from [Part I](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#common-estimation-methods): $X_1, \dots, X_n$ i.i.d. $\sim P_\vartheta$, $\vartheta \in \Theta \subset \mathbb{R}^k$ and $\gamma: \Theta \rightarrow \Gamma \subset \mathbb{R}^l$. Also 
+
+$$m_j = \mathbb{E}_\vartheta[X_1^j] = \int x^j P_\vartheta(dx)$$
+
+for $j = 1, \dots, k$, and
 
 $$\gamma(\vartheta) = f(m_1, \dots, m_k).$$
 
@@ -59,7 +63,11 @@ Then choose
 
 $$\hat{\gamma}(X) = f(\hat{m}_1, \dots, \hat{m}_k),$$
 
-where $\hat{m}_j = \frac{1}{n} \sum_{i=1}^{n}X_k^j$. If $\mathbb{E}_\vartheta[|X|^k] < \infty$, then by Law of Large Numbers $\hat{m}_j \rightarrow m_j$ a.s. Since $f$ is continuous, we obtain
+where
+
+$$\hat{m}_j = \frac{1}{n} \sum_{i=1}^{n}X_k^j.$$
+
+ If $\mathbb{E}_\vartheta[|X|^k] < \infty$, then by Law of Large Numbers $\hat{m}_j \rightarrow m_j$ a.s. Since $f$ is continuous, we obtain
 
 $$\hat{\gamma}(X) \xrightarrow[]{\text{a.s.}} \gamma(\vartheta).$$
 
@@ -719,7 +727,11 @@ where $\Sigma = (\Sigma)_{i,j=1}^k = (m_{i+j} - m_i m_j)_{i,j=1}^k.$ Then
 
 $$\sqrt{n}(\gamma(\hat{m}_1, \dots, \hat{m}_k) - \gamma(m_1, \dots, m_k)) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, D \Sigma D^T).$$
 
-* Take another example: let $X_1, \dots X_n$ be i.i.d. with $\mathbb{E}_\vartheta[X_i] = \mu$ and $\operatorname{Var}_\vartheta(X_i) = \sigma^2$. From CLT we have
+* Take another example: let $X_1, \dots X_n$ be i.i.d. with 
+
+$$\mathbb{E}_\vartheta[X_i] = \mu \quad \text{and} \quad \operatorname{Var}_\vartheta(X_i) = \sigma^2.$$
+
+From CLT we have
 
 $$\sqrt{n}(\overline{X}_n - \mu) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \sigma^2).$$
 
@@ -728,6 +740,7 @@ Choose $\overline{X}_n^2$ as an estimator for $\mu^2$. Applying Delta-method we 
 $$\sqrt{n}(\overline{X}_n^2-\mu^2) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, 4\mu^2\sigma^2).$$
 
 * Let
+
  $$ (X_i, Y_i)^T \sim \mathcal{N}
 		\begin{pmatrix}
 		\begin{pmatrix}
@@ -739,11 +752,16 @@ $$\sqrt{n}(\overline{X}_n^2-\mu^2) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, 4\
 		\end{pmatrix}
 		\end{pmatrix}, \quad
 		i = 1, \dots, n, $$
+		
 be i.i.d with parameter $\vartheta = (\mu_1, \mu_2, \sigma^2, \tau^2, \rho)^T$. The estimator
 
 $$\hat{\rho}_n = \frac{SQ_{xy}}{\sqrt{SQ_{xx} SQ_{yy}}}, $$
 
-where $SQ_{xy} = \frac{1}{n} \sum_{i=1}^{n}(X_i-\overline{X}_n)(Y_i - \overline{Y}_n)$, ($SQ_{xx}, SQ_{yy}$ - likewise), is called **the Pearson correlation coefficient**. Without loss of generality, assume $\mu_1=\mu_2=0$, $\sigma=\tau=1$, because $\hat{\rho}_n$ is invariant under affine transformation. 
+where 
+
+$$SQ_{xy} = \frac{1}{n} \sum_{i=1}^{n}(X_i-\overline{X}_n)(Y_i - \overline{Y}_n),$$
+
+$SQ_{xx}, SQ_{yy}$ - likewise, is called **the Pearson correlation coefficient**. Without loss of generality, assume $\mu_1=\mu_2=0$, $\sigma=\tau=1$, because $\hat{\rho}_n$ is invariant under affine transformation. 
 
 Prove first that  $S_n = (SQ_{xx}, SQ_{yy}, SQ_{xy})^T$ satisifies 
 
@@ -784,7 +802,11 @@ $$\sqrt{n}(\hat{\rho}_n - \rho) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, DVD^T
 
 ### Asympotic efficiency
 
-Let $g_n:\mathcal{X}_n \rightarrow \Gamma \subset \mathbb{R}^l$ be a sequence of estimators with $\mu_n(\vartheta)=\mathbb{E}_\vartheta[g_n] \in \mathbb{R}^l$ and $\Sigma_n(\vartheta)=\operatorname{Cov}(\vartheta) \in \mathbb{R}^{l \times l}$, such that $\|\Sigma_n(\vartheta) \| \rightarrow 0$. Then
+Let $g_n \subset \mathbb{R}^l$ be a sequence of estimators with 
+
+$$\mu_n(\vartheta)=\mathbb{E}_\vartheta[g_n] \in \mathbb{R}^l \quad \text{and} \quad \Sigma_n(\vartheta)=\operatorname{Cov}(\vartheta) \in \mathbb{R}^{l \times l},$$
+
+such that $\|\Sigma_n(\vartheta) \| \rightarrow 0$. Then
 
 * $g_n$ is called **asymptotically unbiased** for $\gamma(\vartheta)$ if
 
@@ -802,13 +824,13 @@ $$ \lim\limits_{n \rightarrow \infty} \Sigma_n(\vartheta) \mathcal{I}(f_n(\cdot,
 
 where $\mathcal{I}(f_n(\cdot, \vartheta))$ is Fisher information.
 
-The intuition behind definition above is the following: if $g_n$ is unbiased, then by Cramér–Rao theorem $\operatorname{Cov}_\vartheta(g_n) \geq I^{-1}(f_n(\cdot, \vartheta))$. Due to asymptotic normality:
+The intuition behind definition above is the following: if $g_n$ is unbiased, then by Cramér–Rao theorem $\operatorname{Cov}_\vartheta(g_n) \geq \mathcal{I}^{-1}(f_n(\cdot, \vartheta))$. Due to asymptotic normality:
 
 $$\Sigma_n^{-\frac{1}{2}}(\vartheta)(g_n-\mu_n(\vartheta)) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathbb{I}_l)$$
 
 we have approximately
 
-$$\operatorname{Cov}_\vartheta(g_n) \approx \Sigma_n(\vartheta) \approx I^{-1}(f_n(\cdot, \vartheta))$$
+$$\operatorname{Cov}_\vartheta(g_n) \approx \Sigma_n(\vartheta) \approx \mathcal{I}^{-1}(f_n(\cdot, \vartheta))$$
 
 and $g_n$ is asymptotically unbiased and asymptotically efficient.
 
@@ -829,7 +851,7 @@ $$\operatorname{Cov}_\vartheta(g_n) = \begin{pmatrix}
 	
 But Fisher information is
 
-$$I^{-1}(f_n(\cdot, \vartheta)) = \begin{pmatrix}
+$$\mathcal{I}^{-1}(f_n(\cdot, \vartheta)) = \begin{pmatrix}
 	\sigma^2/n & 0 \\
 	0 & 2\sigma^4 / n
 	\end{pmatrix} $$
@@ -852,7 +874,7 @@ Now, say the following conditions are satisfied:
 
 1. $\Theta \subset \mathbb{R}^k$ is compact space
 2. $L(\eta, \vartheta) = \mathbb{E}[\ell(X_i, \eta)]$ and $L_n(\eta) = \frac{1}{n}\sum_{i=1}^n\ell(X_i, \eta)$ are a.s. continuos function over $\eta$.
-3. $\sup_{\eta \in \Theta} | L_n(\eta)-L(\eta, \vartheta)|\xrightarrow{\mathcal{L}}0.$
+3. $$\sup_{\eta \in \Theta} | L_n(\eta)-L(\eta, \vartheta)|\xrightarrow{\mathcal{L}}0.$$
 
 Then ml-estimator $\hat{\theta}_n$ is consistent.
 
@@ -882,9 +904,13 @@ Also if the following conditions are satisfied:
 1. $\Theta \subset \mathbb{R}^k$ is compact and $\vartheta \subset \operatorname{int}(\Theta)$.
 2. $\ell(x, \eta)$ is continuous $\forall \eta \in \Theta$ and twice continuously differentiable over $\vartheta$ for almost every $x \in \mathcal{X}$.
 3. There exist functions $H_0, H_2 \in L^1(P_\vartheta)$ and $H_1 \in L^2(P_\vartheta)$, such that:
+
 $$\sup_{\eta \in \Theta} |\ell(x, \eta)| \leq H_0(x), \quad \sup_{\eta \in \Theta} \|\dot{\ell}(x, \eta)\| \leq H_1(x), \quad \sup_{\eta \in \Theta} \|\ddot{\ell}(x, \eta)\| \leq H_2(x) \quad \forall x \in \mathcal{X}. $$
+
 4. Fisher information
+
 $$ \mathcal{I}(f(\cdot, \vartheta))=\mathbb{E}_\vartheta[\dot{\ell}(X,\vartheta)\dot{\ell}(X,\vartheta)^T] $$
+
 is positive definite (and therefore invertible)
 
 then $\hat{\theta}_n$ is asymptotically normal:
