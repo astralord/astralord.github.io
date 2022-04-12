@@ -884,12 +884,12 @@ For any $\eta \in \Theta$:
 
 $$L(\eta, \vartheta) = \int \ell(x, \eta) f(x,\vartheta) dx = \int \ell(x,\vartheta)f(x,\vartheta)dx - KL(\vartheta | \eta),  $$
 
-where $KL$ is **Kullback-Leibler divergence**:
+where $KL$ is Kullback-Leibler divergence:
 
 $$ KL(\vartheta | \eta) = \int_{\mathcal{X}} \log\Big(\frac{f(x,\vartheta)}{f(x,\eta)}\Big) f(x,\vartheta)dx.
 $$
 
-It can be shown by [Jensen inequality](https://en.wikipedia.org/wiki/Jensen%27s_inequality) that $KL(\vartheta | \eta) \geq 0$ and reaches $0$ only for $f(x,\vartheta) = f(x,\eta)$ for all $x$. Therefore we conclude that $L(\eta, \vartheta)$ reaches maximum at $\eta = \vartheta$.
+It can be shown by Jensen inequality that $KL(\vartheta | \eta) \geq 0$ and reaches $0$ only for $f(x,\vartheta) = f(x,\eta)$ for all $x$. Therefore we conclude that $L(\eta, \vartheta)$ reaches maximum at $\eta = \vartheta$.
 
 Using the fact that function $m_f = \arg\max_{\eta \in \Theta} f(\eta)$ is continuous if $m_f$ is unique, we finish the proof from
 
@@ -901,13 +901,13 @@ and condition 3.
 
 Also if the following conditions are satisfied:
 
-1. $\Theta \subset \mathbb{R}^k$ is compact and $\vartheta \subset \operatorname{int}(\Theta)$.
-2. $\ell(x, \eta)$ is continuous $\forall \eta \in \Theta$ and twice continuously differentiable over $\vartheta$ for almost every $x \in \mathcal{X}$.
-3. There exist functions $H_0, H_2 \in L^1(P_\vartheta)$ and $H_1 \in L^2(P_\vartheta)$, such that:
+* $\Theta \subset \mathbb{R}^k$ is compact and $\vartheta \subset \operatorname{int}(\Theta)$.
+* $\ell(x, \eta)$ is continuous $\forall \eta \in \Theta$ and twice continuously differentiable over $\vartheta$ for almost every $x \in \mathcal{X}$.
+* There exist functions $H_0, H_2 \in L^1(P_\vartheta)$ and $H_1 \in L^2(P_\vartheta)$, such that:
 
 $$\sup_{\eta \in \Theta} \|\ell(x, \eta)\| \leq H_0(x), \quad \sup_{\eta \in \Theta} \|\dot{\ell}(x, \eta)\| \leq H_1(x), \quad \sup_{\eta \in \Theta} \|\ddot{\ell}(x, \eta)\| \leq H_2(x) \quad \forall x \in \mathcal{X}. $$
 
-4. Fisher information
+* Fisher information
 
 $$ \mathcal{I}(f(\cdot, \vartheta))=\mathbb{E}_\vartheta[\dot{\ell}(X,\vartheta)\dot{\ell}(X,\vartheta)^T] $$
 
@@ -931,11 +931,20 @@ $$ \begin{aligned}
 		& = \mathbb{E}_\vartheta[\sup_{\| \eta_1 - \eta_2 \| < \delta}|\ell(X,\eta_1) - \ell(X, \eta_2)|]
 				\end{aligned}
 $$
+
 Because $\Theta$ is compact, function $\ell(X, \eta)$ is a.s. uniformly continuous in $\eta$. As a consequence, the last statement converges to zero for $\delta \rightarrow 0$ (using again dominated convergence).
 	
-<span style="color:salmon">*Step 2.*</span> Let $\dot{L}_n(\vartheta) := \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta)$. Prove that $\sqrt{n}\dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))).$ 
+<span style="color:salmon">*Step 2.*</span> Let 
 
-Let $A_n$ be $k$-dimensional rectangle with vertices in $\hat{\theta}_n$ and $\vartheta$. Because $\hat{\theta}_n \xrightarrow{\mathcal{L}} \vartheta$ and $\vartheta \in \operatorname{int}(\Theta)$, we have $ \mathbb{P}_\vartheta(A_n \subset \operatorname{int}(\Theta)) \rightarrow 1. $ Also 
+$$\dot{L}_n(\vartheta) := \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta).$$
+
+Prove that $\sqrt{n}\dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))).$ 
+
+Let $A_n$ be $k$-dimensional rectangle with vertices in $\hat{\theta}_n$ and $\vartheta$. Because $\hat{\theta}_n \xrightarrow{\mathcal{L}} \vartheta$ and $\vartheta \in \operatorname{int}(\Theta)$, we have 
+
+$$P_\vartheta(A_n \subset \operatorname{int}(\Theta)) \rightarrow 1.$$
+
+Also 
 
 $$ \dot{L}_n(\hat{\theta}_n) = \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \hat{\theta}_n) = 0 $$
 
@@ -974,13 +983,13 @@ $$\ddot{L}_n(\vartheta) \xrightarrow{\mathcal{L}} - \mathcal{I}(f(\cdot, \varthe
 
 Finally, we use the equality
 
-$$\lim\limits_{\delta \rightarrow 0} \lim\limits_{n \rightarrow \infty} \mathbb{P}_\vartheta(\| \widetilde{\theta}_n - \vartheta \| < \delta) = 1 $$
+$$\lim\limits_{\delta \rightarrow 0} \lim\limits_{n \rightarrow \infty} P_\vartheta(\| \widetilde{\theta}_n - \vartheta \| < \delta) = 1 $$
 
 and continuity of $\ddot{\ell}$ over $\vartheta$ to finish the proof.
 
 <span style="color:salmon">*Step 4.*</span> Now we conclude that
 
-$$ \lim\limits_{n \rightarrow \infty} \mathbb{P}_\vartheta(\ddot{L}_n(\widetilde{\theta}_n) \text{ is invertible}) = 1. $$
+$$ \lim\limits_{n \rightarrow \infty} P_\vartheta(\ddot{L}_n(\widetilde{\theta}_n) \text{ is invertible}) = 1. $$
 
 and applying Slutsky's lemma we get
 
