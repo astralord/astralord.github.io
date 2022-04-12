@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 'Visual Guide to Statistics. Part III: Asymptotic Properties Of Estimators'
+title: 'Visual Guide to Statistics. Part III: Asymptotic Properties of Estimators'
 date: 2022-04-12 03:13 +0800
 categories: [Statistics]
 tags: [statistics, consistent-estimator, central-limit-theorem, slutsky-lemma, delta-method, asymptotic-efficiency, maximum-likelihood-estimator]
@@ -911,7 +911,7 @@ $$\sup_{\eta \in \Theta} \|\ell(x, \eta)\| \leq H_0(x), \quad \sup_{\eta \in \Th
 
 $$ \mathcal{I}(f(\cdot, \vartheta))=\mathbb{E}_\vartheta[\dot{\ell}(X,\vartheta)\dot{\ell}(X,\vartheta)^T] $$
 
-is positive definite (and therefore invertible),
+   is positive definite (and therefore invertible),
 
 then $\hat{\theta}_n$ is asymptotically normal:
 
@@ -949,6 +949,7 @@ Also
 $$ \dot{L}_n(\hat{\theta}_n) = \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \hat{\theta}_n) = 0 $$
 
 by definition of $\hat{\theta}_n$, and 
+
 $$
 	\begin{aligned}
 	 \mathbb{E}[\dot{\ell}(X_i, \vartheta)] & = \int_{\mathcal{X}} \dot{\ell}(x, \vartheta) f(x, \vartheta) dx \\
@@ -957,9 +958,11 @@ $$
 	 $$
 	 
 By definition
+
 $$ \operatorname{Cov}(\dot{\ell}(X_i, \vartheta)) = \mathcal{I}(f(\cdot, \vartheta)). $$
 
 Then by CLT:
+
 $$ \sqrt{n} \dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))). $$
 	 
 
