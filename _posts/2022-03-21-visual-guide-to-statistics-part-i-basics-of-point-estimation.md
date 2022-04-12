@@ -1235,7 +1235,7 @@ $$ U_\vartheta(x) = \left\{\begin{array}{ll}
 
 and function
 
-$$ I(f(\cdot, \vartheta))=\mathbb{E} \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]. $$
+$$ \mathcal{I}(f(\cdot, \vartheta))=\mathbb{E} \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]. $$
 
 Under mild regularity conditions we have
 
@@ -1243,7 +1243,7 @@ $$ \mathbb{E}[U_\vartheta(X)] = \mathbb{E}\big[\frac{\partial}{\partial \varthet
 
 and 
 
-$$ \operatorname{Var}(U_\vartheta(X)) = \mathbb{E}[(U_\vartheta(X))^2]=I(f(\cdot, \vartheta)). $$ 
+$$ \operatorname{Var}(U_\vartheta(X)) = \mathbb{E}[(U_\vartheta(X))^2]=\mathcal{I}(f(\cdot, \vartheta)). $$ 
 
 Then using Cauchy-Schwartz inequality we get 
 
@@ -1251,14 +1251,14 @@ $$ \begin{aligned}
 	\big( \frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)] \big)^2 &= \big( \mathbb{E}[g(X) \cdot U_\vartheta(X)] \big)^2 \\ 
 & = \big(\operatorname{Cov}(g(X), U_\vartheta(X)) \big)^2 \\
 & \leq \operatorname{Var}(g(X))\cdot \operatorname{Var}(U_\vartheta(X)) \\ 
-&= I(f(\cdot, \vartheta))\cdot \operatorname{Var}(g(X)).
+&= \mathcal{I}(f(\cdot, \vartheta))\cdot \operatorname{Var}(g(X)).
 	\end{aligned} $$
 	
 The resulting inequality:
 
-$$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)]\big)^2}{I(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
+$$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)]\big)^2}{\mathcal{I}(f(\cdot, \vartheta))} \quad \forall \vartheta \in \Theta $$
 
-gives us **Cramér–Rao bound**. Function $I(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
+gives us **Cramér–Rao bound**. Function $\mathcal{I}(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
 
 This theorem gives a lower bound for the variance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions (e.g. invariance of $M_f$) are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
 
@@ -1268,7 +1268,7 @@ $$f(x,\vartheta) = \prod_{i=1}^n f^i(x,\vartheta),$$
 
 we have
 
-$$ I(f(\cdot, \vartheta))=nI(f^1(\cdot, \vartheta)). $$
+$$ \mathcal{I}(f(\cdot, \vartheta))=n\mathcal{I}(f^1(\cdot, \vartheta)). $$
 
 Let's get back to the example with $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu, 1)$ having the density
 
@@ -1276,9 +1276,9 @@ $$ f^1(x, \vartheta) = \frac{1}{\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2}}. $$
 
 Then 
 
-$$ I(f^1(\cdot, \mu)) = \mathbb{E} \Big[ \big( \frac{\partial}{\partial \mu} \log f^1 (X_1, \mu)\big)^2 \Big] = \mathbb{E}[(X_1 - \mu)^2] = 1.$$
+$$ \mathcal{I}(f^1(\cdot, \mu)) = \mathbb{E} \Big[ \big( \frac{\partial}{\partial \mu} \log f^1 (X_1, \mu)\big)^2 \Big] = \mathbb{E}[(X_1 - \mu)^2] = 1.$$
 
-In particular, for $X = (X_1, \dots, X_n)$ Fisher information $I(f(X, \mu)) = n$ and Cramér–Rao bound for unbiased estimator:
+In particular, for $X = (X_1, \dots, X_n)$ Fisher information $\mathcal{I}(f(X, \mu)) = n$ and Cramér–Rao bound for unbiased estimator:
 
 $$ \operatorname{Var}(g(X)) \geq \frac{1}{n} \big( \frac{\partial}{\partial \mu} \mathbb{E}[g(X)] \big)^2 = \frac{1}{n}. $$
 
@@ -1293,11 +1293,11 @@ $$ G(\vartheta)=\Big( \frac{\partial}{\partial \vartheta_j} \mathbb{E}[g_i(X)] \
 
 Then with multidimensional Cauchy-Shwartz inequality one can prove that under similar regularity conditions we have:
 
-$$ \operatorname{Cov}(g(X)) \geq G(\vartheta) I^{-1}(f(\cdot, \vartheta))G^T(\vartheta) \in \mathbb{R}^{k \times k}, $$
+$$ \operatorname{Cov}(g(X)) \geq G(\vartheta) \mathcal{I}^{-1}(f(\cdot, \vartheta))G^T(\vartheta) \in \mathbb{R}^{k \times k}, $$
 
 where
 
-$$ I(f(\cdot, \vartheta))=\Big( \mathbb{E}\Big[\frac{\partial}{\partial \vartheta_i} \log f(X, \vartheta) \cdot \frac{\partial}{\partial \vartheta_j} \log f(X, \vartheta) \Big]  \Big)_{i,j=1}^d \in \mathbb{R}^{d \times d}. $$
+$$ \mathcal{I}(f(\cdot, \vartheta))=\Big( \mathbb{E}\Big[\frac{\partial}{\partial \vartheta_i} \log f(X, \vartheta) \cdot \frac{\partial}{\partial \vartheta_j} \log f(X, \vartheta) \Big]  \Big)_{i,j=1}^d \in \mathbb{R}^{d \times d}. $$
 
 For an example with $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2)$ with density
 
@@ -1312,17 +1312,17 @@ $$ U_\vartheta = \Big(\frac{\partial}{\partial \mu} \log f^1(X_1,\vartheta), \fr
 	
 Fisher information then
 
-$$ I(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta U_\vartheta^T]=
+$$ \mathcal{I}(f^1(\cdot, \vartheta))=\mathbb{E}[U_\vartheta U_\vartheta^T]=
 	\begin{pmatrix}
 	\sigma^{-2} & 0 \\
 	0 & \frac{1}{2}\sigma^{-4}
 	\end{pmatrix}
-	= \frac{1}{n}I(f(\cdot, \vartheta)). $$
+	= \frac{1}{n}\mathcal{I}(f(\cdot, \vartheta)). $$
 	
 If $g(X)$ is an unbiased estimator, then $G(\vartheta)$ is identity matrix and Cramér–Rao bound then
 
 $$ \begin{aligned}
-\operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  I^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= I^{-1}(f(\cdot, \vartheta)) =
+\operatorname{Cov}_\vartheta(g(X)) & \geq G(\vartheta) \  \mathcal{I}^{-1} (f(\cdot, \vartheta)) \   G^T(\vartheta) \\ &= \mathcal{I}^{-1}(f(\cdot, \vartheta)) =
 	 \begin{pmatrix}
 	 \frac{\sigma^{2}}{n} & 0 \\
 	 0 & \frac{2\sigma^{4}}{n}
@@ -1339,7 +1339,7 @@ $$ \operatorname{Cov}_\vartheta(\widetilde{g}(X)) =
 	 \begin{pmatrix}
 	 \frac{\sigma^{2}}{n} & 0 \\
       0 & \frac{2\sigma^{4}}{n-1}
-	 \end{pmatrix} \geq I(f(\cdot, \vartheta)), $$
+	 \end{pmatrix} \geq \mathcal{I}(f(\cdot, \vartheta)), $$
 	 
 therefore $\widetilde{g}$ is not efficient. 
 
@@ -1376,7 +1376,7 @@ $$ \begin{aligned}
 
 Fisher information:
 
-$$ I(f(\cdot, \vartheta)) = \mathbb{E}\Big[\Big( \frac{\partial}{\partial \vartheta} \log f(X, \vartheta) \Big)^2\Big]=\mathbb{E}[(T(X)+(\log c(\vartheta))')^2]=\operatorname{Var}(T(X)). $$
+$$ \mathcal{I}(f(\cdot, \vartheta)) = \mathbb{E}\Big[\Big( \frac{\partial}{\partial \vartheta} \log f(X, \vartheta) \Big)^2\Big]=\mathbb{E}[(T(X)+(\log c(\vartheta))')^2]=\operatorname{Var}(T(X)). $$
 
 Also
 
@@ -1388,7 +1388,7 @@ $$ \begin{aligned}
 	 
 Therefore, 
 
-$$ \frac{\Big(\frac{\partial}{\partial\vartheta}\mathbb{E}[T(X)] \Big)^2}{I(f(\cdot, \vartheta))}= \operatorname{Var}(T(X)). $$
+$$ \frac{\Big(\frac{\partial}{\partial\vartheta}\mathbb{E}[T(X)] \Big)^2}{\mathcal{I}(f(\cdot, \vartheta))}= \operatorname{Var}(T(X)). $$
 
 </details>
 

@@ -5,7 +5,7 @@ date: 2022-03-12 03:13 +0800
 categories: [Statistics]
 tags: [statistics, consistent-estimator, central-limit-theorem, slutsky-lemma, delta-method, asymptotic-efficiency, maximum-likelihood-estimator]
 math: true
-published: false
+published: true
 ---
 
 > Consider random vector $X^{(n)}=(X_1, \dots, X_n)^T$ in $\mathcal{X}_n=\mathcal{X}^n$ with distribution $\mathcal{P}^n=\lbrace P_\vartheta^n \mid \vartheta \in \Theta \rbrace $. For any $n$ let $g_n(X^{(n)})$ be an estimator for $\gamma(\vartheta)$. A minimal condition for a good estimator is that $g_n$ is getting closer to $\gamma(\vartheta)$ with growing $n$. In this post we will focus on asymptotic properties of $g_n$.
@@ -183,6 +183,26 @@ This statement is known as **Multidimensional Central Limit Theorem**.
   background-color: #696969;
 }
 
+#sample-button-3 {
+  top: 15px;
+  left: 15px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button-3:hover {
+  background-color: #696969;
+}
+
 #reset-button {
   top: 15px;
   left: 15px;
@@ -200,6 +220,26 @@ This statement is known as **Multidimensional Central Limit Theorem**.
 }
 
 #reset-button:hover {
+  background-color: #696969;
+}
+
+#reset-button-2 {
+  top: 15px;
+  left: 15px;
+  background: #E86456;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#reset-button-2:hover {
   background-color: #696969;
 }
    
@@ -267,6 +307,25 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	  	  
 	return handle;
 }
+
+function gamma_rand(k) {
+    x = 0;
+    for (var i = 0; i < k; i += 1) {
+        x -= Math.log(Math.random());
+    }
+    return x;
+}
+
+function dirichlet(ks) {
+    xs = [];
+    x0 = 0;
+    for (var i = 0; i < ks.length; i += 1) {
+        xs.push(gamma_rand(ks[i]));
+        x0 += xs[i];
+    }
+    return [xs[0] / x0, xs[1] / x0];
+}
+
 
 function erf(x) {
     if (Math.abs(x) > 3) {
@@ -541,7 +600,7 @@ function updateRho(r) {
     reset();
 }
 
-createSlider(svg, updateRho, rho_x, 30, 0.95 * height, "", "#65AD69", rho, trivialRound);
+createSlider(svg, updateRho, rho_x, 50, 0.95 * height, "", "#65AD69", rho, trivialRound);
 
 var n_x = d3.scaleLinear()
     .domain([1, 12])
@@ -555,7 +614,7 @@ function updateN(num) {
     reset();
 }
 
-createSlider(svg, updateN, n_x, 3 * fig_width / 2, 0.95 * height, "n", "#696969", n, roundN);
+createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 20, 0.95 * height, "n", "#696969", n, roundN);
 
 d3.select("#mclt")
   .append("div")
@@ -566,7 +625,7 @@ d3.select("#mclt")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", 75 + "px")
+  .style("left", 95 + "px")
   .style("top", 0.95 * height + 5 + "px");
   
 d3.select("#mclt")
@@ -600,7 +659,7 @@ mclt();
 </script>
 
 ![](.)
-*Fig. 1. Visualization of multidimensional CLT for two-dimensional case. On the left-hand side there is random vector of two uniformly distributed random variables: $X_1, X_2 \sim \mathcal{U}(-1, 1)$ with mean $\mu=(0, 0)^T$ and correlation $\rho$. On the right-hand side is $\sqrt{n} X^{(n)}$ which for large $n$ has approximately normal distribution with zero mean and covariance $\Sigma$.*
+*Fig. 1. Visualization of multidimensional CLT for two-dimensional case. On the left-hand side there is random vector of two uniformly distributed random variables: $X_1, X_2 \sim \mathcal{U}(-1, 1)$ with mean $\mu=(0, 0)^T$ and correlation $\rho$. On the right-hand side is $\sqrt{n} X^{(n)}$ which for large $n$ has approximately normal distribution with zero mean and the same covariance as $X$.*
 
 ### Delta-method
 
@@ -739,9 +798,9 @@ where $\mathbb{I}_l$ is identity matrix.
 
 Let $f_n: \mathcal{X} \rightarrow \mathbb{R}^l$ be asymptotically unbiased and asymptotically normal sequence of estimators. Under regularity conditions from [Cramér–Rao theorem](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#efficient-estimator) we call $g_n$ **asymptotically efficient**, if
 
-$$ \lim\limits_{n \rightarrow \infty} \Sigma_n(\vartheta) I(f_n(\cdot, \vartheta))=\mathbb{I}_l \quad \forall \vartheta \in \Theta,  $$
+$$ \lim\limits_{n \rightarrow \infty} \Sigma_n(\vartheta) \mathcal{I}(f_n(\cdot, \vartheta))=\mathbb{I}_l \quad \forall \vartheta \in \Theta,  $$
 
-where $I(f_n(\cdot, \vartheta))$ is Fisher information.
+where $\mathcal{I}(f_n(\cdot, \vartheta))$ is Fisher information.
 
 The intuition behind definition above is the following: if $g_n$ is unbiased, then by Cramér–Rao theorem $\operatorname{Cov}_\vartheta(g_n) \geq I^{-1}(f_n(\cdot, \vartheta))$. Due to asymptotic normality:
 
@@ -777,9 +836,9 @@ $$I^{-1}(f_n(\cdot, \vartheta)) = \begin{pmatrix}
 	
 and $g_n$ is not efficient, but asymptotically efficient.
 
-### Maximum-likelihood estimators
+### Asymptotic properties of maximum-likelihood estimators
 
-Let $X_1, \dots X_n$ be i.i.d. $\sim P_\vartheta$, $\vartheta \in \Theta$ with densities $f(\cdot, \vartheta)$. We call
+In [Part I](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#common-estimation-methods) we briefly mentioned maximum-likelihood estimators as one of the most common estimation methods in statistic. It is worth knowing what their asymptotic properties are. Let's rewrite the definition here: let $X_1, \dots X_n$ be i.i.d. $\sim P_\vartheta$, $\vartheta \in \Theta$ with densities $f(\cdot, \vartheta)$. We call
 
 $$\ell(\cdot, \vartheta) = \log f(\cdot, \vartheta) $$
 
@@ -789,7 +848,124 @@ $$\begin{aligned}\hat{\theta}_n(X) &= \arg \sup_{\vartheta \in \Theta} f(X, \var
 
 as **the maximum-likelihood estimator** for $\vartheta$.
 
-MATH-HEAVY STUFF
+Now, say the following conditions are satisfied:
+
+1. $\Theta \subset \mathbb{R}^k$ is compact space
+2. $L(\eta, \vartheta) = \mathbb{E}[\ell(X_i, \eta)]$ and $L_n(\eta) = \frac{1}{n}\sum_{i=1}^n\ell(X_i, \eta)$ are a.s. continuos function over $\eta$.
+3. $\sup_{\eta \in \Theta} | L_n(\eta)-L(\eta, \vartheta)|\xrightarrow{\mathcal{L}}0.$
+
+Then ml-estimator $\hat{\theta}_n$ is consistent.
+
+<details>
+<summary>Proof</summary>
+For any $\eta \in \Theta$:
+
+$$L(\eta, \vartheta) = \int \ell(x, \eta) f(x,\vartheta) dx = \int \ell(x,\vartheta)f(x,\vartheta)dx - KL(\vartheta | \eta),  $$
+
+where $KL$ is **Kullback-Leibler divergence**:
+
+$$ KL(\vartheta | \eta) = \int_{\mathcal{X}} \log\Big(\frac{f(x,\vartheta)}{f(x,\eta)}\Big) f(x,\vartheta)dx.
+$$
+
+It can be shown by [Jensen inequality](https://en.wikipedia.org/wiki/Jensen%27s_inequality) that $KL(\vartheta | \eta) \geq 0$ and reaches $0$ only for $f(x,\vartheta) = f(x,\eta)$ for all $x$. Therefore we conclude that $L(\eta, \vartheta)$ reaches maximum at $\eta = \vartheta$.
+
+Using the fact that function $m_f = \arg\max_{\eta \in \Theta} f(\eta)$ is continuous if $m_f$ is unique, we finish the proof from
+
+$$ \vartheta = \arg \max L(\eta, \vartheta)\quad \text{and} \quad \hat{\theta}_n=\arg \max L_n(\eta) $$
+
+and condition (3). 
+
+</details>
+
+Also if the following conditions are satisfied:
+
+1. $\Theta \subset \mathbb{R}^k$ is compact and $\vartheta \subset \operatorname{int}(\Theta)$.
+2. $\ell(x, \eta)$ is continuous $\forall \eta \in \Theta$ and twice continuously differentiable over $\vartheta$ for almost every $x \in \mathcal{X}$.
+3. There exist functions $H_0, H_2 \in L^1(P_\vartheta)$ and $H_1 \in L^2(P_\vartheta)$, such that:
+$$\sup_{\eta \in \Theta} |\ell(x, \eta)| \leq H_0(x), \quad \sup_{\eta \in \Theta} \|\dot{\ell}(x, \eta)\| \leq H_1(x), \quad \sup_{\eta \in \Theta} \|\ddot{\ell}(x, \eta)\| \leq H_2(x) \quad \forall x \in \mathcal{X}. $$
+4. Fisher information
+$$ \mathcal{I}(f(\cdot, \vartheta))=\mathbb{E}_\vartheta[\dot{\ell}(X,\vartheta)\dot{\ell}(X,\vartheta)^T] $$
+is positive definite (and therefore invertible)
+
+then $\hat{\theta}_n$ is asymptotically normal:
+
+$$\sqrt{n}(\hat{\theta}_n-\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))^{-1}).$$
+
+<details>
+<summary>Math-heavy proof</summary>
+We split this proof in 4 steps:
+
+*Step 1.* Prove the constistency of $\hat{\theta}_n$. For this we need to verify that all conditions from theorem about consistency of ml-estimator are satisfied:
+
+1. Satisfied by the assumption. 
+2. $L_n(\eta)$ is a.s. continuous. Using 2-3 conditions and dominated convergence we get
+$$ |L(\eta_1, \vartheta) - L(\eta_2, \vartheta)| \leq \int_{\mathcal{X}} |\ell(x, \eta_1) - \ell(x,\eta_2)| f(x,\vartheta) \mu(dx) \rightarrow 0,  $$
+for  $\eta_1 \rightarrow \eta_2$.
+3. By Law of Large Numbers:
+$$ \begin{aligned}
+		\limsup_{n \rightarrow \infty} \sup_{\| \eta_1 - \eta_2 \| < \delta} | L_n(\eta_1) - L_n(\eta_2)| & \leq \limsup_{n \rightarrow \infty} \frac{1}{n} \sum_{i=1}^{n} \sup_{\| \eta_1 - \eta_2 \| < \delta} |\ell(X_i, \eta_1) - \ell(X_i, \eta_2) |\\
+		& = \mathbb{E}_\vartheta[\sup_{\| \eta_1 - \eta_2 \| < \delta}|\ell(X,\eta_1) - \ell(X, \eta_2)|]
+				\end{aligned}
+$$
+Because $\Theta$ is compact, function $\ell(X, \eta)$ is a.s. uniformly continuous in $\eta$. As a consequence, the last statement converges to zero for $\delta \rightarrow 0$ (using again dominated convergence).
+	
+*Step 2.* Let $\dot{L}_n(\vartheta) := \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta)$. Prove that $\sqrt{n}\dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))).$ 
+
+Let $A_n$ be $k$-dimensional rectangle with vertices in $\hat{\theta}_n$ and $\vartheta$. Because $\hat{\theta}_n \xrightarrow{\mathcal{L}} \vartheta$ and $\vartheta \in \operatorname{int}(\Theta)$, we have $ \mathbb{P}_\vartheta(A_n \subset \operatorname{int}(\Theta)) \rightarrow 1. $ Also 
+
+$$ \dot{L}_n(\hat{\theta}_n) = \frac{1}{n} \sum_{i=1}^{n} \dot{\ell}(X_i, \hat{\theta}_n) = 0 $$
+
+by definition of $\hat{\theta}_n$, and 
+$$
+	\begin{aligned}
+	 \mathbb{E}[\dot{\ell}(X_i, \vartheta)] & = \int_{\mathcal{X}} \dot{\ell}(x, \vartheta) f(x, \vartheta) dx \\
+	  & = \int_{\mathcal{X}} \dot{f}(x, \vartheta) dx \\ & =\frac{\partial}{\partial \vartheta}\int_{\mathcal{X}} f(x, \vartheta) dx = 0.
+	\end{aligned}
+	 $$
+	 
+By definition
+$$ \operatorname{Cov}(\dot{\ell}(X_i, \vartheta)) = \mathcal{I}(f(\cdot, \vartheta)). $$
+
+Then by CLT:
+$$ \sqrt{n} \dot{L}_n(\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))). $$
+	 
+
+*Step 3.* By Mean Theorem:
+
+$$ -\dot{L}_n(\vartheta) = \dot{L}_n(\hat{\theta}_n) - \dot{L}_n(\vartheta) = \ddot{L}_n(\widetilde{\theta}_n)(\hat{\theta}_n - \vartheta) $$
+
+for some $\widetilde{\theta}_n \in A_n$. Prove that $\ddot{L}_n(\widetilde{\theta}_n) \xrightarrow{\mathcal{L}} -\mathcal{I}(f(\cdot, \vartheta))$. 
+
+We use the equation
+
+$$\ddot{\ell}(x, \vartheta) = \frac{\ddot{f}(x, \vartheta)}{f(x,\vartheta)} - \dot{\ell}(x, \vartheta)\dot{\ell}(x, \vartheta)^T.$$
+
+to show that
+
+$$\mathbb{E}_\vartheta[\ddot{\ell}(X, \vartheta)] + \mathcal{I}(f(\cdot, \vartheta)) = \mathbb{E}_\vartheta\Big[ \frac{\ddot{f}(X, \vartheta)}{f(X,\vartheta)} \Big] = 0, $$
+
+From Law of Large Numbers it follows that
+
+$$\ddot{L}_n(\vartheta) \xrightarrow{\mathcal{L}} - \mathcal{I}(f(\cdot, \vartheta)).$$
+
+Finally, we use the equality
+
+$$\lim\limits_{\delta \rightarrow 0} \lim\limits_{n \rightarrow \infty} \mathbb{P}_\vartheta(\| \widetilde{\theta}_n - \vartheta \| < \delta) = 1 $$
+
+and continuity of $\ddot{\ell}$ over $\vartheta$ to finish the proof.
+
+*Step 4.* Now we conclude that
+
+$$ \lim\limits_{n \rightarrow \infty} \mathbb{P}_\vartheta(\ddot{L}_n(\widetilde{\theta}_n) \text{ is invertible}) = 1. $$
+
+and applying Slutsky's lemma we get
+
+$$\begin{aligned}
+	\sqrt{n}(\hat{\theta}_n - \vartheta) & = -\ddot{L}_n(\widetilde{\theta}_n)^{-1} \sqrt{n} \dot{L}_n(\vartheta) \\
+	& \rightarrow \mathcal{I}(f(\cdot, \vartheta))^{-1} \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))) \\&= \mathcal{N}(0, \mathcal{I}(f(\cdot, \vartheta))^{-1}).
+	\end{aligned}$$
+
+</details>
 
 Take an example: let $X_1, \dots X_n$ be i.i.d. $\sim \operatorname{Exp}(\lambda)$ with joint density
 
@@ -813,7 +989,7 @@ $$\mathbb{E}_\lambda[X] = \lambda^{-1} \quad \text{and} \quad  \operatorname{Var
 
 and $\dot{\ell}_1(X, \lambda) = -(X - \lambda^{-1})$, we calculate Fisher information:
 
-$$I(f(\cdot, \lambda)) = \mathbb{E}_\lambda\Big[\Big(X - \frac{1}{\lambda}\Big)^2\Big]=\frac{1}{\lambda^2}.$$
+$$\mathcal{I}(f(\cdot, \lambda)) = \mathbb{E}_\lambda\Big[\Big(X - \frac{1}{\lambda}\Big)^2\Big]=\frac{1}{\lambda^2}.$$
 	
 By theorem of asymptotic efficiency of ML-estimators we get 
 
@@ -826,4 +1002,3 @@ $$\sqrt{n}\Big(\overline{X}_n - \frac{1}{\lambda}\Big) \xrightarrow[]{\mathcal{L
 Using Delta-method for $g(x) = x^{-1}$ we get the same result:
 
 $$\sqrt{n}(\overline{X}_n^{-1} - \lambda) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \lambda^2). $$
-
