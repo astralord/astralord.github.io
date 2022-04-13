@@ -7,13 +7,6 @@ tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pears
 math: true
 published: false
 ---
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous">
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"
-        onload="renderMathInElement(document.body);">
-</script>
   
 > In this chapter we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
 
@@ -1853,3 +1846,30 @@ $$\sup_{\vartheta \in \Theta_H} P_\vartheta(\lambda(X^{(n)})<c) \leq \alpha.$$
 
 Distribution $\lambda(X^{(n)})$ nevertheless can be estimated only asymptotically.
 
+Before we continue further, we will formulate some conditions. Let $\Theta \subset \mathbb{R}^d$ and there exist $\Delta \subset \mathbb{R}^c$ and twice continuously differentiable function $h:\Delta \rightarrow \Theta$, such that $\Theta_H = h(\Delta)$ and Jacobian of $h$ is matrix of full rank.
+
+For example, let $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu_1, \sigma^2)$ and $Y_1, \dots, Y_n$ i.i.d. $\sim \mathcal{N}(\mu_2, \sigma^2)$ be two independent samples. Suppose we want to test the equivalency of means:
+
+$$H\colon \mu_1 = \mu_2 \quad \text{vs} \quad K\colon \mu_1 \neq \mu_2.$$
+
+Then $\Theta \in \mathbb{R}^2 \times \mathbb{R}^+$, $\Delta = \mathbb{R} \times \mathbb{R}^+$ and $h(\mu, \sigma^2) = (\mu, \mu, \sigma^2)$. Jacobian matrix is
+
+$$J = \begin{pmatrix}
+	1 & 0 \\
+	1 & 0 \\
+	0 & 1
+	\end{pmatrix}, $$
+
+matrix of full rank.
+
+### Wilk's theorem
+
+Let 
+
+$$\hat{\eta}_n=\arg\max_{\eta \in \Delta}f_n(X^{(n)},h(\eta)) \quad \text{and} \quad \hat{\theta}_n=\arg\max_{\vartheta \in \Theta}f_n(X^{(n)},\vartheta)$$
+
+be maximum-likelihood estimators for families $\mathcal{P}_h = \{P_{h(\eta)}\ |\ \eta \in \Delta\}$ and $\mathcal{P}_\vartheta = \{ P_\vartheta\ |\ \vartheta \in \Theta \}$ respectively. Also let conditions from [theorem of asymptotic efficiency for maximum-likelihood estimators](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) for both families be satisfied. Then
+
+$$ T_n=-2\log \lambda(X^{(n)})=2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, h(\hat{\eta}_n))) \xrightarrow[]{\mathcal{L}} \chi_{d-c}^2,$$
+
+if $\vartheta \in \Theta_H$.

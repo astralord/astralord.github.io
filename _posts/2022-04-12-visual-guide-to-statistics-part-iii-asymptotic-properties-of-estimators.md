@@ -884,13 +884,11 @@ Now, say the following conditions are satisfied:
 
 Then ml-estimator $\hat{\theta}_n$ is consistent.
 
-<details>
-<summary>Proof</summary>
-For any $\eta \in \Theta$:
+Proof: for any $\eta \in \Theta$:
 
 $$L(\eta, \vartheta) = \int \ell(x, \eta) f(x,\vartheta) dx = \int \ell(x,\vartheta)f(x,\vartheta)dx - KL(\vartheta | \eta),  $$
 
-where $KL$ is Kullback-Leibler divergence:
+where $KL$ is **Kullback-Leibler divergence**:
 
 $$ KL(\vartheta | \eta) = \int_{\mathcal{X}} \log\Big(\frac{f(x,\vartheta)}{f(x,\eta)}\Big) f(x,\vartheta)dx.
 $$
@@ -903,9 +901,9 @@ $$ \vartheta = \arg \max L(\eta, \vartheta)\quad \text{and} \quad \hat{\theta}_n
 
 and condition 3. 
 
-</details>
+### Asymptotic efficiency of maximum-likelihood estimators
 
-Also if the following conditions are satisfied:
+If the following conditions are satisfied:
 
 * $\Theta \subset \mathbb{R}^k$ is compact and $\vartheta \subset \operatorname{int}(\Theta)$.
 * $\ell(x, \eta)$ is continuous $\forall \eta \in \Theta$ and twice continuously differentiable over $\vartheta$ for almost every $x \in \mathcal{X}$.
