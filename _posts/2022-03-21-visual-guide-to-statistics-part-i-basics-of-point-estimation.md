@@ -14,11 +14,13 @@ math: true
         onload="renderMathInElement(document.body);">
 </script>
   
-> This series of posts is a guidance for those who already have knowledge in probability theory and would like to become familiar with mathematical statistics. Part I focuses on point estimators of parameters and their characteristics.
+> This series of posts is a guidance for those who already have knowledge in probability theory and would like to become familiar with mathematical statistics. Basically, these are notes from lectures I attended while being a student in Christian-Albrechts University in Kiel, Germany. They helped me close all the gaps in my knowledge of math under the hood of modern statistics. For those who are interested in the lectures themselves can refer to the [original material](https://github.com/astralord/Statistics-lectures/blob/master/vorlesungonline.pdf) or my [translation to Russian](https://github.com/astralord/Statistics-lectures/blob/master/book.pdf).
+> 
+> This post in particular focuses on point estimators of distribution parameters and their characteristics.
 
 
 ### Intro
-Imagine that you are a pharmaceutical company about to introduce a new drug into production. Prior to launch you need to carry out experiments to assess its quality depending on the dosage. Say you give this medicine to an animal, after which the animal is examined and checked whether it has recovered or not by taking a dose of $X$. You can think of the result as random variable $Y$ following Bernoulli distribution:
+Imagine that you are a pharmaceutical company, which is about to introduce a new drug into production. Prior to launch you need to carry out experiments to assess its quality depending on the dosage. Say you give this medicine to an animal, after which the animal is examined and checked whether it has recovered or not by taking a dose of $X$. You can think of the result as random variable $Y$ following Bernoulli distribution:
 
 $$ Y \sim \operatorname{Bin}(1, p(X)), $$
 

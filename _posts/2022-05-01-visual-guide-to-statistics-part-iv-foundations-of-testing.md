@@ -8,6 +8,13 @@ math: true
 published: false
 ---
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous">
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);">
+</script>
+  
 > In this chapter we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
 
 ### Introductory example
@@ -1794,7 +1801,7 @@ Let also $\hat{s}_{m, n}^2 = \frac{1}{m}\hat{s}_{m}^2(X) + \frac{1}{n}\hat{s}_{n
 
 $$T_{m,n}^*=\frac{\overline{X}_m-\overline{Y}_n}{\hat{s}_{m, n}}$$
 
-was unknown until recently (so called [Behrens-Fisher problem](https://en.wikipedia.org/wiki/Behrens%E2%80%93Fisher_problem)) and can't be expressed in terms of elementary functions, but from TODO: link to part III Central Limit Theorem we know that
+was unknown until recently (so called [Behrens-Fisher problem](https://en.wikipedia.org/wiki/Behrens%E2%80%93Fisher_problem)) and can't be expressed in terms of elementary functions, but from Central Limit Theorem we know that
 
 $$\frac{\overline{X}_m-\overline{Y}_n - (\mu_1-\mu_2)}{\hat{s}_{m,n}} \xrightarrow[]{\mathcal{L}} \mathcal{N}(0,1),$$
 

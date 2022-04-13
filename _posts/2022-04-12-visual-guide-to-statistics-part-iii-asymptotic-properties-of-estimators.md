@@ -723,7 +723,11 @@ finishes the proof.
 
 $$\sqrt{n}((\hat{m}_1, \dots, \hat{m}_k)^T - (m_1, \dots, m_k)^T) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \Sigma),$$
 
-where $\Sigma = (\Sigma)_{i,j=1}^k = (m_{i+j} - m_i m_j)_{i,j=1}^k.$ Then 
+where 
+
+$$\Sigma = (\Sigma)_{i,j=1}^k = (m_{i+j} - m_i m_j)_{i,j=1}^k.$$
+
+Then 
 
 $$\sqrt{n}(\gamma(\hat{m}_1, \dots, \hat{m}_k) - \gamma(m_1, \dots, m_k)) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, D \Sigma D^T).$$
 
