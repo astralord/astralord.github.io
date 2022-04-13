@@ -532,7 +532,7 @@ function sampleUniform() {
         
 	    uni_dots.push(svg.append('g')
 	      .selectAll("dot")
-	      .data(uni_data)
+	      .data([uni_data[i]])
 	      .enter()
 	      .append("circle")
 	        .attr("cx", function (d) { return x(d.x); } )
@@ -556,13 +556,15 @@ function sampleUniform() {
             .attr("cy", function (d) { return y(avg_y); } );
             
         if (i > 0) {
-            uni_dots[i].remove();
-        }
-        else {
-            avg_dots.push(uni_dots[0]);
+            uni_dots[i].transition().delay(2 * avg_dur)
+	        .attr("opacity", 0);
+	        uni_dots[i].transition().delay(2 * avg_dur)
+	        .remove();
         }
     }
-            
+    
+    avg_dots.push(uni_dots[0]);
+
     avg_dots[avg_dots.length - 1]
         .transition()
         .duration(avg_dur)
