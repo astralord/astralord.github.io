@@ -893,7 +893,15 @@ where $KL$ is **Kullback-Leibler divergence**:
 $$ KL(\vartheta | \eta) = \int_{\mathcal{X}} \log\Big(\frac{f(x,\vartheta)}{f(x,\eta)}\Big) f(x,\vartheta)dx.
 $$
 
-It can be shown by Jensen inequality that $KL(\vartheta | \eta) \geq 0$ and reaches $0$ only for $f(x,\vartheta) = f(x,\eta)$ for all $x$. Therefore we conclude that $L(\eta, \vartheta)$ reaches maximum at $\eta = \vartheta$.
+It can be shown that 
+
+$$\begin{aligned} 
+KL(\vartheta | \eta) & = \int_{\mathcal{X}} -\log\Big(\frac{f(x,\eta)}{f(x,\vartheta)}\Big) f(x,\vartheta)dx \\ \text{Jensen inequality} \rightarrow & \geq -\log\int_{\mathcal{X}} \frac{f(x,\eta)}{f(x,\vartheta)} f(x,\vartheta)dx
+\\ & = 0.
+\end{aligned}
+$$
+
+and $KL(\vartheta | \eta) =0$ only when $f(x,\vartheta) = f(x,\eta)$ for almost every $x$. Therefore we conclude that $L(\eta, \vartheta)$ reaches maximum at $\eta = \vartheta$.
 
 Using the fact that function $m_f = \arg\max_{\eta \in \Theta} f(\eta)$ is continuous if $m_f$ is unique, we finish the proof from
 
