@@ -1228,18 +1228,27 @@ So far we figured the unbiasedness of $g(X) = \overline{X}_n$. But how can we te
 
 Given a set of unbiased estimators, it is not an easy task to determine which one provides the smallest variance. Luckily, we have a theorem which gives us a lower bound for an estimator variance.
 
-Suppose we have a family of densities $f(\cdot, \vartheta)$, such that set $M_f=\lbrace x \in \mathcal{X} \mid f(x, \vartheta) > 0 \rbrace$ doesn't depend on $\vartheta$ and derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. Let's define function
+Suppose we have a family of densities $f(\cdot, \vartheta)$, such that following *regularity conditions* are satisfied:
+
+* Set $M_f=\lbrace x \in \mathcal{X} \mid f(x, \vartheta) > 0 \rbrace$ doesn't depend on $\vartheta$
+* Partial derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. 
+* We have the following equalities: [^CR]
+	* $\mathbb{E}_\vartheta \big[\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = 0,$
+	* $\mathbb{E}_\vartheta \big[g(X) \frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = \frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)].$
+* $0<\mathbb{E}_\vartheta \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]<\infty$
+
+Let's define functions
 
 $$ U_\vartheta(x) = \left\{\begin{array}{ll}
 	\frac{\partial}{\partial \vartheta} \log f(x, \vartheta), & \text{if } x \in M_f, \\
 	0, & \text{otherwise,}
 	\end{array} \right. $$
 
-and function
+and
 
 $$ \mathcal{I}(f(\cdot, \vartheta))=\mathbb{E} \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]. $$
 
-Under mild regularity conditions we have
+Under given regularity conditions we have
 
 $$ \mathbb{E}[U_\vartheta(X)] = \mathbb{E}\big[\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)\big] = \frac{\partial}{\partial \vartheta}  \mathbb{E}[\log f(x, \vartheta)] = 0$$
 
@@ -1295,9 +1304,9 @@ $$ G(\vartheta)=\Big( \frac{\partial}{\partial \vartheta_j} \mathbb{E}[g_i(X)] \
 
 Then with multidimensional Cauchy-Shwartz inequality one can prove that under similar regularity conditions we have:
 
-$$ \operatorname{Cov}(g(X)) \geq G(\vartheta) \mathcal{I}^{-1}(f(\cdot, \vartheta))G^T(\vartheta) \in \mathbb{R}^{k \times k}, $$
+$$ \operatorname{Cov}(g(X)) \geq G(\vartheta) \mathcal{I}^{-1}(f(\cdot, \vartheta))G^T(\vartheta) \in \mathbb{R}^{k \times k}, $$ 
 
-where
+in the sense of Löwner ordering[^MCR], where
 
 $$ \mathcal{I}(f(\cdot, \vartheta))=\Big( \mathbb{E}\Big[\frac{\partial}{\partial \vartheta_i} \log f(X, \vartheta) \cdot \frac{\partial}{\partial \vartheta_j} \log f(X, \vartheta) \Big]  \Big)_{i,j=1}^d \in \mathbb{R}^{d \times d}. $$
 
@@ -1481,3 +1490,18 @@ UMVU estimator is $g(X) = X_{(n)} (1 + \frac{1}{n})$, and its variance:
 $$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
 
 However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is another exercise to figure out why Cramér-Rao inequality here is not satisfied.
+
+
+[^CR]: Let's rewrite these equations in equivalent forms:
+
+    $$\int_\mathcal{X} \frac{\partial}{\partial \vartheta} \log f(x, \vartheta) f(x, \vartheta) d \mu(x) = \int_\mathcal{X} \frac{\partial}{\partial \vartheta} f(x, \vartheta) d \mu(x)=\frac{\partial}{\partial \vartheta}\int_\mathcal{X} f(x, \vartheta) d \mu(x) =0, $$
+
+    $$\int_\mathcal{X} g(x) \frac{\partial}{\partial \vartheta} f(x, \vartheta) d\mu(x) = \frac{\partial}{\partial \vartheta} \int_\mathcal{X} g(x) f(x,\vartheta) d\mu(x).$$
+    
+    In both cases it means that we can interchange differentiation and integration.
+
+[^MCR]: For symmetric matrices $A$ and $B$ we say that 
+
+    $$A \geq 0  \Longleftrightarrow A \text{ is positive semi-definite}, $$
+    
+    $$A \geq B  \Longleftrightarrow A - B \geq 0.$$

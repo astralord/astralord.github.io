@@ -695,7 +695,7 @@ $$\beta_{\varphi^*}(\vartheta) = \inf_{\varphi \in \Phi_{\alpha\alpha}} \beta_\v
 
 ### Neyman-Pearson lemma
 
-Let's consider *simple hypothesis*:
+Let's start with *simple hypothesis*:
 
 $$H\colon \vartheta \in \lbrace \vartheta_0 \rbrace \ \ \text{vs} \ \ K\colon \vartheta \in \lbrace \vartheta_1 \rbrace , \quad \vartheta_0 \neq \vartheta_1.$$
 
@@ -1600,7 +1600,7 @@ simple_hypothesis();
 </script>
 
 ![](.)
-*Fig. 1. Visualization of simple hypothesis testing with $\mu_0 = -1$ and $\mu_1=1$. Parameter $\sigma$ and significance level $\alpha$ are draggable.*
+*Fig. 1. Visualization of simple hypothesis testing with $\mu_0 = -1$ and $\mu_1=1$. Significance level $\alpha$ on the right plot is draggable.*
 
 Simple hypotheses like that are not relevant in practice, <ins>but</ins>:
 
@@ -1625,7 +1625,7 @@ $$\frac{p_{\mu_1}(x)}{p_{\mu_0}(x)} = \exp \Big( \frac{1}{\sigma^2} \sum_{i=1}^{
 
 which is monotonically increasing in $\overline{x}_n$. This can be generalized to one-parametric exponential families.
 
-Let $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ be class with monotone likelihood ratio in $T$, $\vartheta \in \Theta$, $\alpha \in (0, 1)$ and we consider the one-sided hypothesis
+Let $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ be class with monotone likelihood ratio in $T$, $\vartheta \in \Theta$, $\alpha \in (0, 1)$ and we test the one-sided hypothesis
 
 $$H\colon\vartheta \leq \vartheta_0 \quad \text{vs} \quad K\colon\vartheta > \vartheta_0.$$
 
@@ -1706,9 +1706,9 @@ because these have to be optimal for all
 $$H'\colon\vartheta = \vartheta_0 \quad \text{vs} \quad K'\colon\vartheta = \vartheta_1$$
 
 with $\vartheta_0 \neq \vartheta_1$. In case of monotone likelihood-ratio, the optimal test in this case is 
-$$\varphi(x) = 1_{\lbrace T(x) > c \}} + \gamma(x) 1_{\{T(x) = c\rbrace}$$
+$$\varphi(x) = 1_{\lbrace T(x) > c \rbrace} + \gamma(x) 1_{\lbrace T(x) = c\rbrace}$$
 for $\vartheta_1 > \vartheta_0$ and
- $$\varphi'(x) = 1_{\lbrace T(x) < c'\}} + \gamma'(x) 1_{\{T(x) = c'\rbrace} $$ for $\vartheta_1 < \vartheta_0$. This is not possible.
+ $$\varphi'(x) = 1_{\lbrace T(x) < c'\rbrace } + \gamma'(x) 1_{\lbrace T(x) = c'\rbrace} $$ for $\vartheta_1 < \vartheta_0$. This is not possible.
 
 There is a theorem for one-parametric exponential family with density
 
@@ -1721,7 +1721,7 @@ $$H \colon \vartheta \in [\vartheta_1, \vartheta_2] \quad \text{vs} \quad K\colo
 is
 
 $$\varphi(x) = 
-	\left \{
+	\left \lbrace
 	\begin{array}{cl}
 	1, & \text{if } T(x) \notin [c_1, c_2], \\
 	\gamma_i, & \text{if } T(x) = c_i, \\
@@ -1735,7 +1735,7 @@ $$\beta_\varphi(\vartheta_1) = \beta_\varphi(\vartheta_2) = 1-\alpha.$$
 
 Similar results hold for $k$-parametric exponential families.
 
-Consider the example: let $X$ be exponentially distributed random variable: $X \sim \operatorname{Exp}(\vartheta)$ with density
+Take an example: let $X$ be exponentially distributed random variable: $X \sim \operatorname{Exp}(\vartheta)$ with density
 
 $$f_\vartheta(x) = \vartheta e^{-\vartheta x} 1_{[0, \infty)}(x)$$
 
@@ -1778,7 +1778,7 @@ $$ T_{m,n}=\sqrt{\frac{mn}{m+n}}\frac{\overline{X}_m-\overline{Y}_n}{\hat{\sigma
 
 therefore test
 
-$$ \varphi_{m,n}(x)=1_{\{T_{m,n} > t_{m+n-2, 1-\alpha}\}}$$
+$$ \varphi_{m,n}(x)=1_{\lbrace T_{m,n} > t_{m+n-2, 1-\alpha}\rbrace }$$
 
 is UMPU with significance level $\alpha$. This test is called **two-sampled t-test**.
 
@@ -1800,14 +1800,14 @@ $$\frac{\overline{X}_m-\overline{Y}_n - (\mu_1-\mu_2)}{\hat{s}_{m,n}} \xrightarr
 
 if $m \rightarrow \infty$, $n \rightarrow \infty$ and $\frac{m}{n}\rightarrow \lambda \in (0, \infty)$. Let
 
-$$\varphi_{m,n}^*(x)=1_{\{T_{m,n}^* > u_{1-\alpha}\}},$$
+$$\varphi_{m,n}^*(x)=1_{\lbrace T_{m,n}^* > u_{1-\alpha}\rbrace },$$
 
 then
 
 $$\begin{aligned}
 		 \beta_{\varphi_{m,n}^*}(\mu_1, \mu_2) & =P_{\mu_1, \mu_2}(T_{m,n}^* \leq u_{1-\alpha})\\&=P_{\mu_1, \mu_2}\Big(\frac{\overline{X}_m-\overline{Y}_n - (\mu_1-\mu_2)}{\hat{s}_{m,n}} \leq \frac{- (\mu_1-\mu_2)}{\hat{s}_{m,n}}+ u_{1-\alpha}\Big) \\
 		  & \xrightarrow[m \rightarrow \infty,\ n \rightarrow \infty,\ \frac{m}{n}\rightarrow \lambda]{}
-		 \left \{
+		 \left \lbrace
 		 \begin{array}{cl}
 		 0, & \mu_1 > \mu_2, \\
 		  1-\alpha, & \mu_1=\mu_2, \\
@@ -1838,7 +1838,7 @@ $$\lambda(x^{(n)})=\frac{\sup_{\vartheta \in \Theta_H}f_n(x^{(n)},\vartheta)}{\s
 
 is **likelihood ratio** and
 
-$$\varphi_n(x^{(n)})=1_{\{\lambda(x^{(n)})<c \}}$$
+$$\varphi_n(x^{(n)})=1_{\lbrace \lambda(x^{(n)})<c \rbrace }$$
 
 is **likelihood ratio test**. It is common to choose $c$, such that
 
@@ -1862,14 +1862,143 @@ $$J = \begin{pmatrix}
 
 matrix of full rank.
 
-### Wilk's theorem
-
 Let 
 
 $$\hat{\eta}_n=\arg\max_{\eta \in \Delta}f_n(X^{(n)},h(\eta)) \quad \text{and} \quad \hat{\theta}_n=\arg\max_{\vartheta \in \Theta}f_n(X^{(n)},\vartheta)$$
 
-be maximum-likelihood estimators for families $\mathcal{P}_h = \{P_{h(\eta)}\ |\ \eta \in \Delta\}$ and $\mathcal{P}_\vartheta = \{ P_\vartheta\ |\ \vartheta \in \Theta \}$ respectively. Also let conditions from [theorem of asymptotic efficiency for maximum-likelihood estimators](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) for both families be satisfied. Then
+be maximum-likelihood estimators for families $\mathcal{P}_h = \lbrace P_{h(\eta)}\ |\ \eta \in \Delta\rbrace $ and $\mathcal{P}_\vartheta = \lbrace P_\vartheta\ |\ \vartheta \in \Theta \rbrace$ respectively. Also let conditions from [theorem of asymptotic efficiency for maximum-likelihood estimators](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) for both families be satisfied. Then
 
 $$ T_n=-2\log \lambda(X^{(n)})=2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, h(\hat{\eta}_n))) \xrightarrow[]{\mathcal{L}} \chi_{d-c}^2,$$
 
 if $\vartheta \in \Theta_H$.
+
+<details>
+<summary>Proof</summary>
+As before we use notation
+
+$$\ell(x, \vartheta) = \log f(x, \vartheta).$$
+
+We start with
+
+$$\begin{aligned}
+	    T_n^{(1)} & = 2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, \vartheta)) \\
+	    & = 2\sum_{i=1}^{n}\Big(\ell(X_i, \hat{\theta}_n) - \ell(X_i, \vartheta)\Big) \\
+	    & = 2(\hat{\theta}_n - \vartheta)^T \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta) +(\hat{\theta}_n - \vartheta)^T \sum_{i=1}^{n} \ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta)   \\
+	    & = 2 (\hat{\theta}_n - \vartheta)^T \Big( \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta) + \sum_{i=1}^{n} \ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta) \Big) - (\hat{\theta}_n - \vartheta)^T\sum_{i=1}^{n}\ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta)
+	\end{aligned}$$
+	
+for some $\widetilde{\theta}_n \in [\hat{\theta}_n, \vartheta]$. Using the notations from [Part III](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) we rewrite the first term of equation above:
+
+$$\begin{aligned}
+	 2n(\hat{\theta}_n - \vartheta)^T& \underbrace{(\dot{L}_n(\vartheta) - \ddot{L}_n(\tilde{\vartheta})(\hat{\theta}_n - \vartheta))}. \\
+	 & \qquad \qquad\ = 0 \text{ (by Mean Theorem)}
+	 \end{aligned}$$
+	 
+Also
+
+$$T_n^{(1)} = -\sqrt{n}(\hat{\theta}_n - \vartheta)^T \ddot{L}_n(\widetilde{\vartheta}_n) \sqrt{n}(\hat{\theta}_n - \vartheta),
+$$
+
+where
+
+$$
+\begin{aligned}
+	 \sqrt{n}(\hat{\theta}_n - \vartheta)^T & \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, I^{-1}(f(\cdot, \vartheta))), \\
+	 \ddot{L}_n(\widetilde{\vartheta}_n)& \xrightarrow[]{\mathbb{P}} -I(f(\cdot, \vartheta)), \\
+	 \sqrt{n}(\hat{\theta}_n - \vartheta) &\xrightarrow[]{\mathcal{L}} \mathcal{N}(0, I^{-1}(f(\cdot, \vartheta))).
+	 \end{aligned}$$
+	
+We know that for $X \sim \mathcal{N}_d(0, \Sigma)$ with $\Sigma > 0$ we have
+
+$$X^T \Sigma X ~ \sim \mathcal{X}_d^2.$$
+
+Therefore,
+
+$$T_n^{(1)} \xrightarrow[]{\mathcal{L}} A \sim \mathcal{X}_d^2.$$
+
+In the same way,
+$$ T_n^{(2)} = 2 (\log f_n(X^{(n)}, h(\hat{\eta}_n) ) - \log f_n(X^{(n)},h(\eta))) \xrightarrow[]{\mathcal{L}} B \sim \mathcal{X}_c^2. $$
+	 
+If $H$ is true, then $\vartheta = h(\eta)$ and
+
+$$T_n = T_n^{(1)} - T_n^{(2)} \xrightarrow[]{\mathcal{L}} A-B \sim \mathcal{X}_{d-c}^2,$$
+
+which follows from independence of $A-B$ and $B$.
+	 
+</details>
+
+This statement is called **Wilk's theorem** and it shows that
+
+$$\varphi_n (X^{(n)}) = 1_{\lbrace -2\log\lambda(X^{(n)}) > \mathcal{X}_{d-c, 1-\alpha}^2 \rbrace } $$
+		
+is a test with asymptotic level $\alpha$. Also, sequence $(\varphi_n)$ is consistent, because 
+
+$$\begin{aligned}
+		-\frac{2}{n} \log (\lambda(X^{(n)})) & = \frac{2}{n} \sum_{i=1}^{n} \Big( \ell(X_i, \hat{\theta}_n) - \ell(X_i, h(\hat{\eta}_n)) \Big) \\
+		& \xrightarrow{\mathcal{L}} 2 \mathbb{E}_\vartheta[\ell(X,\vartheta) - \ell(X, h(\eta))] \\
+		& = 2 KL(\vartheta | h(\eta)) > 0,
+		\end{aligned}$$
+		
+if $\vartheta \neq h(\eta)$. Hence for $\vartheta \in \Theta_K$
+
+$$-2\log(\lambda(X^{(n)}))\xrightarrow{\mathcal{L}} \infty.$$
+
+### Likelihood-ratio tests
+
+Take an example: let $X_{ij} \sim \mathcal{N}(\mu_i, \sigma_i^2)$, $i = 1, \dots, r$ and $j = 1, \dots, n_i$, where $n_i \rightarrow \infty$ with the same speed. We test equivalence of variances:
+
+$$ H\colon \sigma_1^2 = \dots = \sigma_r^2 \quad \text{vs} \quad K \colon \sigma_i^2 \neq \sigma_j^2 \text{ for some } i \neq j. $$
+	
+Here $\Theta = \mathbb{R}^r \times (\mathbb{R}^+)^r$, $\Delta = \mathbb{R}^r \times \mathbb{R}^+$ and
+
+$$h((x_1, \dots, x_r, y)^T) = (x_1, \dots, x_r, y, \dots, y)^T.$$
+
+Maximum-likelihood estimator is 
+
+$$\hat{\theta}_n = (\hat{\mu}_1, \dots, \hat{\mu}_r, \hat{s}_1^2, \dots, \hat{s}_r^2)$$
+
+with 
+
+$$\hat{\mu}_i = \frac{1}{n_i} \sum_{j=1}^{n_i}X_{ij} =: \overline{X}_{i \cdot} $$ 
+
+and
+
+$$\hat{s}_i^2 = \frac{1}{n_i}\sum_{j=1}^{n_i}(X_{ij} -\overline{X}_{i \cdot})^2. $$ 
+
+Then 
+
+$$f_n(X^{(n)}, \hat{\vartheta}_n) = \prod_{i=1}^{r} (2 \pi e \hat{s}_i^2)^{-\frac{n_i}{2}}.$$
+
+Under null hypothesis maximum-likelihood estimator maximizes
+
+$$f_n(X^{(n)}, \hat{\eta}_n) = \prod_{i=1}^{r} (2 \pi \sigma^2)^{-\frac{n_i}{2}} \exp \Big( -\frac{1}{2\sigma^2} \sum_{j=1}^{n_i} (X_{ij} - \overline{X}_{i \cdot})^2 \Big ). $$
+
+Setting $n = \sum_{i=1}^{r}n_i$, we get
+
+$$ \hat{\sigma}^2 = \frac{1}{n}\sum_{i=1}^{r} \sum_{j=1}^{n_i} (X_{ij}-X_{i \cdot})^2 = \sum_{i=1}^r \frac{n_i}{n}\hat{s}_i^2. $$
+
+Then
+
+$$f_n(X^{(n)}, \hat{\eta}_n) = \prod_{i=1}^{r}(2\pi e\hat{\sigma}^2)^{-\frac{n_i}{2}} = (2\pi e \hat{\sigma}^2)^{-\frac{n}{2}}$$
+
+and test statistic becomes
+
+$$T_n = -2\log \lambda(X^{(n)}) = n \log \hat{\sigma}^2 - \sum_{i=1}^{r} n_i \log \hat{s}_i^2.$$
+
+The test 
+
+$$
+\varphi_n(X^{(n)}) = 1_{ \lbrace T_n > \mathcal{X}_{r-1, 1-\alpha}^2. \rbrace }$$
+	
+is called **the Bartlett test**.
+
+Factor A
+
+|  | 1      | $\dots$ | s  | Sum |
+| -------- | ----------- | ----------- | ------- | ------- |
+| 1 | Header      | Title       | ------- | ------- |
+| $\dots$ | Paragraph   | Text        | ------- | ------- |
+| r | Paragraph   | Text        | ------- | ------- |
+| Sum | Paragraph   | Text        | ------- | ------- |
+
+
