@@ -1235,7 +1235,7 @@ Suppose we have a family of densities $f(\cdot, \vartheta)$, such that following
 * We have the following equalities: [^CR]
 	* $\mathbb{E} \big[\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = 0,$
 	* $\mathbb{E} \big[g(X) \frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = \frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)].$
-* $0<\mathbb{E}_\vartheta \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]<\infty$
+* $0<\mathbb{E} \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]<\infty$
 
 Let's define functions
 
