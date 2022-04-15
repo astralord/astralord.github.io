@@ -1233,8 +1233,8 @@ Suppose we have a family of densities $f(\cdot, \vartheta)$, such that following
 * Set $M_f=\lbrace x \in \mathcal{X} \mid f(x, \vartheta) > 0 \rbrace$ doesn't depend on $\vartheta$
 * Partial derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. 
 * We have the following equalities: [^CR]
-	* $\mathbb{E}_\vartheta \big[\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = 0,$
-	* $\mathbb{E}_\vartheta \big[g(X) \frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = \frac{\partial}{\partial \vartheta} \mathbb{E}_\vartheta[g(X)].$
+	* $\mathbb{E} \big[\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = 0,$
+	* $\mathbb{E} \big[g(X) \frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = \frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)].$
 * $0<\mathbb{E}_\vartheta \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]<\infty$
 
 Let's define functions
@@ -1494,9 +1494,9 @@ However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is ano
 
 [^CR]: Let's rewrite these equations in equivalent forms:
 
-    $$\int_\mathcal{X} \frac{\partial}{\partial \vartheta} \log f(x, \vartheta) f(x, \vartheta) d \mu(x) = \int_\mathcal{X} \frac{\partial}{\partial \vartheta} f(x, \vartheta) d \mu(x)=\frac{\partial}{\partial \vartheta}\int_\mathcal{X} f(x, \vartheta) d \mu(x) =0, $$
+    $$\int_\mathcal{X} \frac{\partial}{\partial \vartheta} \log f(x, \vartheta) f(x, \vartheta) d x = \int_\mathcal{X} \frac{\partial}{\partial \vartheta} f(x, \vartheta) d x=\frac{\partial}{\partial \vartheta}\int_\mathcal{X} f(x, \vartheta) d x =0, $$
 
-    $$\int_\mathcal{X} g(x) \frac{\partial}{\partial \vartheta} f(x, \vartheta) d\mu(x) = \frac{\partial}{\partial \vartheta} \int_\mathcal{X} g(x) f(x,\vartheta) d\mu(x).$$
+    $$\int_\mathcal{X} g(x) \frac{\partial}{\partial \vartheta} f(x, \vartheta) dx = \frac{\partial}{\partial \vartheta} \int_\mathcal{X} g(x) f(x,\vartheta) dx.$$
     
     In both cases it means that we can interchange differentiation and integration.
 
