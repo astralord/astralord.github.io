@@ -1491,6 +1491,7 @@ $$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}
 
 However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is another exercise to figure out why Cramér-Rao inequality here is not satisfied.
 
+---
 
 [^CR]: Let's rewrite these equations in equivalent forms:
 
