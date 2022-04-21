@@ -982,7 +982,7 @@ function estimate_rho() {
 var sqxx_text = svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 43)
+  .attr("y", 45)
   .attr("x", fig_width + 65)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -992,7 +992,7 @@ var sqxx_text = svg
 var sqyy_text = svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 68)
+  .attr("y", 70)
   .attr("x", fig_width + 65)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -1002,7 +1002,7 @@ var sqyy_text = svg
 var sqxy_text = svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 93)
+  .attr("y", 95)
   .attr("x", fig_width + 65)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -1012,7 +1012,7 @@ var sqxy_text = svg
 var rho_text = svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 118)
+  .attr("y", 120)
   .attr("x", fig_width + 60)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
