@@ -979,6 +979,64 @@ function estimate_rho() {
     }
     return sqxy / Math.sqrt(sqxx * sqyy);
 }
+var sqxx_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 43)
+  .attr("x", fig_width + 65)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+var sqyy_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 68)
+  .attr("x", fig_width + 65)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+var sqxy_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 93)
+  .attr("x", fig_width + 65)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+var rho_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 118)
+  .attr("x", fig_width + 60)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+function updateText() {
+  sqxx_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * sqxx / n) / 100);
+  sqyy_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * sqyy / n) / 100);
+  sqxy_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * sqxy / n) / 100);
+  rho_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * rho_n) / 100);
+}
 
 function update_rho_n() {
     var sqrt_n = Math.sqrt(n);
@@ -1204,65 +1262,6 @@ d3.select("#prsn_plt")
   .style("left", fig_width + 100 + "px")
   .style("top", 125 + "px");
   
-var sqxx_text = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 43)
-  .attr("x", fig_width + 65)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 12)
-  .style("fill", "#EDA137");
-  
-var sqyy_text = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 68)
-  .attr("x", fig_width + 65)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 12)
-  .style("fill", "#EDA137");
-  
-var sqxy_text = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 93)
-  .attr("x", fig_width + 65)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 12)
-  .style("fill", "#EDA137");
-  
-var rho_text = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 118)
-  .attr("x", fig_width + 60)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 12)
-  .style("fill", "#EDA137");
-  
-
-function updateText() {
-  sqxx_text
-    .transition()
-    .duration(500)
-    .text(" = " + Math.round(100 * sqxx / n) / 100);
-  sqyy_text
-    .transition()
-    .duration(500)
-    .text(" = " + Math.round(100 * sqyy / n) / 100);
-  sqxy_text
-    .transition()
-    .duration(500)
-    .text(" = " + Math.round(100 * sqxy / n) / 100);
-  rho_text
-    .transition()
-    .duration(500)
-    .text(" = " + Math.round(100 * rho_n) / 100);
-}
 }
 
 prsn_plt();
