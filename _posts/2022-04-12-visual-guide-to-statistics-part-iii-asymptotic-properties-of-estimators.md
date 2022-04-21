@@ -361,11 +361,16 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-function biv_uni(r) {
-    var rho = 2 * Math.sin(r * Math.PI / 6);
+function biv_gauss(rho) {
     var z1 = randn_bm();
     var z2 = rho * z1 + Math.sqrt(1 - rho * rho) * randn_bm();
-    return [erf(z1), erf(z2)];
+    return [z1, z2];
+}
+
+function biv_uni(r) {
+    var rho = 2 * Math.sin(r * Math.PI / 6);
+    var z = biv_gauss(rho);
+    return [erf(z[0]), erf(z[1])];
 }
 
 function phi(x, mu, sigma) {
@@ -386,7 +391,7 @@ const margin = {top: 20, right: 0, bottom: 5, left: 70},
     height = 400 - margin.top - margin.bottom,
     fig_height = 200,
     fig_width = 250,
-    fig_margin = 100,
+    fig_margin = 150,
     fig_trans = fig_width + fig_margin;
     
 const avg_dur = 1000;
@@ -513,7 +518,6 @@ var gauss_y_curve = svg
 
 
 var avg_dots = [];
-var gauss_density = [];
 	      
 function sampleUniform() {
     var uni_data = [], uni_dots = [];
@@ -624,7 +628,7 @@ function updateN(num) {
     reset();
 }
 
-createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 20, 0.95 * height, "n", "#696969", n, roundN);
+createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 70, 0.95 * height, "n", "#696969", n, roundN);
 
 d3.select("#mclt")
   .append("div")
@@ -636,7 +640,7 @@ d3.select("#mclt")
   .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", 95 + "px")
-  .style("top", 0.95 * height + 5 + "px");
+  .style("top", 0.95 * height + 3 + "px");
   
 d3.select("#mclt")
   .append("div")
@@ -659,7 +663,7 @@ d3.select("#mclt")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", 3 * fig_width / 2 + 80 + "px")
+  .style("left", 3 * fig_width / 2 + 130 + "px")
   .style("top", 0.8 * height + "px");
   
 }
@@ -806,6 +810,468 @@ In total,
 
 $$\sqrt{n}(\hat{\rho}_n - \rho) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, DVD^T) = \mathcal{N}(0, (1-\rho^2)^2).$$
 
+<button id="sample-button-3">Sample</button>
+<button id="reset-button-2">Reset</button>
+<div id="prsn_plt"></div> 
+
+<script>
+d3.select("#prsn_plt")
+  .style("position", "relative");
+  
+function prsn_plt() {
+var n = 10,
+    rho = 0,
+    rho_n = 0;
+var sqxx = 0, sqyy = 0, sqxy = 0;
+
+const margin = {top: 20, right: 0, bottom: 5, left: 70},
+    width = 750 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom,
+    fig_height = 200,
+    fig_width = 250,
+    fig_margin = 150,
+    fig_trans = fig_width + fig_margin;
+    
+const avg_dur = 1000;
+    
+var svg = d3.select("div#prsn_plt")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear()
+          .range([0, fig_width])
+          .domain([-3, 3]);
+            
+var xAxis = svg.append("g")
+   .attr("transform", "translate(0," + fig_height + ")")
+   .call(d3.axisBottom(x).ticks(5));
+  
+xAxis.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+var xRho = d3.scaleLinear()
+          .range([fig_trans, 2 * fig_width + fig_margin])
+          .domain([-3, 3]);
+
+var xRhoAxis = svg.append("g")
+   .attr("transform", "translate("+ 0 + "," + fig_height + ")")
+   .call(d3.axisBottom(xRho).ticks(5));
+  
+xRhoAxis.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+   
+var y = d3.scaleLinear()
+          .range([fig_height, 0])
+          .domain([-3, 3]);
+            
+var yAxis = svg.append("g")
+    .call(d3.axisLeft(y).ticks(5));
+  
+yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+var yRho = d3.scaleLinear()
+          .range([fig_height, 0])
+          .domain([0, 1]);
+            
+var yRhoAxis = svg.append("g")
+   .attr("transform", "translate("+ fig_trans + ",0)")
+    .call(d3.axisLeft(yRho).ticks(5));
+  
+yRhoAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+          
+const axs_mrgn = 0.25;
+
+var gauss_data = [];
+var mu = 0, sigma = 1;
+var scale = 3 * axs_mrgn * (sigma * 1.41421356237 * Math.PI);
+for (var i = -3; i <= 3; i += 0.01) {
+    gauss_data.push({x: i, y: -3.75 - scale * phi(i, mu, sigma)});
+}
+      
+var gauss_x_curve = svg
+    .append('g')
+    .append("path")
+      .datum(gauss_data)
+      .attr("fill", "#65AD69")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+      );
+      
+var gauss_y_curve = svg
+    .append('g')
+    .append("path")
+      .datum(gauss_data)
+      .attr("fill", "#65AD69")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return x(d.y); })
+          .y(function(d) { return y(d.x); })
+      );
+
+function getGaussRhoData() {
+	var sigma_rho = Math.max(1 - rho ** 2, 1e-6);
+	var gauss_rho_data = [{x: -3, y: 0}];
+	for (var i = -3; i <= 3; i += 0.01) {
+	    gauss_rho_data.push({x: i, y: phi(i, 0, sigma_rho)});
+	}
+	gauss_rho_data.push({x: 3, y: 0});
+	return gauss_rho_data;
+}
+
+var gauss_rho_data = getGaussRhoData();
+	
+var gauss_rho_curve = svg
+    .append('g')
+    .append("path")
+      .datum(gauss_rho_data)
+      .attr("fill", "#E86456")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xRho(d.x); })
+          .y(function(d) { return yRho(d.y); })
+      );
+      
+function updateRhoCurve() {
+    var gauss_rho_data = getGaussRhoData();
+    gauss_rho_curve.datum(gauss_rho_data)
+        .transition()
+        .duration(avg_dur)
+      .attr("d",  d3.line()
+          .x(function(d) { return xRho(d.x); })
+          .y(function(d) { return yRho(d.y); })
+      );
+}
+
+function estimate_rho() {
+    var avg_x = 0, avg_y = 0;
+    for (var i = 0; i < n; i += 1) {
+        avg_x += x.invert(gauss_dots[i].attr("cx"));
+        avg_y += y.invert(gauss_dots[i].attr("cy"));
+    }
+    avg_x /= n;
+    avg_y /= n;
+    
+    sqxx = 0, sqyy = 0, sqxy = 0;
+    for (var i = 0; i < n; i += 1) {
+        sqxx += (x.invert(gauss_dots[i].attr("cx")) - avg_x) ** 2;
+        sqyy += (y.invert(gauss_dots[i].attr("cy")) - avg_y) ** 2;
+        sqxy += (x.invert(gauss_dots[i].attr("cx")) - avg_x) * (y.invert(gauss_dots[i].attr("cy")) - avg_y);
+    }
+    return sqxy / Math.sqrt(sqxx * sqyy);
+}
+
+function update_rho_n() {
+    var sqrt_n = Math.sqrt(n);
+    rho_n = estimate_rho();
+    rho_dots[rho_dots.length - 1]
+             .transition()
+             .duration(avg_dur)
+             .attr("cx", function (d) { return xRho(sqrt_n * (rho_n - rho)); } )
+     updateText();
+}
+
+function drag(d) {
+    d3.select(this)
+      .attr("cx", d.x = d3.event.x)
+      .attr("cy", d.y = d3.event.y);
+    update_rho_n();
+}
+
+var gauss_data = [];
+var gauss_dots = [];
+var rho_dots = [];
+
+function sampleGauss() {
+    if (gauss_dots.length > 0) {
+        for (var i = 0; i < gauss_dots.length; i += 1) {
+            gauss_dots[i].remove();
+        }
+        gauss_dots = [];
+    }
+    
+    gauss_data = [];
+    var sqrt_n = Math.sqrt(n);
+    for (var i = 0; i < n; i += 1) {
+        var rnd_pnt = biv_gauss(rho);
+        gauss_data.push({x: rnd_pnt[0], y: rnd_pnt[1]});
+    }
+    
+    for (var i = 0; i < n; i += 1) {
+	    gauss_dots.push(svg.append('g')
+	      .selectAll("dot")
+	      .data([{x: x(gauss_data[i].x), y: y(gauss_data[i].y)}])
+	      .enter()
+	      .append("circle")
+	        .attr("cx", function (d) { return d.x; } )
+	        .attr("cy", function (d) { return d.y; } )
+	        .attr("r", 0)
+	        .style("fill", "#65AD69")
+	        .attr("stroke", "#000")
+	        .attr("stroke-width", 1)
+           .on("mouseover", function(d) { d3.select(this)
+                                            .style("cursor", "pointer");})
+           .on("mousemove", function (d) {})
+           .call(d3.drag().on("drag", drag))
+           );
+
+	        
+        gauss_dots[i]
+            .transition()
+            .duration(avg_dur)
+	         .attr("r", 3);
+	     
+    }
+    
+    rho_n = estimate_rho();
+    var rho_dot = svg.append('g')
+	      .selectAll("dot")
+	      .data([{x: sqrt_n * (rho_n - rho), y: 0}])
+	      .enter()
+	      .append("circle")
+	        .attr("cx", function (d) { return xRho(d.x); } )
+	        .attr("cy", function (d) { return yRho(d.y); } )
+	        .attr("r", 0)
+	        .style("fill", "#E86456")
+	        .attr("stroke", "#000")
+	        .attr("stroke-width", 1);
+	        
+	rho_dot.transition().duration(avg_dur).attr("r", 3);
+    
+   if (rho_dots.length > 0) {
+       rho_dots[rho_dots.length - 1]
+           .transition()
+           .attr("opacity", 0.5)
+           .attr("r", 3);
+   }
+   rho_dots.push(rho_dot);
+   updateText();
+}
+
+function reset() {
+    for (var i = 0; i < rho_dots.length; i += 1) {
+        rho_dots[i].remove();
+    }
+    for (var i = 0; i < gauss_dots.length; i += 1) {
+        gauss_dots[i].remove();
+    }
+    rho_dots = [];
+    gauss_dots = [];
+    sqxx = sqxy = sqyy = rho_n = 0;
+    updateText();
+}
+
+d3.select("#sample-button-3")
+    .on("click", function() {
+    sampleGauss();
+});
+
+
+d3.select("#reset-button-2")
+    .on("click", function() {
+      reset();
+});
+
+var rho_x = d3.scaleLinear()
+    .domain([-1, 1])
+    .range([0, width / 4])
+    .clamp(true);
+    
+function trivialRound(x) { return x; }
+
+function updateRho(r) {
+    rho = r;
+    updateRhoCurve();
+    reset();
+}
+
+createSlider(svg, updateRho, rho_x, 50, 0.95 * height, "", "#65AD69", rho, trivialRound);
+
+var n_x = d3.scaleLinear()
+    .domain([2, 100])
+    .range([0, width / 4])
+    .clamp(true);
+    
+function roundN(x) { return Math.round(x - 0.5); }
+
+function updateN(num) {
+    n = num;
+    reset();
+}
+
+createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 70, 0.95 * height, "n", "#696969", n, roundN);
+
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\(\\rho \\)")
+  .style('color', '#696969')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", 95 + "px")
+  .style("top", 0.95 * height + 3 + "px");
+  
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\(X \\sim \\mathcal{N}(0, \\Sigma), \\quad \\Sigma = \\begin{pmatrix} 1 & \\rho \\\\ \\rho & 1 \\end{pmatrix} \\)")
+  .style('color', '#65AD69')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", fig_width / 2 - 35 + "px")
+  .style("top", 0.78 * height + "px");
+  
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\(\\sqrt{n} (\\hat{\\rho}_n-\\rho) \\sim \\mathcal{N}(0, (1-\\rho^2)^2) \\)")
+  .style('color', '#E86456')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", 3 * fig_width / 2 + 120 + "px")
+  .style("top", 0.8 * height + "px");
+  
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\(SQ_{xx} \\)")
+  .style('color', '#EDA137')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", fig_width + 100 + "px")
+  .style("top", 50 + "px");
+  
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\(SQ_{yy} \\)")
+  .style('color', '#EDA137')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", fig_width + 100 + "px")
+  .style("top", 75 + "px");
+  
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\(SQ_{xy} \\)")
+  .style('color', '#EDA137')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", fig_width + 100 + "px")
+  .style("top", 100 + "px");
+  
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\( \\hat{\\rho}_n \\)")
+  .style('color', '#EDA137')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", fig_width + 100 + "px")
+  .style("top", 125 + "px");
+  
+var sqxx_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 43)
+  .attr("x", fig_width + 65)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+var sqyy_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 68)
+  .attr("x", fig_width + 65)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+var sqxy_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 93)
+  .attr("x", fig_width + 65)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+var rho_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 118)
+  .attr("x", fig_width + 60)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 12)
+  .style("fill", "#EDA137");
+  
+
+function updateText() {
+  sqxx_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * sqxx / n) / 100);
+  sqyy_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * sqyy / n) / 100);
+  sqxy_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * sqxy / n) / 100);
+  rho_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(100 * rho_n) / 100);
+}
+}
+
+prsn_plt();
+
+</script>
+
+![](.)
+*Fig. 2. Visualization of asymptotic normality for Pearson correlation coefficient. Drag sample dots to observe how it affects $SQ$ coefficients and $\hat{\rho}_n$.*
+
 ### Asympotic efficiency
 
 Let $g_n \subset \mathbb{R}^l$ be a sequence of estimators with 
@@ -882,7 +1348,7 @@ Now, say the following conditions are satisfied:
 2. $L(\eta, \vartheta) = \mathbb{E}[\ell(X_i, \eta)]$ and $L_n(\eta) = \frac{1}{n}\sum_{i=1}^n\ell(X_i, \eta)$ are a.s. continuous functions over $\eta$.
 3. $$\sup_{\eta \in \Theta} | L_n(\eta)-L(\eta, \vartheta)|\xrightarrow{\mathcal{L}}0.$$
 
-Then ml-estimator $\hat{\theta}_n$ is consistent.
+Then maximum-likelihood estimator $\hat{\theta}_n$ is consistent.
 
 Proof: for any $\eta \in \Theta$:
 
@@ -896,7 +1362,7 @@ $$
 It can be shown that 
 
 $$\begin{aligned} 
-KL(\vartheta | \eta) & = \int_{\mathcal{X}} -\log\Big(\frac{f(x,\eta)}{f(x,\vartheta)}\Big) f(x,\vartheta)dx \\ \text{Jensen inequality} \rightarrow & \geq -\log\int_{\mathcal{X}} \frac{f(x,\eta)}{f(x,\vartheta)} f(x,\vartheta)dx
+KL(\vartheta | \eta) & = \int_{\mathcal{X}} -\log\Big(\frac{f(x,\eta)}{f(x,\vartheta)}\Big) f(x,\vartheta)dx \\ \color{\Salmon}{\text{Jensen inequality} \rightarrow } & \geq -\log\int_{\mathcal{X}} \frac{f(x,\eta)}{f(x,\vartheta)} f(x,\vartheta)dx
 \\ & = 0,
 \end{aligned}
 $$
@@ -915,7 +1381,7 @@ If the following conditions are satisfied:
 
 * $\Theta \subset \mathbb{R}^k$ is compact and $\vartheta \subset \operatorname{int}(\Theta)$.
 * $\ell(x, \eta)$ is continuous $\forall \eta \in \Theta$ and twice continuously differentiable over $\vartheta$ for almost every $x \in \mathcal{X}$.
-* There exist functions $H_0, H_2 \in L^1(P_\vartheta)$ and $H_1 \in L^2(P_\vartheta)$, such that:
+* $\ell(x, \eta)$ is Lipschitz: there exist functions $H_0, H_2 \in L^1(P_\vartheta)$ and $H_1 \in L^2(P_\vartheta)$, such that:
 
 $$\sup_{\eta \in \Theta} \|\ell(x, \eta)\| \leq H_0(x), \quad \sup_{\eta \in \Theta} \|\dot{\ell}(x, \eta)\| \leq H_1(x), \quad \sup_{\eta \in \Theta} \|\ddot{\ell}(x, \eta)\| \leq H_2(x) \quad \forall x \in \mathcal{X}. $$
 
@@ -931,7 +1397,7 @@ $$\sqrt{n}(\hat{\theta}_n-\vartheta) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, 
 
 We will prove it in 4 steps:
 
-<span style="color:salmon">*Step 1.*</span> Prove the constistency of $\hat{\theta}_n$. For this we need to verify that all conditions from theorem about consistency of ml-estimator are satisfied:
+<span style="color:salmon">*Step 1.*</span> Prove the constistency of $\hat{\theta}_n$. For this we need to verify that all conditions from theorem about consistency of maximum-likelihood estimator are satisfied:
 
 1. Satisfied by the assumption. 
 2. $L_n(\eta)$ is a.s. continuous. Using 2-3 conditions and dominated convergence we get
@@ -1032,13 +1498,13 @@ $$\hat{\lambda}_n = \frac{1}{\overline{X}_n}.$$
 
 Next, using the fact that
 
-$$\mathbb{E}_\lambda[X] = \lambda^{-1} \quad \text{and} \quad  \operatorname{Var}_\lambda(X) = \lambda^{-2},$$
+$$\mathbb{E}[X] = \lambda^{-1} \quad \text{and} \quad  \operatorname{Var}(X) = \lambda^{-2},$$
 
 and $\dot{\ell}_1(X, \lambda) = -(X - \lambda^{-1})$, we calculate Fisher information:
 
-$$\mathcal{I}(f(\cdot, \lambda)) = \mathbb{E}_\lambda\Big[\Big(X - \frac{1}{\lambda}\Big)^2\Big]=\frac{1}{\lambda^2}.$$
+$$\mathcal{I}(f(\cdot, \lambda)) = \mathbb{E}\Big[\Big(X - \frac{1}{\lambda}\Big)^2\Big]=\frac{1}{\lambda^2}.$$
 	
-By theorem of asymptotic efficiency of ML-estimators we get 
+By theorem of asymptotic efficiency of maximum-likelihood estimators we get 
 
 $$\sqrt{n}(\hat{\lambda}_n - \lambda) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, \lambda^2),$$
 

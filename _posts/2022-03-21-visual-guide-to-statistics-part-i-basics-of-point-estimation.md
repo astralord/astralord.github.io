@@ -3,7 +3,7 @@ layout: post
 title: 'Visual Guide to Statistics. Part I: Basics of Point Estimation'
 date: 2022-03-21 03:13 +0800
 categories: [Statistics]
-tags: [statistics, parameter-estimation, frequentist-inference, exponential-family, cramer-rao-inequality, fisher-information]
+tags: [statistics, parameter-estimation, frequentist-inference, exponential-family, cramer-rao-inequality, fisher-information, maximum-likelihood-estimator, method-of-moments]
 math: true
 ---
 
@@ -1232,7 +1232,7 @@ Suppose we have a family of densities $f(\cdot, \vartheta)$, such that following
 
 * Set $M_f=\lbrace x \in \mathcal{X} \mid f(x, \vartheta) > 0 \rbrace$ doesn't depend on $\vartheta$
 * Partial derivative $\frac{\partial}{\partial \vartheta} \log f(x, \vartheta)$ exists $\forall x \in \mathcal{X}$. 
-* We have the following equalities: [^CR]
+* The following equalities hold: [^CR]
 	* $\mathbb{E} \big[\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = 0,$
 	* $\mathbb{E} \big[g(X) \frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big] = \frac{\partial}{\partial \vartheta} \mathbb{E}[g(X)].$
 * $0<\mathbb{E} \big[\big(\frac{\partial}{\partial \vartheta} \log f(X, \vartheta)\big)^2\big]<\infty$
@@ -1271,7 +1271,7 @@ $$ \operatorname{Var}(g(X)) \geq \frac{\big(\frac{\partial}{\partial \vartheta} 
 
 gives us **Cramér–Rao bound**. Function $\mathcal{I}(f(\cdot, \vartheta))$ is called **Fisher information** for family $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$. If an unbiased estimator $g$ satisfies the upper equation with equality, then it is called **efficient**.
 
-This theorem gives a lower bound for the variance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions (e.g. invariance of $M_f$) are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
+This theorem gives a lower bound for the variance of an estimator for $\gamma(\vartheta) = \mathbb{E}[g(X)]$ and can be used in principle to obtain UMVU estimators. Whenever the regularity conditions are satisfied for all $g \in \mathcal{E}_\gamma$, then any efficient and unbiased estimator is UMVU.
 
 Also, for a set of i.i.d. variables $X_1, \dots X_n$, meaning that their joint density distribution is 
 
@@ -1471,7 +1471,7 @@ Again in example $X_1, \dots X_n$ i.i.d. $\sim \mathcal {N}(\mu, \sigma^2)$ an e
 
 $$ \hat{\gamma}(\vartheta)=(\hat{m}_1, \hat{m}_2-\hat{m}_1^2)^T=(\overline{x}_n, \hat{s}_n^2)^T. $$
 
-I'm going to leave it as an exercise to prove that this estimator coincides with the estimation obtained by the maximum likelihood method.
+It's easy to show that this estimator coincides with the estimation obtained by the maximum likelihood method.
 
 Let's take another example, $X_1, \dots X_n$ i.i.d. $\sim \mathcal{U}(0, \vartheta)$, where estimated parameter $\vartheta > 0$. One can show that estimator
 
@@ -1489,7 +1489,7 @@ UMVU estimator is $g(X) = X_{(n)} (1 + \frac{1}{n})$, and its variance:
 
 $$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}$$
 
-However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. And this is another exercise to figure out why Cramér-Rao inequality here is not satisfied.
+However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. This shows importance of regularity conditions for Cramér-Rao theorem. Here, invariance of $M_f$ is not satisified and Cramér-Rao inequality doesn't hold.
 
 
 [^CR]: Let's rewrite these equations in equivalent forms:

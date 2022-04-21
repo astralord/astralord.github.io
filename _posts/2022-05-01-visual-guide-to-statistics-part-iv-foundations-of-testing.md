@@ -3,7 +3,7 @@ layout: post
 title: 'Visual Guide to Statistics. Part IV: Foundations of Testing'
 date: 2022-05-01 03:13 +0800
 categories: [Statistics]
-tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, monotone-likelihood-ratio, one-sided-gauss-test, one-sided-t-test, two-sampled-t-test]
+tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, one-sided-gauss-test, one-sided-t-test, two-sample-t-test, likelihood-ratio-test, wilks-theorem, bartlett-test]
 math: true
 published: false
 ---
@@ -141,6 +141,26 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
 }
 
 #sample-button-k:hover {
+  background-color: #696969;
+}
+
+#sample-button-x {
+  top: 15px;
+  left: 15px;
+  background: #65AD69;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#sample-button-x:hover {
   background-color: #696969;
 }
 
@@ -668,7 +688,7 @@ $$\beta_\varphi(\vartheta) = 1 - \mathbb{E}_\vartheta[\varphi(X)].$$
 
 Note that for non-randomized test $\varphi$ we have
 
-$$\beta_\varphi(\vartheta) = P_\vartheta(\varphi(x) = 0),$$
+$$\beta_\varphi(\vartheta) = P_\vartheta(\varphi(X) = 0),$$
 
 which is the probability to decide for $H$. In particular, 
 
@@ -744,7 +764,11 @@ $$\alpha := 1 - \beta_{\varphi^*}(\vartheta_0) < 1 - \beta_{\varphi^*}(\vartheta
 
 <details>
 <summary>Proof</summary>
-Take test $\varphi \equiv \alpha$. It has significance level $\alpha$ and since $\varphi^*$ is UMP, we have $1-\beta_\varphi(\vartheta_1) \leq 1-\beta_{\varphi^*}(\vartheta_1)$. If $\alpha = 1-\beta_{\varphi^*}(\vartheta_1) < 1$, then $\varphi \equiv \alpha$ is UMP. Since every UMP test is an NP test, we know that $p_1(x) = c^*p_0(x)$ for almost all $x$. Therefore, $c^*=1$ and $p_1 = p_0$ a.s. and also $P_{\vartheta_0} = P_{\vartheta_1}$, which is contradictory.
+Take test $\varphi \equiv \alpha$. It has significance level $\alpha$ and since $\varphi^*$ is UMP, we have 
+
+$$1-\beta_\varphi(\vartheta_1) \leq 1-\beta_{\varphi^*}(\vartheta_1).$$
+
+If $\alpha = 1-\beta_{\varphi^*}(\vartheta_1) < 1$, then $\varphi \equiv \alpha$ is UMP. Since every UMP test is an NP test, we know that $p_1(x) = c^*p_0(x)$ for almost all $x$. Therefore, $c^*=1$ and $p_1 = p_0$ a.s. and also $P_{\vartheta_0} = P_{\vartheta_1}$, which is contradictory.
 </details>
 
 ### Confidence interval
@@ -773,7 +797,7 @@ or equivalently
 
 $$\begin{aligned}
 	P_{\mu_0}\Big( &\underbrace{\frac{\sqrt{n}(\overline{X}_n - \mu_0)}{\sigma}} > \frac{\sqrt{n}(c-\mu_0)}{\sigma}\Big) = 1 - \Phi\Big(\frac{\sqrt{n}(c - \mu_0)}{\sigma}\Big) = \alpha. \\
-	&\quad \sim \mathcal{N}(0, 1)
+	&\quad \color{Salmon}{\sim \mathcal{N}(0, 1)}
 	\end{aligned}$$
 
 If we call $u_p$ the **p-quantile** of $\mathcal{N}(0, 1)$, which is the value such that $\Phi(u_p)=p$, then we get
@@ -782,7 +806,7 @@ $$\frac{\sqrt{n}(c - \mu_0)}{\sigma} = u_{1-\alpha} \quad \Longleftrightarrow \q
 
 The NP-test becomes
 
-$$\varphi^*(x) = 1_{\lbrace\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\sqrt{n}}  \rbrace }.$$
+$$\varphi^*(X) = 1_{\lbrace\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\sqrt{n}}  \rbrace }.$$
 
 
 
@@ -1265,14 +1289,13 @@ function updateTableText() {
 var avg_dots = [];
 function sampleGauss(mu, color) {
       var avg_dur = 1200;
-      var random_samples = [];
       var smpl_dots = [];
       var avg = 0;
       for (var i = 0; i < n; i += 1) {
-          random_samples.push(mu + sigma * randn_bm());
+          var random_sample = mu + sigma * randn_bm();
           smpl_dots.push(svg.append('g')
             .selectAll("dot")
-            .data([{x: random_samples[i], y: 1}])
+            .data([{x: random_sample, y: 1}])
             .enter()
             .append("circle")
               .attr("cx", function (d) { return x(d.x); } )
@@ -1284,10 +1307,10 @@ function sampleGauss(mu, color) {
           
           smpl_dots[i].transition()
             .duration(avg_dur)
-            .attr("cx", function (d) { return x(random_samples[i]); } )
+            .attr("cx", function (d) { return x(random_sample); } )
             .attr("cy", function (d) { return y(0); } );
       
-          avg += random_samples[i];
+          avg += random_sample;
       }
       avg /= n;  
       
@@ -1600,7 +1623,7 @@ simple_hypothesis();
 </script>
 
 ![](.)
-*Fig. 1. Visualization of simple hypothesis testing with $\mu_0 = -1$ and $\mu_1=1$. Significance level $\alpha$ on the right plot is draggable.*
+*Fig. 2. Visualization of simple hypothesis testing with $\mu_0 = -1$ and $\mu_1=1$. Significance level $\alpha$ on the right plot is draggable.*
 
 Simple hypotheses like that are not relevant in practice, <ins>but</ins>:
 
@@ -1623,7 +1646,7 @@ In our example above we had
 
 $$\frac{p_{\mu_1}(x)}{p_{\mu_0}(x)} = \exp \Big( \frac{1}{\sigma^2} \sum_{i=1}^{n} x_i(\mu_1 - \mu_0) \Big) \cdot f(\sigma^2, \mu_1, \mu_0), $$
 
-which is monotonically increasing in $\overline{x}_n$. This can be generalized to one-parametric exponential families.
+which is monotonically increasing in $\overline{x}_n$. This can be generalized to one-parametric [exponential families](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#exponential-family).
 
 Let $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ be class with monotone likelihood ratio in $T$, $\vartheta \in \Theta$, $\alpha \in (0, 1)$ and we test the one-sided hypothesis
 
@@ -1631,7 +1654,7 @@ $$H\colon\vartheta \leq \vartheta_0 \quad \text{vs} \quad K\colon\vartheta > \va
 
 Let also
 
-$$\varphi^*(x) = 1_{\lbrace t(x) > c\rbrace} + \gamma 1_{\lbrace T(x) = c\rbrace},$$
+$$\varphi^*(x) = 1_{\lbrace T(x) > c\rbrace} + \gamma 1_{\lbrace T(x) = c\rbrace},$$
 
 where $c := \inf \lbrace t\ |\ P_{\vartheta_0}(T(X) > t) \leq \alpha \rbrace$ and
 
@@ -1643,12 +1666,48 @@ $$\gamma =
 				\end{array}
 				\right.$$
 
-Then $1-\beta_{\varphi^*}(\vartheta_0) = \alpha$ and $\varphi^*$ is UMP test with significance level $\alpha$. Also for any $\vartheta < \vartheta_0$ we have 
-
-$$\beta_{\varphi^*}(\vartheta) = \sup \lbrace \beta_\varphi(\vartheta)\ |\ 1 - \beta_\varphi(\vartheta_0) = \alpha \rbrace.$$
+Then $1-\beta_{\varphi^*}(\vartheta_0) = \alpha$ and $\varphi^*$ is UMP test with significance level $\alpha$.
 
 <details>
 <summary>Proof</summary>
+We have
+
+$$1-\beta_{\varphi^*}(\vartheta_0)=P_{\vartheta_0}(T(X)>c) + \gamma P_{\vartheta_0}(T(X) = c) = \alpha. $$
+
+Let $\vartheta_0 < \vartheta_1$, then due to monotonicity
+
+$$H_{\vartheta_0, \vartheta_1}(T(x)) > H_{\vartheta_0, \vartheta_1}(c) = s \quad \Longrightarrow \quad T(x) > c $$
+
+and
+
+$$\varphi^*(x) =
+		\left \{
+		\begin{array}{cl}
+		1, & H_{\vartheta_0, \vartheta_1}(x) > s, \\
+		0, & H_{\vartheta_0, \vartheta_1}(x) < s.
+		\end{array}
+		\right.$$
+
+Therefore $\varphi^*$ is NP-test with significance level $\alpha$ and by NP lemma
+
+$$ \beta_{\varphi^*}(\vartheta_1) = \inf \{\beta_\varphi(\vartheta_1)\ |\  \beta_\varphi(\vartheta_0) = 1-\alpha \}. $$
+	    
+As $\varphi^*$ doesn't depend on $\vartheta_1$, this relation holds for all $\vartheta_1 > \vartheta_0$. Finally, let $\varphi'(x) = 1 - \varphi^*(x)$. Using the similar reasoning as above one can show that
+
+$$\beta_{\varphi'}(\vartheta_2) = \inf \{\beta_\varphi(\vartheta_2)\ |\ \beta_\varphi(\vartheta_0) = 1 - \alpha \} \quad \forall \vartheta_2 < \vartheta_0. $$
+
+For trivial test $\overline{\varphi} \equiv \alpha$ the following equality takes place: $\beta_{\overline{\varphi}}(\vartheta_0) = 1-\alpha$. Hence we conclude that
+
+$$1-\beta_{\varphi^*}(\vartheta_2) = \beta_{\varphi'}(\vartheta_2) \geq \beta_{1-\overline{\varphi}}(\vartheta_2) = 1-\beta_{\overline{\varphi}}(\vartheta_2) = \alpha.  $$
+	    
+Hence, $1-\beta_{\varphi^*}(\vartheta_2) \geq \alpha$, $\varphi^* \in \Phi_\alpha$ and $\varphi^*$ is UMP test.
+ 
+Also for any $\vartheta < \vartheta_0$ we have 
+
+$$\beta_{\varphi^*}(\vartheta) = \sup \lbrace \beta_\varphi(\vartheta)\ |\ 1 - \beta_\varphi(\vartheta_0) = \alpha \rbrace,$$
+
+because of $\beta_{\varphi'} = 1 - \beta_{\varphi^*}$.
+
 </details>
 
 Back to our previous example with $X_1, \dots, X_n$ with known $\sigma^2$, we know that 
@@ -1743,14 +1802,16 @@ and we test
 
 $$H\colon \vartheta \in [1, 2] \quad \text{vs} \quad K\colon\vartheta \notin [1, 2].$$
 
-We have $T(x) = x$, therefore
+We have $T(x) = x$ and
 
 $$\varphi(x) = 1_{\lbrace X \notin [c_1, c_2] \rbrace}.$$
 
 It is known that for $X$ distribution function is $F(x) = 1 - e^{-\vartheta x}$, therefore
 
-$$P_{1}(X \in [c_1, c_2])=e^{-c_1}-e^{-c_2} = 1-\alpha,$$
-$$P_{2}(X \in [c_1, c_2])=e^{-2 c_1}-e^{-2 c_2} = 1-\alpha.$$
+$$\begin{aligned}
+P_{1}(X \in [c_1, c_2])&=e^{-c_1}-e^{-c_2} = 1-\alpha, \\
+P_{2}(X \in [c_1, c_2])&=e^{-2 c_1}-e^{-2 c_2} = 1-\alpha.
+\end{aligned}$$
 
 Solving this for $c_1$ and $c_2$ we get
 
@@ -1780,7 +1841,7 @@ therefore test
 
 $$ \varphi_{m,n}(x)=1_{\lbrace T_{m,n} > t_{m+n-2, 1-\alpha}\rbrace }$$
 
-is UMPU with significance level $\alpha$. This test is called **two-sampled t-test**.
+is UMPU with significance level $\alpha$. This test is called **two-sample t-test**.
 
 * Let $\sigma^2 \neq \tau^2$, then
 
@@ -1825,6 +1886,816 @@ $$\lim_{n \rightarrow \infty} \inf_{\vartheta \in \Theta_H} \beta_{\varphi_n}(\v
 $$\lim_{n \rightarrow \infty} \beta_{\varphi_n}(\vartheta) = 0 \quad \forall \vartheta \in \Theta_K.$$
 
 In our example $\varphi_{m,n}^*(x)$ is consistent and has asymptotic significance level $\alpha$.
+
+
+<button id="sample-button-x">Sample</button>
+
+<div id="asymptotic_test"></div> 
+
+<script>
+  
+d3.select("#asymptotic_test")
+  .style("position", "relative");
+
+function asymptotic_test() {
+
+var mu0 = -1,
+    mu1 = 1,
+    sigma = 1,
+    tau = 2,
+    alpha = 0.05,
+    n = 10,
+    m = 5;
+
+var color0 = "#01A66F",
+    color1 = "#72CC50";
+
+var u_q = PhiInv(1 - alpha);
+var power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
+
+var margin = {top: 30, right: 0, bottom: 20, left: 30},
+    width = 750 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    fig_height = 200 - margin.top - margin.bottom,
+    fig_width = 350;
+    
+var svg = d3.select("div#asymptotic_test")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleLinear()
+          .domain([-4, 4])
+          .range([0, fig_width]);
+            
+var xAxisTop = svg.append("g")
+   .attr("transform", "translate(0," + fig_height + ")")
+   .call(d3.axisBottom(x));
+  
+xAxisTop.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+   
+var xBtm = d3.scaleLinear()
+          .domain([-4, 4])
+          .range([0, fig_width]);
+            
+var xAxisBtm = svg.append("g")
+   .attr("transform", "translate(0," + 1.6 * fig_height + ")")
+   .call(d3.axisBottom(xBtm));
+  
+xAxisBtm.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+
+var xRight = d3.scaleLinear()
+          .domain([0, 3.5])
+          .range([1.2 * fig_width, 1.9 * fig_width]);
+          
+var xAxisRight = svg.append("g")
+   .attr("transform", "translate(0," + 2 * fig_height + ")")
+   .call(d3.axisBottom(xRight).ticks(5));
+  
+xAxisRight.selectAll(".tick text")
+   .attr("font-family", "Arvo");
+   
+   
+   
+var y = d3.scaleLinear()
+          .range([fig_height, 0])
+          .domain([0, 1]);
+            
+var yAxisTop = svg.append("g")
+    .call(d3.axisLeft(y).ticks(4));
+  
+yAxisTop.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+
+
+var yBtm = d3.scaleLinear()
+          .range([1.6 * fig_height, 1.3 * fig_height])
+          .domain([0, 1]);
+            
+var yAxisBtm = svg.append("g")
+    .call(d3.axisLeft(yBtm).ticks(1));
+  
+yAxisBtm.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+            
+
+var yRight = d3.scaleLinear()
+          .range([2 * fig_height, 0])
+          .domain([0, 0.5]);
+            
+var yAxisRight = svg.append("g")
+   .attr("transform", "translate(" + 1.2 * fig_width + ",0)")
+    .call(d3.axisLeft(yRight).ticks(4));
+  
+yAxisRight.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+    
+    
+    
+var mu0_data = gauss_data(mu0, sigma);
+
+var mu0_curve = svg
+  .append('g')
+  .append("path")
+      .datum(mu0_data)
+      .attr("fill", "#01A66F")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+   );
+   
+var mu1_data = gauss_data(mu1, sigma);
+
+var mu1_curve = svg
+  .append('g')
+  .append("path")
+      .datum(mu1_data)
+      .attr("fill", "#72CC50")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d.x); })
+          .y(function(d) { return y(d.y); })
+   );
+
+var q_data = quantile_data();
+var quantile_curve = svg
+  .append('g')
+  .append("path")
+      .datum(q_data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".8")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d.x); })
+          .y(function(d) { return yRight(d.y); })
+   );
+
+function updatePower() {
+  var rc = 1000;
+  if (power > 0.999) {
+      rc = 10000;
+  }
+  power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
+  power_text
+    .transition()
+    .duration(500)
+    .text('Power: ' + Math.round(rc * power) / rc);
+}
+
+function dragged_u(d) {
+  var u_x = Math.min(xRight(3.5), Math.max(d3.event.x, xRight(0)));
+  u_q = xRight.invert(u_x);
+  alpha = 1 - Phi(u_q);
+  var u_y = yRight(alpha);
+  d3.select(this).attr("cx", d.x = u_x).attr("cy", d.y = u_y);
+  updatePhiLine();
+  var rc = 1000;
+  if (alpha < 0.001) {
+    rc = 10000;
+  }
+  alpha_text
+    .transition()
+    .duration(500)
+    .text('Significance level: ' + Math.round(rc * alpha) / rc);
+  updatePower();
+}
+
+var u_dot = svg.append('g')
+   .selectAll("dot")
+   .data([{'x': xRight(u_q), 'y': yRight(alpha)}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2)
+     .on("mouseover", function(d) { d3.select(this)
+                                      .style("cursor", "pointer");})
+     .on("mousemove", function (d) {})
+     .call(d3.drag()
+       .on("drag", dragged_u)
+     );
+     
+function updatePhiLine() {
+  reset();
+  c = u_q;
+  var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
+  var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
+  var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+      
+  phi_dot
+      .transition()
+      .duration(0)
+      .attr("cx", xBtm(c) );
+       
+  phi_curve_0
+      .datum(phi_data_0)
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+      );
+      
+  phi_curve_1
+      .datum(phi_data_1)
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+      );
+      
+  phi_curve_dash
+      .datum(phi_data_dash)
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+      );
+}
+
+var c = u_q;
+var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
+var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
+var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+
+var phi_curve_0 = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_0)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 2.5)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+   );
+   
+var phi_curve_1 = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_1)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 2.5)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+   );
+   
+var phi_curve_dash = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_dash)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 1)
+      .style("stroke-dasharray", ("3, 3"))
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xBtm(d['x']); })
+          .y(function(d) { return yBtm(d['y']); })
+   );
+
+var phi_dot = svg.append('g')
+   .selectAll("dot")
+   .data([{'x': xBtm(c), 'y': yBtm(1)}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2);
+     
+function updateCurves(delay) {
+    mu0_data = gauss_data(mu0, sigma);
+    mu1_data = gauss_data(mu1, sigma);
+    
+    mu0_curve
+      .datum(mu0_data)
+      .transition()
+      .delay(delay) 
+      .duration(0)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+      );
+      
+    mu1_curve
+      .datum(mu1_data)
+      .transition()
+      .delay(delay) 
+      .duration(0)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+        .x(function(d) { return x(d.x); })
+        .y(function(d) { return y(d.y); })
+      );
+}
+
+function updateSigma(x) {
+    reset();
+    sigma = x;
+    updatePower();
+    updateCurves(0); 
+    updatePhiLine();
+}
+
+function trivialRound(x) { return x; }
+
+var sigma_x = d3.scaleLinear()
+    .domain([0.4, 1.4])
+    .range([0, width * 0.4])
+    .clamp(true);
+    
+createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "", "#A9A750", sigma, trivialRound);
+
+
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(\\sigma \\)")
+  .style('color', '#A9A750')
+  .style("font-size", "17px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", margin.left + "px")
+  .style("top", 2 * fig_height + 15 + "px");
+  
+
+
+d3.select("#n-num").on("input", function() {
+    n = this.value;
+    updatePhiLine();
+    updatePower();
+});
+
+var table_nums = [0, 0, 0, 0];
+
+function updateTableText() {
+
+  table_text_hh
+    .transition()
+    .duration(500)
+    .text(table_nums[0]);
+
+  table_text_hk
+    .transition()
+    .duration(500)
+    .text(table_nums[1]);
+
+  table_text_kh
+    .transition()
+    .duration(500)
+    .text(table_nums[2]);
+
+  table_text_kk
+    .transition()
+    .duration(500)
+    .text(table_nums[3]);
+}
+
+var avg_dots = [];
+function sampleTwoGauss() {
+      var avg_dur = 1200;
+      var random_samples_x = [], random_samples_y = [];
+      var smpl_dots = [];
+      var avg_x = 0, avg_y = 0;
+      for (var i = 0; i < m; i += 1) {
+          random_samples_x.push(mu0 + sigma * randn_bm());
+          smpl_dots.push(svg.append('g')
+            .selectAll("dot")
+            .data([{x: random_samples_x[i], y: 1}])
+            .enter()
+            .append("circle")
+              .attr("cx", function (d) { return x(d.x); } )
+              .attr("cy", function (d) { return y(d.y); } )
+              .attr("r", 3)
+              .style("fill", color0)
+              .attr("stroke", "#000")
+              .attr("stroke-width", 1));
+          
+          smpl_dots[i].transition()
+            .duration(avg_dur)
+            .attr("cx", function (d) { return x(random_samples_x[i]); } )
+            .attr("cy", function (d) { return y(0); } );
+      
+          avg_x += random_samples_x[i];
+      }
+      avg_x /= m; 
+      
+      var sx = 0;
+      for (var i = 0; i < m; i += 1) {
+          sx += (random_samples_x[i] - avg_x) ** 2;
+      }
+      sx /= (m - 1);
+      
+      for (var i = 0; i < n; i += 1) {
+          random_samples_y.push(mu1 + tau * randn_bm());
+          smpl_dots.push(svg.append('g')
+            .selectAll("dot")
+            .data([{x: random_samples_y[i], y: 1}])
+            .enter()
+            .append("circle")
+              .attr("cx", function (d) { return x(d.x); } )
+              .attr("cy", function (d) { return y(d.y); } )
+              .attr("r", 3)
+              .style("fill", color1)
+              .attr("stroke", "#000")
+              .attr("stroke-width", 1));
+          
+          smpl_dots[i + m].transition()
+            .duration(avg_dur)
+            .attr("cx", function (d) { return x(random_samples_y[i]); } )
+            .attr("cy", function (d) { return y(0); } );
+      
+          avg_y += random_samples_y[i];
+      }
+      avg_y /= n;  
+      
+      
+      var sy = 0;
+      for (var i = 0; i < n; i += 1) {
+          sy += (random_samples_y[i] - avg_y) ** 2;
+      }
+      sy /= (n - 1);
+      
+      var t_stat = (avg_x - avg_y) / (sx / m + sy / n);
+      
+      for (var i = 0; i < m; i += 1) {
+          smpl_dots[i]
+            .transition()
+            .delay(avg_dur) 
+            .duration(avg_dur)
+            .attr("cx", function (d) { return x(avg_x); } )
+            .attr("cy", function (d) { return y(0); } );
+            
+          if (i > 0) {
+            smpl_dots[i].transition().delay(2 * avg_dur).remove();
+          }
+          else {
+            avg_dots.push(smpl_dots[0]);
+          }
+      }
+      
+      for (var i = m; i < m + n; i += 1) {
+          smpl_dots[i]
+            .transition()
+            .delay(avg_dur) 
+            .duration(avg_dur)
+            .attr("cx", function (d) { return x(avg_y); } )
+            .attr("cy", function (d) { return y(0); } );
+            
+          if (i > m) {
+            smpl_dots[i].transition().delay(2 * avg_dur).remove();
+          }
+          else {
+            avg_dots.push(smpl_dots[m]);
+          }
+      }
+      
+      for (var i = 0; i < 2; i += 1) {
+          avg_dots[i]
+            .transition()
+            .delay(2 * avg_dur) 
+            .duration(avg_dur)
+            .attr("cx", function (d) { return x(t_stat); } )
+            .attr("cy", function (d) { return y(0); } );
+      }
+      
+      if (avg > c) {
+          smpl_dots[0]
+            .transition()
+            .delay(2 * avg_dur) 
+            .duration(avg_dur)
+            .attr("cy", function (d) { return yBtm(1); } );
+            
+         if (mu == mu0) {
+           table_nums[2] += 1;
+         }
+         else {
+           table_nums[3] += 1;
+         }
+      }
+      else {
+          smpl_dots[0]
+            .transition()
+            .delay(2 * avg_dur) 
+            .duration(avg_dur)
+            .attr("cy", function (d) { return yBtm(0); } );
+            
+         if (mu == mu0) {
+           table_nums[0] += 1;
+         }
+         else {
+           table_nums[1] += 1;
+         }
+      }
+      
+      updateTableText();
+}
+
+d3.select("#sample-button-x").on("click", function() {
+sampleTwoGauss()
+});
+
+function reset() {
+  for (var i = 0; i < avg_dots.length; i += 1) {
+      avg_dots[i].remove();
+  }
+  avg_dots = [];
+  table_nums = [0, 0, 0, 0];
+  updateTableText();
+}
+
+d3.select("#reset-button").on("click", function() { reset(); });
+
+var alpha_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 1.2 * fig_width + 5)
+  .attr("font-family", "Arvo")
+  .text("Significance level: " + alpha)
+  .style("fill", "#348ABD");
+  
+var power_text = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 1.2 * fig_width + 5)
+  .attr("font-family", "Arvo")
+  .text("Power: " + power)
+  .style("fill", "#348ABD");
+
+   
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(\\alpha \\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", 1.2 * fig_width + 5 + margin.left + "px")
+  .style("top", 15 + "px");
+  
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(u_{1-\\alpha} \\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", 1.9 * fig_width + 5 + margin.left + "px")
+  .style("top", 2 * fig_height + 15 + "px");
+  
+var labels_x = 250;
+var labels_y = 0;
+
+svg.append("path")
+   .attr("stroke", "#01A66F")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: labels_y}, {x: labels_x + 25, y: labels_y}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: labels_y - 2}, {x: labels_x + 25, y: labels_y - 2}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", labels_y + 5)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("X distribution")
+  .style("fill", "#01A66F");
+  
+svg.append("path")
+   .attr("stroke", "#72CC50")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x, y: labels_y + 15}, {x: labels_x + 25, y: labels_y + 15}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x, y: labels_y + 13}, {x: labels_x + 25, y: labels_y + 13}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", labels_y + 20)
+  .attr("x", labels_x + 30)
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .text("Y distribution")
+  .style("fill", "#72CC50");
+       
+svg.append("path")
+   .attr("stroke", "#348ABD")
+   .attr("stroke-width", 3)
+   .attr("opacity", "1")
+   .datum([{x: labels_x + 5, y: labels_y + 30}, {x: labels_x + 25, y: labels_y + 30}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+ 
+svg.append('g')
+   .selectAll("dot")
+   .data([{'x': labels_x + 7, 'y': labels_y + 30}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2);
+
+
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(\\varphi(x) \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + margin.left + 30 + "px")
+  .style("top", labels_y + 50 + "px");
+
+
+svg.append("path")
+   .attr("stroke", "#348ABD")
+   .attr("stroke-width", 4)
+   .attr("opacity", ".8")
+   .datum([{x: labels_x + fig_width, y: labels_y}, {x: labels_x + fig_width + 25, y: labels_y}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+svg.append("path")
+   .attr("stroke", "#000")
+   .attr("stroke-width", 1)
+   .datum([{x: labels_x + fig_width, y: labels_y - 2}, {x: labels_x + fig_width + 25, y: labels_y - 2}])
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(1-\\Phi(x) \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "13px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .attr("font-size", 20)
+  .style("position", "absolute")
+  .style("left", labels_x + fig_width + margin.left + 30 + "px")
+  .style("top", labels_y + 20 + "px");
+  
+var table_text_acc_h = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.35 * fig_height)
+  .attr("x", 0.5 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("Accepted H")
+  .style("fill", "#65AD69");
+  
+var table_text_rej_h = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.35 * fig_height)
+  .attr("x", 0.85 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("Rejected H")
+  .style("fill", "#EDA137");
+  
+var table_text_true_h = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 0.2 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("H is true")
+  .style("fill", "#65AD69");
+  
+var table_text_true_k = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 0.2 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("K is true")
+  .style("fill", "#EDA137");
+  
+var table_text_hh = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 0.6 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#65AD69");
+  
+var table_text_hk = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 0.6 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#E86456");
+  
+var table_text_kh = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.6 * fig_height)
+  .attr("x", 0.95 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#E86456");
+  
+var table_text_kk = svg
+  .append("text")
+  .attr("text-anchor", "start")
+  .attr("y", 2.9 * fig_height)
+  .attr("x", 0.95 * fig_width)
+  .attr("font-family", "Arvo")
+  .text("0")
+  .style("fill", "#EDA137");
+  
+}
+
+asymptotic_test();
+
+</script>
+
+![](.)
+*Fig. 3. Visualization of asymptotic test*
+
 
 ### Likelihood ratio
 
@@ -1891,7 +2762,7 @@ for some $\widetilde{\theta}_n \in [\hat{\theta}_n, \vartheta]$. Using the notat
 
 $$\begin{aligned}
 	 2n(\hat{\theta}_n - \vartheta)^T& \underbrace{(\dot{L}_n(\vartheta) - \ddot{L}_n(\tilde{\vartheta})(\hat{\theta}_n - \vartheta))}. \\
-	 & \qquad \qquad\ = 0 \text{ (by Mean Theorem)}
+	 & \qquad \qquad\ \color{\Salmon}{ = 0 \text{ (by Mean Theorem)}}
 	 \end{aligned}$$
 	 
 Also
@@ -1955,15 +2826,13 @@ $$h((x_1, \dots, x_r, y)^T) = (x_1, \dots, x_r, y, \dots, y)^T.$$
 
 Maximum-likelihood estimator is 
 
-$$\hat{\theta}_n = (\hat{\mu}_1, \dots, \hat{\mu}_r, \hat{s}_1^2, \dots, \hat{s}_r^2)$$
+$$\hat{\theta}_n = (\overline{X}_{1 \cdot}, \dots, \overline{X}_{r \cdot}, \hat{s}_1^2, \dots, \hat{s}_r^2)$$
 
 with 
 
-$$\hat{\mu}_i = \frac{1}{n_i} \sum_{j=1}^{n_i}X_{ij} =: \overline{X}_{i \cdot} $$ 
-
-and
-
-$$\hat{s}_i^2 = \frac{1}{n_i}\sum_{j=1}^{n_i}(X_{ij} -\overline{X}_{i \cdot})^2. $$ 
+$$\overline{X}_{i \cdot} = \frac{1}{n_i} \sum_{j=1}^{n_i}X_{ij} 
+\quad \text{and} \quad
+\hat{s}_i^2 = \frac{1}{n_i}\sum_{j=1}^{n_i}(X_{ij} -\overline{X}_{i \cdot})^2. $$ 
 
 Then 
 
@@ -1988,17 +2857,80 @@ $$T_n = -2\log \lambda(X^{(n)}) = n \log \hat{\sigma}^2 - \sum_{i=1}^{r} n_i \lo
 The test 
 
 $$
-\varphi_n(X^{(n)}) = 1_{ \lbrace T_n > \mathcal{X}_{r-1, 1-\alpha}^2. \rbrace }$$
+\varphi_n(X^{(n)}) =
+	\left \{
+	\begin{array}{cl}
+	1, & T_n > \mathcal{X}_{r-1, 1-\alpha}^2, \\
+	0, & \text{otherwise}. 
+	\end{array}
+	\right.
+$$
 	
 is called **the Bartlett test**.
 
-Factor A
+Take another example: suppose we have two discrete variables $A$ and $B$ (e.g. such as gender, age, education or income), where $A$ can take $r$ values and $B$ can take $s$ values. Further suppose that $n$ individuals are randomly sampled. A **contingency table** can be created to display the joint sample distribution of $A$ and $B$.
 
-|  | 1      | $\dots$ | s  | Sum |
-| -------- | ----------- | ----------- | ------- | ------- |
-| 1 | Header      | Title       | ------- | ------- |
-| $\dots$ | Paragraph   | Text        | ------- | ------- |
-| r | Paragraph   | Text        | ------- | ------- |
-| Sum | Paragraph   | Text        | ------- | ------- |
+|          | $1$          | $\cdots$ | $s$           | Sum |
+| -------- | ------------ | -------- | ------------- | ------- |
+| $1$      | $X_{11}$     | $\cdots$ | $X_{1s}$      | $X_{1\cdot} = \sum_{j=1}^n X_{1j}$ |
+| $\vdots$ | $\vdots$     | $\vdots$ | $\vdots$      | $\vdots$ |
+| $r$      | $X_{r1}$     | $\cdots$ | $X_{rs}$      | $X_{r\cdot}$ |
+| **Sum**  | $X_{\cdot1}$ | $\cdots$ | $X_{\cdot s}$ | $n$ |
 
+We model vector $X$ with multinomial distribution:
 
+$$(X_1, \dots X_n)^T \sim \mathcal{M}(n, p_{11}, \dots, p_{rs}),$$
+
+where $\sum_{ij} p_{ij} = 1$. Joint density is
+
+$$ f_n(x^{(n)}, p) = P_p(X_{ij}=x_{ij}) = \frac{n!}{\prod_{i,j=1}^{r,s} x_{ij}!} \prod_{i,j=1}^{r,s} (p_{ij})^{x_{ij}}, $$
+
+where $x_{ij} = \{0, \cdots, n\}$ and $\sum_{i,j=1}^{r,s} x_{ij} = n$. Maximum-likelihood estimator is
+
+$$\hat{p}_{ij} = \frac{X_{ij}}{n}$$
+
+(in analogy to binomial distribution) and
+
+$$f_n(X^{(n)}, \hat{p}) = \frac{n!}{\prod_{i,j=1}^{r,s} X_{ij}!} \prod_{i,j=1}^{r,s} \Big(\frac{X_{ij}}{n}\Big)^{X_{ij}}$$
+
+Suppose we want to test independence between $A$ and $B$:
+
+$$ H\colon p_{ij} = p_i q_j \ \forall i,j \quad \text{vs} \quad K\colon p_{ij} \neq p_i q_j \text{ for some } i \neq j,$$
+
+where $p_i = p_{i \cdot} = \sum_{j=1}^{s}p_{ij}$ and $q_j = p_{\cdot, j} = \sum_{i=1}^{r}p_{ij}$. Here $d = rs-1$, $c = r + s - 2$ and $d-c = (r-1)(s-1)$. If null hypothesis is true, then 
+
+$$f_n(X^{(n)}, p, q) = \frac{n!}{\prod_{i,j=1}^{r,s} X_{ij}!} \prod_{i,j=1}^{r,s} (p_i q _j)^{X_{ij}} = \frac{n!}{\prod_{i,j=1}^{r,s} X_{ij}!} \prod_{i}^{r} p_i^{X_{i \cdot}} \prod_{j=1}^{s} q_j ^ {X_{\cdot j}}.  $$
+
+Maximum-likelihood estimators are
+
+$$\hat{p}_i = \frac{X_{i \cdot}}{n} \quad \text{and} \quad \hat{q}_j = \frac{X_{\cdot j}}{n}, $$
+
+and likelihood function is
+
+$$f_n(X^{(n)}, \hat{p}, \hat{q}) = \frac{n!}{\prod_{i,j=1}^{r,s} X_{ij}!} \prod_{i,j=1}^{r,s} \Big( \frac{X_{i \cdot} X_{\cdot j}}{n^2} \Big)^{X_{ij}}. $$
+
+We get
+
+$$T_n = -2 \log \lambda(X^{(n)}) = 2 \sum_{i=1}^r  \sum_{j=1}^s X_{ij} \log \Big( \frac{nX_{ij}}{ X_{i \cdot} X_{\cdot j} } \Big)$$
+
+and 
+
+$$\varphi_n(X^{(n)}) =
+   	\left \{
+   	\begin{array}{cl}
+   	1, & T_n > \mathcal{X}_{(r-1)(s-1), 1-\alpha}^2, \\
+   	0, & \text{otherwise},
+   	\end{array}
+   	\right.$$
+   	
+which is called **chi-square independence test**. Using Taylor expansion with Law of Large Number we can get asymptotic equivalent
+
+$$\tilde{T}_n = \sum_{i=1}^{r} \sum_{j=1}^s \frac{\Big(X_{ij} -\frac{X_{i \cdot} X_{\cdot j}}{n}\Big)^2}{\frac{X_{i \cdot} X_{\cdot j}}{n}}.$$
+
+Usually,
+
+$$V_n = \sqrt{\frac{\tilde{T}_n}{n (\min(r, s) - 1)}}  $$
+
+is used as dependency measure between $A$ and $B$, because under both null hypothesis and alternative convergence takes place
+
+$$V_n^2  \xrightarrow{\mathbb{P}} \frac{1}{\min(r, s) - 1}\sum_{i=1}^{r} \sum_{j=1}^s \frac{(p_{ij} - p_{i \cdot}p_{\cdot j} )^2}{p_{i \cdot}p_{\cdot j}}$$

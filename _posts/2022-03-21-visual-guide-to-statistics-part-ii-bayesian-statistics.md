@@ -1531,11 +1531,11 @@ by Lebesgue Dominated Convergence Theorem [^LDCT] we have
 
 $$r_{\pi_{m}}=R(\pi_{m}, g_{\nu, m})=\int_{\mathbb{R}}R(\mu, g_{\nu, m})\pi_{m}(d\mu) \longrightarrow \frac{\sigma^2}{n}.$$
 
-Since estimator $g^*(x)=\overline{x}_n$ satisfies the equality
+Since for estimator $g^*(x)=\overline{x}_n$ the equality
 
 $$R(\mu, g^*)=\mathbb{E}[(\overline{X}_n-\mu)^2]=\frac{\sigma^2}{n},$$
 
-$g^*(x)$ is minimax and $\pi_{m}$ is sequence of least favorable priors.
+holds, $g^*(x)$ is minimax and $\pi_{m}$ is sequence of least favorable priors.
 
    
 [^LDCT]: Suppose there is measurable space $X$ with measure $\mu$. Also let $\lbrace f_n \rbrace_{n=1}^\infty$ and $f$ be measurable functions on $X$ and $f_n(x) \rightarrow f(x)$ almost everywhere. Then if there exists an integrable function $g$ defined on the same space such that
