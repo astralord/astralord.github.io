@@ -1044,7 +1044,7 @@ function update_rho_n() {
     rho_dots[rho_dots.length - 1]
              .transition()
              .duration(avg_dur)
-             .attr("cx", function (d) { return xRho(sqrt_n * (rho_n - rho)); } )
+             .attr("cx", function (d) { return xRho(sqrt_n * (rho_n - rho)); } );
      updateText();
 }
 
