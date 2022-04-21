@@ -1491,6 +1491,7 @@ $$\operatorname{Var}[g(X)] = \vartheta^2\frac{1}{n(n+2)} < \frac{\vartheta^2}{n}
 
 However, the Cramér-Rao lower bound is $\frac{\vartheta^2}{n}$. This shows importance of regularity conditions for Cramér-Rao theorem. Here, invariance of $M_f$ is not satisified and Cramér-Rao inequality doesn't hold.
 
+---
 
 [^CR]: Let's rewrite these equations in equivalent forms:
 
