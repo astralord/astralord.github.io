@@ -985,7 +985,6 @@ var sqxx_text = svg
   .attr("y", 45)
   .attr("x", fig_width + 65)
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
   .attr("font-size", 12)
   .style("fill", "#EDA137");
   
@@ -995,7 +994,6 @@ var sqyy_text = svg
   .attr("y", 70)
   .attr("x", fig_width + 65)
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
   .attr("font-size", 12)
   .style("fill", "#EDA137");
   
@@ -1005,7 +1003,6 @@ var sqxy_text = svg
   .attr("y", 95)
   .attr("x", fig_width + 65)
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
   .attr("font-size", 12)
   .style("fill", "#EDA137");
   
@@ -1015,7 +1012,6 @@ var rho_text = svg
   .attr("y", 120)
   .attr("x", fig_width + 60)
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
   .attr("font-size", 12)
   .style("fill", "#EDA137");
   
