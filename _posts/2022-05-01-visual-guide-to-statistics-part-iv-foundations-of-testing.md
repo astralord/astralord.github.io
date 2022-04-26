@@ -144,7 +144,7 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
   background-color: #696969;
 }
 
-#sample-button-x {
+#sample-button-brt {
   top: 15px;
   left: 15px;
   background: #65AD69;
@@ -160,7 +160,27 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
   font-size: 11px;
 }
 
-#sample-button-x:hover {
+#sample-button-brt:hover {
+  background-color: #696969;
+}
+
+#add-button {
+  top: 15px;
+  left: 15px;
+  background: #348ABD;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#add-button:hover {
   background-color: #696969;
 }
 
@@ -181,6 +201,46 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
 }
 
 #reset-button:hover {
+  background-color: #696969;
+}
+
+#reset-button-2 {
+  top: 15px;
+  left: 15px;
+  background: #E86456;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#reset-button-2:hover {
+  background-color: #696969;
+}
+
+#delete-button {
+  top: 15px;
+  left: 15px;
+  background: #EDA137;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 1px;
+  width: 60px;
+  height: 25px;
+  font-family: Arvo;
+  font-size: 11px;
+}
+
+#delete-button:hover {
   background-color: #696969;
 }
 
@@ -828,22 +888,30 @@ function randn_bm() {
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
-function gauss_data(mu, sigma) {
-  var data = [{x: -4, y: 0}];
-  for (var i = -4; i < 4; i += 0.01) {
+function gauss_data(mu, sigma, min, max) {
+  var data = [{x: min, y: 0}];
+  for (var i = min; i < max; i += 0.01) {
       data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) });
   }
-  data.push({x: 4, y: 0});
+  data.push({x: max, y: 0});
   return data;
 }
 
-function quantile_data() {
-  var data = [{x: 0, y: 0}];
-  for (var i = 0; i < 3.5; i += 0.01) {
-      data.push({x: i, y: 1 - Phi(i) });
+function quantile_data(u_q) {
+  var data0 = [{x: 0, y: 0}];
+  for (var i = 0; i < u_q; i += 0.01) {
+      data0.push({x: i, y: 1 - Phi(i) });
   }
-  data.push({x: 3.5, y: 0});
-  return data;
+  var q = 1 - Phi(u_q);
+  data0.push({x: u_q, y: q});
+  data0.push({x: u_q, y: 0});
+  
+  var data1 = [{x: u_q, y: 0}];
+  for (var i = u_q; i < 3.5; i += 0.01) {
+      data1.push({x: i, y: 1 - Phi(i) });
+  }
+  data1.push({x: 3.5, y: 0});
+  return [data0, data1];
 }
 
     
@@ -994,7 +1062,7 @@ yAxisRight.selectAll(".tick text")
     
     
     
-var mu0_data = gauss_data(mu0, sigma);
+var mu0_data = gauss_data(mu0, sigma, -4, 4);
 
 var mu0_curve = svg
   .append('g')
@@ -1012,7 +1080,7 @@ var mu0_curve = svg
           .y(function(d) { return y(d.y); })
    );
    
-var mu1_data = gauss_data(mu1, sigma);
+var mu1_data = gauss_data(mu1, sigma, -4, 4);
 
 var mu1_curve = svg
   .append('g')
@@ -1030,11 +1098,11 @@ var mu1_curve = svg
           .y(function(d) { return y(d.y); })
    );
 
-var q_data = quantile_data();
-var quantile_curve = svg
+var q_data = quantile_data(u_q);
+var quantile_curve0 = svg
   .append('g')
   .append("path")
-      .datum(q_data)
+      .datum(q_data[0])
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".8")
@@ -1046,7 +1114,45 @@ var quantile_curve = svg
           .x(function(d) { return xRight(d.x); })
           .y(function(d) { return yRight(d.y); })
    );
-
+   
+var quantile_curve1 = svg
+  .append('g')
+  .append("path")
+      .datum(q_data[1])
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".2")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d.x); })
+          .y(function(d) { return yRight(d.y); })
+   );
+  
+function updateQuantileCurve() {
+  q_data = quantile_data(u_q);
+  quantile_curve0
+      .datum(q_data[0])
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d.x); })
+          .y(function(d) { return yRight(d.y); })
+      );
+  quantile_curve1
+      .datum(q_data[1])
+      .transition()
+      .duration(0)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d.x); })
+          .y(function(d) { return yRight(d.y); })
+      );
+}   
+   
 function updatePower() {
   var rc = 1000;
   if (power > 0.999) {
@@ -1075,6 +1181,7 @@ function dragged_u(d) {
     .duration(500)
     .text('Significance level: ' + Math.round(rc * alpha) / rc);
   updatePower();
+  updateQuantileCurve();
 }
 
 var u_dot = svg.append('g')
@@ -1196,8 +1303,8 @@ var phi_dot = svg.append('g')
      .attr("stroke-width", 2);
      
 function updateCurves(delay) {
-    mu0_data = gauss_data(mu0, sigma);
-    mu1_data = gauss_data(mu1, sigma);
+    mu0_data = gauss_data(mu0, sigma, -4);
+    mu1_data = gauss_data(mu1, sigma, 4);
     
     mu0_curve
       .datum(mu0_data)
@@ -1887,8 +1994,186 @@ $$\lim_{n \rightarrow \infty} \beta_{\varphi_n}(\vartheta) = 0 \quad \forall \va
 
 In our example $\varphi_{m,n}^*(x)$ is consistent and has asymptotic significance level $\alpha$.
 
+### Likelihood ratio
 
-<button id="sample-button-x">Sample</button>
+The common principle of building tests for 
+
+$$H\colon\vartheta \in \Theta_H \quad \text{vs} \quad K\colon\vartheta \in \Theta_K $$
+
+is **likelihood ratio method**. Let $f_n(x^{(n)},\vartheta)$ be density of $P_\vartheta^n$. Then 
+
+$$\lambda(x^{(n)})=\frac{\sup_{\vartheta \in \Theta_H}f_n(x^{(n)},\vartheta)}{\sup_{\vartheta \in \Theta}f_n(x^{(n)},\vartheta)}$$
+
+is **likelihood ratio** and
+
+$$\varphi_n(x^{(n)})=1_{\lbrace \lambda(x^{(n)})<c \rbrace }$$
+
+is **likelihood ratio test**. It is common to choose $c$, such that
+
+$$\sup_{\vartheta \in \Theta_H} P_\vartheta(\lambda(X^{(n)})<c) \leq \alpha.$$
+
+Distribution $\lambda(X^{(n)})$ nevertheless can be estimated only asymptotically.
+
+Before we continue further, we will formulate some conditions. Let $\Theta \subset \mathbb{R}^d$ and there exist $\Delta \subset \mathbb{R}^c$ and twice continuously differentiable function $h:\Delta \rightarrow \Theta$, such that $\Theta_H = h(\Delta)$ and Jacobian of $h$ is matrix of full rank.
+
+For example, let $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu_1, \sigma^2)$ and $Y_1, \dots, Y_n$ i.i.d. $\sim \mathcal{N}(\mu_2, \sigma^2)$ be two independent samples. Suppose we want to test the equivalency of means:
+
+$$H\colon \mu_1 = \mu_2 \quad \text{vs} \quad K\colon \mu_1 \neq \mu_2.$$
+
+Then $\Theta \in \mathbb{R}^2 \times \mathbb{R}^+$, $\Delta = \mathbb{R} \times \mathbb{R}^+$ and $h(\mu, \sigma^2) = (\mu, \mu, \sigma^2)$. Jacobian matrix is
+
+$$J = \begin{pmatrix}
+	1 & 0 \\
+	1 & 0 \\
+	0 & 1
+	\end{pmatrix}, $$
+
+matrix of full rank.
+
+Let 
+
+$$\hat{\eta}_n=\arg\max_{\eta \in \Delta}f_n(X^{(n)},h(\eta)) \quad \text{and} \quad \hat{\theta}_n=\arg\max_{\vartheta \in \Theta}f_n(X^{(n)},\vartheta)$$
+
+be maximum-likelihood estimators for families $\mathcal{P}_h = \lbrace P_{h(\eta)}\ |\ \eta \in \Delta\rbrace $ and $\mathcal{P}_\vartheta = \lbrace P_\vartheta\ |\ \vartheta \in \Theta \rbrace$ respectively. Also let conditions from [theorem of asymptotic efficiency for maximum-likelihood estimators](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) for both families be satisfied. Then
+
+$$ T_n=-2\log \lambda(X^{(n)})=2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, h(\hat{\eta}_n))) \xrightarrow[]{\mathcal{L}} \chi_{d-c}^2,$$
+
+if $\vartheta \in \Theta_H$.
+
+<details>
+<summary>Proof</summary>
+As before we use notation
+
+$$\ell(x, \vartheta) = \log f(x, \vartheta).$$
+
+We start with
+
+$$\begin{aligned}
+	    T_n^{(1)} & = 2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, \vartheta)) \\
+	    & = 2\sum_{i=1}^{n}\Big(\ell(X_i, \hat{\theta}_n) - \ell(X_i, \vartheta)\Big) \\
+	    & = 2(\hat{\theta}_n - \vartheta)^T \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta) +(\hat{\theta}_n - \vartheta)^T \sum_{i=1}^{n} \ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta)   \\
+	    & = 2 (\hat{\theta}_n - \vartheta)^T \Big( \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta) + \sum_{i=1}^{n} \ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta) \Big) - (\hat{\theta}_n - \vartheta)^T\sum_{i=1}^{n}\ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta)
+	\end{aligned}$$
+	
+for some $\widetilde{\theta}_n \in [\hat{\theta}_n, \vartheta]$. Using the notations from [Part III](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) we rewrite the first term of equation above:
+
+$$\begin{aligned}
+	 2n(\hat{\theta}_n - \vartheta)^T& \underbrace{(\dot{L}_n(\vartheta) - \ddot{L}_n(\tilde{\vartheta})(\hat{\theta}_n - \vartheta))}. \\
+	 & \qquad \qquad\ \color{\Salmon}{ = 0 \text{ (by Mean Theorem)}}
+	 \end{aligned}$$
+	 
+Also
+
+$$T_n^{(1)} = -\sqrt{n}(\hat{\theta}_n - \vartheta)^T \ddot{L}_n(\widetilde{\vartheta}_n) \sqrt{n}(\hat{\theta}_n - \vartheta),
+$$
+
+where
+
+$$
+\begin{aligned}
+	 \sqrt{n}(\hat{\theta}_n - \vartheta)^T & \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, I^{-1}(f(\cdot, \vartheta))), \\
+	 \ddot{L}_n(\widetilde{\vartheta}_n)& \xrightarrow[]{\mathbb{P}} -I(f(\cdot, \vartheta)), \\
+	 \sqrt{n}(\hat{\theta}_n - \vartheta) &\xrightarrow[]{\mathcal{L}} \mathcal{N}(0, I^{-1}(f(\cdot, \vartheta))).
+	 \end{aligned}$$
+	
+We know that for $X \sim \mathcal{N}_d(0, \Sigma)$ with $\Sigma > 0$ we have
+
+$$X^T \Sigma X ~ \sim \mathcal{X}_d^2.$$
+
+Therefore,
+
+$$T_n^{(1)} \xrightarrow[]{\mathcal{L}} A \sim \mathcal{X}_d^2.$$
+
+In the same way,
+$$ T_n^{(2)} = 2 (\log f_n(X^{(n)}, h(\hat{\eta}_n) ) - \log f_n(X^{(n)},h(\eta))) \xrightarrow[]{\mathcal{L}} B \sim \mathcal{X}_c^2. $$
+	 
+If $H$ is true, then $\vartheta = h(\eta)$ and
+
+$$T_n = T_n^{(1)} - T_n^{(2)} \xrightarrow[]{\mathcal{L}} A-B \sim \mathcal{X}_{d-c}^2,$$
+
+which follows from independence of $A-B$ and $B$.
+	 
+</details>
+
+This statement is called **Wilk's theorem** and it shows that
+
+$$\varphi_n (X^{(n)}) =
+		\left \{
+		\begin{array}{cl}
+		1, & -2\log\lambda(X^{(n)}) > \mathcal{X}_{d-c, 1-\alpha}^2, \\
+		0, & \text{otherwise}
+		\end{array}
+		\right.$$		
+		
+is a test with asymptotic level $\alpha$. Also, sequence $(\varphi_n)$ is consistent, because 
+
+$$\begin{aligned}
+		-\frac{2}{n} \log (\lambda(X^{(n)})) & = \frac{2}{n} \sum_{i=1}^{n} \Big( \ell(X_i, \hat{\theta}_n) - \ell(X_i, h(\hat{\eta}_n)) \Big) \\
+		& \xrightarrow{\mathcal{L}} 2 \mathbb{E}_\vartheta[\ell(X,\vartheta) - \ell(X, h(\eta))] \\
+		& = 2 KL(\vartheta | h(\eta)) > 0,
+		\end{aligned}$$
+		
+if $\vartheta \neq h(\eta)$. Hence for $\vartheta \in \Theta_K$
+
+$$-2\log(\lambda(X^{(n)}))\xrightarrow{\mathcal{L}} \infty.$$
+
+### Likelihood-ratio tests
+
+Take an example: let $X_{ij} \sim \mathcal{N}(\mu_i, \sigma_i^2)$, $i = 1, \dots, r$ and $j = 1, \dots, n_i$, where $n_i \rightarrow \infty$ with the same speed. We test equivalence of variances:
+
+$$ H\colon \sigma_1^2 = \dots = \sigma_r^2 \quad \text{vs} \quad K \colon \sigma_i^2 \neq \sigma_j^2 \text{ for some } i \neq j. $$
+	
+Here $\Theta = \mathbb{R}^r \times (\mathbb{R}^+)^r$, $\Delta = \mathbb{R}^r \times \mathbb{R}^+$ and
+
+$$h((x_1, \dots, x_r, y)^T) = (x_1, \dots, x_r, y, \dots, y)^T.$$
+
+Maximum-likelihood estimator is 
+
+$$\hat{\theta}_n = (\overline{X}_{1 \cdot}, \dots, \overline{X}_{r \cdot}, \hat{s}_1^2, \dots, \hat{s}_r^2)$$
+
+with 
+
+$$\overline{X}_{i \cdot} = \frac{1}{n_i} \sum_{j=1}^{n_i}X_{ij} 
+\quad \text{and} \quad
+\hat{s}_i^2 = \frac{1}{n_i}\sum_{j=1}^{n_i}(X_{ij} -\overline{X}_{i \cdot})^2. $$ 
+
+Then 
+
+$$f_n(X^{(n)}, \hat{\vartheta}_n) = \prod_{i=1}^{r} (2 \pi e \hat{s}_i^2)^{-\frac{n_i}{2}}.$$
+
+Under null hypothesis maximum-likelihood estimator maximizes
+
+$$f_n(X^{(n)}, \hat{\eta}_n) = \prod_{i=1}^{r} (2 \pi \sigma^2)^{-\frac{n_i}{2}} \exp \Big( -\frac{1}{2\sigma^2} \sum_{j=1}^{n_i} (X_{ij} - \overline{X}_{i \cdot})^2 \Big ). $$
+
+Setting $n = \sum_{i=1}^{r}n_i$, we get
+
+$$ \hat{\sigma}^2 = \frac{1}{n}\sum_{i=1}^{r} \sum_{j=1}^{n_i} (X_{ij}-X_{i \cdot})^2 = \sum_{i=1}^r \frac{n_i}{n}\hat{s}_i^2. $$
+
+Then
+
+$$f_n(X^{(n)}, \hat{\eta}_n) = \prod_{i=1}^{r}(2\pi e\hat{\sigma}^2)^{-\frac{n_i}{2}} = (2\pi e \hat{\sigma}^2)^{-\frac{n}{2}}$$
+
+and test statistic becomes
+
+$$T_n = -2\log \lambda(X^{(n)}) = n \log \hat{\sigma}^2 - \sum_{i=1}^{r} n_i \log \hat{s}_i^2.$$
+
+The test 
+
+$$
+\varphi_n(X^{(n)}) =
+	\left \{
+	\begin{array}{cl}
+	1, & T_n > \mathcal{X}_{r-1, 1-\alpha}^2, \\
+	0, & \text{otherwise}. 
+	\end{array}
+	\right.
+$$
+	
+is called **the Bartlett test**.
+
+
+<button id="sample-button-brt">Sample</button> <button id="add-button">Add</button> <button id="delete-button">Delete</button> <button id="reset-button">Reset</button>
+
 
 <div id="asymptotic_test"></div> 
 
@@ -1899,24 +2184,19 @@ d3.select("#asymptotic_test")
 
 function asymptotic_test() {
 
-var mu0 = -1,
-    mu1 = 1,
-    sigma = 1,
-    tau = 2,
+var mus = [],
+    sigmas = [],
     alpha = 0.05,
-    n = 10,
-    m = 5;
+    n = 25,
+    curve_id = -1;
 
-var color0 = "#01A66F",
-    color1 = "#72CC50";
-
-var u_q = PhiInv(1 - alpha);
-var power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
+var colors = ["#65AD69", "#EDA137", "#E86456", "#B19CD9", "#A4D8D8"];
+var booked_colors = [];
 
 var margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 750 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom,
-    fig_height = 200 - margin.top - margin.bottom,
+    fig_height = 250 - margin.top - margin.bottom,
     fig_width = 350;
     
 var svg = d3.select("div#asymptotic_test")
@@ -1928,31 +2208,19 @@ var svg = d3.select("div#asymptotic_test")
           "translate(" + margin.left + "," + margin.top + ")");
 
 var x = d3.scaleLinear()
-          .domain([-4, 4])
+          .domain([-10, 10])
           .range([0, fig_width]);
             
-var xAxisTop = svg.append("g")
+var xAxis = svg.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(x));
   
-xAxisTop.selectAll(".tick text")
-   .attr("font-family", "Arvo");
-
-   
-var xBtm = d3.scaleLinear()
-          .domain([-4, 4])
-          .range([0, fig_width]);
-            
-var xAxisBtm = svg.append("g")
-   .attr("transform", "translate(0," + 1.6 * fig_height + ")")
-   .call(d3.axisBottom(xBtm));
-  
-xAxisBtm.selectAll(".tick text")
+xAxis.selectAll(".tick text")
    .attr("font-family", "Arvo");
 
 
 var xRight = d3.scaleLinear()
-          .domain([0, 3.5])
+          .domain([0, 20])
           .range([1.2 * fig_width, 1.9 * fig_width]);
           
 var xAxisRight = svg.append("g")
@@ -1962,34 +2230,21 @@ var xAxisRight = svg.append("g")
 xAxisRight.selectAll(".tick text")
    .attr("font-family", "Arvo");
    
-   
-   
+
 var y = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([0, 1]);
             
-var yAxisTop = svg.append("g")
+var yAxis = svg.append("g")
     .call(d3.axisLeft(y).ticks(4));
   
-yAxisTop.selectAll(".tick text")
+yAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-
-
-var yBtm = d3.scaleLinear()
-          .range([1.6 * fig_height, 1.3 * fig_height])
-          .domain([0, 1]);
-            
-var yAxisBtm = svg.append("g")
-    .call(d3.axisLeft(yBtm).ticks(1));
-  
-yAxisBtm.selectAll(".tick text")
-    .attr("font-family", "Arvo");
-            
 
 var yRight = d3.scaleLinear()
           .range([2 * fig_height, 0])
-          .domain([0, 0.5]);
+          .domain([0, 1]);
             
 var yAxisRight = svg.append("g")
    .attr("transform", "translate(" + 1.2 * fig_width + ",0)")
@@ -1998,228 +2253,85 @@ var yAxisRight = svg.append("g")
 yAxisRight.selectAll(".tick text")
     .attr("font-family", "Arvo");
     
+
+
+var gauss_curves = [];
+
+function addCurve(mu, sigma) {
+    const k = mus.length;
+    mus.push(mu);
+    sigmas.push(sigma);
+    if (curve_id >= 0) {
+        gauss_curves[curve_id]
+            .transition()
+            .attr("opacity", ".2");
+    }
+    curve_id = k;               
+    var data = gauss_data(mus[k], sigmas[k], -10, 10);
     
+    var color = "#000"
+    for (var i = 0; i < colors.length; i += 1) {
+        if (booked_colors.indexOf(colors[i]) < 0) {
+             color = colors[i];
+             booked_colors.push(color);
+             break;
+        }
+    }
     
-var mu0_data = gauss_data(mu0, sigma);
-
-var mu0_curve = svg
-  .append('g')
-  .append("path")
-      .datum(mu0_data)
-      .attr("fill", "#01A66F")
-      .attr("border", 0)
-      .attr("opacity", ".8")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-   );
-   
-var mu1_data = gauss_data(mu1, sigma);
-
-var mu1_curve = svg
-  .append('g')
-  .append("path")
-      .datum(mu1_data)
-      .attr("fill", "#72CC50")
-      .attr("border", 0)
-      .attr("opacity", ".8")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-   );
-
-var q_data = quantile_data();
-var quantile_curve = svg
-  .append('g')
-  .append("path")
-      .datum(q_data)
-      .attr("fill", "#348ABD")
-      .attr("border", 0)
-      .attr("opacity", ".8")
-      .attr("stroke", "#000")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return xRight(d.x); })
-          .y(function(d) { return yRight(d.y); })
-   );
-
-function updatePower() {
-  var rc = 1000;
-  if (power > 0.999) {
-      rc = 10000;
-  }
-  power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
-  power_text
-    .transition()
-    .duration(500)
-    .text('Power: ' + Math.round(rc * power) / rc);
+    gauss_curves.push(svg
+                       .append('g')
+                       .append("path")
+                       .datum(data)
+                       .attr("fill", color) 
+                       .attr("border", 0)
+                       .attr("opacity", (k == curve_id) ? ".8" : ".2")
+                       .attr("stroke", "#000")
+                       .attr("stroke-width", 1)
+                       .attr("stroke-linejoin", "round")
+                       .attr("d",  d3.line()
+                         .curve(d3.curveBasis)
+                         .x(function(d) { return x(d.x); })
+                         .y(function(d) { return y(d.y); })
+                      )
+                      .on('mouseover', function() {
+                          d3.select(this)
+                            .transition()
+                            .attr("opacity", ".8");
+	                   })
+	                   .on('mouseout', function() {
+	                       d3.select(this)
+	                         .transition()
+	                         .attr("opacity", (curve_id == k) ? ".8" : ".2");
+	                       })
+	                   .on('click', function() {
+	                       gauss_curves[curve_id]
+	                         .transition()
+	                         .attr("opacity", ".2");
+	                       curve_id = k;
+	                       d3.select(this)
+	                         .transition()
+	                         .attr("opacity", ".8");
+	                       muHandler.attr("cx", mu_x(mus[k]));
+	                       sigmaHandler.attr("cx", sigma_x(sigmas[k]));
+	                   })
+                    );
 }
 
-function dragged_u(d) {
-  var u_x = Math.min(xRight(3.5), Math.max(d3.event.x, xRight(0)));
-  u_q = xRight.invert(u_x);
-  alpha = 1 - Phi(u_q);
-  var u_y = yRight(alpha);
-  d3.select(this).attr("cx", d.x = u_x).attr("cy", d.y = u_y);
-  updatePhiLine();
-  var rc = 1000;
-  if (alpha < 0.001) {
-    rc = 10000;
-  }
-  alpha_text
-    .transition()
-    .duration(500)
-    .text('Significance level: ' + Math.round(rc * alpha) / rc);
-  updatePower();
+
+function initData() {
+    addCurve(-1, 1);
+    addCurve(1, 1);
 }
 
-var u_dot = svg.append('g')
-   .selectAll("dot")
-   .data([{'x': xRight(u_q), 'y': yRight(alpha)}])
-   .enter()
-   .append("circle")
-     .attr("cx", function (d) { return d.x; } )
-     .attr("cy", function (d) { return d.y; } )
-     .attr("r", 4)
-     .style("fill", "#fff")
-     .attr("stroke", "#348ABD")
-     .attr("stroke-width", 2)
-     .on("mouseover", function(d) { d3.select(this)
-                                      .style("cursor", "pointer");})
-     .on("mousemove", function (d) {})
-     .call(d3.drag()
-       .on("drag", dragged_u)
-     );
-     
-function updatePhiLine() {
-  reset();
-  c = u_q;
-  var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
-  var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
-  var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
-      
-  phi_dot
-      .transition()
-      .duration(0)
-      .attr("cx", xBtm(c) );
-       
-  phi_curve_0
-      .datum(phi_data_0)
-      .transition()
-      .duration(0)
-      .attr("d",  d3.line()
-          .x(function(d) { return xBtm(d['x']); })
-          .y(function(d) { return yBtm(d['y']); })
-      );
-      
-  phi_curve_1
-      .datum(phi_data_1)
-      .transition()
-      .duration(0)
-      .attr("d",  d3.line()
-          .x(function(d) { return xBtm(d['x']); })
-          .y(function(d) { return yBtm(d['y']); })
-      );
-      
-  phi_curve_dash
-      .datum(phi_data_dash)
-      .transition()
-      .duration(0)
-      .attr("d",  d3.line()
-          .x(function(d) { return xBtm(d['x']); })
-          .y(function(d) { return yBtm(d['y']); })
-      );
-}
+initData();
 
-var c = u_q;
-var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
-var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
-var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
-
-var phi_curve_0 = svg
-  .append('g')
-  .append("path")
-      .datum(phi_data_0)
-      .attr("border", 1)
-      .attr("opacity", "1")
-      .attr("stroke", "#348ABD")
-      .attr("stroke-width", 2.5)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .x(function(d) { return xBtm(d['x']); })
-          .y(function(d) { return yBtm(d['y']); })
-   );
-   
-var phi_curve_1 = svg
-  .append('g')
-  .append("path")
-      .datum(phi_data_1)
-      .attr("border", 1)
-      .attr("opacity", "1")
-      .attr("stroke", "#348ABD")
-      .attr("stroke-width", 2.5)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .x(function(d) { return xBtm(d['x']); })
-          .y(function(d) { return yBtm(d['y']); })
-   );
-   
-var phi_curve_dash = svg
-  .append('g')
-  .append("path")
-      .datum(phi_data_dash)
-      .attr("border", 1)
-      .attr("opacity", "1")
-      .attr("stroke", "#348ABD")
-      .attr("stroke-width", 1)
-      .style("stroke-dasharray", ("3, 3"))
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .x(function(d) { return xBtm(d['x']); })
-          .y(function(d) { return yBtm(d['y']); })
-   );
-
-var phi_dot = svg.append('g')
-   .selectAll("dot")
-   .data([{'x': xBtm(c), 'y': yBtm(1)}])
-   .enter()
-   .append("circle")
-     .attr("cx", function (d) { return d.x; } )
-     .attr("cy", function (d) { return d.y; } )
-     .attr("r", 4)
-     .style("fill", "#fff")
-     .attr("stroke", "#348ABD")
-     .attr("stroke-width", 2);
-     
-function updateCurves(delay) {
-    mu0_data = gauss_data(mu0, sigma);
-    mu1_data = gauss_data(mu1, sigma);
-    
-    mu0_curve
-      .datum(mu0_data)
+function updateCurve(mu, sigma) {
+    mus[curve_id] = mu;
+    sigmas[curve_id] = sigma;
+    var data = gauss_data(mus[curve_id], sigmas[curve_id], -10, 10);
+    gauss_curves[curve_id]
+      .datum(data)
       .transition()
-      .delay(delay) 
-      .duration(0)
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-        .x(function(d) { return x(d.x); })
-        .y(function(d) { return y(d.y); })
-      );
-      
-    mu1_curve
-      .datum(mu1_data)
-      .transition()
-      .delay(delay) 
       .duration(0)
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
@@ -2228,23 +2340,29 @@ function updateCurves(delay) {
       );
 }
 
-function updateSigma(x) {
-    reset();
-    sigma = x;
-    updatePower();
-    updateCurves(0); 
-    updatePhiLine();
+function updateMu(mu) {
+    updateCurve(mu, sigmas[curve_id]);
+}
+
+function updateSigma(sigma) {
+    updateCurve(mus[curve_id], sigma);
 }
 
 function trivialRound(x) { return x; }
 
+var mu_x = d3.scaleLinear()
+    .domain([-5, 5])
+    .range([0, width * 0.4])
+    .clamp(true);
+    
 var sigma_x = d3.scaleLinear()
     .domain([0.4, 1.4])
     .range([0, width * 0.4])
     .clamp(true);
     
-createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "", "#A9A750", sigma, trivialRound);
+var muHandler = createSlider(svg, updateMu, mu_x, margin.left, 1.8 * fig_height, "", "#A9A750", mus[curve_id], trivialRound);
 
+var sigmaHandler = createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "", "#A9A750", sigmas[curve_id], trivialRound);
 
 d3.select("#asymptotic_test")
   .append("div")
@@ -2253,153 +2371,285 @@ d3.select("#asymptotic_test")
   .style("font-size", "17px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", margin.left + "px")
   .style("top", 2 * fig_height + 15 + "px");
   
 
+d3.csv("../assets/chi_sf.csv", function(error, data) {
+  if (error) throw error;
+  const quantiles = [3.84, 5.99, 7.81, 9.49];
+  
+  var chi_curve0 = svg
+    .append('g')
+    .append("path")
+      .datum(data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".8") 
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d["chi_x0_1"]); })
+          .y(function(d) { return yRight(d["chi_y0_1"]); })
+      );
+      
+  var chi_curve1 = svg
+    .append('g')
+    .append("path")
+      .datum(data)
+      .attr("fill", "#348ABD")
+      .attr("border", 0)
+      .attr("opacity", ".2")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d["chi_x1_1"]); })
+          .y(function(d) { return yRight(d["chi_y1_1"]); })
+      );
+      
+  var u_dot = svg.append('g')
+     .selectAll("dot")
+     .data([{'x': xRight(quantiles[0]), 'y': yRight(0.05)}])
+     .enter()
+     .append("circle")
+       .attr("cx", function (d) { return d.x; } )
+       .attr("cy", function (d) { return d.y; } )
+       .attr("r", 4)
+       .style("fill", "#fff")
+       .attr("stroke", "#348ABD")
+       .attr("stroke-width", 2);
+     
+  function updateChi(n) {
+    chi_curve0
+      .datum(data)
+      .transition()
+      .duration(1200)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d["chi_x0_" + n]); })
+          .y(function(d) { return yRight(d["chi_y0_" + n]); })
+      );
+      
+    chi_curve1
+      .datum(data)
+      .transition()
+      .duration(1200)
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return xRight(d["chi_x1_" + n]); })
+          .y(function(d) { return yRight(d["chi_y1_" + n]); })
+      );
+    
+    u_dot
+     .transition()
+     .duration(1200)
+       .attr("cx", function (d) { return xRight(quantiles[n-1]); } )
+       .attr("cy", function (d) { return yRight(0.05); } )
+  }
+  
 
-d3.select("#n-num").on("input", function() {
-    n = this.value;
-    updatePhiLine();
-    updatePower();
+  d3.select("#add-button").on("click", function() {
+    if (gauss_curves.length < colors.length) {
+        var mu = 10 * Math.random() - 5;
+        var sigma = 1;
+        addCurve(mu, sigma);
+        muHandler.attr("cx", mu_x(mus[curve_id]));
+        sigmaHandler.attr("cx", sigma_x(sigmas[curve_id]));
+        updateChi(gauss_curves.length - 1);
+    }
+  });
+  
+  d3.select("#delete-button").on("click", function() {
+    if (gauss_curves.length > 2) {
+        booked_color = gauss_curves[curve_id].attr("fill");
+        booked_color_id = booked_colors.indexOf(booked_color);
+        booked_colors.splice(booked_color_id, 1);
+        gauss_curves[curve_id].remove();
+       
+        mus.splice(curve_id, 1);
+        sigmas.splice(curve_id, 1);
+        gauss_curves.splice(curve_id, 1);
+        
+        curve_id = Math.max(0, curve_id - 1)
+        gauss_curves[curve_id]
+	         .transition()
+	         .attr("opacity", ".8");
+	         
+        muHandler.attr("cx", mu_x(mus[curve_id]));
+        sigmaHandler.attr("cx", sigma_x(sigmas[curve_id]));
+        updateChi(gauss_curves.length - 1);
+        
+        for (var i = 0; i < gauss_curves.length; i += 1) {
+          const k = i;
+          gauss_curves[i]
+                      .on('mouseover', function() {
+                          d3.select(this)
+                            .transition()
+                            .attr("opacity", ".8");
+	                   })
+	                   .on('mouseout', function() {
+	                       d3.select(this)
+	                         .transition()
+	                         .attr("opacity", (curve_id == k) ? ".8" : ".2");
+	                       })
+	                   .on('click', function() {
+	                       gauss_curves[curve_id]
+	                         .transition()
+	                         .attr("opacity", ".2");
+	                       curve_id = k;
+	                       d3.select(this)
+	                         .transition()
+	                         .attr("opacity", ".8");
+	                       muHandler.attr("cx", mu_x(mus[k]));
+	                       sigmaHandler.attr("cx", sigma_x(sigmas[k]));
+	                   })
+        }
+    }
+  });
+
 });
 
-var table_nums = [0, 0, 0, 0];
 
-function updateTableText() {
+var avg_dots = [], std_lines = [];
 
-  table_text_hh
-    .transition()
-    .duration(500)
-    .text(table_nums[0]);
-
-  table_text_hk
-    .transition()
-    .duration(500)
-    .text(table_nums[1]);
-
-  table_text_kh
-    .transition()
-    .duration(500)
-    .text(table_nums[2]);
-
-  table_text_kk
-    .transition()
-    .duration(500)
-    .text(table_nums[3]);
-}
-
-var avg_dots = [];
-function sampleTwoGauss() {
+function sample() {
+      avg_dots = [], std_lines = []
       var avg_dur = 1200;
-      var random_samples_x = [], random_samples_y = [];
+      var random_samples = [];
       var smpl_dots = [];
-      var avg_x = 0, avg_y = 0;
-      for (var i = 0; i < m; i += 1) {
-          random_samples_x.push(mu0 + sigma * randn_bm());
-          smpl_dots.push(svg.append('g')
-            .selectAll("dot")
-            .data([{x: random_samples_x[i], y: 1}])
-            .enter()
-            .append("circle")
-              .attr("cx", function (d) { return x(d.x); } )
-              .attr("cy", function (d) { return y(d.y); } )
-              .attr("r", 3)
-              .style("fill", color0)
-              .attr("stroke", "#000")
-              .attr("stroke-width", 1));
+      var avgs = [], stds = [];
+      var std_avg = 0;
+      for (var k = 0; k < gauss_curves.length; k += 1) {
+          random_samples.push([]);
+          smpl_dots.push([]);
+          var color = gauss_curves[k].attr("fill");
+          var avg = 0;
+          for (var i = 0; i < n; i += 1) {
+              random_samples[k].push(mus[k] + sigmas[k] * randn_bm());
+              smpl_dots[k].push(svg.append('g')
+                                .selectAll("dot")
+                                .data([{x: random_samples[k][i], y: 1}])
+                                .enter()
+                                .append("circle")
+                                .attr("cx", function (d) { return x(d.x); } )
+                                .attr("cy", function (d) { return y(d.y); } )
+                                .attr("r", 3)
+                                .style("fill", color)
+                                .attr("stroke", "#000")
+                                .attr("stroke-width", 1));
           
-          smpl_dots[i].transition()
-            .duration(avg_dur)
-            .attr("cx", function (d) { return x(random_samples_x[i]); } )
-            .attr("cy", function (d) { return y(0); } );
-      
-          avg_x += random_samples_x[i];
-      }
-      avg_x /= m; 
-      
-      var sx = 0;
-      for (var i = 0; i < m; i += 1) {
-          sx += (random_samples_x[i] - avg_x) ** 2;
-      }
-      sx /= (m - 1);
-      
-      for (var i = 0; i < n; i += 1) {
-          random_samples_y.push(mu1 + tau * randn_bm());
-          smpl_dots.push(svg.append('g')
-            .selectAll("dot")
-            .data([{x: random_samples_y[i], y: 1}])
-            .enter()
-            .append("circle")
-              .attr("cx", function (d) { return x(d.x); } )
-              .attr("cy", function (d) { return y(d.y); } )
-              .attr("r", 3)
-              .style("fill", color1)
-              .attr("stroke", "#000")
-              .attr("stroke-width", 1));
+              smpl_dots[k][i]
+                .transition()
+                .duration(avg_dur)
+                .attr("cx", function (d) { return x(random_samples[k][i]); } )
+                .attr("cy", function (d) { return y(0); } );
+              
+              avg += random_samples[k][i];
+          }
+          avg /= n;
+          avgs.push(avg);
+
+          for (var i = 0; i < n; i += 1) {
+              smpl_dots[k][i]
+	            .transition()
+	            .delay(avg_dur) 
+	            .duration(avg_dur)
+	            .attr("cx", function (d) { return x(avgs[k]); } )
+	            .attr("cy", function (d) { return y(0); } );
+	            
+	          if (i > 0) {
+	            smpl_dots[k][i].transition().delay(2 * avg_dur).remove();
+	          }
+	          else {
+	            avg_dots.push(smpl_dots[k][0]);
+	          }
+	      }
+	      
+          var std = 0;
+          for (var i = 0; i < n; i += 1) {
+              std += (random_samples[k][i] - avgs[k]) ** 2;
+          }
+          std /= n;
+          stds.push(std);
+          std_avg += std;
           
-          smpl_dots[i + m].transition()
-            .duration(avg_dur)
-            .attr("cx", function (d) { return x(random_samples_y[i]); } )
-            .attr("cy", function (d) { return y(0); } );
+          const xmin = Math.max(avg - 3 * std, -10);
+          const xmax = Math.min(avg + 3 * std, 10);
+          const ystd = -0.1 * (k + 2.5);
+          std_lines.push(svg.append('g')
+                            .append("path")
+                            .datum([{x: xmin, y: ystd},
+                                    {x: xmax, y: ystd}])
+                            .attr("stroke", color)
+                            .attr("stroke-width", 1)
+                            .attr("border", 1)
+                            .attr("opacity", "0")
+                            .attr("stroke-linejoin", "round")
+                            .attr("d",  d3.line()
+                                .x(function(d) { return x(d['x']); })
+                                .y(function(d) { return y(d['y']); })
+                            ));
+                            
+         std_lines[k].transition()
+                     .delay(3 * avg_dur)
+                     .attr("opacity", "1");
+	      
+	      avg_dots[k]
+	            .transition()
+	            .delay(2 * avg_dur) 
+	            .duration(avg_dur)
+	            .attr("cy", function (d) { return y(ystd); } )
+	      
+	      d3.selectAll('circle').raise();
+	      
+	   }
       
-          avg_y += random_samples_y[i];
+      std_avg /= gauss_curves.length;
+      svg.append('g')
+         .append("path")
+         .datum([{x: -3 * std_avg, y: -0.15},
+                 {x: 3 * std_avg, y: -0.15}])
+         .attr("stroke", "#000")
+         .attr("stroke-width", 1)
+         .attr("border", 1)
+         .style("stroke-dasharray", ("3, 3"))
+         .attr("opacity", "0")
+         .attr("stroke-linejoin", "round")
+         .attr("d",  d3.line()
+            .x(function(d) { return x(d['x']); })
+            .y(function(d) { return y(d['y']); })
+         )
+         .transition()
+         .delay(3 * avg_dur)
+         .attr("opacity", "1");
+      
+      var T_n = gauss_curves.length * Math.log(std_avg);
+      for (var i = 0; i < gauss_curves.length; i += 1) {
+        T_n -= Math.log(stds[i]);
       }
-      avg_y /= n;  
-      
-      
-      var sy = 0;
-      for (var i = 0; i < n; i += 1) {
-          sy += (random_samples_y[i] - avg_y) ** 2;
-      }
-      sy /= (n - 1);
-      
-      var t_stat = (avg_x - avg_y) / (sx / m + sy / n);
-      
-      for (var i = 0; i < m; i += 1) {
-          smpl_dots[i]
-            .transition()
-            .delay(avg_dur) 
-            .duration(avg_dur)
-            .attr("cx", function (d) { return x(avg_x); } )
-            .attr("cy", function (d) { return y(0); } );
-            
-          if (i > 0) {
-            smpl_dots[i].transition().delay(2 * avg_dur).remove();
-          }
-          else {
-            avg_dots.push(smpl_dots[0]);
-          }
-      }
-      
-      for (var i = m; i < m + n; i += 1) {
-          smpl_dots[i]
-            .transition()
-            .delay(avg_dur) 
-            .duration(avg_dur)
-            .attr("cx", function (d) { return x(avg_y); } )
-            .attr("cy", function (d) { return y(0); } );
-            
-          if (i > m) {
-            smpl_dots[i].transition().delay(2 * avg_dur).remove();
-          }
-          else {
-            avg_dots.push(smpl_dots[m]);
-          }
-      }
-      
-      for (var i = 0; i < 2; i += 1) {
-          avg_dots[i]
-            .transition()
-            .delay(2 * avg_dur) 
-            .duration(avg_dur)
-            .attr("cx", function (d) { return x(t_stat); } )
-            .attr("cy", function (d) { return y(0); } );
-      }
-      
+      T_n *= n;
+           
+      svg.append('g')
+        .selectAll("dot")
+        .data([{x: T_n, y: 0}])
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) { return xRight(d.x); } )
+        .attr("cy", function (d) { return yRight(d.y); } )
+        .attr("r", 3)
+        .style("fill", "#348ABD")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+        .attr("opacity", 0)
+         .transition()
+         .delay(3 * avg_dur)
+         .attr("opacity", "1");
+  
       if (avg > c) {
           smpl_dots[0]
             .transition()
@@ -2432,9 +2682,7 @@ function sampleTwoGauss() {
       updateTableText();
 }
 
-d3.select("#sample-button-x").on("click", function() {
-sampleTwoGauss()
-});
+d3.select("#sample-button-brt").on("click", function() { sample(); });
 
 function reset() {
   for (var i = 0; i < avg_dots.length; i += 1) {
@@ -2697,176 +2945,6 @@ asymptotic_test();
 *Fig. 3. Visualization of asymptotic test*
 
 
-### Likelihood ratio
-
-The common principle of building tests for 
-
-$$H\colon\vartheta \in \Theta_H \quad \text{vs} \quad K\colon\vartheta \in \Theta_K $$
-
-is **likelihood ratio method**. Let $f_n(x^{(n)},\vartheta)$ be density of $P_\vartheta^n$. Then 
-
-$$\lambda(x^{(n)})=\frac{\sup_{\vartheta \in \Theta_H}f_n(x^{(n)},\vartheta)}{\sup_{\vartheta \in \Theta}f_n(x^{(n)},\vartheta)}$$
-
-is **likelihood ratio** and
-
-$$\varphi_n(x^{(n)})=1_{\lbrace \lambda(x^{(n)})<c \rbrace }$$
-
-is **likelihood ratio test**. It is common to choose $c$, such that
-
-$$\sup_{\vartheta \in \Theta_H} P_\vartheta(\lambda(X^{(n)})<c) \leq \alpha.$$
-
-Distribution $\lambda(X^{(n)})$ nevertheless can be estimated only asymptotically.
-
-Before we continue further, we will formulate some conditions. Let $\Theta \subset \mathbb{R}^d$ and there exist $\Delta \subset \mathbb{R}^c$ and twice continuously differentiable function $h:\Delta \rightarrow \Theta$, such that $\Theta_H = h(\Delta)$ and Jacobian of $h$ is matrix of full rank.
-
-For example, let $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu_1, \sigma^2)$ and $Y_1, \dots, Y_n$ i.i.d. $\sim \mathcal{N}(\mu_2, \sigma^2)$ be two independent samples. Suppose we want to test the equivalency of means:
-
-$$H\colon \mu_1 = \mu_2 \quad \text{vs} \quad K\colon \mu_1 \neq \mu_2.$$
-
-Then $\Theta \in \mathbb{R}^2 \times \mathbb{R}^+$, $\Delta = \mathbb{R} \times \mathbb{R}^+$ and $h(\mu, \sigma^2) = (\mu, \mu, \sigma^2)$. Jacobian matrix is
-
-$$J = \begin{pmatrix}
-	1 & 0 \\
-	1 & 0 \\
-	0 & 1
-	\end{pmatrix}, $$
-
-matrix of full rank.
-
-Let 
-
-$$\hat{\eta}_n=\arg\max_{\eta \in \Delta}f_n(X^{(n)},h(\eta)) \quad \text{and} \quad \hat{\theta}_n=\arg\max_{\vartheta \in \Theta}f_n(X^{(n)},\vartheta)$$
-
-be maximum-likelihood estimators for families $\mathcal{P}_h = \lbrace P_{h(\eta)}\ |\ \eta \in \Delta\rbrace $ and $\mathcal{P}_\vartheta = \lbrace P_\vartheta\ |\ \vartheta \in \Theta \rbrace$ respectively. Also let conditions from [theorem of asymptotic efficiency for maximum-likelihood estimators](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) for both families be satisfied. Then
-
-$$ T_n=-2\log \lambda(X^{(n)})=2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, h(\hat{\eta}_n))) \xrightarrow[]{\mathcal{L}} \chi_{d-c}^2,$$
-
-if $\vartheta \in \Theta_H$.
-
-<details>
-<summary>Proof</summary>
-As before we use notation
-
-$$\ell(x, \vartheta) = \log f(x, \vartheta).$$
-
-We start with
-
-$$\begin{aligned}
-	    T_n^{(1)} & = 2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, \vartheta)) \\
-	    & = 2\sum_{i=1}^{n}\Big(\ell(X_i, \hat{\theta}_n) - \ell(X_i, \vartheta)\Big) \\
-	    & = 2(\hat{\theta}_n - \vartheta)^T \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta) +(\hat{\theta}_n - \vartheta)^T \sum_{i=1}^{n} \ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta)   \\
-	    & = 2 (\hat{\theta}_n - \vartheta)^T \Big( \sum_{i=1}^{n} \dot{\ell}(X_i, \vartheta) + \sum_{i=1}^{n} \ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta) \Big) - (\hat{\theta}_n - \vartheta)^T\sum_{i=1}^{n}\ddot{\ell}(X_i, \widetilde{\vartheta}_n)(\hat{\theta}_n - \vartheta)
-	\end{aligned}$$
-	
-for some $\widetilde{\theta}_n \in [\hat{\theta}_n, \vartheta]$. Using the notations from [Part III](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) we rewrite the first term of equation above:
-
-$$\begin{aligned}
-	 2n(\hat{\theta}_n - \vartheta)^T& \underbrace{(\dot{L}_n(\vartheta) - \ddot{L}_n(\tilde{\vartheta})(\hat{\theta}_n - \vartheta))}. \\
-	 & \qquad \qquad\ \color{\Salmon}{ = 0 \text{ (by Mean Theorem)}}
-	 \end{aligned}$$
-	 
-Also
-
-$$T_n^{(1)} = -\sqrt{n}(\hat{\theta}_n - \vartheta)^T \ddot{L}_n(\widetilde{\vartheta}_n) \sqrt{n}(\hat{\theta}_n - \vartheta),
-$$
-
-where
-
-$$
-\begin{aligned}
-	 \sqrt{n}(\hat{\theta}_n - \vartheta)^T & \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, I^{-1}(f(\cdot, \vartheta))), \\
-	 \ddot{L}_n(\widetilde{\vartheta}_n)& \xrightarrow[]{\mathbb{P}} -I(f(\cdot, \vartheta)), \\
-	 \sqrt{n}(\hat{\theta}_n - \vartheta) &\xrightarrow[]{\mathcal{L}} \mathcal{N}(0, I^{-1}(f(\cdot, \vartheta))).
-	 \end{aligned}$$
-	
-We know that for $X \sim \mathcal{N}_d(0, \Sigma)$ with $\Sigma > 0$ we have
-
-$$X^T \Sigma X ~ \sim \mathcal{X}_d^2.$$
-
-Therefore,
-
-$$T_n^{(1)} \xrightarrow[]{\mathcal{L}} A \sim \mathcal{X}_d^2.$$
-
-In the same way,
-$$ T_n^{(2)} = 2 (\log f_n(X^{(n)}, h(\hat{\eta}_n) ) - \log f_n(X^{(n)},h(\eta))) \xrightarrow[]{\mathcal{L}} B \sim \mathcal{X}_c^2. $$
-	 
-If $H$ is true, then $\vartheta = h(\eta)$ and
-
-$$T_n = T_n^{(1)} - T_n^{(2)} \xrightarrow[]{\mathcal{L}} A-B \sim \mathcal{X}_{d-c}^2,$$
-
-which follows from independence of $A-B$ and $B$.
-	 
-</details>
-
-This statement is called **Wilk's theorem** and it shows that
-
-$$\varphi_n (X^{(n)}) = 1_{\lbrace -2\log\lambda(X^{(n)}) > \mathcal{X}_{d-c, 1-\alpha}^2 \rbrace } $$
-		
-is a test with asymptotic level $\alpha$. Also, sequence $(\varphi_n)$ is consistent, because 
-
-$$\begin{aligned}
-		-\frac{2}{n} \log (\lambda(X^{(n)})) & = \frac{2}{n} \sum_{i=1}^{n} \Big( \ell(X_i, \hat{\theta}_n) - \ell(X_i, h(\hat{\eta}_n)) \Big) \\
-		& \xrightarrow{\mathcal{L}} 2 \mathbb{E}_\vartheta[\ell(X,\vartheta) - \ell(X, h(\eta))] \\
-		& = 2 KL(\vartheta | h(\eta)) > 0,
-		\end{aligned}$$
-		
-if $\vartheta \neq h(\eta)$. Hence for $\vartheta \in \Theta_K$
-
-$$-2\log(\lambda(X^{(n)}))\xrightarrow{\mathcal{L}} \infty.$$
-
-### Likelihood-ratio tests
-
-Take an example: let $X_{ij} \sim \mathcal{N}(\mu_i, \sigma_i^2)$, $i = 1, \dots, r$ and $j = 1, \dots, n_i$, where $n_i \rightarrow \infty$ with the same speed. We test equivalence of variances:
-
-$$ H\colon \sigma_1^2 = \dots = \sigma_r^2 \quad \text{vs} \quad K \colon \sigma_i^2 \neq \sigma_j^2 \text{ for some } i \neq j. $$
-	
-Here $\Theta = \mathbb{R}^r \times (\mathbb{R}^+)^r$, $\Delta = \mathbb{R}^r \times \mathbb{R}^+$ and
-
-$$h((x_1, \dots, x_r, y)^T) = (x_1, \dots, x_r, y, \dots, y)^T.$$
-
-Maximum-likelihood estimator is 
-
-$$\hat{\theta}_n = (\overline{X}_{1 \cdot}, \dots, \overline{X}_{r \cdot}, \hat{s}_1^2, \dots, \hat{s}_r^2)$$
-
-with 
-
-$$\overline{X}_{i \cdot} = \frac{1}{n_i} \sum_{j=1}^{n_i}X_{ij} 
-\quad \text{and} \quad
-\hat{s}_i^2 = \frac{1}{n_i}\sum_{j=1}^{n_i}(X_{ij} -\overline{X}_{i \cdot})^2. $$ 
-
-Then 
-
-$$f_n(X^{(n)}, \hat{\vartheta}_n) = \prod_{i=1}^{r} (2 \pi e \hat{s}_i^2)^{-\frac{n_i}{2}}.$$
-
-Under null hypothesis maximum-likelihood estimator maximizes
-
-$$f_n(X^{(n)}, \hat{\eta}_n) = \prod_{i=1}^{r} (2 \pi \sigma^2)^{-\frac{n_i}{2}} \exp \Big( -\frac{1}{2\sigma^2} \sum_{j=1}^{n_i} (X_{ij} - \overline{X}_{i \cdot})^2 \Big ). $$
-
-Setting $n = \sum_{i=1}^{r}n_i$, we get
-
-$$ \hat{\sigma}^2 = \frac{1}{n}\sum_{i=1}^{r} \sum_{j=1}^{n_i} (X_{ij}-X_{i \cdot})^2 = \sum_{i=1}^r \frac{n_i}{n}\hat{s}_i^2. $$
-
-Then
-
-$$f_n(X^{(n)}, \hat{\eta}_n) = \prod_{i=1}^{r}(2\pi e\hat{\sigma}^2)^{-\frac{n_i}{2}} = (2\pi e \hat{\sigma}^2)^{-\frac{n}{2}}$$
-
-and test statistic becomes
-
-$$T_n = -2\log \lambda(X^{(n)}) = n \log \hat{\sigma}^2 - \sum_{i=1}^{r} n_i \log \hat{s}_i^2.$$
-
-The test 
-
-$$
-\varphi_n(X^{(n)}) =
-	\left \{
-	\begin{array}{cl}
-	1, & T_n > \mathcal{X}_{r-1, 1-\alpha}^2, \\
-	0, & \text{otherwise}. 
-	\end{array}
-	\right.
-$$
-	
-is called **the Bartlett test**.
 
 Take another example: suppose we have two discrete variables $A$ and $B$ (e.g. such as gender, age, education or income), where $A$ can take $r$ values and $B$ can take $s$ values. Further suppose that $n$ individuals are randomly sampled. A **contingency table** can be created to display the joint sample distribution of $A$ and $B$.
 

@@ -810,8 +810,7 @@ In total,
 
 $$\sqrt{n}(\hat{\rho}_n - \rho) \xrightarrow[]{\mathcal{L}} \mathcal{N}(0, DVD^T) = \mathcal{N}(0, (1-\rho^2)^2).$$
 
-<button id="sample-button-3">Sample</button>
-<button id="reset-button-2">Reset</button>
+<button id="sample-button-3">Sample</button> <button id="reset-button-2">Reset</button>
 <div id="prsn_plt"></div> 
 
 <script>
@@ -876,7 +875,7 @@ yAxis.selectAll(".tick text")
 
 var yRho = d3.scaleLinear()
           .range([fig_height, 0])
-          .domain([0, 1]);
+          .domain([0, 0.25]);
             
 var yRhoAxis = svg.append("g")
    .attr("transform", "translate("+ fig_trans + ",0)")
@@ -953,6 +952,17 @@ var gauss_rho_curve = svg
       
 function updateRhoCurve() {
     var gauss_rho_data = getGaussRhoData();
+      
+    yRho.domain([0,
+              Math.max(0.25, d3.max(gauss_rho_data, function(d) { return d.y })) ]);
+              
+    yRhoAxis
+        .transition()
+        .duration(avg_dur)
+        .call(d3.axisLeft(yRho).ticks(5))
+        .selectAll(".tick text")
+        .attr("font-family", "Arvo");
+        
     gauss_rho_curve.datum(gauss_rho_data)
         .transition()
         .duration(avg_dur)
