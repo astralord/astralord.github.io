@@ -321,7 +321,7 @@ var p_a = 0.5;
 
 var margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 700 - margin.left - margin.right,
-    height = 300 - margin.top - margin.bottom,
+    height = 290 - margin.top - margin.bottom,
     fig_height = 200 - margin.top - margin.bottom,
     fig_width = 450;
     
@@ -977,7 +977,7 @@ var power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
 
 var margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 750 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom,
+    height = 465 - margin.top - margin.bottom,
     fig_height = 200 - margin.top - margin.bottom,
     fig_width = 350;
     
@@ -1303,8 +1303,8 @@ var phi_dot = svg.append('g')
      .attr("stroke-width", 2);
      
 function updateCurves(delay) {
-    mu0_data = gauss_data(mu0, sigma, -4);
-    mu1_data = gauss_data(mu1, sigma, 4);
+    mu0_data = gauss_data(mu0, sigma, -4, 4);
+    mu1_data = gauss_data(mu1, sigma, -4, 4);
     
     mu0_curve
       .datum(mu0_data)
@@ -1331,7 +1331,7 @@ function updateCurves(delay) {
 
 function updateSigma(x) {
     reset();
-    sigma = x;
+    sigma = Math.sqrt(x);
     updatePower();
     updateCurves(0); 
     updatePhiLine();
@@ -1340,7 +1340,7 @@ function updateSigma(x) {
 function trivialRound(x) { return x; }
 
 var sigma_x = d3.scaleLinear()
-    .domain([0.4, 1.4])
+    .domain([0.15, 2])
     .range([0, width * 0.4])
     .clamp(true);
     
@@ -1349,7 +1349,7 @@ createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "", "#A9A75
 
 d3.select("#simple_hypothesis")
   .append("div")
-  .text("\\(\\sigma \\)")
+  .text("\\(\\sigma^2 \\)")
   .style('color', '#A9A750')
   .style("font-size", "17px")
   .style("font-weight", "700")
@@ -2172,7 +2172,7 @@ $$
 is called **the Bartlett test**.
 
 
-<button id="sample-button-brt">Sample</button> <button id="add-button">Add</button> <button id="delete-button">Delete</button> <button id="reset-button">Reset</button>
+<button id="sample-button-brt">Sample</button> <button id="add-button">Add</button> <button id="delete-button">Delete</button> <button id="reset-button-2">Reset</button>
 
 
 <div id="asymptotic_test"></div> 
@@ -2187,15 +2187,19 @@ function asymptotic_test() {
 var mus = [],
     sigmas = [],
     alpha = 0.05,
-    n = 25,
-    curve_id = -1;
+    n = 30,
+    curve_id = -1,
+    std_avg = 0;
+    
+var smpl_dots = [], tn_dots = [], stds = [];
+var si_texts = [], sigma_text = null, t_text = null;
 
 var colors = ["#65AD69", "#EDA137", "#E86456", "#B19CD9", "#A4D8D8"];
 var booked_colors = [];
 
 var margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 750 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom,
+    height = 430 - margin.top - margin.bottom,
     fig_height = 250 - margin.top - margin.bottom,
     fig_width = 350;
     
@@ -2224,7 +2228,7 @@ var xRight = d3.scaleLinear()
           .range([1.2 * fig_width, 1.9 * fig_width]);
           
 var xAxisRight = svg.append("g")
-   .attr("transform", "translate(0," + 2 * fig_height + ")")
+   .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(xRight).ticks(5));
   
 xAxisRight.selectAll(".tick text")
@@ -2241,9 +2245,8 @@ var yAxis = svg.append("g")
 yAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-
 var yRight = d3.scaleLinear()
-          .range([2 * fig_height, 0])
+          .range([fig_height, 0])
           .domain([0, 1]);
             
 var yAxisRight = svg.append("g")
@@ -2258,6 +2261,7 @@ yAxisRight.selectAll(".tick text")
 var gauss_curves = [];
 
 function addCurve(mu, sigma) {
+    reset();
     const k = mus.length;
     mus.push(mu);
     sigmas.push(sigma);
@@ -2344,8 +2348,9 @@ function updateMu(mu) {
     updateCurve(mu, sigmas[curve_id]);
 }
 
-function updateSigma(sigma) {
-    updateCurve(mus[curve_id], sigma);
+function updateSigma(sigma_sq) {
+    reset();
+    updateCurve(mus[curve_id], Math.sqrt(sigma_sq));
 }
 
 function trivialRound(x) { return x; }
@@ -2356,25 +2361,33 @@ var mu_x = d3.scaleLinear()
     .clamp(true);
     
 var sigma_x = d3.scaleLinear()
-    .domain([0.4, 1.4])
+    .domain([0.15, 2])
     .range([0, width * 0.4])
     .clamp(true);
     
-var muHandler = createSlider(svg, updateMu, mu_x, margin.left, 1.8 * fig_height, "", "#A9A750", mus[curve_id], trivialRound);
+var muHandler = createSlider(svg, updateMu, mu_x, margin.left, 1.7 * fig_height, "", "#A9A750", mus[curve_id], trivialRound);
 
-var sigmaHandler = createSlider(svg, updateSigma, sigma_x, margin.left, 2 * fig_height, "", "#A9A750", sigmas[curve_id], trivialRound);
+var sigmaHandler = createSlider(svg, updateSigma, sigma_x, margin.left, 1.9 * fig_height, "", "#A9A750", sigmas[curve_id], trivialRound);
 
 d3.select("#asymptotic_test")
   .append("div")
-  .text("\\(\\sigma \\)")
-  .style('color', '#A9A750')
+  .text("\\(\\mu_i \\)")
+  .style('color', '#696969')
   .style("font-size", "17px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", margin.left + "px")
-  .style("top", 2 * fig_height + 15 + "px");
+  .style("top", 1.7 * fig_height + 15 + "px");
   
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(\\sigma_i^2 \\)")
+  .style('color', '#696969')
+  .style("font-size", "17px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", margin.left + "px")
+  .style("top", 1.9 * fig_height + 15 + "px");
 
 d3.csv("../assets/chi_sf.csv", function(error, data) {
   if (error) throw error;
@@ -2466,6 +2479,7 @@ d3.csv("../assets/chi_sf.csv", function(error, data) {
   
   d3.select("#delete-button").on("click", function() {
     if (gauss_curves.length > 2) {
+        reset();
         booked_color = gauss_curves[curve_id].attr("fill");
         booked_color_id = booked_colors.indexOf(booked_color);
         booked_colors.splice(booked_color_id, 1);
@@ -2514,20 +2528,17 @@ d3.csv("../assets/chi_sf.csv", function(error, data) {
 
 });
 
-
-var avg_dots = [], std_lines = [];
-
+var avg_dur = 1200;
 function sample() {
-      avg_dots = [], std_lines = []
-      var avg_dur = 1200;
+      clearSamples();
       var random_samples = [];
-      var smpl_dots = [];
-      var avgs = [], stds = [];
-      var std_avg = 0;
+      var avgs = [];
+      std_avg = 0;
       for (var k = 0; k < gauss_curves.length; k += 1) {
           random_samples.push([]);
           smpl_dots.push([]);
           var color = gauss_curves[k].attr("fill");
+          const ystd = -0.1 * (k + 2);
           var avg = 0;
           for (var i = 0; i < n; i += 1) {
               random_samples[k].push(mus[k] + sigmas[k] * randn_bm());
@@ -2547,28 +2558,12 @@ function sample() {
                 .transition()
                 .duration(avg_dur)
                 .attr("cx", function (d) { return x(random_samples[k][i]); } )
-                .attr("cy", function (d) { return y(0); } );
+                .attr("cy", function (d) { return y(ystd); } );
               
               avg += random_samples[k][i];
           }
           avg /= n;
           avgs.push(avg);
-
-          for (var i = 0; i < n; i += 1) {
-              smpl_dots[k][i]
-	            .transition()
-	            .delay(avg_dur) 
-	            .duration(avg_dur)
-	            .attr("cx", function (d) { return x(avgs[k]); } )
-	            .attr("cy", function (d) { return y(0); } );
-	            
-	          if (i > 0) {
-	            smpl_dots[k][i].transition().delay(2 * avg_dur).remove();
-	          }
-	          else {
-	            avg_dots.push(smpl_dots[k][0]);
-	          }
-	      }
 	      
           var std = 0;
           for (var i = 0; i < n; i += 1) {
@@ -2577,64 +2572,18 @@ function sample() {
           std /= n;
           stds.push(std);
           std_avg += std;
-          
-          const xmin = Math.max(avg - 3 * std, -10);
-          const xmax = Math.min(avg + 3 * std, 10);
-          const ystd = -0.1 * (k + 2.5);
-          std_lines.push(svg.append('g')
-                            .append("path")
-                            .datum([{x: xmin, y: ystd},
-                                    {x: xmax, y: ystd}])
-                            .attr("stroke", color)
-                            .attr("stroke-width", 1)
-                            .attr("border", 1)
-                            .attr("opacity", "0")
-                            .attr("stroke-linejoin", "round")
-                            .attr("d",  d3.line()
-                                .x(function(d) { return x(d['x']); })
-                                .y(function(d) { return y(d['y']); })
-                            ));
-                            
-         std_lines[k].transition()
-                     .delay(3 * avg_dur)
-                     .attr("opacity", "1");
-	      
-	      avg_dots[k]
-	            .transition()
-	            .delay(2 * avg_dur) 
-	            .duration(avg_dur)
-	            .attr("cy", function (d) { return y(ystd); } )
-	      
-	      d3.selectAll('circle').raise();
 	      
 	   }
       
       std_avg /= gauss_curves.length;
-      svg.append('g')
-         .append("path")
-         .datum([{x: -3 * std_avg, y: -0.15},
-                 {x: 3 * std_avg, y: -0.15}])
-         .attr("stroke", "#000")
-         .attr("stroke-width", 1)
-         .attr("border", 1)
-         .style("stroke-dasharray", ("3, 3"))
-         .attr("opacity", "0")
-         .attr("stroke-linejoin", "round")
-         .attr("d",  d3.line()
-            .x(function(d) { return x(d['x']); })
-            .y(function(d) { return y(d['y']); })
-         )
-         .transition()
-         .delay(3 * avg_dur)
-         .attr("opacity", "1");
-      
+                           
       var T_n = gauss_curves.length * Math.log(std_avg);
       for (var i = 0; i < gauss_curves.length; i += 1) {
         T_n -= Math.log(stds[i]);
       }
       T_n *= n;
            
-      svg.append('g')
+      var tn_dot = svg.append('g')
         .selectAll("dot")
         .data([{x: T_n, y: 0}])
         .enter()
@@ -2645,193 +2594,66 @@ function sample() {
         .style("fill", "#348ABD")
         .attr("stroke", "#000")
         .attr("stroke-width", 1)
-        .attr("opacity", 0)
+        .attr("opacity", 0);
+     
+     tn_dot
          .transition()
-         .delay(3 * avg_dur)
+         .duration(avg_dur)
          .attr("opacity", "1");
-  
-      if (avg > c) {
-          smpl_dots[0]
-            .transition()
-            .delay(2 * avg_dur) 
-            .duration(avg_dur)
-            .attr("cy", function (d) { return yBtm(1); } );
-            
-         if (mu == mu0) {
-           table_nums[2] += 1;
-         }
-         else {
-           table_nums[3] += 1;
-         }
-      }
-      else {
-          smpl_dots[0]
-            .transition()
-            .delay(2 * avg_dur) 
-            .duration(avg_dur)
-            .attr("cy", function (d) { return yBtm(0); } );
-            
-         if (mu == mu0) {
-           table_nums[0] += 1;
-         }
-         else {
-           table_nums[1] += 1;
-         }
-      }
-      
-      updateTableText();
+     
+     tn_dots.push(tn_dot);
+     
+     updateSiTexts();
+     updateStatTexts();
 }
 
 d3.select("#sample-button-brt").on("click", function() { sample(); });
 
-function reset() {
-  for (var i = 0; i < avg_dots.length; i += 1) {
-      avg_dots[i].remove();
+function clearSamples() {
+  for (var k = 0; k < smpl_dots.length; k += 1) {
+    for (var i = 0; i < smpl_dots[k].length; i += 1) {
+      smpl_dots[k][i].remove();
+    }
   }
-  avg_dots = [];
-  table_nums = [0, 0, 0, 0];
-  updateTableText();
+  smpl_dots = [];
+  stds = [];
+  clearSiTexts();
+  clearStatTexts();
 }
 
-d3.select("#reset-button").on("click", function() { reset(); });
+function reset() {
+  clearSamples();
+  for (var i = 0; i < tn_dots.length; i += 1) {
+    tn_dots[i].remove();
+  }
+  tn_dots = [];
+}
 
-var alpha_text = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.6 * fig_height)
-  .attr("x", 1.2 * fig_width + 5)
-  .attr("font-family", "Arvo")
-  .text("Significance level: " + alpha)
-  .style("fill", "#348ABD");
-  
-var power_text = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.9 * fig_height)
-  .attr("x", 1.2 * fig_width + 5)
-  .attr("font-family", "Arvo")
-  .text("Power: " + power)
-  .style("fill", "#348ABD");
+d3.select("#reset-button-2").on("click", function() { reset(); });
 
-   
 d3.select("#asymptotic_test")
   .append("div")
   .text("\\(\\alpha \\)")
   .style('color', '#000')
   .style("font-size", "13px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 5 + margin.left + "px")
   .style("top", 15 + "px");
   
 d3.select("#asymptotic_test")
   .append("div")
-  .text("\\(u_{1-\\alpha} \\)")
+  .text("\\(\\chi^2_{r-1, 1-\\alpha} \\)")
   .style('color', '#000')
   .style("font-size", "13px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", 1.9 * fig_width + 5 + margin.left + "px")
-  .style("top", 2 * fig_height + 15 + "px");
-  
+  .style("top", fig_height + 15 + "px");
+
+
 var labels_x = 250;
 var labels_y = 0;
-
-svg.append("path")
-   .attr("stroke", "#01A66F")
-   .attr("stroke-width", 4)
-   .attr("opacity", ".8")
-   .datum([{x: labels_x, y: labels_y}, {x: labels_x + 25, y: labels_y}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("path")
-   .attr("stroke", "#000")
-   .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: labels_y - 2}, {x: labels_x + 25, y: labels_y - 2}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", labels_y + 5)
-  .attr("x", labels_x + 30)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .text("X distribution")
-  .style("fill", "#01A66F");
-  
-svg.append("path")
-   .attr("stroke", "#72CC50")
-   .attr("stroke-width", 4)
-   .attr("opacity", ".8")
-   .datum([{x: labels_x, y: labels_y + 15}, {x: labels_x + 25, y: labels_y + 15}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("path")
-   .attr("stroke", "#000")
-   .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: labels_y + 13}, {x: labels_x + 25, y: labels_y + 13}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", labels_y + 20)
-  .attr("x", labels_x + 30)
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .text("Y distribution")
-  .style("fill", "#72CC50");
-       
-svg.append("path")
-   .attr("stroke", "#348ABD")
-   .attr("stroke-width", 3)
-   .attr("opacity", "1")
-   .datum([{x: labels_x + 5, y: labels_y + 30}, {x: labels_x + 25, y: labels_y + 30}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
- 
-svg.append('g')
-   .selectAll("dot")
-   .data([{'x': labels_x + 7, 'y': labels_y + 30}])
-   .enter()
-   .append("circle")
-     .attr("cx", function (d) { return d.x; } )
-     .attr("cy", function (d) { return d.y; } )
-     .attr("r", 4)
-     .style("fill", "#fff")
-     .attr("stroke", "#348ABD")
-     .attr("stroke-width", 2);
-
-
-d3.select("#asymptotic_test")
-  .append("div")
-  .text("\\(\\varphi(x) \\)")
-  .style('color', '#348ABD')
-  .style("font-size", "13px")
-  .style("font-weight", "700")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
-  .style("position", "absolute")
-  .style("left", labels_x + margin.left + 30 + "px")
-  .style("top", labels_y + 50 + "px");
-
 
 svg.append("path")
    .attr("stroke", "#348ABD")
@@ -2852,89 +2674,166 @@ svg.append("path")
        
 d3.select("#asymptotic_test")
   .append("div")
-  .text("\\(1-\\Phi(x) \\)")
+  .text("\\(1-F_{\\chi^2_{r-1}}(x) \\)")
   .style('color', '#348ABD')
   .style("font-size", "13px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
   .style("top", labels_y + 20 + "px");
   
-var table_text_acc_h = svg
+svg.append('g')
+     .selectAll("dot")
+     .data([{'x': labels_x + fig_width + 13, 'y': labels_y + 25}])
+     .enter()
+     .append("circle")
+       .attr("cx", function (d) { return d.x; } )
+       .attr("cy", function (d) { return d.y; } )
+       .attr("r", 3)
+        .style("fill", "#348ABD")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1)
+
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(T_n \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "12px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", labels_x + fig_width + margin.left + 30 + "px")
+  .style("top", labels_y + 46 + "px");
+
+var alpha_text = svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 2.35 * fig_height)
-  .attr("x", 0.5 * fig_width)
+  .attr("y", 5)
+  .attr("x", 0.7 * fig_width )
   .attr("font-family", "Arvo")
-  .text("Accepted H")
-  .style("fill", "#65AD69");
+  .text("X distributions")
+  .style("fill", "#696969");
   
-var table_text_rej_h = svg
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(\\hat{\\sigma}^2 \\)")
+  .style('color', '#000')
+  .style("font-size", "12px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", 1.2 * fig_width + 100 + margin.left + "px")
+  .style("top", fig_height + 57 + "px");
+  
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(T_n \\)")
+  .style('color', '#000')
+  .style("font-size", "12px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", 1.2 * fig_width + 100 + margin.left + "px")
+  .style("top", fig_height + 82 + "px");
+  
+d3.select("#asymptotic_test")
+  .append("div")
+  .text("\\(\\hat{s}_i^2: \\)")
+  .style('color', '#000')
+  .style("font-size", "12px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", 1.2 * fig_width + 25 + margin.left + "px")
+  .style("top", fig_height + 57 + "px");
+
+svg
   .append("text")
   .attr("text-anchor", "start")
-  .attr("y", 2.35 * fig_height)
-  .attr("x", 0.85 * fig_width)
+  .attr("y", 1.8 * fig_height)
+  .attr("x", 1.2 * fig_width + 5)
   .attr("font-family", "Arvo")
-  .text("Rejected H")
-  .style("fill", "#EDA137");
-  
-var table_text_true_h = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.6 * fig_height)
-  .attr("x", 0.2 * fig_width)
-  .attr("font-family", "Arvo")
-  .text("H is true")
-  .style("fill", "#65AD69");
-  
-var table_text_true_k = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.9 * fig_height)
-  .attr("x", 0.2 * fig_width)
-  .attr("font-family", "Arvo")
-  .text("K is true")
-  .style("fill", "#EDA137");
-  
-var table_text_hh = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.6 * fig_height)
-  .attr("x", 0.6 * fig_width)
-  .attr("font-family", "Arvo")
-  .text("0")
-  .style("fill", "#65AD69");
-  
-var table_text_hk = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.9 * fig_height)
-  .attr("x", 0.6 * fig_width)
-  .attr("font-family", "Arvo")
-  .text("0")
-  .style("fill", "#E86456");
-  
-var table_text_kh = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.6 * fig_height)
-  .attr("x", 0.95 * fig_width)
-  .attr("font-family", "Arvo")
-  .text("0")
-  .style("fill", "#E86456");
-  
-var table_text_kk = svg
-  .append("text")
-  .attr("text-anchor", "start")
-  .attr("y", 2.9 * fig_height)
-  .attr("x", 0.95 * fig_width)
-  .attr("font-family", "Arvo")
-  .text("0")
-  .style("fill", "#EDA137");
-  
+  .text("Significance level: 0.05")
+  .style("fill", "#348ABD");
+
+
+function createSiTexts() {
+  for (var i = 0; i < 5; i += 1) {
+    si_texts.push(svg.append("text")
+                     .attr("text-anchor", "start")
+                     .attr("y", y(-0.1 * (i + 2.2)))
+                     .attr("x", 1.2 * fig_width + 50)
+                     .attr("font-family", "Arvo")
+                     .style("font-size", "12px")
+                     .text(""));
+  }
+}
+
+function updateSiTexts() {
+  for (var i = 0; i < gauss_curves.length; i += 1) {
+    var color = gauss_curves[i].attr("fill");
+    var rounded_si = Math.round(1000 * stds[i]) / 1000;
+    si_texts[i]
+      .transition()
+      .duration(avg_dur)
+      .text(rounded_si.toString())
+      .style("fill", color);
+  }
+}
+
+function clearSiTexts() {
+ for (var i = 0; i < si_texts.length; i += 1) {
+    si_texts[i]
+      .transition()
+      .duration(avg_dur)
+      .text("");
+  }
+}
+
+function createStatTexts() {
+  sigma_text = svg.append("text")
+                     .attr("text-anchor", "start")
+                     .attr("y", y(-0.22))
+                     .attr("x", 1.2 * fig_width + 115)
+                     .attr("font-family", "Arvo")
+                     .style("font-size", "12px")
+                     .text("");
+                     
+  t_text = svg.append("text")
+                     .attr("text-anchor", "start")
+                     .attr("y", y(-0.32))
+                     .attr("x", 1.2 * fig_width + 115)
+                     .attr("font-family", "Arvo")
+                     .style("font-size", "12px")
+                     .text("")
+                     .style("fill", "#348ABD");
+}
+
+function updateStatTexts() {
+    var sigma_num = Math.round(1000 * std_avg) / 1000;
+    sigma_text
+      .transition()
+      .duration(avg_dur)
+      .text("= " + sigma_num);
+    
+    var t_num = xRight.invert(tn_dots[tn_dots.length - 1].attr("cx"));
+    t_num = Math.round(1000 * t_num) / 1000
+    t_text
+      .transition()
+      .duration(avg_dur)
+      .text("= " + t_num);
+}
+
+function clearStatTexts() {
+  if (sigma_text != null) {
+    sigma_text
+      .transition()
+      .text("");
+    t_text
+      .transition()
+      .text("");
+  }
+}
+
+createSiTexts();
+createStatTexts();
+
 }
 
 asymptotic_test();
@@ -2942,8 +2841,7 @@ asymptotic_test();
 </script>
 
 ![](.)
-*Fig. 3. Visualization of asymptotic test*
-
+*Fig. 3. Visualization of Bartlett test. You can add up to five normally distributed samples, each with $n_i=30$. Significance level $\alpha$ is fixed at $0.05$. Choose different variations of $\sigma_i^2$ to observe how it affects test statistic $T_n$.* 
 
 
 Take another example: suppose we have two discrete variables $A$ and $B$ (e.g. such as gender, age, education or income), where $A$ can take $r$ values and $B$ can take $s$ values. Further suppose that $n$ individuals are randomly sampled. A **contingency table** can be created to display the joint sample distribution of $A$ and $B$.
