@@ -1,9 +1,9 @@
 ---
 layout: post
 title: 'Visual Guide to Statistics. Part IV: Foundations of Testing'
-date: 2022-04-28 03:13 +0800
+date: 2022-04-28 11:00 +0800
 categories: [Statistics]
-tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, one-sided-gauss-test, one-sided-t-test, two-sample-t-test, likelihood-ratio-test, wilks-theorem, bartlett-test]
+tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, one-sided-gauss-test, one-sided-t-test, two-sample-t-test, likelihood-ratio-test, wilks-theorem, bartlett-test, chi-square-independence-test]
 math: true
 ---
   
@@ -2857,7 +2857,7 @@ function updateStatTexts() {
       .text("= " + sigma_num);
     
     var t_num = xRight.invert(tn_dots[tn_dots.length - 1].attr("cx"));
-    t_num = Math.round(1000 * t_num) / 1000
+    t_num = Math.round(1000 * t_num) / 1000;
     t_text
       .transition()
       .duration(avg_dur)

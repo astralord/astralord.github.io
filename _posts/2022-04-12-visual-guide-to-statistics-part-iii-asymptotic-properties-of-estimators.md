@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Visual Guide to Statistics. Part III: Asymptotic Properties of Estimators'
-date: 2022-04-12 03:13 +0800
+date: 2022-04-12 11:00 +0800
 categories: [Statistics]
 tags: [statistics, consistent-estimator, central-limit-theorem, slutsky-lemma, delta-method, asymptotic-efficiency, maximum-likelihood-estimator]
 math: true
