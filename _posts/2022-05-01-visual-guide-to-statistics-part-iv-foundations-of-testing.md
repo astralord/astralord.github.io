@@ -1,11 +1,10 @@
 ---
 layout: post
 title: 'Visual Guide to Statistics. Part IV: Foundations of Testing'
-date: 2022-05-01 03:13 +0800
+date: 2022-04-28 03:13 +0800
 categories: [Statistics]
 tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, one-sided-gauss-test, one-sided-t-test, two-sample-t-test, likelihood-ratio-test, wilks-theorem, bartlett-test]
 math: true
-published: false
 ---
   
 > In this chapter we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
@@ -685,7 +684,6 @@ d3.select("#basic_test")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + 15 + margin.left +  "px")
   .style("top", fig_height + 20 + "px");
@@ -698,7 +696,6 @@ d3.select("#basic_test")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", fig_width + margin.left + 30 + "px")
   .style("top", labels_y + 2 * labels_v + 16 + "px");
@@ -711,7 +708,6 @@ d3.select("#basic_test")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", fig_width + margin.left + 30 + "px")
   .style("top", labels_y + 3 * labels_v + 16 + "px");
@@ -724,7 +720,6 @@ d3.select("#basic_test")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + 15 + margin.left +  "px")
   .style("top", 1.6 * fig_height + 20 + "px");
@@ -1730,7 +1725,7 @@ simple_hypothesis();
 </script>
 
 ![](.)
-*Fig. 2. Visualization of simple hypothesis testing with $\mu_0 = -1$ and $\mu_1=1$. Significance level $\alpha$ on the right plot is draggable.*
+*Fig. 2. Visualization of simple hypothesis testing with $\mu_0 = -1$ and $\mu_1=1$. Significance level $\alpha$ on the right-hand side is draggable.*
 
 Simple hypotheses like that are not relevant in practice, <ins>but</ins>:
 
@@ -2300,7 +2295,8 @@ function addCurve(mu, sigma) {
                       .on('mouseover', function() {
                           d3.select(this)
                             .transition()
-                            .attr("opacity", ".8");
+                            .attr("opacity", ".8")
+                            .style("cursor", "pointer");
 	                   })
 	                   .on('mouseout', function() {
 	                       d3.select(this)
@@ -2684,7 +2680,7 @@ d3.select("#asymptotic_test")
   
 svg.append('g')
      .selectAll("dot")
-     .data([{'x': labels_x + fig_width + 13, 'y': labels_y + 25}])
+     .data([{'x': labels_x + fig_width + 13, 'y': labels_y + 20}])
      .enter()
      .append("circle")
        .attr("cx", function (d) { return d.x; } )
@@ -2702,7 +2698,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 46 + "px");
+  .style("top", labels_y + 41 + "px");
 
 var alpha_text = svg
   .append("text")
@@ -2841,7 +2837,7 @@ asymptotic_test();
 </script>
 
 ![](.)
-*Fig. 3. Visualization of Bartlett test. You can add up to five normally distributed samples, each with $n_i=30$. Significance level $\alpha$ is fixed at $0.05$. Choose different variations of $\sigma_i^2$ to observe how it affects test statistic $T_n$.* 
+*Fig. 3. Visualization of Bartlett test. Up to five normally distributed samples can be added, each with $n_i=30$. Significance level $\alpha$ is fixed at $0.05$. Choose different variations of $\sigma_i^2$ to observe how it affects test statistic $T_n$.* 
 
 
 Take another example: suppose we have two discrete variables $A$ and $B$ (e.g. such as gender, age, education or income), where $A$ can take $r$ values and $B$ can take $s$ values. Further suppose that $n$ individuals are randomly sampled. A **contingency table** can be created to display the joint sample distribution of $A$ and $B$.
@@ -2861,7 +2857,7 @@ where $\sum_{ij} p_{ij} = 1$. Joint density is
 
 $$ f_n(x^{(n)}, p) = P_p(X_{ij}=x_{ij}) = \frac{n!}{\prod_{i,j=1}^{r,s} x_{ij}!} \prod_{i,j=1}^{r,s} (p_{ij})^{x_{ij}}, $$
 
-where $x_{ij} = \{0, \cdots, n\}$ and $\sum_{i,j=1}^{r,s} x_{ij} = n$. Maximum-likelihood estimator is
+where $x_{ij} = \{0, \dots, n\}$ and $\sum_{i,j=1}^{r,s} x_{ij} = n$. Maximum-likelihood estimator is
 
 $$\hat{p}_{ij} = \frac{X_{ij}}{n}$$
 
@@ -2910,3 +2906,365 @@ $$V_n = \sqrt{\frac{\tilde{T}_n}{n (\min(r, s) - 1)}}  $$
 is used as dependency measure between $A$ and $B$, because under both null hypothesis and alternative convergence takes place
 
 $$V_n^2  \xrightarrow{\mathbb{P}} \frac{1}{\min(r, s) - 1}\sum_{i=1}^{r} \sum_{j=1}^s \frac{(p_{ij} - p_{i \cdot}p_{\cdot j} )^2}{p_{i \cdot}p_{\cdot j}}$$
+
+<div id="htmp"></div>
+<script>
+
+d3.select("#htmp")
+  .style("position", "relative");
+  
+function plt_heatmap() {
+
+var margin = {top: 30, right: 30, bottom: 5, left: 50},
+  width = 750 - margin.left - margin.right,
+  height = 300 - margin.top - margin.bottom,
+  fig_width = 300, fig_height = 240;
+
+var svg = d3.select("#htmp")
+.append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+var r = 4, s = 5;
+var rows = [], columns = [];
+for (var i = 0; i < r; i += 1) {
+    rows.push(i + 1);
+}
+for (var i = 0; i < s; i += 1) {
+    columns.push(i + 1);
+}
+
+var x = d3.scaleBand()
+  .range([ 0, fig_width ])
+  .domain(columns)
+  .padding(0.01);
+  
+svg.append("g")
+  .attr("transform", "translate(0," + fig_height + ")")
+  .call(d3.axisBottom(x))
+  .selectAll(".tick text")
+  .attr("font-family", "Arvo")
+
+var y = d3.scaleBand()
+  .range([ fig_height, 0 ])
+  .domain(rows)
+  .padding(0.01);
+  
+svg.append("g")
+  .call(d3.axisLeft(y))
+  .selectAll(".tick text")
+  .attr("font-family", "Arvo");
+
+var xRight = d3.scaleLinear()
+          .domain([0, 50])
+          .range([1.2 * fig_width, 2.2 * fig_width]);
+            
+svg.append("g")
+   .attr("transform", "translate(0," + 0.5 * fig_height + ")")
+   .call(d3.axisBottom(xRight))
+   .selectAll(".tick text")
+   .attr("font-family", "Arvo");
+
+
+var yRight = d3.scaleLinear()
+          .range([0.5 * fig_height, 0.2 * fig_height])
+          .domain([0, 1]);
+            
+svg.append("g")
+    .attr("transform", "translate(" + 1.2 * fig_width + ",0)")
+    .call(d3.axisLeft(yRight).ticks(1))
+    .selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+var color = d3.scaleLinear()
+  .range(["white", "#65AD69"])
+  .domain([1, 25])
+
+var data = [];
+for (var i = 0; i < s; i += 1) {
+  for (var j = 0; j < r; j += 1) {
+    var value = 1 + Math.round(19 * Math.random());
+    data.push({'i': i + 1, 'j': j + 1,
+               'value': value});
+  }
+}
+
+var t_n = 0, v_n = 0;
+var tn_text = svg.append("text")
+               .attr("text-anchor", "start")
+               .attr("y", 0.8 * fig_height - 5)
+               .attr("x", 1.4 * fig_width + 20)
+               .attr("font-family", "Arvo")
+               .attr("font-weight", 700)
+               .style("font-size", "13px")
+               .style("fill", "#348ABD");
+             
+               
+var vn_text = svg.append("text")
+               .attr("text-anchor", "start")
+               .attr("y", 0.8 * fig_height - 5)
+               .attr("x", 1.8 * fig_width + 20)
+               .attr("font-family", "Arvo")
+               .attr("font-weight", 700)
+               .style("font-size", "13px")
+               .style("fill", "#EDA137");
+
+function updateTn() {
+   t_n = 0;
+   v_n = 0;
+   
+   var n = 0, xi = [0, 0, 0, 0], xj = [0, 0, 0, 0, 0];
+   for (var i = 0; i < s; i += 1) {
+     for (var j = 0; j < r; j += 1) {
+        var xij = data[i * r + j]['value'];
+		  n += xij;
+		  xj[i] += xij;
+		  xi[j] += xij;
+	  }
+	}
+
+	for (var i = 0; i < s; i += 1) {
+	  for (var j = 0; j < r; j += 1) {
+	    var xij = data[i * r + j]['value'];
+	    t_n += xij * Math.log(n * xij / (xi[j] * xj[i]));
+	    v_n += (xij - xi[j] * xj[i] / n) ** 2 / (xi[j] * xj[i] / n);
+	  }
+	}
+	
+	v_n = Math.sqrt(v_n / ((Math.min(r, s) - 1) * n) );
+	
+	tn_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(1000 * t_n) / 1000);
+    
+	vn_text
+    .transition()
+    .duration(500)
+    .text(" = " + Math.round(1000 * v_n) / 1000);
+    
+   tn_dot
+    .data([{'x': xRight(t_n), 'y': yRight(t_n > c ? 1 : 0)}])
+    .transition()
+    .duration(500)
+    .attr("cx", function (d) { return d.x; } )
+    .attr("cy", function (d) { return d.y; } )
+}
+                   
+  var tooltip = d3.select("#htmp")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "2px")
+    .style("border-radius", "10px")
+    .style("padding", "5px");
+    
+  var mouseover = function(d) {
+    tooltip
+      .style("opacity", 1);
+      
+    d3.select(this)
+      .style("stroke", "black")
+      .style("opacity", 1);
+  }
+  
+  var mousemove = function(d) {
+    tooltip
+      .html(d.value)
+      .style("left", (d3.mouse(this)[0] + 70) + "px")
+      .style("top", (d3.mouse(this)[1]) + "px");
+  }
+  
+  var mouseleave = function(d) {
+    tooltip
+      .style("opacity", 0);
+      
+    d3.select(this)
+      .style("stroke", "none")
+      .style("opacity", 0.8);
+  }
+  
+  var onclick = function(d) {
+    d['value'] += 1;
+    updateTn();
+    
+    d3.select(this)
+      .style("fill", function(d) { return color(d['value'])} )
+  }
+  
+  var contextMenu = function (d) {
+    d3.event.preventDefault();
+    d['value'] -= 1;
+    
+    d3.select(this)
+      .style("fill", function(d) { return color(d['value'])} )
+  }
+ 
+var c = 21.026;
+var phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
+var phi_data_1 = [{'x': c, 'y': 1}, {'x': 50, 'y': 1}];
+var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+
+var phi_curve_0 = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_0)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 2.5)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xRight(d['x']); })
+          .y(function(d) { return yRight(d['y']); })
+   );
+   
+var phi_curve_1 = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_1)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 2.5)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xRight(d['x']); })
+          .y(function(d) { return yRight(d['y']); })
+   );
+   
+var phi_curve_dash = svg
+  .append('g')
+  .append("path")
+      .datum(phi_data_dash)
+      .attr("border", 1)
+      .attr("opacity", "1")
+      .attr("stroke", "#348ABD")
+      .attr("stroke-width", 1)
+      .style("stroke-dasharray", ("3, 3"))
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+          .x(function(d) { return xRight(d['x']); })
+          .y(function(d) { return yRight(d['y']); })
+   );
+
+var phi_dot = svg.append('g')
+   .selectAll("dot")
+   .data([{'x': xRight(c), 'y': yRight(1)}])
+   .enter()
+   .append("circle")
+     .attr("cx", function (d) { return d.x; } )
+     .attr("cy", function (d) { return d.y; } )
+     .attr("r", 4)
+     .style("fill", "#fff")
+     .attr("stroke", "#348ABD")
+     .attr("stroke-width", 2);
+     
+var tn_dot = svg.append('g')
+    .selectAll("dot")
+    .data([{'x': xRight(t_n), 'y': yRight(t_n > c ? 1 : 0)}])
+    .enter()
+    .append("circle")
+    .attr("cx", function (d) { return d.x; } )
+    .attr("cy", function (d) { return d.y; } )
+    .attr("r", 3)
+    .style("fill", "#348ABD")
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .attr("opacity", 1);    
+ 
+updateTn();
+                  
+d3.select("#htmp")
+  .append("div")
+  .text("\\(X_{i \\cdot} \\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", margin.left - 35 + "px")
+  .style("top", 0.5 * fig_height + margin.top - 10 + "px");
+  
+d3.select("#htmp")
+  .append("div")
+  .text("\\(X_{\\cdot j} \\)")
+  .style('color', '#000')
+  .style("font-size", "13px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", 0.5 * fig_width + margin.left - 5 + "px")
+  .style("top", fig_height + margin.top + 25 + "px");
+  
+d3.select("#htmp")
+  .append("div")
+  .text("\\(T_n \\)")
+  .style("font-size", "13px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", 2.25 * fig_width + margin.left + "px")
+  .style("top", 0.6 * fig_height + "px");
+
+ +d3.select("#htmp")
+  .append("div")
+  .text("\\(T_n \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "13px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", 1.4 * fig_width + margin.left + "px")
+  .style("top", 0.8 * fig_height + 11 + "px");
+  
+d3.select("#htmp")
+  .append("div")
+  .text("\\(\\chi_{12, 0.95}^2 \\)")
+  .style('color', '#348ABD')
+  .style("font-size", "13px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", xRight(c) + 40 + "px")
+  .style("top", 0.5 * fig_height + 45 + "px");
+  
+d3.select("#htmp")
+  .append("div")
+  .text("\\(V_n \\)")
+  .style('color', '#EDA137')
+  .style("font-size", "13px")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", 1.8 * fig_width + margin.left + "px")
+  .style("top", 0.8 * fig_height + 11 + "px");
+  
+  var heatmap = svg.selectAll()
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", function(d) { return x(d['i']) })
+      .attr("y", function(d) { return y(d['j']) })
+      .attr("rx", 8)
+      .attr("ry", 8)
+      .attr("width", x.bandwidth() )
+      .attr("height", y.bandwidth() )
+      .style("fill", function(d) { return color(d['value'])} )
+      .style("stroke-width", 1)
+      .style("stroke", "none")
+      .style("opacity", 0.8)
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseleave", mouseleave)
+    .on("click", onclick)
+    .on("contextmenu", contextmenu);
+    
+  
+}
+
+plt_heatmap();
+
+</script>
+
+![](.)
+*Fig. 4. Visualization for chi-square independence test with $r=4$ and $s=5$. Significance level $\alpha$ is fixed at $0.05$. Left-click on the cell of contingency table to increase $X_{ij}$ value, right-click to decrease.*
