@@ -3149,7 +3149,7 @@ function updateTn() {
     updateTn();
     
     d3.select(this)
-      .style("fill", function(d) { return color(d['value'])} )
+      .style("fill", function(d) { return color(d['value'])} );
       
     mousemove(d);
   };
