@@ -2724,7 +2724,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 10 + "px");
+  .style("top", labels_y + 15 + "px");
   
 svg.append('g')
      .selectAll("dot")
@@ -2766,7 +2766,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 100 + margin.left + "px")
-  .style("top", fig_height + 60 + "px");
+  .style("top", fig_height + 58 + "px");
   
 d3.select("#asymptotic_test")
   .append("div")
@@ -2776,7 +2776,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 100 + margin.left + "px")
-  .style("top", fig_height + 80 + "px");
+  .style("top", fig_height + 79 + "px");
   
 d3.select("#asymptotic_test")
   .append("div")
@@ -2786,7 +2786,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 25 + margin.left + "px")
-  .style("top", fig_height + 60 + "px");
+  .style("top", fig_height + 58 + "px");
 
 svg
   .append("text")
@@ -2838,7 +2838,7 @@ function createStatTexts() {
                      .attr("y", y(-0.22))
                      .attr("x", 1.2 * fig_width + 115)
                      .attr("font-family", "Arvo")
-                     .style("font-size", "15px")
+                     .style("font-size", "12px")
                      .text("");
                      
   t_text = svg.append("text")
@@ -2846,7 +2846,7 @@ function createStatTexts() {
                      .attr("y", y(-0.32))
                      .attr("x", 1.2 * fig_width + 115)
                      .attr("font-family", "Arvo")
-                     .style("font-size", "15px")
+                     .style("font-size", "12px")
                      .text("")
                      .style("fill", "#348ABD");
 }
@@ -2996,7 +2996,7 @@ svg.append("g")
   .attr("transform", "translate(0," + fig_height + ")")
   .call(d3.axisBottom(x))
   .selectAll(".tick text")
-  .attr("font-family", "Arvo")
+  .attr("font-family", "Arvo");
 
 var y = d3.scaleBand()
   .range([ fig_height, 0 ])
@@ -3031,7 +3031,7 @@ svg.append("g")
 
 var color = d3.scaleLinear()
   .range(["white", "#65AD69"])
-  .domain([1, 25])
+  .domain([1, 25]);
 
 var data = [];
 for (var i = 0; i < s; i += 1) {
