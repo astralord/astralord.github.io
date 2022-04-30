@@ -613,6 +613,7 @@ svg
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("P( reject H | H is true)")
+  .style("font-size", "14px")
   .style("fill", "#65AD69");
   
 svg.append("path")
@@ -640,6 +641,7 @@ svg
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("P(accept H | K is true)")
+  .style("font-size", "14px")
   .style("fill", "#EDA137");
  
 svg.append('g')
@@ -680,10 +682,9 @@ d3.select("#basic_test")
   .append("div")
   .text("\\(p_b\\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", labels_x + 15 + margin.left +  "px")
   .style("top", fig_height + 20 + "px");
@@ -692,31 +693,29 @@ d3.select("#basic_test")
   .append("div")
   .text("\\(p_a\\)")
   .style('color', '#E86456')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 2 * labels_v + 16 + "px");
+  .style("top", labels_y + 2 * labels_v + 15 + "px");
   
 d3.select("#basic_test")
   .append("div")
   .text("\\(\\varphi(x) \\)")
   .style('color', '#348ABD')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 3 * labels_v + 16 + "px");
+  .style("top", labels_y + 3 * labels_v + 15 + "px");
     
 d3.select("#basic_test")
   .append("div")
   .text("\\(x\\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
@@ -792,7 +791,11 @@ $$\varphi(x):
 	\end{array}
 	\right.$$
 
-Let $\varphi^*$ be an NP-test with constant $c^*$ and let $\varphi$ be some other test with $\beta_\varphi(\vartheta_0) \geq \beta_{\varphi^*}(\vartheta_0)$. Then we have
+Let $\varphi^*$ be an NP-test with constant $c^*$ and let $\varphi$ be some other test with 
+
+$$\beta_\varphi(\vartheta_0) \geq \beta_{\varphi^*}(\vartheta_0).$$ 
+
+Then we have
 
 $$\begin{aligned} \beta_\varphi(\vartheta_1) - \beta_{\varphi^*}(\vartheta_1) &= (1 - \beta_{\varphi^*}(\vartheta_1) ) - (1 - \beta_\varphi(\vartheta_1) ) \\&=\int (\varphi^* - \varphi) p_1 dx \\&= \int (\varphi^* - \varphi)(p_1 - c^*p_0)dx + \int c^* p_0 (\varphi^* - \varphi) dx.
 \end{aligned}$$
@@ -802,16 +805,28 @@ For the first integral note that
 $$\varphi^* - \varphi > 0 \Longrightarrow \varphi^* > 0 \Longrightarrow p_1 \geq c^*p_0, \\
 \varphi^* - \varphi < 0 \Longrightarrow \varphi^* < 1 \Longrightarrow p_1 \leq c^*p_0. $$
 
-$\Longrightarrow (\varphi^* - \varphi)(p_1 - c^*p_0) \geq 0$ always. The second integral is $c^*(\beta_{\varphi^*}(\vartheta_0) - \beta_\varphi(\vartheta_0)) \geq 0$. 
+Hence, $(\varphi^* - \varphi)(p_1 - c^*p_0) \geq 0$ always. The second integral is 
 
-Therefore we have $\beta_\varphi(\vartheta_1) \geq \beta_{\varphi^*}(\vartheta_1)$ and NP-test $\varphi^*$ is an UMP test with level $\alpha = \mathbb{E}_{\vartheta_0}[\varphi^*(X)]$. This statement is called **NP lemma**.
+$$c^*(\beta_{\varphi^*}(\vartheta_0) - \beta_\varphi(\vartheta_0)) \geq 0.$$ 
+
+Therefore we have 
+
+$$\beta_\varphi(\vartheta_1) \geq \beta_{\varphi^*}(\vartheta_1)$$
+
+ and NP-test $\varphi^*$ is an UMP test with level $\alpha = \mathbb{E}_{\vartheta_0}[\varphi^*(X)]$. This statement is called **NP lemma**.
 
 There are also other parts of this lemma which I will state here without proof:
 
 * For any $\alpha \in [0, 1]$ there is an NP-test $\varphi$ with $\mathbb{E}_{\vartheta_0}[\varphi(X)] = \alpha$.
-* If $\varphi'$ is UMP with level $\alpha$, then $\varphi'$ is (a.s.) an NP-test. If $\mathbb{E}_{\vartheta_0}[\varphi'(X)] < \alpha$, then $\mathbb{E}_{\vartheta_1}[\varphi'(X)]=1$.
+* If $\varphi'$ is UMP with level $\alpha$, then $\varphi'$ is (a.s.) an NP-test. Also
 
-An NP-test $\varphi^*$ for $H \colon \vartheta = \vartheta_0$ vs $K \colon \vartheta = \vartheta_1$ is uniquely defined outside of $S_= =\lbrace x\ |\ p_1(x) = c^*p_0(x) \rbrace$. On $S_=$ set the test can be chosen such that $\beta_{\varphi^*}(\vartheta_0) = \alpha$.
+$$ \mathbb{E}_{\vartheta_0}[\varphi'(X)] < \alpha \Longrightarrow \mathbb{E}_{\vartheta_1}[\varphi'(X)]=1.$$
+
+An NP-test $\varphi^*$ for $H \colon \vartheta = \vartheta_0$ vs $K \colon \vartheta = \vartheta_1$ is uniquely defined outside of 
+
+$$S_= =\lbrace x\ |\ p_1(x) = c^*p_0(x) \rbrace.$$
+
+On $S_=$ set the test can be chosen such that $\beta_{\varphi^*}(\vartheta_0) = \alpha$.
 
 Is must also be noted that every NP-test $\varphi^*$ with $\beta_{\varphi^*}(\vartheta_0) \in (0, 1)$ is unbiased. In particular
 
@@ -1485,6 +1500,7 @@ var alpha_text = svg
   .attr("x", 1.2 * fig_width + 5)
   .attr("font-family", "Arvo")
   .text("Significance level: " + alpha)
+  .style("font-size", "14px")
   .style("fill", "#348ABD");
   
 var power_text = svg
@@ -1494,6 +1510,7 @@ var power_text = svg
   .attr("x", 1.2 * fig_width + 5)
   .attr("font-family", "Arvo")
   .text("Power: " + power)
+  .style("font-size", "14px")
   .style("fill", "#348ABD");
 
    
@@ -1501,11 +1518,9 @@ d3.select("#simple_hypothesis")
   .append("div")
   .text("\\(\\alpha \\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 5 + margin.left + "px")
   .style("top", 15 + "px");
@@ -1514,11 +1529,9 @@ d3.select("#simple_hypothesis")
   .append("div")
   .text("\\(u_{1-\\alpha} \\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", 1.9 * fig_width + 5 + margin.left + "px")
   .style("top", 2 * fig_height + 15 + "px");
@@ -1551,6 +1564,7 @@ svg
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("H distribution")
+  .style("font-size", "14px")
   .style("fill", "#65AD69");
   
 svg.append("path")
@@ -1578,6 +1592,7 @@ svg
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("K distribution")
+  .style("font-size", "14px")
   .style("fill", "#EDA137");
        
 svg.append("path")
@@ -1606,14 +1621,12 @@ d3.select("#simple_hypothesis")
   .append("div")
   .text("\\(\\varphi(x) \\)")
   .style('color', '#348ABD')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + margin.left + 30 + "px")
-  .style("top", labels_y + 50 + "px");
+  .style("top", labels_y + 47 + "px");
 
 
 svg.append("path")
@@ -1637,14 +1650,12 @@ d3.select("#simple_hypothesis")
   .append("div")
   .text("\\(1-\\Phi(x) \\)")
   .style('color', '#348ABD')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 20 + "px");
+  .style("top", labels_y + 17 + "px");
   
 var table_text_acc_h = svg
   .append("text")
@@ -1653,6 +1664,7 @@ var table_text_acc_h = svg
   .attr("x", 0.5 * fig_width)
   .attr("font-family", "Arvo")
   .text("Accepted H")
+  .style("font-size", "14px")
   .style("fill", "#65AD69");
   
 var table_text_rej_h = svg
@@ -1662,6 +1674,7 @@ var table_text_rej_h = svg
   .attr("x", 0.85 * fig_width)
   .attr("font-family", "Arvo")
   .text("Rejected H")
+  .style("font-size", "14px")
   .style("fill", "#EDA137");
   
 var table_text_true_h = svg
@@ -1671,6 +1684,7 @@ var table_text_true_h = svg
   .attr("x", 0.2 * fig_width)
   .attr("font-family", "Arvo")
   .text("H is true")
+  .style("font-size", "14px")
   .style("fill", "#65AD69");
   
 var table_text_true_k = svg
@@ -1680,6 +1694,7 @@ var table_text_true_k = svg
   .attr("x", 0.2 * fig_width)
   .attr("font-family", "Arvo")
   .text("K is true")
+  .style("font-size", "14px")
   .style("fill", "#EDA137");
   
 var table_text_hh = svg
@@ -1689,6 +1704,7 @@ var table_text_hh = svg
   .attr("x", 0.6 * fig_width)
   .attr("font-family", "Arvo")
   .text("0")
+  .style("font-size", "14px")
   .style("fill", "#65AD69");
   
 var table_text_hk = svg
@@ -1698,6 +1714,7 @@ var table_text_hk = svg
   .attr("x", 0.6 * fig_width)
   .attr("font-family", "Arvo")
   .text("0")
+  .style("font-size", "14px")
   .style("fill", "#E86456");
   
 var table_text_kh = svg
@@ -1707,6 +1724,7 @@ var table_text_kh = svg
   .attr("x", 0.95 * fig_width)
   .attr("font-family", "Arvo")
   .text("0")
+  .style("font-size", "14px")
   .style("fill", "#E86456");
   
 var table_text_kk = svg
@@ -1716,6 +1734,7 @@ var table_text_kk = svg
   .attr("x", 0.95 * fig_width)
   .attr("font-family", "Arvo")
   .text("0")
+  .style("font-size", "14px")
   .style("fill", "#EDA137");
   
 }
@@ -1730,9 +1749,13 @@ simple_hypothesis();
 Simple hypotheses like that are not relevant in practice, <ins>but</ins>:
 
 * They explain intuitively how to construct a test. One needs a so called **confidence interval** $c(X) \subset \Theta$ in which the unknown parameter lies with probability $1-\alpha$. In example above we used that for $c(X) = [\overline{X}_n - u_{1-\alpha} \frac{\sigma}{\sqrt{n}}, \infty)$:
+ 
 $$P_{\mu_0}(\mu_0 \in c(X)) = P_{\mu_0}(\overline{X}_n \leq \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}) = 1-\alpha.$$
+
 Any such $c(X)$ can be used to construct a test, for example,
+
 $$c'(X) =\Big[\overline{X}_n -u_{1-\frac{\alpha}{2}} \frac{\sigma}{\sqrt{n}}, \overline{X}_n + u_{1-\frac{\alpha}{2}} \frac{\sigma}{\sqrt{n}} \Big].$$
+
 In addition, simple hypotheses tell you on which side the alternative lies.
 
 * Formal results like the NP lemma are useful to derive more relevant results. 
@@ -1758,7 +1781,7 @@ Let also
 
 $$\varphi^*(x) = 1_{\lbrace T(x) > c\rbrace} + \gamma 1_{\lbrace T(x) = c\rbrace},$$
 
-where $c := \inf \lbrace t\ |\ P_{\vartheta_0}(T(X) > t) \leq \alpha \rbrace$ and
+where $c = \inf \lbrace t \mid P_{\vartheta_0}(T(X) > t) \leq \alpha \rbrace$ and
 
 $$\gamma = 
 				\left \lbrace
@@ -1826,7 +1849,11 @@ $$P_{\mu_0}(\overline{X}_n > c) = \alpha \Longleftrightarrow c = \mu_0 + \frac{\
 
 This UMP test $\varphi^*(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$ is called **the one-sided Gauss test**.
 
-There is a heuristic how to get to the one-sided Gauss test: since $\overline{X}_n$ is UMVU for $\mu$, a reasonable strategy is to decide for $K$ if $\overline{X}_n$ is "large enough", so the test shoud be of the form $\varphi(x) = 1_{\lbrace \overline{X}_n > c \rbrace }$. Choosing $c$ happens by controlling the error of the 1st kind. For all $\mu \leq \mu_0$ we have
+There is a heuristic how to get to the one-sided Gauss test: since $\overline{X}_n$ is UMVU for $\mu$, a reasonable strategy is to decide for $K$ if $\overline{X}_n$ is "large enough", so the test shoud be of the form 
+
+$$\varphi(x) = 1_{\lbrace \overline{X}_n > c \rbrace }.$$
+
+Choosing $c$ happens by controlling the error of the 1st kind. For all $\mu \leq \mu_0$ we have
 
 $$ \begin{aligned}
 \beta_\varphi(\mu) &= P_\mu(\overline{X}_n > c) \\ &= P_\mu \Big( \frac{\sqrt{n}(\overline{X}_n - \mu) }{\sigma} > \frac{\sqrt{n}(c-\mu)}{\sigma}\Big) \\ &= 1 - \Phi\Big(\frac{\sqrt{n}(c-\mu)}{\sigma}\Big) \\&\leq 1 - \Phi\Big(\frac{\sqrt{n}(c-\mu_0)}{\sigma}\Big).
@@ -1869,7 +1896,10 @@ $$H'\colon\vartheta = \vartheta_0 \quad \text{vs} \quad K'\colon\vartheta = \var
 with $\vartheta_0 \neq \vartheta_1$. In case of monotone likelihood-ratio, the optimal test in this case is 
 $$\varphi(x) = 1_{\lbrace T(x) > c \rbrace} + \gamma(x) 1_{\lbrace T(x) = c\rbrace}$$
 for $\vartheta_1 > \vartheta_0$ and
- $$\varphi'(x) = 1_{\lbrace T(x) < c'\rbrace } + \gamma'(x) 1_{\lbrace T(x) = c'\rbrace} $$ for $\vartheta_1 < \vartheta_0$. This is not possible.
+
+ $$\varphi'(x) = 1_{\lbrace T(x) < c'\rbrace } + \gamma'(x) 1_{\lbrace T(x) = c'\rbrace} $$ 
+ 
+for $\vartheta_1 < \vartheta_0$. This is not possible.
 
 There is a theorem for one-parametric exponential family with density
 
@@ -1953,7 +1983,11 @@ Unbiased estimators for variances are
 
 $$ \hat{s}_{m}^2(X)=\frac{1}{m-1}\sum_{i=1}^{m}(X_i-\overline{X}_m)^2, \quad \hat{s}_{n}^2(Y)=\frac{1}{n-1}\sum_{i=1}^{n}(Y_i-\overline{Y}_n)^2. $$
 
-Let also $\hat{s}_{m, n}^2 = \frac{1}{m}\hat{s}_{m}^2(X) + \frac{1}{n}\hat{s}_{n}^2(Y)$. The distribution of random variable 
+Let also 
+
+$$\hat{s}_{m, n}^2 = \frac{1}{m}\hat{s}_{m}^2(X) + \frac{1}{n}\hat{s}_{n}^2(Y).$$
+
+The distribution of random variable 
 
 $$T_{m,n}^*=\frac{\overline{X}_m-\overline{Y}_n}{\hat{s}_{m, n}}$$
 
@@ -2029,7 +2063,11 @@ Let
 
 $$\hat{\eta}_n=\arg\max_{\eta \in \Delta}f_n(X^{(n)},h(\eta)) \quad \text{and} \quad \hat{\theta}_n=\arg\max_{\vartheta \in \Theta}f_n(X^{(n)},\vartheta)$$
 
-be maximum-likelihood estimators for families $\mathcal{P}_h = \lbrace P_{h(\eta)}\ |\ \eta \in \Delta\rbrace $ and $\mathcal{P}_\vartheta = \lbrace P_\vartheta\ |\ \vartheta \in \Theta \rbrace$ respectively. Also let conditions from [theorem of asymptotic efficiency for maximum-likelihood estimators](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) for both families be satisfied. Then
+be maximum-likelihood estimators for families 
+
+$$\mathcal{P}_h = \lbrace P_{h(\eta)}\ |\ \eta \in \Delta\rbrace \quad \text{and} \quad \mathcal{P}_\vartheta = \lbrace P_\vartheta\ |\ \vartheta \in \Theta \rbrace$$
+
+respectively. Also let conditions from [theorem of asymptotic efficiency for maximum-likelihood estimators](https://astralord.github.io/posts/visual-guide-to-statistics-part-iii-asymptotic-properties-of-estimators/#asymptotic-efficiency-of-maximum-likelihood-estimators) for both families be satisfied. Then
 
 $$ T_n=-2\log \lambda(X^{(n)})=2(\log f_n(X^{(n)}, \hat{\theta}_n)-\log f_n(X^{(n)}, h(\hat{\eta}_n))) \xrightarrow[]{\mathcal{L}} \chi_{d-c}^2,$$
 
@@ -2268,7 +2306,7 @@ function addCurve(mu, sigma) {
     curve_id = k;               
     var data = gauss_data(mus[k], sigmas[k], -10, 10);
     
-    var color = "#000"
+    var color = "#000";
     for (var i = 0; i < colors.length; i += 1) {
         if (booked_colors.indexOf(colors[i]) < 0) {
              color = colors[i];
@@ -2631,7 +2669,7 @@ d3.select("#asymptotic_test")
   .append("div")
   .text("\\(\\alpha \\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 5 + margin.left + "px")
@@ -2641,7 +2679,7 @@ d3.select("#asymptotic_test")
   .append("div")
   .text("\\(\\chi^2_{r-1, 1-\\alpha} \\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.9 * fig_width + 5 + margin.left + "px")
@@ -2672,7 +2710,7 @@ d3.select("#asymptotic_test")
   .append("div")
   .text("\\(1-F_{\\chi^2_{r-1}}(x) \\)")
   .style('color', '#348ABD')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
@@ -2999,7 +3037,7 @@ var tn_text = svg.append("text")
                .attr("x", 1.4 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
-               .style("font-size", "13px")
+               .style("font-size", "15px")
                .style("fill", "#348ABD");
              
                
@@ -3009,7 +3047,7 @@ var vn_text = svg.append("text")
                .attr("x", 1.8 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
-               .style("font-size", "13px")
+               .style("font-size", "15px")
                .style("fill", "#EDA137");
 
 function updateTn() {
@@ -3184,7 +3222,7 @@ d3.select("#htmp")
   .append("div")
   .text("\\(X_{i \\cdot} \\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", margin.left - 35 + "px")
@@ -3194,7 +3232,7 @@ d3.select("#htmp")
   .append("div")
   .text("\\(X_{\\cdot j} \\)")
   .style('color', '#000')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 0.5 * fig_width + margin.left - 5 + "px")
@@ -3203,7 +3241,7 @@ d3.select("#htmp")
 d3.select("#htmp")
   .append("div")
   .text("\\(T_n \\)")
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 2.25 * fig_width + margin.left + "px")
@@ -3213,7 +3251,7 @@ d3.select("#htmp")
   .append("div")
   .text("\\(T_n \\)")
   .style('color', '#348ABD')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.4 * fig_width + margin.left + "px")
@@ -3223,7 +3261,7 @@ d3.select("#htmp")
   .append("div")
   .text("\\(\\chi_{12, 0.95}^2 \\)")
   .style('color', '#348ABD')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", xRight(c) + 40 + "px")
@@ -3233,7 +3271,7 @@ d3.select("#htmp")
   .append("div")
   .text("\\(V_n \\)")
   .style('color', '#EDA137')
-  .style("font-size", "13px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.8 * fig_width + margin.left + "px")
