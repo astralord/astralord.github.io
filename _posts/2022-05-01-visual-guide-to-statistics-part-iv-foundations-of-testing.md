@@ -3045,7 +3045,7 @@ for (var i = 0; i < s; i += 1) {
 var t_n = 0, v_n = 0;
 var tn_text = svg.append("text")
                .attr("text-anchor", "start")
-               .attr("y", 0.8 * fig_height - 2)
+               .attr("y", 0.8 * fig_height + 3)
                .attr("x", 1.4 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
@@ -3055,7 +3055,7 @@ var tn_text = svg.append("text")
                
 var vn_text = svg.append("text")
                .attr("text-anchor", "start")
-               .attr("y", 0.8 * fig_height - 2)
+               .attr("y", 0.8 * fig_height + 3)
                .attr("x", 1.8 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
@@ -3140,7 +3140,7 @@ function updateTn() {
   };
   
   var onclick = function(d) {
-    if (d3.event.ctrlKey) {
+    if (d3.event.ctrlKey || d3.event.metaKey) {
       d['value'] += 1;
     }
     else {
@@ -3266,7 +3266,7 @@ d3.select("#htmp")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.4 * fig_width + margin.left + "px")
-  .style("top", 0.8 * fig_height + 11 + "px");
+  .style("top", 0.8 * fig_height + 15 + "px");
   
 d3.select("#htmp")
   .append("div")
@@ -3286,7 +3286,7 @@ d3.select("#htmp")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.8 * fig_width + margin.left + "px")
-  .style("top", 0.8 * fig_height + 11 + "px");
+  .style("top", 0.8 * fig_height + 15 + "px");
   
   var heatmap = svg.selectAll()
       .data(data)
@@ -3315,4 +3315,4 @@ plt_heatmap();
 </script>
 
 ![](.)
-*Fig. 4. Visualization for chi-square independence test with $r=4$ and $s=5$. Significance level $\alpha$ is fixed at $0.05$. Click on the cell of contingency table to increase $X_{ij}$ value, and CTRL + click to decrease.*
+*Fig. 4. Visualization for chi-square independence test with $r=4$ and $s=5$. Significance level $\alpha$ is fixed at $0.05$. Click on the cell of contingency table to increase $X_{ij}$ value, and CTRL + click to decrease (or Command + click for Mac OS).*
