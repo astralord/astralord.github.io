@@ -2433,7 +2433,7 @@ d3.select("#asymptotic_test")
   .style("left", margin.left + "px")
   .style("top", 1.9 * fig_height + 15 + "px");
 
-d3.csv("../assets/chi_sf.csv", function(error, data) {
+d3.csv("../../../../assets/chi_sf.csv", function(error, data) {
   if (error) throw error;
   const quantiles = [3.84, 5.99, 7.81, 9.49];
   
@@ -2724,7 +2724,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 20 + "px");
+  .style("top", labels_y + 10 + "px");
   
 svg.append('g')
      .selectAll("dot")
@@ -2742,19 +2742,20 @@ d3.select("#asymptotic_test")
   .append("div")
   .text("\\(T_n \\)")
   .style('color', '#348ABD')
-  .style("font-size", "12px")
+  .style("font-size", "15px")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 41 + "px");
+  .style("top", labels_y + 35 + "px");
 
-var alpha_text = svg
+svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 5)
   .attr("x", 0.7 * fig_width )
   .attr("font-family", "Arvo")
   .text("X distributions")
+  .style("font-size", "14px")
   .style("fill", "#696969");
   
 d3.select("#asymptotic_test")
@@ -2765,7 +2766,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 100 + margin.left + "px")
-  .style("top", fig_height + 57 + "px");
+  .style("top", fig_height + 60 + "px");
   
 d3.select("#asymptotic_test")
   .append("div")
@@ -2775,7 +2776,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 100 + margin.left + "px")
-  .style("top", fig_height + 82 + "px");
+  .style("top", fig_height + 80 + "px");
   
 d3.select("#asymptotic_test")
   .append("div")
@@ -2785,7 +2786,7 @@ d3.select("#asymptotic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", 1.2 * fig_width + 25 + margin.left + "px")
-  .style("top", fig_height + 57 + "px");
+  .style("top", fig_height + 60 + "px");
 
 svg
   .append("text")
@@ -2794,6 +2795,7 @@ svg
   .attr("x", 1.2 * fig_width + 5)
   .attr("font-family", "Arvo")
   .text("Significance level: 0.05")
+  .style("font-size", "14px")
   .style("fill", "#348ABD");
 
 
@@ -2836,7 +2838,7 @@ function createStatTexts() {
                      .attr("y", y(-0.22))
                      .attr("x", 1.2 * fig_width + 115)
                      .attr("font-family", "Arvo")
-                     .style("font-size", "12px")
+                     .style("font-size", "15px")
                      .text("");
                      
   t_text = svg.append("text")
@@ -2844,7 +2846,7 @@ function createStatTexts() {
                      .attr("y", y(-0.32))
                      .attr("x", 1.2 * fig_width + 115)
                      .attr("font-family", "Arvo")
-                     .style("font-size", "12px")
+                     .style("font-size", "15px")
                      .text("")
                      .style("fill", "#348ABD");
 }
