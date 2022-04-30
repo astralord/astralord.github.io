@@ -698,7 +698,7 @@ d3.select("#basic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 2 * labels_v + 15 + "px");
+  .style("top", labels_y + 2 * labels_v + 13 + "px");
   
 d3.select("#basic_test")
   .append("div")
@@ -709,7 +709,7 @@ d3.select("#basic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 3 * labels_v + 15 + "px");
+  .style("top", labels_y + 3 * labels_v + 12 + "px");
     
 d3.select("#basic_test")
   .append("div")
@@ -759,13 +759,13 @@ $$1-\beta_\varphi(\vartheta) \geq \alpha \quad \forall \vartheta \in \Theta_K.$$
 
 For an unbiased test with significance level $\alpha$ the probability of deciding for $K$ for every $\vartheta \in \Theta_K$ is not smaller than for $\vartheta \in \Theta_H$. The set of all unbiased tests with level $\alpha$ we will call $\Phi_{\alpha \alpha}$.
 
-Test $\varphi^* \in \Phi_\alpha$ is called **uniformly most powerful (UMP)** test with significance level $\alpha$ if
+Test $\tilde{\varphi} \in \Phi_\alpha$ is called **uniformly most powerful (UMP)** test with significance level $\alpha$ if
 
-$$\beta_{\varphi^*}(\vartheta) = \inf_{\varphi \in \Phi_\alpha} \beta_\varphi(\vartheta) \quad \forall \vartheta \in \Theta_K.$$
+$$\beta_{\tilde{\varphi}}(\vartheta) = \inf_{\varphi \in \Phi_\alpha} \beta_\varphi(\vartheta) \quad \forall \vartheta \in \Theta_K.$$
 
-Test $\varphi^* \in \Phi_{\alpha\alpha}$ is called **uniformly most powerful unbiased (UMPU)** test with significance level $\alpha$ if
+Test $\tilde{\varphi} \in \Phi_{\alpha\alpha}$ is called **uniformly most powerful unbiased (UMPU)** test with significance level $\alpha$ if
 
-$$\beta_{\varphi^*}(\vartheta) = \inf_{\varphi \in \Phi_{\alpha\alpha}} \beta_\varphi(\vartheta) \quad \forall \vartheta \in \Theta_K.$$
+$$\beta_{\tilde{\varphi}}(\vartheta) = \inf_{\varphi \in \Phi_{\alpha\alpha}} \beta_\varphi(\vartheta) \quad \forall \vartheta \in \Theta_K.$$
 
 ### Neyman-Pearson lemma
 
@@ -791,29 +791,29 @@ $$\varphi(x):
 	\end{array}
 	\right.$$
 
-Let $\varphi^*$ be an NP-test with constant $c^*$ and let $\varphi$ be some other test with 
+Let $\tilde{\varphi}$ be an NP-test with constant $\tilde{c}$ and let $\varphi$ be some other test with 
 
-$$\beta_\varphi(\vartheta_0) \geq \beta_{\varphi^*}(\vartheta_0).$$ 
+$$\beta_\varphi(\vartheta_0) \geq \beta_{\tilde{\varphi}}(\vartheta_0).$$ 
 
 Then we have
 
-$$\begin{aligned} \beta_\varphi(\vartheta_1) - \beta_{\varphi^*}(\vartheta_1) &= (1 - \beta_{\varphi^*}(\vartheta_1) ) - (1 - \beta_\varphi(\vartheta_1) ) \\&=\int (\varphi^* - \varphi) p_1 dx \\&= \int (\varphi^* - \varphi)(p_1 - c^*p_0)dx + \int c^* p_0 (\varphi^* - \varphi) dx.
+$$\begin{aligned} \beta_\varphi(\vartheta_1) - \beta_{\tilde{\varphi}}(\vartheta_1) &= (1 - \beta_{\tilde{\varphi}}(\vartheta_1) ) - (1 - \beta_\varphi(\vartheta_1) ) \\&=\int (\tilde{\varphi} - \varphi) p_1 dx \\&= \int (\tilde{\varphi} - \varphi)(p_1 - \tilde{c}p_0)dx + \int \tilde{c} p_0 (\tilde{\varphi} - \varphi) dx.
 \end{aligned}$$
 
 For the first integral note that
 
-$$\varphi^* - \varphi > 0 \Longrightarrow \varphi^* > 0 \Longrightarrow p_1 \geq c^*p_0, \\
-\varphi^* - \varphi < 0 \Longrightarrow \varphi^* < 1 \Longrightarrow p_1 \leq c^*p_0. $$
+$$\tilde{\varphi} - \varphi > 0 \Longrightarrow \tilde{\varphi} > 0 \Longrightarrow p_1 \geq \tilde{c}p_0, \\
+\tilde{\varphi} - \varphi < 0 \Longrightarrow \tilde{\varphi} < 1 \Longrightarrow p_1 \leq \tilde{c}p_0. $$
 
-Hence, $(\varphi^* - \varphi)(p_1 - c^*p_0) \geq 0$ always. The second integral is 
+Hence, $(\tilde{\varphi} - \varphi)(p_1 - \tilde{c}p_0) \geq 0$ always. The second integral is 
 
-$$c^*(\beta_{\varphi^*}(\vartheta_0) - \beta_\varphi(\vartheta_0)) \geq 0.$$ 
+$$\tilde{c}(\beta_{\tilde{\varphi}}(\vartheta_0) - \beta_\varphi(\vartheta_0)) \geq 0.$$ 
 
 Therefore we have 
 
-$$\beta_\varphi(\vartheta_1) \geq \beta_{\varphi^*}(\vartheta_1)$$
+$$\beta_\varphi(\vartheta_1) \geq \beta_{\tilde{\varphi}}(\vartheta_1)$$
 
- and NP-test $\varphi^*$ is an UMP test with level $\alpha = \mathbb{E}_{\vartheta_0}[\varphi^*(X)]$. This statement is called **NP lemma**.
+and NP-test $\tilde{\varphi}$ is an UMP test with level $\alpha = \mathbb{E}_{\vartheta_0}[\tilde{\varphi}(X)]$. This statement is called **NP lemma**.
 
 There are also other parts of this lemma which I will state here without proof:
 
@@ -822,23 +822,23 @@ There are also other parts of this lemma which I will state here without proof:
 
 $$ \mathbb{E}_{\vartheta_0}[\varphi'(X)] < \alpha \Longrightarrow \mathbb{E}_{\vartheta_1}[\varphi'(X)]=1.$$
 
-An NP-test $\varphi^*$ for $H \colon \vartheta = \vartheta_0$ vs $K \colon \vartheta = \vartheta_1$ is uniquely defined outside of 
+An NP-test $\tilde{\varphi}$ for $H \colon \vartheta = \vartheta_0$ vs $K \colon \vartheta = \vartheta_1$ is uniquely defined outside of 
 
-$$S_= =\lbrace x\ |\ p_1(x) = c^*p_0(x) \rbrace.$$
+$$S_= =\lbrace x\ |\ p_1(x) = \tilde{c}p_0(x) \rbrace.$$
 
-On $S_=$ set the test can be chosen such that $\beta_{\varphi^*}(\vartheta_0) = \alpha$.
+On $S_=$ set the test can be chosen such that $\beta_{\tilde{\varphi}}(\vartheta_0) = \alpha$.
 
-Is must also be noted that every NP-test $\varphi^*$ with $\beta_{\varphi^*}(\vartheta_0) \in (0, 1)$ is unbiased. In particular
+Is must also be noted that every NP-test $\tilde{\varphi}$ with $\beta_{\tilde{\varphi}}(\vartheta_0) \in (0, 1)$ is unbiased. In particular
 
-$$\alpha := 1 - \beta_{\varphi^*}(\vartheta_0) < 1 - \beta_{\varphi^*}(\vartheta_1).$$
+$$\alpha := 1 - \beta_{\tilde{\varphi}}(\vartheta_0) < 1 - \beta_{\tilde{\varphi}}(\vartheta_1).$$
 
 <details>
 <summary>Proof</summary>
-Take test $\varphi \equiv \alpha$. It has significance level $\alpha$ and since $\varphi^*$ is UMP, we have 
+Take test $\varphi \equiv \alpha$. It has significance level $\alpha$ and since $\tilde{\varphi}$ is UMP, we have 
 
-$$1-\beta_\varphi(\vartheta_1) \leq 1-\beta_{\varphi^*}(\vartheta_1).$$
+$$1-\beta_\varphi(\vartheta_1) \leq 1-\beta_{\tilde{\varphi}}(\vartheta_1).$$
 
-If $\alpha = 1-\beta_{\varphi^*}(\vartheta_1) < 1$, then $\varphi \equiv \alpha$ is UMP. Since every UMP test is an NP test, we know that $p_1(x) = c^*p_0(x)$ for almost all $x$. Therefore, $c^*=1$ and $p_1 = p_0$ a.s. and also $P_{\vartheta_0} = P_{\vartheta_1}$, which is contradictory.
+If $\alpha = 1-\beta_{\tilde{\varphi}}(\vartheta_1) < 1$, then $\varphi \equiv \alpha$ is UMP. Since every UMP test is an NP test, we know that $p_1(x) = \tilde{c}p_0(x)$ for almost all $x$. Therefore, $\tilde{c}=1$ and $p_1 = p_0$ a.s. and also $P_{\vartheta_0} = P_{\vartheta_1}$, which is contradictory.
 </details>
 
 ### Confidence interval
@@ -853,7 +853,7 @@ $$p_j(x) = (2 \pi \sigma^2)^{-n/2} \exp \Big( -\frac{1}{2\sigma^2} \Big( \sum_{i
 
 As the inequality for the likelihood ratio which we need for the construction of the NP test, we get
 
-$$\frac{p_1(x)}{p_0(x)} = \exp \Big( \frac{1}{\sigma^2} \sum_{i=1}^{n} x_i(\mu_1 - \mu_0) \Big) \cdot f(\sigma^2, \mu_1, \mu_0) > c^*,$$
+$$\frac{p_1(x)}{p_0(x)} = \exp \Big( \frac{1}{\sigma^2} \sum_{i=1}^{n} x_i(\mu_1 - \mu_0) \Big) \cdot f(\sigma^2, \mu_1, \mu_0) > \tilde{c},$$
 
 where the known constant $f(\sigma^2, \mu_1, \mu_0)$ is positive. This inequality is equivalent to
 
@@ -876,7 +876,7 @@ $$\frac{\sqrt{n}(c - \mu_0)}{\sigma} = u_{1-\alpha} \quad \Longleftrightarrow \q
 
 The NP-test becomes
 
-$$\varphi^*(X) = 1_{\lbrace\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\sqrt{n}}  \rbrace }.$$
+$$\tilde{\varphi}(X) = 1_{\lbrace\overline{X}_n > \mu_0 + u_{1-\alpha} \frac{\sigma}{\sqrt{n}}  \rbrace }.$$
 
 
 
@@ -1626,7 +1626,7 @@ d3.select("#simple_hypothesis")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", labels_x + margin.left + 30 + "px")
-  .style("top", labels_y + 47 + "px");
+  .style("top", labels_y + 45 + "px");
 
 
 svg.append("path")
@@ -1655,7 +1655,7 @@ d3.select("#simple_hypothesis")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 17 + "px");
+  .style("top", labels_y + 15 + "px");
   
 var table_text_acc_h = svg
   .append("text")
@@ -1779,7 +1779,7 @@ $$H\colon\vartheta \leq \vartheta_0 \quad \text{vs} \quad K\colon\vartheta > \va
 
 Let also
 
-$$\varphi^*(x) = 1_{\lbrace T(x) > c\rbrace} + \gamma 1_{\lbrace T(x) = c\rbrace},$$
+$$\tilde{\varphi}(x) = 1_{\lbrace T(x) > c\rbrace} + \gamma 1_{\lbrace T(x) = c\rbrace},$$
 
 where $c = \inf \lbrace t \mid P_{\vartheta_0}(T(X) > t) \leq \alpha \rbrace$ and
 
@@ -1791,13 +1791,13 @@ $$\gamma =
 				\end{array}
 				\right.$$
 
-Then $1-\beta_{\varphi^*}(\vartheta_0) = \alpha$ and $\varphi^*$ is UMP test with significance level $\alpha$.
+Then $1-\beta_{\tilde{\varphi}}(\vartheta_0) = \alpha$ and $\tilde{\varphi}$ is UMP test with significance level $\alpha$.
 
 <details>
 <summary>Proof</summary>
 We have
 
-$$1-\beta_{\varphi^*}(\vartheta_0)=P_{\vartheta_0}(T(X)>c) + \gamma P_{\vartheta_0}(T(X) = c) = \alpha. $$
+$$1-\beta_{\tilde{\varphi}}(\vartheta_0)=P_{\vartheta_0}(T(X)>c) + \gamma P_{\vartheta_0}(T(X) = c) = \alpha. $$
 
 Let $\vartheta_0 < \vartheta_1$, then due to monotonicity
 
@@ -1805,7 +1805,7 @@ $$H_{\vartheta_0, \vartheta_1}(T(x)) > H_{\vartheta_0, \vartheta_1}(c) = s \quad
 
 and
 
-$$\varphi^*(x) =
+$$\tilde{\varphi}(x) =
 		\left \{
 		\begin{array}{cl}
 		1, & H_{\vartheta_0, \vartheta_1}(x) > s, \\
@@ -1813,25 +1813,25 @@ $$\varphi^*(x) =
 		\end{array}
 		\right.$$
 
-Therefore $\varphi^*$ is NP-test with significance level $\alpha$ and by NP lemma
+Therefore $\tilde{\varphi}$ is NP-test with significance level $\alpha$ and by NP lemma
 
-$$ \beta_{\varphi^*}(\vartheta_1) = \inf \{\beta_\varphi(\vartheta_1)\ |\  \beta_\varphi(\vartheta_0) = 1-\alpha \}. $$
+$$ \beta_{\tilde{\varphi}}(\vartheta_1) = \inf \{\beta_\varphi(\vartheta_1)\ |\  \beta_\varphi(\vartheta_0) = 1-\alpha \}. $$
 	    
-As $\varphi^*$ doesn't depend on $\vartheta_1$, this relation holds for all $\vartheta_1 > \vartheta_0$. Finally, let $\varphi'(x) = 1 - \varphi^*(x)$. Using the similar reasoning as above one can show that
+As $\tilde{\varphi}$ doesn't depend on $\vartheta_1$, this relation holds for all $\vartheta_1 > \vartheta_0$. Finally, let $\varphi'(x) = 1 - \tilde{\varphi}(x)$. Using the similar reasoning as above one can show that
 
 $$\beta_{\varphi'}(\vartheta_2) = \inf \{\beta_\varphi(\vartheta_2)\ |\ \beta_\varphi(\vartheta_0) = 1 - \alpha \} \quad \forall \vartheta_2 < \vartheta_0. $$
 
 For trivial test $\overline{\varphi} \equiv \alpha$ the following equality takes place: $\beta_{\overline{\varphi}}(\vartheta_0) = 1-\alpha$. Hence we conclude that
 
-$$1-\beta_{\varphi^*}(\vartheta_2) = \beta_{\varphi'}(\vartheta_2) \geq \beta_{1-\overline{\varphi}}(\vartheta_2) = 1-\beta_{\overline{\varphi}}(\vartheta_2) = \alpha.  $$
+$$1-\beta_{\tilde{\varphi}}(\vartheta_2) = \beta_{\varphi'}(\vartheta_2) \geq \beta_{1-\overline{\varphi}}(\vartheta_2) = 1-\beta_{\overline{\varphi}}(\vartheta_2) = \alpha.  $$
 	    
-Hence, $1-\beta_{\varphi^*}(\vartheta_2) \geq \alpha$, $\varphi^* \in \Phi_\alpha$ and $\varphi^*$ is UMP test.
+Hence, $1-\beta_{\tilde{\varphi}}(\vartheta_2) \geq \alpha$, $\tilde{\varphi} \in \Phi_\alpha$ and $\tilde{\varphi}$ is UMP test.
  
 Also for any $\vartheta < \vartheta_0$ we have 
 
-$$\beta_{\varphi^*}(\vartheta) = \sup \lbrace \beta_\varphi(\vartheta)\ |\ 1 - \beta_\varphi(\vartheta_0) = \alpha \rbrace,$$
+$$\beta_{\tilde{\varphi}}(\vartheta) = \sup \lbrace \beta_\varphi(\vartheta)\ |\ 1 - \beta_\varphi(\vartheta_0) = \alpha \rbrace,$$
 
-because of $\beta_{\varphi'} = 1 - \beta_{\varphi^*}$.
+because of $\beta_{\varphi'} = 1 - \beta_{\tilde{\varphi}}$.
 
 </details>
 
@@ -1841,13 +1841,13 @@ $$ p_\mu(x) = (2 \pi \sigma^2)^{-\frac{n}{2}} \exp \Big( -\frac{1}{2\sigma^2}\su
 
 has a monotone likelihood ratio in $T(X) = \overline{X}_n$. An UMP test with level $\alpha$ is given by
 
-$$\varphi^*(x) = 1_{\lbrace\overline{x}_n > c\rbrace } + \gamma 1_{\lbrace\overline{x}_n = c\rbrace}.$$
+$$\tilde{\varphi}(x) = 1_{\lbrace\overline{x}_n > c\rbrace } + \gamma 1_{\lbrace\overline{x}_n = c\rbrace}.$$
 
 Since $P_{\mu_0}(T(X) = c) = 0$, then $\gamma = 0$ and we choose $c$ such that 
 
 $$P_{\mu_0}(\overline{X}_n > c) = \alpha \Longleftrightarrow c = \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}.$$
 
-This UMP test $\varphi^*(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$ is called **the one-sided Gauss test**.
+This UMP test $\tilde{\varphi}(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$ is called **the one-sided Gauss test**.
 
 There is a heuristic how to get to the one-sided Gauss test: since $\overline{X}_n$ is UMVU for $\mu$, a reasonable strategy is to decide for $K$ if $\overline{X}_n$ is "large enough", so the test shoud be of the form 
 
@@ -2523,7 +2523,7 @@ d3.csv("../assets/chi_sf.csv", function(error, data) {
         sigmas.splice(curve_id, 1);
         gauss_curves.splice(curve_id, 1);
         
-        curve_id = Math.max(0, curve_id - 1)
+        curve_id = Math.max(0, curve_id - 1);
         gauss_curves[curve_id]
 	         .transition()
 	         .attr("opacity", ".8");
