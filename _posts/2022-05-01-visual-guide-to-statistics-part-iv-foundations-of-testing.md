@@ -7,7 +7,7 @@ tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pears
 math: true
 ---
   
-> In this chapter we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
+> In this post we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
 
 ### Introductory example
 
@@ -698,7 +698,7 @@ d3.select("#basic_test")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", fig_width + margin.left + 30 + "px")
-  .style("top", labels_y + 2 * labels_v + 13 + "px");
+  .style("top", labels_y + 2 * labels_v + 12 + "px");
   
 d3.select("#basic_test")
   .append("div")
@@ -1748,7 +1748,11 @@ simple_hypothesis();
 
 Simple hypotheses like that are not relevant in practice, <ins>but</ins>:
 
-* They explain intuitively how to construct a test. One needs a so called **confidence interval** $c(X) \subset \Theta$ in which the unknown parameter lies with probability $1-\alpha$. In example above we used that for $c(X) = [\overline{X}_n - u_{1-\alpha} \frac{\sigma}{\sqrt{n}}, \infty)$:
+* They explain intuitively how to construct a test. One needs a so called **confidence interval** $c(X) \subset \Theta$ in which the unknown parameter lies with probability $1-\alpha$. In example above we used that for 
+
+$$c(X) = [\overline{X}_n - u_{1-\alpha} \frac{\sigma}{\sqrt{n}}, \infty)$$
+
+we have
  
 $$P_{\mu_0}(\mu_0 \in c(X)) = P_{\mu_0}(\overline{X}_n \leq \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}) = 1-\alpha.$$
 
@@ -1847,7 +1851,11 @@ Since $P_{\mu_0}(T(X) = c) = 0$, then $\gamma = 0$ and we choose $c$ such that
 
 $$P_{\mu_0}(\overline{X}_n > c) = \alpha \Longleftrightarrow c = \mu_0 + \frac{\sigma}{\sqrt{n}} u_{1-\alpha}.$$
 
-This UMP test $\tilde{\varphi}(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$ is called **the one-sided Gauss test**.
+This UMP test 
+
+$$\tilde{\varphi}(x) = 1_{\lbrace \overline{X}_n > \mu_0 + \frac{\sigma}{\sqrt{n}}u_{1-\alpha} \rbrace }$$
+
+is called **the one-sided Gauss test**.
 
 There is a heuristic how to get to the one-sided Gauss test: since $\overline{X}_n$ is UMVU for $\mu$, a reasonable strategy is to decide for $K$ if $\overline{X}_n$ is "large enough", so the test shoud be of the form 
 
@@ -1894,7 +1902,9 @@ because these have to be optimal for all
 $$H'\colon\vartheta = \vartheta_0 \quad \text{vs} \quad K'\colon\vartheta = \vartheta_1$$
 
 with $\vartheta_0 \neq \vartheta_1$. In case of monotone likelihood-ratio, the optimal test in this case is 
+
 $$\varphi(x) = 1_{\lbrace T(x) > c \rbrace} + \gamma(x) 1_{\lbrace T(x) = c\rbrace}$$
+
 for $\vartheta_1 > \vartheta_0$ and
 
  $$\varphi'(x) = 1_{\lbrace T(x) < c'\rbrace } + \gamma'(x) 1_{\lbrace T(x) = c'\rbrace} $$ 
@@ -2726,7 +2736,7 @@ svg.append('g')
        .attr("r", 3)
         .style("fill", "#348ABD")
         .attr("stroke", "#000")
-        .attr("stroke-width", 1)
+        .attr("stroke-width", 1);
 
 d3.select("#asymptotic_test")
   .append("div")
