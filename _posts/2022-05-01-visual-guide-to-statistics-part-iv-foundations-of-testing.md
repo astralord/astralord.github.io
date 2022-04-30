@@ -3049,7 +3049,7 @@ var tn_text = svg.append("text")
                .attr("x", 1.4 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
-               .style("font-size", "15px")
+               .style("font-size", "14px")
                .style("fill", "#348ABD");
              
                
@@ -3059,7 +3059,7 @@ var vn_text = svg.append("text")
                .attr("x", 1.8 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
-               .style("font-size", "15px")
+               .style("font-size", "14px")
                .style("fill", "#EDA137");
 
 function updateTn() {
@@ -3121,14 +3121,14 @@ function updateTn() {
     d3.select(this)
       .style("stroke", "black")
       .style("opacity", 1);
-  }
+  };
   
   var mousemove = function(d) {
     tooltip
       .html(d.value)
       .style("left", (d3.mouse(this)[0] + 70) + "px")
       .style("top", (d3.mouse(this)[1]) + "px");
-  }
+  };
   
   var mouseleave = function(d) {
     tooltip
@@ -3137,7 +3137,7 @@ function updateTn() {
     d3.select(this)
       .style("stroke", "none")
       .style("opacity", 0.8);
-  }
+  };
   
   var onclick = function(d) {
     d['value'] += 1;
@@ -3145,7 +3145,7 @@ function updateTn() {
     
     d3.select(this)
       .style("fill", function(d) { return color(d['value'])} )
-  }
+  };
   
   var contextMenu = function (d) {
     d3.event.preventDefault();
@@ -3153,7 +3153,7 @@ function updateTn() {
     
     d3.select(this)
       .style("fill", function(d) { return color(d['value'])} )
-  }
+  };
  
 var c = 21.026;
 var phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
