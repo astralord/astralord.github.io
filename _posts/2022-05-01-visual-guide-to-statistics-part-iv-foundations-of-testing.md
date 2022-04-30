@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Visual Guide to Statistics. Part IV: Foundations of Testing'
-date: 2022-04-28 11:00 +0800
+date: 2022-05-01 11:00 +0800
 categories: [Statistics]
 tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pearson-test, ump-test, confidence-interval, one-sided-gauss-test, one-sided-t-test, two-sample-t-test, likelihood-ratio-test, wilks-theorem, bartlett-test, chi-square-independence-test]
 math: true
@@ -1819,11 +1819,11 @@ $$\tilde{\varphi}(x) =
 
 Therefore $\tilde{\varphi}$ is NP-test with significance level $\alpha$ and by NP lemma
 
-$$ \beta_{\tilde{\varphi}}(\vartheta_1) = \inf \{\beta_\varphi(\vartheta_1)\ |\  \beta_\varphi(\vartheta_0) = 1-\alpha \}. $$
+$$ \beta_{\tilde{\varphi}}(\vartheta_1) = \inf \lbrace \beta_\varphi(\vartheta_1)\ |\  \beta_\varphi(\vartheta_0) = 1-\alpha \rbrace. $$
 	    
 As $\tilde{\varphi}$ doesn't depend on $\vartheta_1$, this relation holds for all $\vartheta_1 > \vartheta_0$. Finally, let $\varphi'(x) = 1 - \tilde{\varphi}(x)$. Using the similar reasoning as above one can show that
 
-$$\beta_{\varphi'}(\vartheta_2) = \inf \{\beta_\varphi(\vartheta_2)\ |\ \beta_\varphi(\vartheta_0) = 1 - \alpha \} \quad \forall \vartheta_2 < \vartheta_0. $$
+$$\beta_{\varphi'}(\vartheta_2) = \inf \lbrace \beta_\varphi(\vartheta_2)\ |\ \beta_\varphi(\vartheta_0) = 1 - \alpha \rbrace \quad \forall \vartheta_2 < \vartheta_0. $$
 
 For trivial test $\overline{\varphi} \equiv \alpha$ the following equality takes place: $\beta_{\overline{\varphi}}(\vartheta_0) = 1-\alpha$. Hence we conclude that
 
@@ -2907,7 +2907,7 @@ where $\sum_{ij} p_{ij} = 1$. Joint density is
 
 $$ f_n(x^{(n)}, p) = P_p(X_{ij}=x_{ij}) = \frac{n!}{\prod_{i,j=1}^{r,s} x_{ij}!} \prod_{i,j=1}^{r,s} (p_{ij})^{x_{ij}}, $$
 
-where $x_{ij} = \{0, \dots, n\}$ and $\sum_{i,j=1}^{r,s} x_{ij} = n$. Maximum-likelihood estimator is
+where $x_{ij} = \lbrace 0, \dots, n\rbrace$ and $\sum_{i,j=1}^{r,s} x_{ij} = n$. Maximum-likelihood estimator is
 
 $$\hat{p}_{ij} = \frac{X_{ij}}{n}$$
 
