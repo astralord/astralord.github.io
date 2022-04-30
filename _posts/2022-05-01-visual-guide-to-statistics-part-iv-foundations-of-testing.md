@@ -3075,12 +3075,16 @@ function updateTn() {
 		  xi[j] += xij;
 	  }
 	}
-
+	
 	for (var i = 0; i < s; i += 1) {
 	  for (var j = 0; j < r; j += 1) {
 	    var xij = data[i * r + j]['value'];
-	    t_n += xij * Math.log(n * xij / (xi[j] * xj[i]));
-	    v_n += (xij - xi[j] * xj[i] / n) ** 2 / (xi[j] * xj[i] / n);
+	    if (xij > 0) {	
+	      t_n += xij * Math.log(n * xij / (xi[j] * xj[i]));
+	    }
+	    if ((xi[j] > 0) && (xj[i] > 0)) {
+	      v_n += (xij - xi[j] * xj[i] / n) ** 2 / (xi[j] * xj[i] / n);
+	    }
 	  }
 	}
 	
@@ -3141,7 +3145,7 @@ function updateTn() {
   
   var onclick = function(d) {
     if (d3.event.ctrlKey || d3.event.metaKey) {
-      d['value'] += 1;
+      d['value'] = Math.max(d['value'] - 1, 0);
     }
     else {
       d['value'] += 1;
@@ -3315,4 +3319,4 @@ plt_heatmap();
 </script>
 
 ![](.)
-*Fig. 4. Visualization for chi-square independence test with $r=4$ and $s=5$. Significance level $\alpha$ is fixed at $0.05$. Click on the cell of contingency table to increase $X_{ij}$ value, and CTRL + click to decrease (or Command + click for Mac OS).*
+*Fig. 4. Visualization for chi-square independence test with $r=4$ and $s=5$. Significance level $\alpha$ is fixed at $0.05$. Click on the cell of contingency table to increase $X_{ij}$ value, and CTRL + click to decrease (or ⌘ + click for Mac OS).*
