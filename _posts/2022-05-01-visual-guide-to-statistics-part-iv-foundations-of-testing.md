@@ -3045,21 +3045,21 @@ for (var i = 0; i < s; i += 1) {
 var t_n = 0, v_n = 0;
 var tn_text = svg.append("text")
                .attr("text-anchor", "start")
-               .attr("y", 0.8 * fig_height - 5)
+               .attr("y", 0.8 * fig_height - 2)
                .attr("x", 1.4 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
-               .style("font-size", "14px")
+               .style("font-size", "13px")
                .style("fill", "#348ABD");
              
                
 var vn_text = svg.append("text")
                .attr("text-anchor", "start")
-               .attr("y", 0.8 * fig_height - 5)
+               .attr("y", 0.8 * fig_height - 2)
                .attr("x", 1.8 * fig_width + 20)
                .attr("font-family", "Arvo")
                .attr("font-weight", 700)
-               .style("font-size", "14px")
+               .style("font-size", "13px")
                .style("fill", "#EDA137");
 
 function updateTn() {
@@ -3140,19 +3140,18 @@ function updateTn() {
   };
   
   var onclick = function(d) {
-    d['value'] += 1;
+    if (d3.event.ctrlKey) {
+      d['value'] += 1;
+    }
+    else {
+      d['value'] += 1;
+    }
     updateTn();
     
     d3.select(this)
       .style("fill", function(d) { return color(d['value'])} )
-  };
-  
-  var contextMenu = function (d) {
-    d3.event.preventDefault();
-    d['value'] -= 1;
-    
-    d3.select(this)
-      .style("fill", function(d) { return color(d['value'])} )
+      
+    mousemove(d);
   };
  
 var c = 21.026;
@@ -3259,7 +3258,7 @@ d3.select("#htmp")
   .style("left", 2.25 * fig_width + margin.left + "px")
   .style("top", 0.6 * fig_height + "px");
 
- +d3.select("#htmp")
+ d3.select("#htmp")
   .append("div")
   .text("\\(T_n \\)")
   .style('color', '#348ABD')
@@ -3306,8 +3305,7 @@ d3.select("#htmp")
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave)
-    .on("click", onclick)
-    .on("contextmenu", contextmenu);
+    .on("click", onclick);
     
   
 }
@@ -3317,4 +3315,4 @@ plt_heatmap();
 </script>
 
 ![](.)
-*Fig. 4. Visualization for chi-square independence test with $r=4$ and $s=5$. Significance level $\alpha$ is fixed at $0.05$. Left-click on the cell of contingency table to increase $X_{ij}$ value, right-click to decrease.*
+*Fig. 4. Visualization for chi-square independence test with $r=4$ and $s=5$. Significance level $\alpha$ is fixed at $0.05$. Click on the cell of contingency table to increase $X_{ij}$ value, and CTRL + click to decrease.*
