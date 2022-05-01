@@ -29,7 +29,7 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
-TEST:
+TEST-2:
 
 <style>
 
@@ -37,7 +37,7 @@ TEST:
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 25%;
+  padding-bottom: 20%;
   vertical-align: top;
   overflow: hidden;
 }
@@ -175,8 +175,6 @@ var margin = {top: 10, right: 0, bottom: 10, left: 30},
 const w = width + margin.left + margin.right;
 const h = height + margin.top + margin.bottom;
 
-const div = d3.select("div#drug_exp");
-
 var svg = d3.select("div#drug_exp")
   .append("svg")
   .attr("preserveAspectRatio", "xMinYMin meet")
@@ -184,7 +182,7 @@ var svg = d3.select("div#drug_exp")
   .classed("svg-content", true)
   .append("g")
   .attr("transform",
-    "translate(" + margin.left + "," + margin.top + ")");;
+    "translate(" + margin.left + "," + margin.top + ")");
   
 const g = svg.append("g")
   .attr("id", "node");
@@ -220,7 +218,7 @@ var xi_text = d3.select("#drug_exp")
   .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", g.node().getBoundingClientRect().width / 2 + "px")
-  .style("top", 1.05 * g.node().getBoundingClientRect().height + "px");
+  .style("top", g.node().getBoundingClientRect().height + "px");
   
 var y_itext = d3.select("#drug_exp")
   .append("div")
@@ -231,20 +229,8 @@ var y_itext = d3.select("#drug_exp")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", g.node().getBoundingClientRect().left / 2 + "px")
+  .style("left", margin.left / 2 + "px")
   .style("top", 0.4 * g.node().getBoundingClientRect().height + "px");
-
-function updateWindow(){
-    x_itext
-      .style("left", g.node().getBoundingClientRect().width / 2 + "px")
-      .style("top", 1.05 * g.node().getBoundingClientRect().height + "px");
-      
-    y_itext
-      .style("left", g.node().getBoundingClientRect().left / 2 + "px")
-      .style("top", 0.4 * g.node().getBoundingClientRect().height + "px");
-}
-    
-d3.select(window).on('resize.updatesvg', updateWindow);
 
 var figs = [];
 for (var i = 0; i < 11; i += 1) {
@@ -596,7 +582,7 @@ var slider_svg = d3.select("#chi_t_plt")
   .attr("height", 70)
   .append("g")
   .attr("transform", "translate(" + 25 + "," + 20 + ")");
-
+  
 var n_x = d3.scaleLinear()
     .domain([1, 12])
     .range([0, width / 2])
