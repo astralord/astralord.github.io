@@ -29,13 +29,15 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
+TEST:
+
 <style>
 
 .svg-container {
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 20%;
+  padding-bottom: 25%;
   vertical-align: top;
   overflow: hidden;
 }
@@ -187,7 +189,6 @@ var svg = d3.select("div#drug_exp")
 const g = svg.append("g")
   .attr("id", "node");
   
-
 var x = d3.scaleLinear()
           .domain([0, 10])
           .range([10, fig_width]);
@@ -209,7 +210,7 @@ var yAxis = g.append("g")
 yAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
     
-d3.select("#drug_exp")
+var xi_text = d3.select("#drug_exp")
   .append("div")
   .text("Dose \\(X_i \\)")
   .style('color', '#696969')
@@ -219,9 +220,9 @@ d3.select("#drug_exp")
   .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", g.node().getBoundingClientRect().width / 2 + "px")
-  .style("top", g.node().getBoundingClientRect().height + "px");
+  .style("top", 1.05 * g.node().getBoundingClientRect().height + "px");
   
-d3.select("#drug_exp")
+var y_itext = d3.select("#drug_exp")
   .append("div")
   .text("\\(Y_i \\)")
   .style('color', '#696969')
@@ -230,9 +231,21 @@ d3.select("#drug_exp")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", margin.left / 2 + "px")
-  .style("top", g.node().getBoundingClientRect().height / 2 + "px");
+  .style("left", g.node().getBoundingClientRect().left / 2 + "px")
+  .style("top", 0.4 * g.node().getBoundingClientRect().height + "px");
+
+function updateWindow(){
+    x_itext
+      .style("left", g.node().getBoundingClientRect().width / 2 + "px")
+      .style("top", 1.05 * g.node().getBoundingClientRect().height + "px");
+      
+    y_itext
+      .style("left", g.node().getBoundingClientRect().left / 2 + "px")
+      .style("top", 0.4 * g.node().getBoundingClientRect().height + "px");
+}
     
+d3.select(window).on('resize.updatesvg', updateWindow);
+
 var figs = [];
 for (var i = 0; i < 11; i += 1) {
   if (Math.random() < 1 - Math.exp(-theta * i)) {
