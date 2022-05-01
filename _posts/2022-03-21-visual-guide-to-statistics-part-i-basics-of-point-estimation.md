@@ -6,13 +6,6 @@ categories: [Statistics]
 tags: [statistics, parameter-estimation, frequentist-inference, exponential-family, cramer-rao-inequality, fisher-information, maximum-likelihood-estimator, method-of-moments]
 math: true
 ---
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous">
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"
-        onload="renderMathInElement(document.body);">
-</script>
   
 > This series of posts is a guidance for those who already have knowledge in probability theory and would like to become familiar with mathematical statistics. Basically, these are notes from lectures I attended while being a student in Christian-Albrechts University in Kiel, Germany. They helped me close all the gaps in my knowledge of math under the hood of modern statistics. For those who are interested in the lectures themselves can refer to the [original material](https://github.com/astralord/Statistics-lectures/blob/master/vorlesungonline.pdf) or my [translation to Russian](https://github.com/astralord/Statistics-lectures/blob/master/book.pdf).
 > 
@@ -42,15 +35,22 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 100%;
+  padding-bottom: 30%;
   vertical-align: top;
   overflow: hidden;
+}
+
+.svg-content {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .svg-content-responsive {
   display: inline-block;
   position: absolute;
-  top: 10px;
+  top: 0;
   left: 0;
 }
 
@@ -154,7 +154,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <button id="sample-button">Sample</button>
-<div id="drug_exp"></div> 
+<div id="drug_exp" class="svg-container"></div> 
 
 <script>
 
@@ -170,14 +170,18 @@ var margin = {top: 10, right: 0, bottom: 10, left: 30},
     fig_height = 125 - margin.top - margin.bottom,
     fig_width = 650;
     
+const w = width + margin.left + margin.right;
+const h = height + margin.top + margin.bottom;
+
 var svg = d3.select("div#drug_exp")
   .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+  .attr("preserveAspectRatio", "xMinYMin meet")
+  .attr("viewBox", "0 0 " + w + " " + h)
+  .classed("svg-content", true)
   .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
+  .attr("transform",
+    "translate(" + margin.left + "," + margin.top + ")");;
+  
 var x = d3.scaleLinear()
           .domain([0, 10])
           .range([10, fig_width]);
