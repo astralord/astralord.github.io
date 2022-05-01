@@ -29,15 +29,13 @@ $$ p(x) = 1 - e^{-\vartheta x}, \quad \vartheta > 0. $$
 
 Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
-TEST-2:
-
 <style>
 
 .svg-container {
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 20%;
+  padding-bottom: 25%;
   vertical-align: top;
   overflow: hidden;
 }
