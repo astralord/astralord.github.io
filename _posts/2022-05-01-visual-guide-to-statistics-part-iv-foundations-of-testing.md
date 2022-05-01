@@ -802,8 +802,9 @@ $$\begin{aligned} \beta_\varphi(\vartheta_1) - \beta_{\tilde{\varphi}}(\vartheta
 
 For the first integral note that
 
-$$\tilde{\varphi} - \varphi > 0 \Longrightarrow \tilde{\varphi} > 0 \Longrightarrow p_1 \geq \tilde{c}p_0, \\
-\tilde{\varphi} - \varphi < 0 \Longrightarrow \tilde{\varphi} < 1 \Longrightarrow p_1 \leq \tilde{c}p_0. $$
+$$\begin{aligned}\tilde{\varphi} - \varphi > 0 \Longrightarrow \tilde{\varphi} > 0 \Longrightarrow p_1 \geq \tilde{c}p_0, \\
+\tilde{\varphi} - \varphi < 0 \Longrightarrow \tilde{\varphi} < 1 \Longrightarrow p_1 \leq \tilde{c}p_0.
+\end{aligned} $$
 
 Hence, $(\tilde{\varphi} - \varphi)(p_1 - \tilde{c}p_0) \geq 0$ always. The second integral is 
 
