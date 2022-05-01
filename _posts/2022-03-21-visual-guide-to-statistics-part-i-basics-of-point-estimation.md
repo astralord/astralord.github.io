@@ -35,7 +35,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 30%;
+  padding-bottom: 20%;
   vertical-align: top;
   overflow: hidden;
 }
@@ -160,7 +160,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
 d3.select("#drug_exp")
   .style("position", "relative");
-  
+
 function drug_exp() {
 var theta = 0.2;
 
@@ -173,6 +173,8 @@ var margin = {top: 10, right: 0, bottom: 10, left: 30},
 const w = width + margin.left + margin.right;
 const h = height + margin.top + margin.bottom;
 
+const div = d3.select("div#drug_exp");
+
 var svg = d3.select("div#drug_exp")
   .append("svg")
   .attr("preserveAspectRatio", "xMinYMin meet")
@@ -182,11 +184,15 @@ var svg = d3.select("div#drug_exp")
   .attr("transform",
     "translate(" + margin.left + "," + margin.top + ")");;
   
+const g = svg.append("g")
+  .attr("id", "node");
+  
+
 var x = d3.scaleLinear()
           .domain([0, 10])
           .range([10, fig_width]);
             
-var xAxis = svg.append("g")
+var xAxis = g.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(x));
   
@@ -197,7 +203,7 @@ var y = d3.scaleLinear()
           .range([fig_height - 10, 0])
           .domain([0, 1]);
             
-var yAxis = svg.append("g")
+var yAxis = g.append("g")
     .call(d3.axisLeft(y).ticks(1));
   
 yAxis.selectAll(".tick text")
@@ -212,8 +218,8 @@ d3.select("#drug_exp")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", fig_width / 2 + margin.left - 10 + "px")
-  .style("top", fig_height + margin.top + 15 + "px");
+  .style("left", g.node().getBoundingClientRect().width / 2 + "px")
+  .style("top", g.node().getBoundingClientRect().height + "px");
   
 d3.select("#drug_exp")
   .append("div")
@@ -224,13 +230,13 @@ d3.select("#drug_exp")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", 10 + "px")
-  .style("top", fig_height / 2 - 5 + "px");
+  .style("left", margin.left / 2 + "px")
+  .style("top", g.node().getBoundingClientRect().height / 2 + "px");
     
 var figs = [];
 for (var i = 0; i < 11; i += 1) {
   if (Math.random() < 1 - Math.exp(-theta * i)) {
-    figs.push(svg.append("path")
+    figs.push(g.append("path")
     .attr("d", d3.symbol().type(d3.symbolCross).size(100))
     .attr("transform", function(d) { return "translate(" + x(i) + "," + y(1) + ")"; })
     .style("fill", "#65AD69")
@@ -239,7 +245,7 @@ for (var i = 0; i < 11; i += 1) {
     .style('opacity', 0.8));
   }
   else {
-    figs.push(svg.append("path")
+    figs.push(g.append("path")
     .attr("d", d3.symbol().type(d3.symbolCross).size(100))
     .attr("transform", function(d) { return "translate(" + x(i) + "," + y(0) + ") rotate(-45)"; })
     .style("fill", "#E86456")
