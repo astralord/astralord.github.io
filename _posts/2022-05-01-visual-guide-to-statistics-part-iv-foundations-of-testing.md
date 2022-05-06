@@ -7,6 +7,7 @@ tags: [statistics, hypothesis, significance-level, power-of-a-test, neyman-pears
 math: true
 ---
   
+> This is the fourth and the last part of a 'Visual Guide to Statistics' cycle. All the previous parts and other topics related to statistics could be found [here](https://astralord.github.io/categories/statistics/). 
 > In this post we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
 
 ### Introductory example
