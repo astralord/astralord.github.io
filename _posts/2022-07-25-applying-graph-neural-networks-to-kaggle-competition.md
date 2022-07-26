@@ -6,7 +6,6 @@ categories: [Graph Neural Networks, Kaggle, Reinforcement Learning]
 tags: [graph-neural-networks, kaggle, reinforcement-learning]
 math: true
 enable_d3: true
-published: false
 ---
 
 Few months ago, Kaggle launched featured simulation competition [Kore-2022](https://www.kaggle.com/competitions/kore-2022). In this kind of competitions participants bots are competing against each other in an game environment, supported by Kaggle. Often there are 2 or 4 players in a game, at the end each winner/loser moves up/down according to skill rating system. Team reaching top-rating wins.
