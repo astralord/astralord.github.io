@@ -2,7 +2,7 @@
 layout: post
 title: 'Applying Graph Neural Networks to Kaggle Competition'
 date: 2022-07-25 00:00 +0800
-categories: [Graph Neural Networks, Kaggle, Reinforcement Learning]
+categories: [Graph Neural Networks]
 tags: [graph-neural-networks, kaggle, reinforcement-learning]
 math: true
 enable_d3: true
@@ -60,7 +60,7 @@ We also don't want to miss the information which is not included in this kind of
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
-<div id="grphzmd" class="svg-container"></div> 
+<div id="grphzmd" class="svg-container" align="center"></div> 
 
 <script>
 function graph_zoomed() {
@@ -269,7 +269,7 @@ The edge input features $\mathbf{e}_{ji}$ are $(1, 0, 0)^T$, $(0, 1, 0)^T$ and $
 
 If we had to work with standard representations of board, we would most likely use convolutional layers. There exists an analogue of convolutions in a graph world, called, big surprise, graph convolutions. Similarly to ResNet architecture we can build a ResGCN encoder:
 
-<div id="archtctr" class="svg-container"></div> 
+<div id="archtctr" class="svg-container" align="center"></div> 
 
 <script>
 			  
@@ -491,7 +491,7 @@ architecture();
 
 It is also extremely important to make our graph neural network **anisotropic**, which means that each neighbor should have a different effect on the node depending on the weight of the edge between them. The idea is that the neural network transforms the nodes in such a way that the encoded features of the nodes lying on the agent's path are more similar to each other than to nodes that are not.
 
-<div id="resgcn" class="svg-container"></div> 
+<div id="resgcn" class="svg-container" align="center"></div> 
 
 <script>
 
@@ -899,9 +899,12 @@ ResGCN block consists of sequential graph convolutional layers:
 
 $$\operatorname{GCN}(v_i, e) = \Theta^T \sum_{j\in\mathcal{N}(i) \cup \lbrace i \rbrace} \frac{e_{ji}}{\sqrt{\hat{d}_i \hat{d}_j}}  v_j$$
 
-with $\hat{d}_i = 1 + \sum_{j \in \mathcal{N}(i)}e_{ji}$ and $\mathcal{N}(i)$ - set of all neighbors for node $v_i$.
+with 
+$$\hat{d}_i = 1 + \sum_{j \in \mathcal{N}(i)}e_{ji}$$ 
 
-<div id="resgcn_head" class="svg-container"></div> 
+and $\mathcal{N}(i)$ - set of all neighbors for node $v_i$.
+
+<div id="resgcn_head" class="svg-container" align="center"></div> 
 
 <script>
 
@@ -1155,7 +1158,7 @@ One can train a network with cross-entropy loss for the action and mean-squared 
 
 Here in total we have 16 classes, but this amount can be reduced or increased, depending on what engineer thinks is a reasonable number. To choose a fleet size we can set our target to be a ratio of ships to total amount of ships in a shipyard (or to maximum spawn number in case of 'spawn' action). 
 
-<div id="gnn_losses" class="svg-container"></div> 
+<div id="gnn_losses" class="svg-container" align="center"></div> 
 
 <script>
 
@@ -1563,7 +1566,7 @@ losses();
 
 Finally, we face path generation task. The idea is that for each node, starting from shipyard, we take all of its neighbors and itself, and predict next node in a flight plan. If it chooses node itself, we convert ships to a new shipyard (we can mask such action if fleet size is less than 50 or if fleet is already on a shipyard). To make the prediction dependent not only on the current node, but also on the entire sequence of previously selected nodes, we can use recurrent layers. It is also important to consider amount of space we have left for path generation.
 
-<div id="pthsrch" class="svg-container"></div> 
+<div id="pthsrch" class="svg-container" align="center"></div> 
 
 <script>
 function path_search() {
@@ -1918,7 +1921,7 @@ svg.append('rect')
   .attr('stroke', 'black')
   .attr("rx", 1)
   .attr("opacity", 0.6)
-  .attr('fill', '#EDA137'); //65AD69
+  .attr('fill', '#EDA137');
   
 svg.append('text')
   .attr('x', 140)
