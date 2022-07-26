@@ -33,7 +33,9 @@ Here I'll try to list the main rules:
 	- The integer following the letter determinetiles how many steps (+1) fleet will take in that direction.
 	- For example, 'NE2SW' forms a circle trajectory, where fleet makes one step up, three steps right, one step down and then it moves left until it reaches starting point.
 	- The maximum length of the flight plan depends on fleet size by formula:
+	
 	  $$\max \text{length} = \lfloor 2 \log(\text{fleet size}) \rfloor + 1$$ 
+	  
 	  E.g. the minimum number of ships for a fleet that can complete a circle like 'NE2SW' is 8.
 	- If plan ends with 'C', at the end tile of the flight fleet builds a shipyard, consuming 50 of its ships.
 - Each fleet does damage to all enemy fleets orthogonally adjacent to it equal to its current ship count. Destroyed fleets drop 50% of their kore onto their currently occupied position with 50% being awarded to their attackers. If the attacking fleet does not survive, the kore is dropped back onto the tile instead.
