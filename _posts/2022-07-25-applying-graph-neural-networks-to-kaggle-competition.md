@@ -67,7 +67,7 @@ function graph_zoomed() {
 
 var svg = d3.select("#grphzmd")
 			  .append("svg")
-			  .attr("width", 800)
+			  .attr("width", 600)
 			  .attr("height", 300);
 
 function draw_edge(x, y, type, opacity=0.95) {
@@ -165,6 +165,7 @@ svg.append('text')
   .attr('x', 50)
   .attr('y', 130)
   .text("Node features")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('line')
@@ -192,42 +193,49 @@ svg.append('text')
   .attr('x', 50)
   .attr('y', 260)
   .text("Edge features")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 295)
   .attr('y', 155)
   .text("C")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 191)
   .attr('y', 155)
   .text("W")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 395)
   .attr('y', 155)
   .text("E")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 294)
   .attr('y', 55)
   .text("N")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 296)
   .attr('y', 255)
   .text("S")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 343)
   .attr('y', 86)
   .text("T")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('line')
@@ -291,7 +299,7 @@ function architecture() {
 
 var svg = d3.select("#archtctr")
 			  .append("svg")
-			  .attr("width", 800)
+			  .attr("width", 600)
 			  .attr("height", 95);
 
 function draw_graph(x, y, node_color, edge_color) {
@@ -499,7 +507,7 @@ function resgcn() {
 
 var svg = d3.select("#resgcn")
 			  .append("svg")
-			  .attr("width", 800)
+			  .attr("width", 700)
 			  .attr("height", 200);
 			  
 for (var i = 0; i < 6; i += 1) {
@@ -900,9 +908,7 @@ ResGCN block consists of sequential graph convolutional layers:
 $$\operatorname{GCN}(v_i, e) = \Theta^T \sum_{j\in\mathcal{N}(i) \cup \lbrace i \rbrace} \frac{e_{ji}}{\sqrt{\hat{d}_i \hat{d}_j}}  v_j$$
 
 with 
-$$\hat{d}_i = 1 + \sum_{j \in \mathcal{N}(i)}e_{ji}$$ 
-
-and $\mathcal{N}(i)$ - set of all neighbors for node $v_i$.
+$$\hat{d}_i = 1 + \sum_{j \in \mathcal{N}(i)}e_{ji}$$ and $\mathcal{N}(i)$ - set of all neighbors for node $v_i$.
 
 <div id="resgcn_head" class="svg-container" align="center"></div> 
 
@@ -912,7 +918,7 @@ function resgcn_head() {
 
 var svg = d3.select("#resgcn_head")
 			  .append("svg")
-			  .attr("width", 800)
+			  .attr("width", 500)
 			  .attr("height", 342);
 
 for (var i = 0; i < 6; i += 1) {
@@ -1680,60 +1686,70 @@ svg.append('text')
   .attr('x', 41)
   .attr('y', 50)
   .text("W")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 407)
   .attr('y', 50)
   .text("NW")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 44)
   .attr('y', 80)
   .text("N")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 412)
   .attr('y', 80)
   .text("N1")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 46)
   .attr('y', 110)
   .text("S")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 410)
   .attr('y', 110)
   .text("NS")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 45)
   .attr('y', 140)
   .text("E")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 410)
   .attr('y', 140)
   .text("NE")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 45)
   .attr('y', 170)
   .text("C")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 410)
   .attr('y', 170)
   .text("NC")
+  .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('rect')
@@ -2039,6 +2055,7 @@ path_search();
   
 </script>
 
+![](.)
 *Fig. 8. Path policy head. We start at shipyard node. At each step all neighbor candidates, including node itself, are concatenated with one-hot representation of a 'space left' for plan generation. Then they are passed through recurrent layer. Received neighbor embeddings are passed through linear layer $\operatorname{Query}$ and multiplied with node features passed through $\operatorname{Key}$ layer. Resulting vector represents probabilities of each neighbor to be the next node. Then we move along path defined by an expert agent and repeat the same procedure.*
 
 Now having probabilities for each move, we can generate path by greedy or beam search, cutting path when it reaches shipyard or when there is no more space left. There is also a case, when path stuck in a loop like 'NW999..', and it can take forever until we won't have enough space. For such thing it is useful to make a stop by some maximum-moves threshold.
