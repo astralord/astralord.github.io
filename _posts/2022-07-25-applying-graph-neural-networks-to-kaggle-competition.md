@@ -30,7 +30,7 @@ Here I'll try to list the main rules:
 - Each turn you can either spawn new ships (each costs 10 kore), or launch fleet with a flight plan, or do nothing.
 - Flight plan is a sequence of letters and integers:
 	- 'N', 'E', 'S' or 'W' defines the direction of the fleet.
-	- The integer following the letter determinetiles how many steps (+1) fleet will take in that direction.
+	- The integer following the letter determines how many steps (+1) fleet will take in that direction.
 	- For example, 'NE2SW' forms a circle trajectory, where fleet makes one step up, three steps right, one step down and then it moves left until it reaches starting point.
 	- The maximum length of the flight plan depends on fleet size by formula:
 	
@@ -2064,7 +2064,7 @@ Now having probabilities for each move, we can generate path by greedy or beam s
 
 #### Bonus: reinforcement learning
 
-In my experiments, imitation learning was good enough for an agent to start making good moves, however, there was constant instability on inference. At some point an agent could make a ridiculously stupid move (with small probability, but nevertheless), effecting balance of the game dramatically. This move could never be made by an expert agent, therefore we end up with board state which neural network didn't see in training data. So the chance of making wrong moves increases at each step and finally imitation agent loses. 
+In my experiments, imitation learning was good enough for an agent to start making good moves, however, there was constant instability on inference. At some point an agent could make a ridiculously stupid move (with small probability, but nevertheless), effecting balance of the game dramatically. This move could've never been made by an expert agent, therefore we end up with board state which neural network didn't see in training data. So the chance of making wrong moves increases at each step and finally imitation agent loses. 
 
 To tackle this issue I've tried off-policy reinforcement learning. The architecture of policy neural network was the same, critic neural network had similar but smaller encoder. Reward was +1 for winning, -1 for losing. I used TD($\lambda$) target $v_s$ for value prediction and policy loss with clipped importance sampling:
 
