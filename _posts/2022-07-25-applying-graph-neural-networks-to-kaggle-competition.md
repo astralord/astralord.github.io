@@ -57,7 +57,7 @@ One can also represent board as graph, where each tile is a node and edges conne
 
 One of the main advantages of an algorithm on a graph is rotation equivariance. Board is symmetric, therefore algorithm behaviour must not change if we swap players initial positions. With standard convolutional networks we can try to overcome this issue by using augmentations, but there is no need for them if we use graph neural networks.
 
-We also don't want to miss the information which is not included in this kind of board representation: future positions of fleets. We know all of them by fact, because players plans are not hidden from each other. Therefore, it seems useful to add board representations at the next step, at the step after next and so on until we reach desirable amount of steps. Also, after we make our moves, these future graphs may change, so it doesn't always seem reasonable to look far away from current step. At my implementation I was looking 12 steps ahead.
+We also don't want to miss the information which is not included in this kind of board representation: future positions of fleets. We know all of them by fact, because players plans are not hidden from each other. Therefore, it seems useful to add board representations at the next step, at the step after next and so on until we reach desirable amount of steps. Also, after we make our moves, these future graphs may change, so it doesn't always seem reasonable to look far away from current step. In my implementation I was looking 12 steps ahead.
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
@@ -2083,6 +2083,6 @@ Unfortunately, best of my agents were able to reach only up to 30-ish places, bu
 
 - Better feature engineering. The input state which I was using contained a lot of data, however not all of the important information could have been distilled by neural network. Looking ahead for 12 steps made input graph enormously huge: $21 \times 21 \times 12 \times n$, where $n$ is a feature dimension for every node. And still there were a lot of opponent flight plans with bigger time-length than 12 steps.
 - Larger neural network. It is related to previous issue: construction of huge input state at every turn was taking a lot of time on inference. In order to fit Kaggle time requirements I had to reduce network size. I'm convinced that bigger dimensions could lead to better results.
-- Reinforcement learning experiments. It is well known that it takes a lot of time to make RL work. Training is slow and unstable most of the time. It is crucial to meticulously watch training procedure and analyze the results.
+- Reinforcement learning experiments. It is well known that it takes a lot of time to make RL work. Training is slow and unstable most of the time. It is extremely important to closely monitor training procedure and analyze the results.
 
 Hopefully I'll take this experience into account in the next Kaggle simulation competition.
