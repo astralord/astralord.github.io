@@ -6,13 +6,12 @@ categories: [Generative AI]
 tags: [diffusion-models]
 math: true
 enable_d3: true
-published: true
-img_path: /assets/img/
+published: false
 ---
 
 > The year 2021 was a burst ...
 
-![Bear in mind]({{'bear-in-mind.jpg'|relative_url}})
+![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
 
 *Bear in mind, digital art. DALL·E-2 by OpenAI on Instagram.*
 
@@ -21,7 +20,7 @@ img_path: /assets/img/
 ### DALL·E-2
 #### CLIP
 
-![CLIP]({{'clip-arch.png'|relative_url}})
+![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
 
 *CLIP architecture*
 

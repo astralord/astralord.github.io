@@ -363,10 +363,7 @@ In general, if we choose $L(x, y) = (x - y)^2$, then
 
 $$ MSE_\vartheta(g) = R(\vartheta, g)=\mathbb{E}[(g(X)-\gamma(\vartheta))^2]=\operatorname{Var}_\vartheta(g(X))+B_\vartheta^2(g)$$
 
-is called the **mean squared error**. 
-
-> In some cases biased estimators have lower MSE because they have a smaller variance than does any unbiased estimator.
-{: .prompt-tip }
+is called the **mean squared error**. Note that in some cases biased estimators have lower MSE because they have a smaller variance than does any unbiased estimator.
 
 ### Chi-squared and t-distributions
 
