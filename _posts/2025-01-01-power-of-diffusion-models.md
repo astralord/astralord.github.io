@@ -795,7 +795,7 @@ where $C$ is some constant independent of $\theta$. However [Ho et al.](https://
 
 $$\log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) \propto - {\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t}} = - {\frac{\mathbf{x}_t^2 - 2 \sqrt{\alpha_t} \mathbf{x}_t{\color{#5286A5}{\mathbf{x}_{t-1}}} + {\alpha_t} {\color{#C19454}{\mathbf{x}_{t-1}^2}}}{\beta_t}},$$
 
-$$\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) \propto -{\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} = - {\frac{{\color{#C19454}{\mathbf{x}_{t-1}^2}} - 2\sqrt{\bar\alpha_{t-1}}{\color{#5286A5}{\mathbf{x}_{t-1}}} \mathbf{x}_{0}+\bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}},$$
+$$\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) \propto -{\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} = - {\frac{ {{\color{#C19454}{\mathbf{x}_{t-1}^2}}} - 2\sqrt{\bar\alpha_{t-1}}{\color{#5286A5}{\mathbf{x}_{t-1}}} \mathbf{x}_{0} + \bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}},$$
 
 $$\log q(\mathbf{x}_{t}|\mathbf{x}_0) \propto - {\frac{(\mathbf{x}_{t} - \sqrt{\bar\alpha_{t}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t}}}.$$
 
@@ -960,6 +960,8 @@ loss = (loss_i + loss_t)/2
 
 ![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
 *Bear in mind, digital art. Image source: DALL·E 2 by OpenAI Instagram account.*
+
+![Outpainting]({{'/assets/img/outpainting.jpeg'|relative_url}})
 
 ### Disco diffusion
 
