@@ -22,10 +22,6 @@ Sources:
 	- [Denoising Diffusion-based Generative Modeling: Foundations and Applications](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view)
 	- [The recent rise of diffusion-based models](https://maciejdomagala.github.io/generative_models/2022/06/06/The-recent-rise-of-diffusion-based-models.html#citation-14)
 
-![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
-
-*Bear in mind, digital art. Image source: DALL·E 2 by OpenAI Instagram account.*
-
 ### Diffusion models
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -437,6 +433,7 @@ graph_chain();
 
 </script>
 
+![](.)
 *Forward diffusion process. Given a data point sampled from a real data distribution $\mathbf{x}_0 \sim q(x_0)$, we produce noisy latents $\mathbf{x}_1 \rightarrow \cdots \rightarrow \mathbf{x}_T$ by adding small amount of Gaussian noise at each timestep $t$. The latent $\mathbf{x}_t$ gradually loses its recognizable features as the step $t$ becomes larger and eventually with $T \rightarrow \infty$, $\mathbf{x}_T$ is nearly an isotropic Gaussian distribution.*
 
 The step sizes are controlled by a variance schedule $\beta_t \in (0, 1)$:
@@ -451,11 +448,13 @@ Recall that Gaussian distribution has the following property: for $\epsilon_1 \s
 
 $$\epsilon_1 + \epsilon_2 \sim \mathcal{N}(0, (\sigma_1^2 + \sigma_2^2)\mathbf{I}).$$
 
-Therefore for each latent $\mathbf{x}_t$ at arbitrary step $t$ we can sample it in a closed form: using the notation $\alpha_t := 1 - \beta_t$ and $\overline\alpha_t := \prod_{s=1}^t \alpha_s$ we get
+Therefore for each latent $\mathbf{x}_t$ at arbitrary step $t$ we can sample it in a closed form. 
+
+Using the notation $\alpha_t := 1 - \beta_t$ and $\overline\alpha_t := \prod_{s=1}^t \alpha_s$ we get
 
 $$
 \begin{aligned}
-\mathbf{x}_t & = \color{#5286A5} {\sqrt{\alpha_t} \mathbf{x}_{t-1}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = \color{#5286A5} {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{\alpha_t (1-\alpha_{t-1})} \epsilon_{t-2}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = \color{#5286A5} {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2}} + \sqrt{1-\alpha_t \alpha_{t-1}} \bar\epsilon_{t-2} \qquad \color{Salmon}{\leftarrow \bar\epsilon_{t-2} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \cdots \\ &= \sqrt{\overline\alpha_t} \mathbf{x}_0 + \sqrt{1-\overline\alpha_t} \epsilon
+\mathbf{x}_t & = {\color{#5286A5} {\sqrt{\alpha_t} \mathbf{x}_{t-1}}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = {\color{#5286A5} {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{\alpha_t (1-\alpha_{t-1})} \epsilon_{t-2}}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = {\color{#5286A5} {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2}}} + \sqrt{1-\alpha_t \alpha_{t-1}} \bar\epsilon_{t-2} \qquad \color{Salmon}{\leftarrow \bar\epsilon_{t-2} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \cdots \\ &= \sqrt{\overline\alpha_t} \mathbf{x}_0 + \sqrt{1-\overline\alpha_t} \epsilon
 \end{aligned} $$
 
 and 
@@ -773,11 +772,12 @@ graph_reverse_chain();
 
 </script>
 
+![](.)
 *Forward and reverse diffusion processes. Going backwards, we start from isotropic Gaussian noise $p(\mathbf{x}_T) \sim \mathcal{N}(0, \mathbf{I})$ and gradually sample from $p_\theta(\mathbf{x}_{t-1} | \mathbf{x}_t)$ for $t=T, \dots, 1$ until we get a data point from approximated distribution.*
 
 Note that reverse conditional probability is tractable when conditioned on $\mathbf{x}_0$:
 
-$$q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}, \color{#C19454}{\tilde \beta_t \mathbf{I}}).$$
+$$q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}({\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}}, {\color{#C19454}{\tilde \beta_t \mathbf{I}}}).$$
 
 Efficient training is therefore possible by minimizing Kullback-Leibler divergence between $p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)$ and $q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$ at each step:
 
@@ -785,31 +785,37 @@ $$L_{t} = D_{\operatorname{KL}}\big(q(\mathbf{x}_{t-1} |\mathbf{x}_{t}, \mathbf{
 
 Total objective is variatonal lower bound loss:
 
-$$L_{VLB}=\mathbb{E}_q\big[\sum_{t=0}^{T} L_t\big],$$
+$$L_{VLB}=\mathbb{E}_q\big[-\log p_\theta(\mathbf{x}_0|\mathbf{x}_1) + \sum_{t=1}^{T-1} L_t + D_{\operatorname{KL}}\big(q(\mathbf{x}_T | \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_T)\big)\big].$$
 
-where $L_0 = - \log p_\theta(\mathbf{x}_0|\mathbf{x}_1)$ and $L_T = D_{\operatorname{KL}}\big(q(\mathbf{x}_T | \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_T)\big)$. All KL divergences in equation above are comparisons between Gaussians, so they can be calculated with closed form expressions instead of high variance Monte Carlo estimates. One can try to estimate $\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}$ directly with
+All KL divergences in equation above are comparisons between Gaussians, so they can be calculated with closed form expressions instead of high variance Monte Carlo estimates. One can try to estimate $\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}$ directly with
 
 $$ L_t = \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)} - \mu_\theta(\mathbf{x}_t, t)  \|^2 \Big] + C,$$
 
-where $C$ is some constant independent of $\theta$. However [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) propose a different way - train neural network $\epsilon_\theta(\mathbf{x}_t, t)$ to predict the noise. We can start from reformulation of $q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$. Using Bayesian rule we have:
+where $C$ is some constant independent of $\theta$. However [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) propose a different way - train neural network $\epsilon_\theta(\mathbf{x}_t, t)$ to predict the noise. We can start from reformulation of $q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$. Note that
+
+$$\log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) \propto - {\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t}} = - {\frac{\mathbf{x}_t^2 - 2 \sqrt{\alpha_t} \mathbf{x}_t{\color{#5286A5}{\mathbf{x}_{t-1}}} + {\alpha_t} {\color{#C19454}{\mathbf{x}_{t-1}^2}}}{\beta_t}},$$
+
+$$\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) \propto -{\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} = - {\frac{{\color{#C19454}{\mathbf{x}_{t-1}^2}} - 2\sqrt{\bar\alpha_{t-1}}{\color{#5286A5}{\mathbf{x}_{t-1}}} \mathbf{x}_{0}+\bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}},$$
+
+$$\log q(\mathbf{x}_{t}|\mathbf{x}_0) \propto - {\frac{(\mathbf{x}_{t} - \sqrt{\bar\alpha_{t}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t}}}.$$
+
+Then, using Bayesian rule we have:
 
 $$\begin{aligned}
-q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) & = q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) \frac{q(\mathbf{x}_{t-1}|\mathbf{x}_0)}{q(\mathbf{x}_{t}|\mathbf{x}_0)}
-\\ & \propto \exp \Big( -\frac{1}{2} \big( {\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t}} + {\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} - {\frac{(\mathbf{x}_{t} - \sqrt{\bar\alpha_{t}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t}}} \big) \Big)
-\\ &= \exp \Big( -\frac{1}{2} \big( {\frac{\mathbf{x}_t^2 - 2 \sqrt{\alpha_t} \mathbf{x}_t\color{#5286A5}{\mathbf{x}_{t-1}} + {\alpha_t} \color{#C19454}{\mathbf{x}_{t-1}^2}}{\beta_t}} + {\frac{\color{#C19454}{\mathbf{x}_{t-1}^2} - 2\sqrt{\bar\alpha_{t-1}}\color{#5286A5}{\mathbf{x}_{t-1}} \mathbf{x}_{0}+\bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}} - {\frac{(\mathbf{x}_{t} - \sqrt{\bar\alpha_{t}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t}}} \big) \Big)
-\\ &= \exp \Big( -\frac{1}{2} \big( \color{#C19454}{(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}) \mathbf{x}_{t-1}^2} - \color{#5286A5}{(\frac{2\sqrt{\alpha_t}}{\beta_t}\mathbf{x}_t + \frac{2\sqrt{\bar{\alpha}_{t-1}}}{1-\bar{\alpha}_{t-1}}\mathbf{x}_0 )\mathbf{x}_{t-1}} \big) + f(\mathbf{x}_t, \mathbf{x}_0) \Big),
+\log q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) & = \log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) + \log q(\mathbf{x}_{t-1}|\mathbf{x}_0) - \log q(\mathbf{x}_{t}|\mathbf{x}_0)
+\\ & \propto {-\color{#C19454}{(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}) \mathbf{x}_{t-1}^2}} + {\color{#5286A5}{(\frac{2\sqrt{\alpha_t}}{\beta_t}\mathbf{x}_t + \frac{2\sqrt{\bar{\alpha}_{t-1}}}{1-\bar{\alpha}_{t-1}}\mathbf{x}_0 )\mathbf{x}_{t-1}}} + f(\mathbf{x}_t, \mathbf{x}_0),
 \end{aligned}
 $$
 
 where $f(\mathbf{x}_t, \mathbf{x}_0)$ is some function independent of $\mathbf{x}_{t-1}$. Then following the standard Gaussian density function, the mean and variance can be parameterized as follows (recall that $\alpha_t +\beta_t=1$):
 
-$$\color{#C19454}{\tilde \beta_t} = \Big(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}\Big)^{-1} = \Big(\frac{\alpha_t-\bar{\alpha}_{t}+\beta_t}{\beta_t (1-\bar{\alpha}_{t-1})}\Big)^{-1} = \beta_t \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_{t}}$$
+$${\color{#C19454}{\tilde \beta_t}} = \Big(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}\Big)^{-1} = \Big(\frac{\alpha_t-\bar{\alpha}_{t}+\beta_t}{\beta_t (1-\bar{\alpha}_{t-1})}\Big)^{-1} = \beta_t \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_{t}}$$
 
 and 
 
 $$
 \begin{aligned}
-\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)} &= \Big( \frac{\sqrt{\alpha_t}}{\beta_t}\mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}}{1-\bar{\alpha}_{t-1}}\mathbf{x}_0 \Big) \cdot \color{#C19454}{\tilde \beta_t} 
+{\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}} &= \Big( \frac{\sqrt{\alpha_t}}{\beta_t}\mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}}{1-\bar{\alpha}_{t-1}}\mathbf{x}_0 \Big) \cdot \color{#C19454}{\tilde \beta_t} 
 \\ &= \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t} \mathbf{x}_t + \frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_t}\mathbf{x}_0.
 \end{aligned}
 $$
@@ -817,9 +823,9 @@ $$
 Using representation $\mathbf{x}_0 = \frac{1}{\sqrt{\bar\alpha_t}}(\mathbf{x}_t - \sqrt{1-\bar\alpha_t}\epsilon)$ we get
 
 $$
-\begin{aligned} L_t &= \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)} - \mu_\theta(\mathbf{x}_t, t)  \|^2 \Big]
-\\ &= \mathbb{E}_{\mathbf{x}_0, \epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big \|\color{#5286A5}{\frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\epsilon\Big)} - \frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\epsilon_\theta(\mathbf{x}_t, t)\Big)  \Big \|^2 \Big]
-\\ &= \mathbb{E}_{\mathbf{x}_0, \epsilon} \Big[ \frac{\beta_t^2}{2\sigma_t^2 \bar\alpha_t (1-\bar\alpha_t)} \Big \|\color{#5286A5}{\epsilon} - \epsilon_\theta(\mathbf{x}_t, t)  \Big \|^2 \Big]
+\begin{aligned} L_t &= \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|{\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}} - \mu_\theta(\mathbf{x}_t, t)  \|^2 \Big]
+\\ &= \mathbb{E}_{\mathbf{x}_0, \epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big \|{\color{#5286A5}{\frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\epsilon\Big)}} - \frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\epsilon_\theta(\mathbf{x}_t, t)\Big)  \Big \|^2 \Big]
+\\ &= \mathbb{E}_{\mathbf{x}_0, \epsilon} \Big[ \frac{\beta_t^2}{2\sigma_t^2 \bar\alpha_t (1-\bar\alpha_t)} \Big \|{\color{#5286A5}{\epsilon}} - \epsilon_\theta(\mathbf{x}_t, t)  \Big \|^2 \Big]
 \end{aligned}$$
 
 Empirically, [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) found that training the diffusion model works better with a simplified objective that ignores the weighting term:
@@ -827,13 +833,17 @@ Empirically, [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) found that traini
 $$L_t^{\text{simple}} = \mathbb{E}_{\mathbf{x}_0, \epsilon} \big[  \|\epsilon - \epsilon_\theta(\mathbf{x}_t, t)  \|^2 \big] = \mathbb{E}_{\mathbf{x}_0, \epsilon} \big[  \|\epsilon - \epsilon_\theta(\sqrt{\bar\alpha_t}\mathbf{x}_0+\sqrt{1-\bar\alpha_t} \epsilon, t)  \|^2 \big]$$
 
 ![Diffusion Model Architecture]({{'/assets/img/diffusion-u-net.png'|relative_url}})
-
 *Diffusion models often use U-Net architectures with ResNet blocks and self-attention layers to represent $\epsilon_\theta(\mathbf{x}_t, t)$. Time features (usually sinusoidal positional embeddings or random Fourier features) are fed to the residual blocks using either simple spatial addition or using adaptive group normalization layers. [Image source](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view).*
 
 
 To summarize, our training process:
 
-- Setup imports and hyperparameters
+- Sample $\mathbf{x}_0 \sim q(\mathbf{x}_0)$
+- Choose randomly a certain step in diffusion process: $t \sim \mathcal{U}(\lbrace 1,2, \dots T \rbrace)$
+- Apply noising: $\mathbf{x}_t = \sqrt{\bar\alpha_t}\mathbf{x}_0+\sqrt{1-\bar\alpha_t} \epsilon$ with $\epsilon \sim \mathcal{N}(0, \mathbf{I})$
+- Take a gradient step on
+$$\nabla_\theta \| \epsilon - \epsilon_\theta(\mathbf{x}_t, t) \|^2$$
+- Repeat until converge
 
 ```python
 import jax.numpy as jnp
@@ -850,56 +860,47 @@ alpha_bars = jnp.cumprod(alphas)
 # initial model weights (necessary for JAX)
 dummy = sample_batch(key, batch_size)
 params = model.init(key, dummy)
-```
 
-- Sample $\mathbf{x}_0 \sim q(\mathbf{x}_0)$
- 
-```python
-x_0 = sample_batch(key, batch_size)
-```
-
-- Choose randomly a certain step in diffusion process: $t \sim \mathcal{U}(\lbrace 1,2, \dots T \rbrace)$
-
-```python
-t = random.randint(key, shape=(batch_size,), minval=0, maxval=T)
-```
-
-- Apply noising: $\mathbf{x}_t = \sqrt{\bar\alpha_t}\mathbf{x}_0+\sqrt{1-\bar\alpha_t} \epsilon$ with $\epsilon \sim \mathcal{N}(0, \mathbf{I})$
-
-```python
-def apply_noising(a, img, noise):
-    return jnp.sqrt(a) * img + jnp.sqrt(1 - a) * noise
-
-eps = random.normal(key, shape=x_0.shape)
-x_t = jit(vmap(apply_noising))(alpha_bars[t], x_0, eps)
-```
-
-- Take a gradient step on
-$$\nabla_\theta \| \epsilon - \epsilon_\theta(\mathbf{x}_t, t) \|^2$$
-
-```python
 @jit
 def loss(params, eps, x_t, t):
     return jnp.sum((eps - model.apply(params, x_t, t)) ** 2)
-    
-grads = jit(grad(loss))(params, eps, x_t)
 
-# update parameters with gradients and your favourite optimizer
+@jit
+def apply_noising(a, img, noise):
+    return jnp.sqrt(a) * img + jnp.sqrt(1 - a) * noise
+	    
+def train_on_batch():
+	# sample from train data
+	x_0 = sample_batch(key, batch_size)
+	
+	# choose random steps
+	t = random.randint(key, shape=(batch_size,), minval=0, maxval=T)
+	
+	# add noise
+	eps = random.normal(key, shape=x_0.shape)
+	x_t = jit(vmap(apply_noising))(alpha_bars[t], x_0, eps)
+	
+	# calculate gradients
+	grads = jit(grad(loss))(params, eps, x_t)
+
+	# update parameters with gradients and your favourite optimizer
+	...
 ```
+![](.)
+*JAX-like pseudocode for diffusion model training.*
 
-- Repeat until converge
 
-
-Inference process consists of the following steps
+Inference process consists of the following steps:
 
 - Sample $\mathbf{x}_T \sim \mathcal{N}(0, \mathbf{I})$
+- For $t = T, \dots, 1$ 
+$$\mathbf{x}_{t-1} = \mu_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon,$$
 
-```python
-x_t = random.normal(key, shape=x_0.shape)
-```
+  where $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ and
 
-- For $t = T, \dots, 1$ $$\mathbf{x}_{t-1} = \mu_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon,$$ where $\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar\alpha_t}}\epsilon_\theta(\mathbf{x}_t, t) \Big)$ and $\epsilon \sim \mathcal{N}(0, \mathbf{I})$
+$$\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar\alpha_t}}\epsilon_\theta(\mathbf{x}_t, t) \Big).$$ 
 
+- Return $\mathbf{x}_0$
 
 ```python
 def get_x_tm1(params, x_t, t):
@@ -907,20 +908,24 @@ def get_x_tm1(params, x_t, t):
     mu_t = x_t - eps * (1 - alphas[t]) / jnp.sqrt(1 - alpha_bars[t])
     mu_t /= jnp.sqrt(alpha_bars[t])
     return mu_t + sigma_t * random.normal(key, shape=x_0.shape)
-    
-for t in range(T, 1, -1):
-    x_t = get_x_tm1(params, x_t, t)
-```
 
-- Return $\mathbf{x}_0$
+def sample_batch():
+	x_t = random.normal(key, shape=x_0.shape)
+	for t in range(T, 1, -1):
+	    x_t = get_x_tm1(params, x_t, t)
+	return x_t
+```
+![](.)
+*JAX-like pseudocode for diffusion model sampling.*
+
   
 ### Guided diffusion
 
 ### DALL·E 2
+
 #### CLIP
 
 ![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
-
 *CLIP architecture*
 
 ```python
@@ -950,9 +955,11 @@ loss_t = cross_entropy_loss(logits, labels, axis=1)
 loss = (loss_i + loss_t)/2
 ```
 
+![](.)
 *JAX-like pseudocode for the core of an implementation of CLIP.*
 
-### Guided diffusion
+![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
+*Bear in mind, digital art. Image source: DALL·E 2 by OpenAI Instagram account.*
 
 ### Disco diffusion
 
