@@ -467,7 +467,9 @@ The core idea of diffusion algorithm is to train a model $p_\theta$ to approxima
 
 $$p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mu_\theta(\mathbf{x}_t, t), \Sigma_\theta(\mathbf{x}_t, t)),$$
 
-where $\mu_\theta(\mathbf{x}_t, t)$  and $\Sigma_\theta(\mathbf{x}_t, t)$ are trainable networks. Although, for simplicity we can decide for $\Sigma_\theta(\mathbf{x}_t, t) = \sigma_t^2 \mathbf{I}$.
+where $\mu_\theta(\mathbf{x}_t, t)$  and $\Sigma_\theta(\mathbf{x}_t, t)$ are trainable networks. Although, for simplicity we can decide for 
+
+$$\Sigma_\theta(\mathbf{x}_t, t) = \sigma_t^2 \mathbf{I}.$$
 
 <div id="grph_rvrs_chain" class="svg-container" align="center"></div> 
 
@@ -779,25 +781,42 @@ Note that reverse conditional probability is tractable when conditioned on $\mat
 
 $$q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}({\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}}, {\color{#C19454}{\tilde \beta_t \mathbf{I}}}).$$
 
-Efficient training is therefore possible by minimizing Kullback-Leibler divergence between $p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)$ and $q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$ at each step:
+Efficient training is therefore possible by minimizing Kullback-Leibler divergence between $p_\theta$ and $q$, or formally, evidence lower bound loss
 
-$$L_{t} = D_{\operatorname{KL}}\big(q(\mathbf{x}_{t-1} |\mathbf{x}_{t}, \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)\big).$$
+$$
+\begin{aligned}
+L_{\operatorname{ELBO}} &= \mathbb{E}_q\bigg[\log\frac{q(\mathbf{x}_{1:T} | \mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})} \bigg]
+\\ &= \mathbb{E}_q\bigg[\log\frac{\prod_{t=1}^T q(\mathbf{x}_t|\mathbf{x}_{t-1}) }{p_\theta(\mathbf{x}_T) \prod_{t=1}^T p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)} \bigg]
+\\ &= \mathbb{E}_q\bigg[\sum_{t=1}^T \log \frac{ q(\mathbf{x}_t|\mathbf{x}_{t-1})} {p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)} -\log p_\theta(\mathbf{x}_T)\bigg]
+\\ &= \mathbb{E}_q\bigg[\log \frac{q(\mathbf{x}_1|\mathbf{x}_{0})}{p_\theta(\mathbf{x}_{0}|\mathbf{x}_1)} + \sum_{t=2}^T \log  \frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t}, \mathbf{x}_0) q(\mathbf{x}_t|\mathbf{x}_0)}{q(\mathbf{x}_{t-1}|\mathbf{x}_0)p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)} -\log p_\theta(\mathbf{x}_T)\bigg]
+\\ &= \mathbb{E}_q\bigg[\log \frac{q(\mathbf{x}_1|\mathbf{x}_{0})}{p_\theta(\mathbf{x}_{0}|\mathbf{x}_1)} + \sum_{t=2}^T \log  \frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t}, \mathbf{x}_0)}{p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)} + \log \frac{q(\mathbf{x}_T|\mathbf{x}_0)}{q(\mathbf{x}_1|\mathbf{x}_0)}-\log p_\theta(\mathbf{x}_T)\bigg]
+\\ &= \mathbb{E}_q\bigg[-\log p_\theta(\mathbf{x}_0|\mathbf{x}_1)  + \sum_{t=2}^T \log  \frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t}, \mathbf{x}_0)}{p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)}+ \log \frac{q(\mathbf{x}_T|\mathbf{x}_0)}{p_\theta(\mathbf{x}_T)}\bigg].
+\end{aligned}$$
 
-Total objective is variatonal lower bound loss:
+Labeling each term
 
-$$L_{VLB}=\mathbb{E}_q\big[-\log p_\theta(\mathbf{x}_0|\mathbf{x}_1) + \sum_{t=1}^{T-1} L_t + D_{\operatorname{KL}}\big(q(\mathbf{x}_T | \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_T)\big)\big].$$
+$$\begin{aligned}
+L_0 &= \mathbb{E}_q[-\log p_\theta(\mathbf{x}_0|\mathbf{x}_1)], & \\
+L_{t} &= D_{\operatorname{KL}}\big(q(\mathbf{x}_{t-1} |\mathbf{x}_{t}, \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)\big), &t = 1, \dots T-1, \\
+L_T &= D_{\operatorname{KL}}\big(q(\mathbf{x}_T | \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_T)\big)\big],
+\end{aligned}
+$$
 
-All KL divergences in equation above are comparisons between Gaussians, so they can be calculated with closed form expressions instead of high variance Monte Carlo estimates. One can try to estimate $\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}$ directly with
+we get total objective
+
+$$L_{\operatorname{VLB}}= \sum_{t=0}^{T} L_t.$$
+
+Last term $L_T$ can be ignored, as $q$ doesn't depend on $\theta$ and $p_\theta(\mathbf{x}_T)$ is isotropic Gaussian. All KL divergences in equation above are comparisons between Gaussians, so they can be calculated with closed form expressions instead of high variance Monte Carlo estimates. One can try to estimate $\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}$ directly with
 
 $$ L_t = \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)} - \mu_\theta(\mathbf{x}_t, t)  \|^2 \Big] + C,$$
 
-where $C$ is some constant independent of $\theta$. However [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) propose a different way - train neural network $\epsilon_\theta(\mathbf{x}_t, t)$ to predict the noise. We can start from reformulation of $q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$. Note that
+where $C$ is some constant independent of $\theta$. However [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) propose a different way - train neural network $\epsilon_\theta(\mathbf{x}_t, t)$ to predict the noise.
+
+We can start from reformulation of $q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$. Note that
 
 $$\log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) \propto - {\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t}} = - {\frac{\mathbf{x}_t^2 - 2 \sqrt{\alpha_t} \mathbf{x}_t{\color{#5286A5}{\mathbf{x}_{t-1}}} + {\alpha_t} {\color{#C19454}{\mathbf{x}_{t-1}^2}}}{\beta_t}},$$
 
-$$\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) \propto -{\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} = - {\frac{\color{#C19454}{\mathbf{x}_{t-1}^2} - 2\sqrt{\bar\alpha_{t-1}}{\color{#5286A5}{\mathbf{x}_{t-1}}} \mathbf{x}_{0} + \bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}},$$
-
-$$\log q(\mathbf{x}_{t}|\mathbf{x}_0) \propto - {\frac{(\mathbf{x}_{t} - \sqrt{\bar\alpha_{t}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t}}}.$$
+$$\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) \propto -{\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} = - {\frac{ {\color{#C19454} {\mathbf{x}_{t-1}^2} } - 2\sqrt{\bar\alpha_{t-1}}{\color{#5286A5}{\mathbf{x}_{t-1}}} \mathbf{x}_{0} + \bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}}.$$
 
 Then, using Bayesian rule we have:
 
@@ -807,7 +826,9 @@ $$\begin{aligned}
 \end{aligned}
 $$
 
-where $f(\mathbf{x}_t, \mathbf{x}_0)$ is some function independent of $\mathbf{x}_{t-1}$. Then following the standard Gaussian density function, the mean and variance can be parameterized as follows (recall that $\alpha_t +\beta_t=1$):
+where $f(\mathbf{x}_t, \mathbf{x}_0)$ is some function independent of $\mathbf{x}_{t-1}$. 
+
+Now following the standard Gaussian density function, the mean and variance can be parameterized as follows (recall that $\alpha_t +\beta_t=1$):
 
 $${\color{#C19454}{\tilde \beta_t}} = \Big(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}\Big)^{-1} = \Big(\frac{\alpha_t-\bar{\alpha}_{t}+\beta_t}{\beta_t (1-\bar{\alpha}_{t-1})}\Big)^{-1} = \beta_t \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_{t}}$$
 
@@ -845,6 +866,9 @@ To summarize, our training process:
 $$\nabla_\theta \| \epsilon - \epsilon_\theta(\mathbf{x}_t, t) \|^2$$
 - Repeat until converge
 
+![](.)
+*JAX-like pseudocode for diffusion model training:*
+
 ```python
 import jax.numpy as jnp
 from jax import grad, jit, vmap, random
@@ -857,7 +881,7 @@ key = random.PRNGKey(42)
 alphas = jnp.linspace(1, 0, T) 
 alpha_bars = jnp.cumprod(alphas)
 
-# initial model weights (necessary for JAX)
+# initial model weights
 dummy = sample_batch(key, batch_size)
 params = model.init(key, dummy)
 
@@ -870,25 +894,18 @@ def apply_noising(a, img, noise):
     return jnp.sqrt(a) * img + jnp.sqrt(1 - a) * noise
 	    
 def train_on_batch():
-	# sample from train data
-	x_0 = sample_batch(key, batch_size)
-	
-	# choose random steps
-	t = random.randint(key, shape=(batch_size,), minval=0, maxval=T)
-	
-	# add noise
-	eps = random.normal(key, shape=x_0.shape)
-	x_t = jit(vmap(apply_noising))(alpha_bars[t], x_0, eps)
-	
-	# calculate gradients
-	grads = jit(grad(loss))(params, eps, x_t)
-
-	# update parameters with gradients and your favourite optimizer
-	...
+    # sample from train data
+    x_0 = sample_batch(key, batch_size)
+    # choose random steps
+    t = random.randint(key, shape=(batch_size,), minval=0, maxval=T)
+    # add noise
+    eps = random.normal(key, shape=x_0.shape)
+    x_t = jit(vmap(apply_noising))(alpha_bars[t], x_0, eps)
+    # calculate gradients
+    grads = jit(grad(loss))(params, eps, x_t)
+    # update parameters with gradients and your favourite optimizer
+    ...
 ```
-![](.)
-*JAX-like pseudocode for diffusion model training.*
-
 
 Inference process consists of the following steps:
 
@@ -902,6 +919,9 @@ $$\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t -
 
 - Return $\mathbf{x}_0$
 
+![](.)
+*JAX-like pseudocode for diffusion model sampling:*
+
 ```python
 def get_x_tm1(params, x_t, t):
     eps = model.apply(params, x_t, t)
@@ -910,16 +930,19 @@ def get_x_tm1(params, x_t, t):
     return mu_t + sigma_t * random.normal(key, shape=x_0.shape)
 
 def sample_batch():
-	x_t = random.normal(key, shape=x_0.shape)
-	for t in range(T, 1, -1):
-	    x_t = get_x_tm1(params, x_t, t)
-	return x_t
+    x_t = random.normal(key, shape=x_0.shape)
+    for t in range(T, 1, -1):
+        x_t = get_x_tm1(params, x_t, t)
+    return x_t
 ```
-![](.)
-*JAX-like pseudocode for diffusion model sampling.*
 
   
 ### Guided diffusion
+
+Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. Now the question rises: how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t|y)$ to generate specific images by feeding additional information about class $y$ during the training process?
+
+If we have a differentiable discriminative model $f_\phi(y|\mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, 
+
 
 ### DALL·E 2
 
@@ -927,6 +950,9 @@ def sample_batch():
 
 ![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
 *CLIP architecture*
+
+![](.)
+*JAX-like pseudocode for the core of an implementation of CLIP:*
 
 ```python
 # image_encoder - ResNet or Vision Transformer
@@ -954,9 +980,6 @@ loss_i = cross_entropy_loss(logits, labels, axis=0)
 loss_t = cross_entropy_loss(logits, labels, axis=1)
 loss = (loss_i + loss_t)/2
 ```
-
-![](.)
-*JAX-like pseudocode for the core of an implementation of CLIP.*
 
 ![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
 *Bear in mind, digital art. Image source: DALL·E 2 by OpenAI Instagram account.*
