@@ -17,6 +17,8 @@ Sources:
 	- [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf)
 	- [Improved Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2102.09672.pdf) 
 	- [Diffusion Models Beat GANs on Image Synthesis](https://arxiv.org/pdf/2105.05233.pdf)
+	- [Generative Modeling by Estimating Gradients of the
+Data Distribution](https://arxiv.org/pdf/1907.05600.pdf)
 - Posts:
 	- [What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models)
 	- [Denoising Diffusion-based Generative Modeling: Foundations and Applications](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view)
@@ -442,7 +444,7 @@ $$\mathbf{x}_t = \sqrt{1-\beta_t} \mathbf{x}_{t-1} + \sqrt{\beta_t} \epsilon_{t-
 
 Conditional distribution for the forward process is
 
-$$q(\mathbf{x}_t | \mathbf{x}_{t-1}) = \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_t, \beta_t \mathbf{I}) \quad q(\mathbf{x}_{1:T} | \mathbf{x}_0) = \prod_{t=1}^T q(\mathbf{x}_t |\mathbf{x}_{t-1})$$
+$$q(\mathbf{x}_t \vert  \mathbf{x}_{t-1}) = \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_t, \beta_t \mathbf{I}) \quad q(\mathbf{x}_{1:T} \vert  \mathbf{x}_0) = \prod_{t=1}^T q(\mathbf{x}_t \vert \mathbf{x}_{t-1})$$
 
 Recall that Gaussian distribution has the following property: for $\epsilon_1 \sim \mathcal{N}(0, \sigma^2_1\mathbf{I})$ and $\epsilon_2 \sim \mathcal{N}(0, \sigma^2_2 \mathbf{I})$ we have
 
@@ -459,9 +461,10 @@ $$
 
 and 
 
-$$q(\mathbf{x}_t | \mathbf{x}_{0}) \sim \mathcal{N}\big(\sqrt{\overline\alpha_t}\mathbf{x}_{0}, \sqrt{1-\overline\alpha_t} \mathbf{I}\big).$$
+$$q(\mathbf{x}_t \vert  \mathbf{x}_{0}) \sim \mathcal{N}\big(\sqrt{\overline\alpha_t}\mathbf{x}_{0}, \sqrt{1-\overline\alpha_t} \mathbf{I}\big).$$
 
-If we were able to reverse diffusion process and sample from $q(\mathbf{x}_{t-1} | \mathbf{x}_t)$, we could recreate samples from a true distribution $q(\mathbf{x}_0)$ with only a Gaussian noise input $\mathbf{x}_T$. In general $q(\mathbf{x}_{t-1} | \mathbf{x}_t)$ is intractable, since its calculation would require marginalization over the entire data distribution. However, it is worth to note that with $\beta_t$ small enough $q(\mathbf{x}_{t-1} | \mathbf{x}_t)$ is also Gaussian.
+If we were able to reverse diffusion process and sample from $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$, we could recreate samples from a true distribution $q(\mathbf{x}_0)$ with only a Gaussian noise input $\mathbf{x}_T$. 
+In general $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$ is intractable, since its calculation would require marginalization over the entire data distribution. However, it is worth to note that with $\beta_t$ small enough $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$ is also Gaussian.
 
 The core idea of diffusion algorithm is to train a model $p_\theta$ to approximate these conditional probabilities in order to run the reverse diffusion process:
 
@@ -775,17 +778,17 @@ graph_reverse_chain();
 </script>
 
 ![](.)
-*Forward and reverse diffusion processes. Going backwards, we start from isotropic Gaussian noise $p(\mathbf{x}_T) \sim \mathcal{N}(0, \mathbf{I})$ and gradually sample from $p_\theta(\mathbf{x}_{t-1} | \mathbf{x}_t)$ for $t=T, \dots, 1$ until we get a data point from approximated distribution.*
+*Forward and reverse diffusion processes. Going backwards, we start from isotropic Gaussian noise $p(\mathbf{x}_T) \sim \mathcal{N}(0, \mathbf{I})$ and gradually sample from $p_\theta(\mathbf{x}_{t-1} \vert  \mathbf{x}_t)$ for $t=T, \dots, 1$ until we get a data point from approximated distribution.*
 
 Note that reverse conditional probability is tractable when conditioned on $\mathbf{x}_0$:
 
-$$q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}({\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}}, {\color{#C19454}{\tilde \beta_t \mathbf{I}}}).$$
+$$q(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}({\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}}, {\color{#C19454}{\tilde \beta_t \mathbf{I}}}).$$
 
 Efficient training is therefore possible by minimizing Kullback-Leibler divergence between $p_\theta$ and $q$, or formally, evidence lower bound loss
 
 $$
 \begin{aligned}
-L_{\operatorname{ELBO}} &= \mathbb{E}_q\bigg[\log\frac{q(\mathbf{x}_{1:T} | \mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})} \bigg]
+L_{\operatorname{ELBO}} &= \mathbb{E}_q\bigg[\log\frac{q(\mathbf{x}_{1:T} \vert  \mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})} \bigg]
 \\ &= \mathbb{E}_q\bigg[\log\frac{\prod_{t=1}^T q(\mathbf{x}_t|\mathbf{x}_{t-1}) }{p_\theta(\mathbf{x}_T) \prod_{t=1}^T p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)} \bigg]
 \\ &= \mathbb{E}_q\bigg[\sum_{t=1}^T \log \frac{ q(\mathbf{x}_t|\mathbf{x}_{t-1})} {p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)} -\log p_\theta(\mathbf{x}_T)\bigg]
 \\ &= \mathbb{E}_q\bigg[\log \frac{q(\mathbf{x}_1|\mathbf{x}_{0})}{p_\theta(\mathbf{x}_{0}|\mathbf{x}_1)} + \sum_{t=2}^T \log  \frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t}, \mathbf{x}_0) q(\mathbf{x}_t|\mathbf{x}_0)}{q(\mathbf{x}_{t-1}|\mathbf{x}_0)p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)} -\log p_\theta(\mathbf{x}_T)\bigg]
@@ -793,26 +796,26 @@ L_{\operatorname{ELBO}} &= \mathbb{E}_q\bigg[\log\frac{q(\mathbf{x}_{1:T} | \mat
 \\ &= \mathbb{E}_q\bigg[-\log p_\theta(\mathbf{x}_0|\mathbf{x}_1)  + \sum_{t=2}^T \log  \frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t}, \mathbf{x}_0)}{p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)}+ \log \frac{q(\mathbf{x}_T|\mathbf{x}_0)}{p_\theta(\mathbf{x}_T)}\bigg].
 \end{aligned}$$
 
-Labeling each term
+Labeling each term:
 
 $$\begin{aligned}
 L_0 &= \mathbb{E}_q[-\log p_\theta(\mathbf{x}_0|\mathbf{x}_1)], & \\
-L_{t} &= D_{\operatorname{KL}}\big(q(\mathbf{x}_{t-1} |\mathbf{x}_{t}, \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)\big), &t = 1, \dots T-1, \\
-L_T &= D_{\operatorname{KL}}\big(q(\mathbf{x}_T | \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_T)\big)\big],
+L_{t} &= D_{\operatorname{KL}}\big(q(\mathbf{x}_{t-1} \vert \mathbf{x}_{t}, \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t)\big), &t = 1, \dots T-1, \\
+L_T &= D_{\operatorname{KL}}\big(q(\mathbf{x}_T \vert  \mathbf{x}_0) \big|\big| p_\theta(\mathbf{x}_T)\big)\big],
 \end{aligned}
 $$
 
 we get total objective
 
-$$L_{\operatorname{VLB}}= \sum_{t=0}^{T} L_t.$$
+$$L_{\operatorname{ELBO}}= \sum_{t=0}^{T} L_t.$$
 
 Last term $L_T$ can be ignored, as $q$ doesn't depend on $\theta$ and $p_\theta(\mathbf{x}_T)$ is isotropic Gaussian. All KL divergences in equation above are comparisons between Gaussians, so they can be calculated with closed form expressions instead of high variance Monte Carlo estimates. One can try to estimate $\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}$ directly with
 
-$$ L_t = \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)} - \mu_\theta(\mathbf{x}_t, t)  \|^2 \Big] + C,$$
+$$ L_t = \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|{\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}} - \mu_\theta(\mathbf{x}_t, t)  \|^2 \Big] + C,$$
 
 where $C$ is some constant independent of $\theta$. However [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) propose a different way - train neural network $\epsilon_\theta(\mathbf{x}_t, t)$ to predict the noise.
 
-We can start from reformulation of $q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0)$. Note that
+We can start from reformulation of $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)$. Note that
 
 $$\log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) \propto - {\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t}} = - {\frac{\mathbf{x}_t^2 - 2 \sqrt{\alpha_t} \mathbf{x}_t{\color{#5286A5}{\mathbf{x}_{t-1}}} + {\alpha_t} {\color{#C19454}{\mathbf{x}_{t-1}^2}}}{\beta_t}},$$
 
@@ -821,7 +824,7 @@ $$\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) \propto -{\frac{(\mathbf{x}_{t-1} - \sqr
 Then, using Bayesian rule we have:
 
 $$\begin{aligned}
-\log q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) & = \log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) + \log q(\mathbf{x}_{t-1}|\mathbf{x}_0) - \log q(\mathbf{x}_{t}|\mathbf{x}_0)
+\log q(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0) & = \log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) + \log q(\mathbf{x}_{t-1}|\mathbf{x}_0) - \log q(\mathbf{x}_{t}|\mathbf{x}_0)
 \\ & \propto {-\color{#C19454}{(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}) \mathbf{x}_{t-1}^2}} + {\color{#5286A5}{(\frac{2\sqrt{\alpha_t}}{\beta_t}\mathbf{x}_t + \frac{2\sqrt{\bar{\alpha}_{t-1}}}{1-\bar{\alpha}_{t-1}}\mathbf{x}_0 )\mathbf{x}_{t-1}}} + f(\mathbf{x}_t, \mathbf{x}_0),
 \end{aligned}
 $$
@@ -866,9 +869,6 @@ To summarize, our training process:
 $$\nabla_\theta \| \epsilon - \epsilon_\theta(\mathbf{x}_t, t) \|^2$$
 - Repeat until converge
 
-![](.)
-*JAX-like pseudocode for diffusion model training:*
-
 ```python
 import jax.numpy as jnp
 from jax import grad, jit, vmap, random
@@ -906,11 +906,15 @@ def train_on_batch():
     # update parameters with gradients and your favourite optimizer
     ...
 ```
+![](.)
+*Diffusion model training in JAX*
+
 
 Inference process consists of the following steps:
 
 - Sample $\mathbf{x}_T \sim \mathcal{N}(0, \mathbf{I})$
 - For $t = T, \dots, 1$ 
+
 $$\mathbf{x}_{t-1} = \mu_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon,$$
 
   where $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ and
@@ -918,9 +922,6 @@ $$\mathbf{x}_{t-1} = \mu_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon,$$
 $$\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar\alpha_t}}\epsilon_\theta(\mathbf{x}_t, t) \Big).$$ 
 
 - Return $\mathbf{x}_0$
-
-![](.)
-*JAX-like pseudocode for diffusion model sampling:*
 
 ```python
 def get_x_tm1(params, x_t, t):
@@ -935,13 +936,16 @@ def sample_batch():
         x_t = get_x_tm1(params, x_t, t)
     return x_t
 ```
+![](.)
+*Diffusion model sampling in JAX*
 
+### Score based generative modelling
   
 ### Guided diffusion
 
-Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. Now the question rises: how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t|y)$ to generate specific images by feeding additional information about class $y$ during the training process?
+Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. Now there is the question: how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t \vert y)$ to generate specific images by feeding additional information about class $y$ during the training process?
 
-If we have a differentiable discriminative model $f_\phi(y|\mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, 
+If we have a differentiable discriminative model $f_\phi(y \vert \mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, 
 
 
 ### DALL·E 2
