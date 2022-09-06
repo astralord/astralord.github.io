@@ -765,9 +765,9 @@ svg.append('text')
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 529)
+  .attr('x', 532)
   .attr('y', 15)
-  .text("Noise")
+  .text("Prior")
   .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
@@ -815,11 +815,14 @@ $$ L_t = \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|{\color{#5286A5}{\tilde\mu(
 
 where $C$ is some constant independent of $\theta$. However [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf) propose a different way - train neural network $\epsilon_\theta(\mathbf{x}_t, t)$ to predict the noise.
 
-We can start from reformulation of $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)$. Note that
+We can start from reformulation of $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)$. First, note that
 
-$$\log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) \propto - {\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t}} = - {\frac{\mathbf{x}_t^2 - 2 \sqrt{\alpha_t} \mathbf{x}_t{\color{#5286A5}{\mathbf{x}_{t-1}}} + {\alpha_t} {\color{#C19454}{\mathbf{x}_{t-1}^2}}}{\beta_t}},$$
-
-$$\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) \propto -{\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} = - {\frac{ {\color{#C19454} {\mathbf{x}_{t-1}^2} } - 2\sqrt{\bar\alpha_{t-1}}{\color{#5286A5}{\mathbf{x}_{t-1}}} \mathbf{x}_{0} + \bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}}.$$
+$$
+\begin{aligned}
+\log q(\mathbf{x}_t|\mathbf{x}_{t-1}, \mathbf{x}_0) &\propto - {\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t}} = - {\frac{\mathbf{x}_t^2 - 2 \sqrt{\alpha_t} \mathbf{x}_t{\color{#5286A5}{\mathbf{x}_{t-1}}} + {\alpha_t} {\color{#C19454}{\mathbf{x}_{t-1}^2}}}{\beta_t}},
+\\
+\log q(\mathbf{x}_{t-1}|\mathbf{x}_0) &\propto -{\frac{(\mathbf{x}_{t-1} - \sqrt{\bar\alpha_{t-1}} \mathbf{x}_{0})^2}{1-\bar\alpha_{t-1}}} = - {\frac{ {\color{#C19454} {\mathbf{x}_{t-1}^2} } - 2\sqrt{\bar\alpha_{t-1}}{\color{#5286A5}{\mathbf{x}_{t-1}}} \mathbf{x}_{0} + \bar\alpha_{t-1}\mathbf{x}_{0}^2}{1-\bar\alpha_{t-1}}}.
+\end{aligned}$$
 
 Then, using Bayesian rule we have:
 
@@ -941,6 +944,129 @@ def sample_batch():
 
 ### Score based generative modelling
   
+<div id="cntns_chain" class="svg-container" align="center"></div> 
+
+<script>
+
+function continuous_chain() {
+
+var svg = d3.select("#cntns_chain")
+			  .append("svg")
+			  .attr("width", 600)
+			  .attr("height", 85);
+
+svg.append('circle')
+  .attr('cx', 50)
+  .attr('cy', 50)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.85)
+  .attr('fill', '#348ABD');
+  
+svg.append('text')
+  .attr('x', 42)
+  .attr('y', 55)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 55)
+  .attr('y', 60)
+  .text("0")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+svg.append('line')
+  .attr('x1', 70)
+  .attr('y1', 40)
+  .attr('x2', 530)
+  .attr('y2', 40)
+  .style("stroke-width", 1)
+  .attr('stroke', 'black');
+  
+draw_triangle(svg, 525, 40, 90);
+  
+svg.append('line')
+  .attr('x1', 70)
+  .attr('y1', 60)
+  .attr('x2', 530)
+  .attr('y2', 60)
+  .style("stroke-width", 1)
+  .attr('stroke', 'black');
+  
+draw_triangle(svg, 75, 60, 270);
+
+svg.append('text')
+  .attr('x', 240)
+  .attr('y', 30)
+  .text("dx = f(x, t)dt + g(t)dw")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('circle')
+  .attr('cx', 550)
+  .attr('cy', 50)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.5)
+  .attr('fill', '#808080');
+  
+svg.append('text')
+  .attr('x', 542)
+  .attr('y', 55)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 555)
+  .attr('y', 60)
+  .text("T")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 175)
+  .attr('y', 80)
+  .text("dx = [f(x, t)dt - g²(t)∇ₓlog qₜ(x)]dt + g(t)dŵ")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 33)
+  .attr('y', 15)
+  .text("Data")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 532)
+  .attr('y', 15)
+  .text("Prior")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+}
+
+continuous_chain();
+
+</script>
+![](.)
+*Forward and reverse generative diffusion SDEs.*
+
+In our case with
+
+$$f(x,t) = -\frac{1}{2}\beta(t)\mathbf{x}_t$$
+
+and
+
+$$g(t) = \sqrt{\beta(t)},$$
+
+we have reverse diffusion process
+
+$$dx = \big[-\frac{1}{2}\beta(t)\mathbf{x}_t + \beta(t) \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t)\big] dt + \sqrt{\beta(t) d\hat{w}}$$
+    
 ### Guided diffusion
 
 Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. Now there is the question: how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t \vert y)$ to generate specific images by feeding additional information about class $y$ during the training process?
