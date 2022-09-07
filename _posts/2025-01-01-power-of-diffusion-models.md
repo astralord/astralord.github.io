@@ -948,6 +948,9 @@ def sample_batch():
 
 <script>
 
+d3.select("#cntns_chain")
+  .style("position", "relative");
+  
 function continuous_chain() {
 
 var svg = d3.select("#cntns_chain")
@@ -996,13 +999,6 @@ svg.append('line')
   .attr('stroke', 'black');
   
 draw_triangle(svg, 75, 60, 270);
-
-svg.append('text')
-  .attr('x', 240)
-  .attr('y', 30)
-  .text("dx = f(x, t)dt + g(t)dw")
-  .style("font-size", "14px")
-  .attr("font-family", "Arvo");
   
 svg.append('circle')
   .attr('cx', 550)
@@ -1026,12 +1022,25 @@ svg.append('text')
   .style("font-size", "11px")
   .attr("font-family", "Arvo");
   
-svg.append('text')
-  .attr('x', 175)
-  .attr('y', 80)
-  .text("dx = [f(x, t)dt - g²(t)∇ₓlog qₜ(x)]dt + g(t)dŵ")
+d3.select("#cntns_chain")
+  .append("span")
+  .text("\\(d\\mathbf{x}_t = -\\frac{1}{2}\\beta_t\\mathbf{x}_t dt + \\sqrt{\\beta_t}d\\mathbf{w}_t \\)")
   .style("font-size", "14px")
-  .attr("font-family", "Arvo");
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", "240px")
+  .style("top", "5px");
+  
+d3.select("#cntns_chain")
+  .append("span")
+  .text("\\(d\\mathbf{x}_t = \\big[-\\frac{1}{2}\\beta_t\\mathbf{x}_t - \\beta_t \\nabla_{\\mathbf{x}_t} \\log q(\\mathbf{x}_t)\\big] dt + \\sqrt{\\beta_t}d\\overline{\\mathbf{w}}_t \\)")
+  .style("font-size", "14px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", "170px")
+  .style("top", "70px");
   
 svg.append('text')
   .attr('x', 33)
@@ -1057,15 +1066,15 @@ continuous_chain();
 
 In our case with
 
-$$f(x,t) = -\frac{1}{2}\beta(t)\mathbf{x}_t$$
+$$f(x,t) = -\frac{1}{2}\beta_t\mathbf{x}_t$$
 
 and
 
-$$g(t) = \sqrt{\beta(t)},$$
+$$g(t) = \sqrt{\beta_t},$$
 
 we have reverse diffusion process
 
-$$dx = \big[-\frac{1}{2}\beta(t)\mathbf{x}_t + \beta(t) \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t)\big] dt + \sqrt{\beta(t) d\hat{w}}$$
+$$d\mathbf{x}_t = \big[-\frac{1}{2}\beta_t\mathbf{x}_t - \beta_t \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t)\big] dt + \sqrt{\beta_t}d\overline{\mathbf{w}}_t$$
     
 ### Guided diffusion
 
