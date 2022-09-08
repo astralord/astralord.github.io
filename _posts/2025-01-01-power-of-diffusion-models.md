@@ -944,7 +944,7 @@ def sample_batch():
 
 ### Score based generative modelling
 
-Diffusion model is an example of discrete Markov chain random process. We can extend it to continuous stochastic process. Consider **multidimensional Wiener process** $\mathbf{w}_t$ - a stochastic process, such that it starts with $0$, all of its increments are independent and normally distributed:
+Diffusion model is an example of discrete Markov chain. We can extend it to continuous stochastic process. Let's define **Wiener process (Brownian motion)** $\mathbf{w}_t$ - a random process, such that it starts with $0$, has continuous paths, all of its increments are independent and normally distributed:
 
 $$\frac{\mathbf{w}(t) - \mathbf{w}(s)}{\sqrt{t - s}} \sim \mathcal{N}(0, \mathbf{I}), \quad t > s.$$ 
 
@@ -963,6 +963,26 @@ $$
 \mathbf{x}(t+\Delta t) &= \sqrt{1-\beta(t)\Delta t} \mathbf{x}(t) + \sqrt{\beta(t)} (\mathbf{w}(t + \Delta t)-\mathbf{w}(t)) \\
 & \approx \Big(1 - \frac{\beta(t) \Delta t}{2} \Big) \mathbf{x}(t) + \sqrt{\beta(t)}(\mathbf{w}(t + \Delta t)-\mathbf{w}(t)). & \color{Salmon}{\leftarrow \text{Taylor expansion}}
 \end{aligned}$$
+
+With $\Delta t \rightarrow 0$ this converges to **stochastic differential equation (SDE)**:
+
+$$d\mathbf{x} = -\frac{1}{2}\beta(t)\mathbf{x}dt + \sqrt{\beta(t)} d\mathbf{w}.$$
+
+The equation of type 
+
+$$d\mathbf{x} = f(\mathbf{x}, t)dt + g(t)d\mathbf{w}$$
+
+has a unique strong solution as long as the coefficients are globally Lipschitz in both state and time [Øksendal (2003)](http://www.stat.ucla.edu/~ywu/research/documents/StochasticDifferentialEquations.pdf). We hereafter denote by $q_t(\mathbf{x})$ probability density of $\mathbf{x}(t)$. 
+
+By starting from samples of $\mathbf{x}_T \sim q_T(\mathbf{x})$ and reversing the process, we can obtain samples $\mathbf{x}_0 \sim q_0(\mathbf{x})$. It was proved in [Anderson (1982)](https://reader.elsevier.com/reader/sd/pii/0304414982900515?token=87C349DB9BEE275FFC8CA1B9E94F4EB84D25343F2FBCF9886B08402A7CE1C334B1ECBC2A7DB2805CD00A2BD720F9FBFF&originRegion=eu-west-1&originCreation=20220906054001) that the reverse of a diffusion process is also a diffusion process, running backwards in time and given by the reverse-time SDE:
+
+$$
+\begin{aligned}
+d\mathbf{x} = [f(\mathbf{x}, t) - g(t)^2 &\underbrace{\nabla_{\mathbf{x}} \log q_t(\mathbf{x})}]dt + g(t) d\bar{\mathbf{w}}, &\\
+&\color{Salmon}{\text{Score Function}} \\
+\end{aligned}$$
+
+where $\bar{\mathbf{w}}$ is a standard Wiener process when time flows backwards from $T$ to $0$. Once the score of each marginal distribution is known for all $t$, we can derive the reverse diffusion process from and simulate it to sample from $q_0$.
 
 <div id="cntns_chain" class="svg-container" align="center"></div> 
 
@@ -1049,7 +1069,7 @@ d3.select("#cntns_chain")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "270px")
+  .style("left", "280px")
   .style("top", "10px");
   
 d3.select("#cntns_chain")
@@ -1059,7 +1079,7 @@ d3.select("#cntns_chain")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "200px")
+  .style("left", "210px")
   .style("top", "70px");
   
 svg.append('text')
