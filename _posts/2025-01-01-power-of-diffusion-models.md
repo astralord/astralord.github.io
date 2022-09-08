@@ -943,7 +943,27 @@ def sample_batch():
 *Diffusion model sampling in JAX*
 
 ### Score based generative modelling
-  
+
+Diffusion model is an example of discrete Markov chain random process. We can extend it to continuous stochastic process. Consider **multidimensional Wiener process** $\mathbf{w}_t$ - a stochastic process, such that it starts with $0$, all of its increments are independent and normally distributed:
+
+$$\frac{\mathbf{w}(t) - \mathbf{w}(s)}{\sqrt{t - s}} \sim \mathcal{N}(0, \mathbf{I}), \quad t > s.$$ 
+
+Let also
+
+$$\mathbf{x}\big(\frac{t}{T}\big) := \mathbf{x}_t \ \text{ and }  \ \beta\big(\frac{t}{T}\big) := \beta_t \cdot T,$$
+
+then
+
+$$\mathbf{x}\big(\frac{t + 1}{T}\big) = \sqrt{1-\frac{\beta(t/T)}{T}} \mathbf{x}(t/T) + \sqrt{\frac{\beta(t/T)}{T}} \frac{\mathbf{w}\big(\frac{t+1}{T}\big)-\mathbf{w}\big(\frac{t}{T}\big)}{\sqrt{1/T}}$$
+
+Rewriting equation above with $t:=\frac{t}{T}$ and $\Delta t = \frac{1}{T}$, we get
+
+$$
+\begin{aligned}
+\mathbf{x}(t+\Delta t) &= \sqrt{1-\beta(t)\Delta t} \mathbf{x}(t) + \sqrt{\beta(t)} (\mathbf{w}(t + \Delta t)-\mathbf{w}(t)) \\
+& \approx \Big(1 - \frac{\beta(t) \Delta t}{2} \Big) \mathbf{x}(t) + \sqrt{\beta(t)}(\mathbf{w}(t + \Delta t)-\mathbf{w}(t)). & \color{Salmon}{\leftarrow \text{Taylor expansion}}
+\end{aligned}$$
+
 <div id="cntns_chain" class="svg-container" align="center"></div> 
 
 <script>
@@ -1024,22 +1044,22 @@ svg.append('text')
   
 d3.select("#cntns_chain")
   .append("span")
-  .text("\\(d\\mathbf{x}_t = -\\frac{1}{2}\\beta_t\\mathbf{x}_t dt + \\sqrt{\\beta_t}d\\mathbf{w}_t \\)")
+  .text("\\(d\\mathbf{x} = -\\frac{1}{2}\\beta(t)\\mathbf{x} dt + \\sqrt{\\beta(t)}d\\mathbf{w} \\)")
   .style("font-size", "14px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "240px")
-  .style("top", "5px");
+  .style("left", "270px")
+  .style("top", "10px");
   
 d3.select("#cntns_chain")
   .append("span")
-  .text("\\(d\\mathbf{x}_t = \\big[-\\frac{1}{2}\\beta_t\\mathbf{x}_t - \\beta_t \\nabla_{\\mathbf{x}_t} \\log q(\\mathbf{x}_t)\\big] dt + \\sqrt{\\beta_t}d\\overline{\\mathbf{w}}_t \\)")
+  .text("\\(d\\mathbf{x} = \\big[-\\frac{1}{2}\\beta(t)\\mathbf{x} - \\beta(t) \\nabla_{\\mathbf{x}} \\log q_t(\\mathbf{x})\\big] dt + \\sqrt{\\beta(t)}d\\bar{\\mathbf{w}} \\)")
   .style("font-size", "14px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "170px")
+  .style("left", "200px")
   .style("top", "70px");
   
 svg.append('text')
