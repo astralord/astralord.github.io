@@ -944,7 +944,7 @@ def sample_batch():
 
 ### Score based generative modelling
 
-Diffusion model is an example of discrete Markov chain. We can extend it to continuous stochastic process. Let's define **Wiener process (Brownian motion)** $\mathbf{w}_t$ - a random process, such that it starts with $0$, has continuous paths, all of its increments are independent and normally distributed:
+Diffusion model is an example of discrete Markov chain. We can extend it to continuous stochastic process. Let's define **Wiener process (Brownian motion)** $\mathbf{w}_t$ - a random process, such that it starts with $0$, its samples are continuous paths and all of its increments are independent and normally distributed:
 
 $$\frac{\mathbf{w}(t) - \mathbf{w}(s)}{\sqrt{t - s}} \sim \mathcal{N}(0, \mathbf{I}), \quad t > s.$$ 
 
@@ -954,7 +954,7 @@ $$\mathbf{x}\big(\frac{t}{T}\big) := \mathbf{x}_t \ \text{ and }  \ \beta\big(\f
 
 then
 
-$$\mathbf{x}\big(\frac{t + 1}{T}\big) = \sqrt{1-\frac{\beta(t/T)}{T}} \mathbf{x}(t/T) + \sqrt{\frac{\beta(t/T)}{T}} \frac{\mathbf{w}\big(\frac{t+1}{T}\big)-\mathbf{w}\big(\frac{t}{T}\big)}{\sqrt{1/T}}$$
+$$\mathbf{x}\big(\frac{t + 1}{T}\big) = \sqrt{1-\frac{\beta(t/T)}{T}} \mathbf{x}(t/T) + \sqrt{\beta(t/T)} \Big( \mathbf{w}\big(\frac{t+1}{T}\big)-\mathbf{w}\big(\frac{t}{T}\big) \Big).$$
 
 Rewriting equation above with $t:=\frac{t}{T}$ and $\Delta t = \frac{1}{T}$, we get
 
@@ -972,7 +972,7 @@ The equation of type
 
 $$d\mathbf{x} = f(\mathbf{x}, t)dt + g(t)d\mathbf{w}$$
 
-has a unique strong solution as long as the coefficients are globally Lipschitz in both state and time [Øksendal (2003)](http://www.stat.ucla.edu/~ywu/research/documents/StochasticDifferentialEquations.pdf). We hereafter denote by $q_t(\mathbf{x})$ probability density of $\mathbf{x}(t)$. 
+has a unique strong solution as long as the coefficients are globally Lipschitz in both state and time ([Øksendal (2003)](http://www.stat.ucla.edu/~ywu/research/documents/StochasticDifferentialEquations.pdf)). We hereafter denote by $q_t(\mathbf{x})$ probability density of $\mathbf{x}(t)$. 
 
 By starting from samples of $\mathbf{x}_T \sim q_T(\mathbf{x})$ and reversing the process, we can obtain samples $\mathbf{x}_0 \sim q_0(\mathbf{x})$. It was proved in [Anderson (1982)](https://reader.elsevier.com/reader/sd/pii/0304414982900515?token=87C349DB9BEE275FFC8CA1B9E94F4EB84D25343F2FBCF9886B08402A7CE1C334B1ECBC2A7DB2805CD00A2BD720F9FBFF&originRegion=eu-west-1&originCreation=20220906054001) that the reverse of a diffusion process is also a diffusion process, running backwards in time and given by the reverse-time SDE:
 
@@ -982,7 +982,14 @@ d\mathbf{x} = [f(\mathbf{x}, t) - g(t)^2 &\underbrace{\nabla_{\mathbf{x}} \log q
 &\color{Salmon}{\text{Score Function}} \\
 \end{aligned}$$
 
-where $\bar{\mathbf{w}}$ is a standard Wiener process when time flows backwards from $T$ to $0$. Once the score of each marginal distribution is known for all $t$, we can derive the reverse diffusion process from and simulate it to sample from $q_0$.
+where $\bar{\mathbf{w}}$ is a standard Wiener process when time flows backwards from $T$ to $0$. Once the score of each marginal distribution is known for all $t$, we can derive the reverse diffusion process from and simulate it to sample from $q_0$. In our case with
+
+$$f(\mathbf{x},t) = -\frac{1}{2}\beta(t)\mathbf{x}(t) \ \text{ and } \ g(t) = \sqrt{\beta(t)}$$
+
+we have reverse diffusion process
+
+$$d\mathbf{x} = \big[-\frac{1}{2}\beta(t)\mathbf{x} - \beta(t) \nabla_{\mathbf{x}} \log q_t(\mathbf{x})\big] dt + \sqrt{\beta(t)}d\bar{\mathbf{w}}.$$
+    
 
 <div id="cntns_chain" class="svg-container" align="center"></div> 
 
@@ -1069,7 +1076,7 @@ d3.select("#cntns_chain")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "280px")
+  .style("left", "285px")
   .style("top", "10px");
   
 d3.select("#cntns_chain")
@@ -1079,7 +1086,7 @@ d3.select("#cntns_chain")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "210px")
+  .style("left", "215px")
   .style("top", "70px");
   
 svg.append('text')
@@ -1104,24 +1111,77 @@ continuous_chain();
 ![](.)
 *Forward and reverse generative diffusion SDEs.*
 
-In our case with
+In order to estimate $\nabla_{\mathbf{x}} \log q_t(\mathbf{x})$ we can train a time-dependent score-based model $\mathbf{s}_\theta(\mathbf{x}, t)$, such that
 
-$$f(x,t) = -\frac{1}{2}\beta_t\mathbf{x}_t$$
+$$\mathbf{s}_\theta(\mathbf{x}, t) \approx \nabla_{\mathbf{x}} \log q_t(\mathbf{x}).$$
 
-and
+The marginal diffused density $q_t(\mathbf{x}(t))$ is not tractable, however, 
 
-$$g(t) = \sqrt{\beta_t},$$
+$$q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) \sim \mathcal{N}(\sqrt{\bar{\alpha}(t)} \mathbf{x}(0), (1 - \bar{\alpha}(t)) \mathbf{I})$$
 
-we have reverse diffusion process
+with $\bar{\alpha}(t) = e^{\int_0^t \beta(s) ds}$. Therefore we can minimize
 
-$$d\mathbf{x}_t = \big[-\frac{1}{2}\beta_t\mathbf{x}_t - \beta_t \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t)\big] dt + \sqrt{\beta_t}d\overline{\mathbf{w}}_t$$
-    
+$$\mathcal{L} = \mathbb{E}_{t \sim \mathcal{U}(0, t)} \mathbb{E}_{\mathbf{x}(0) \sim q_0(\mathbf{x})} \mathbb{E}_{\mathbf{x}(t) \sim q_t(\mathbf{x}(t) \vert \mathbf{x}(0))}[ \| \mathbf{s}_\theta(\mathbf{x}(t), t) - \nabla_{\mathbf{x}(t)} \log q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) \|^2 ],$$
+
+and after expectations, $\mathbf{s}_\theta(\mathbf{x}, t) \approx \nabla_{\mathbf{x}} \log q_t(\mathbf{x}).$
+
+//TODO: sampling and training Jax code
+
+#### Connection to diffusion model
+
+Given a Gaussian distribution
+
+$$\mathbf{x}(t) = \sqrt{\bar{\alpha}(t)} \mathbf{x}(0) + \sqrt{1 - \bar{\alpha}(t)} \epsilon, \quad \epsilon \sim \mathcal{N}(0, \mathbf{I}),$$
+
+we can write the derivative of the logarithm of its density function as
+
+$$ 
+\begin{aligned}
+\nabla_{\mathbf{x}(t)} \log q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) &= -\nabla_{\mathbf{x}(t)} \frac{(\mathbf{x}(t) - \sqrt{\bar{\alpha}(t)} \mathbf{x}(0))^2}{2 (1 - \bar{\alpha}(t))} \\
+&= -\frac{\mathbf{x}(t) - \sqrt{\bar{\alpha}(t)} \mathbf{x}(0)}{1 - \bar{\alpha}(t)} \\
+&= \frac{\epsilon}{\sqrt{1 - \bar{\alpha}(t)}}.
+\end{aligned}
+$$
+
+Also,
+
+$$\mathbf{s}_\theta(\mathbf{x}, t) = -\frac{\epsilon_\theta(\mathbf{x}, t)}{\sqrt{1 - \bar{\alpha}(t)}}.$$
+
+ 
 ### Guided diffusion
 
 Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. Now there is the question: how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t \vert y)$ to generate specific images by feeding additional information about class $y$ during the training process?
 
-If we have a differentiable discriminative model $f_\phi(y \vert \mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, 
+If we have a differentiable discriminative model $f_\phi(y \vert \mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, we can use its gradients to guide the diffusion sampling process toward the conditioning information $y$  by altering the noise prediction. 
 
+We can write the score function for the joint distribution $q(\mathbf{x}, y)$ as following,
+
+$$
+\begin{aligned}
+\nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t, y) &= \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t) + \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t) \\
+& \approx  -\frac{\epsilon_\theta(\mathbf{x}_t, t)}{\sqrt{1 - \bar{\alpha}_t}} + \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).
+\end{aligned}
+$$
+
+At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\epsilon_\theta$:
+
+$$\epsilon_\theta(\mathbf{x}_t, t \vert y) = \epsilon_\theta(\mathbf{x}_t, t) + \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
+
+If we revert the gradient and the logarithm operations, we observe that we are raising the conditional part of the distribution to a power:
+
+$$q(\mathbf{x}_t, y) \propto q(\mathbf{x}) \cdot q(y \vert \mathbf{x})^\omega.$$
+
+This corresponds to tuning the temperature of distribution, taking $\omega > 1$ we sharpen the distribution, which usually leads to better individual sample quality, but less sample diversity. 
+
+Unfortunately, there are a few problems, which make this approach impractical...
+
+//TODO: draw diagrams on guidance
+
+#### Classifier-free guidance
+
+A downside of classifier guidance is that it requires an additional classifier model and thus complicates the training pipeline. You can't plug in a standard pre-trained classifier, because this model has to be trained on noisy data $\mathbf{x}_t$. [Ho & Salimans](https://openreview.net/pdf?id=qw8AKxfYbI) proposed an alternative method, **a classifier-free guidance**, which doesn't require training a separate classifier. Instead, one trains a conditional diffusion model $p_\theta(\mathbf{x} \vert y)$ parameterized through $\epsilon(\mathbf{x}_t, t, \vert y)$ with conditioning dropout: 10-20% of the time, the conditioning information $y$ is removed. This way model knows how to generate images unconditionally as well, i.e.
+
+$$\epsilon(\mathbf{x}_t, t) = \epsilon(\mathbf{x}_t, t \vert \emptyset).$$
 
 ### DALL·E 2
 
@@ -1157,7 +1217,7 @@ logits = jnp.dot(I_e, T_e.T) * jnp.exp(t)
 labels = jnp.arange(n)
 loss_i = cross_entropy_loss(logits, labels, axis=0)
 loss_t = cross_entropy_loss(logits, labels, axis=1)
-loss = (loss_i + loss_t)/2
+loss = (loss_i + loss_t) / 2
 ```
 
 ![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
