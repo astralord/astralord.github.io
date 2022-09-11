@@ -11,6 +11,9 @@ published: true
 
 > The purpose of this post is...
 
+![Space Opera]({{'/assets/img/space-opera.png'|relative_url}})
+*In 2022 'Théâtre D’opéra Spatial', an artwork by Jason M. Allen with help of Midjourney took 1st place at Colorado State Fair. Here I chose this picture emerging from noise as a symbol of an upcoming age of art, created by artificial intelligence.*
+
 Sources:
 
 - Papers:
@@ -23,6 +26,43 @@ Data Distribution](https://arxiv.org/pdf/1907.05600.pdf)
 	- [What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models)
 	- [Denoising Diffusion-based Generative Modeling: Foundations and Applications](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view)
 	- [The recent rise of diffusion-based models](https://maciejdomagala.github.io/generative_models/2022/06/06/The-recent-rise-of-diffusion-based-models.html#citation-14)
+
+### DALL·E
+
+#### CLIP
+
+![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
+*CLIP architecture*
+
+```python
+# image_encoder - ResNet or Vision Transformer
+# text_encoder - CBOW or Text Transformer
+# I[n, h, w, c] - minibatch of aligned images
+# T[n, l] - minibatch of aligned texts
+# W_i[d_i, d_e] - learned proj of image to embed
+# W_t[d_t, d_e] - learned proj of text to embed
+# t - learned temperature parameter
+
+# extract feature representations of each modality
+I_f = image_encoder(I) #[n, d_i]
+T_f = text_encoder(T) #[n, d_t]
+
+# joint multimodal embedding [n, d_e]
+I_e = l2_normalize(jnp.dot(I_f, W_i), axis=1)
+T_e = l2_normalize(jnp.dot(T_f, W_t), axis=1)
+
+# scaled pairwise cosine similarities [n, n]
+logits = jnp.dot(I_e, T_e.T) * jnp.exp(t)
+
+# symmetric loss function
+labels = jnp.arange(n)
+loss_i = cross_entropy_loss(logits, labels, axis=0)
+loss_t = cross_entropy_loss(logits, labels, axis=1)
+loss = (loss_i + loss_t) / 2
+```
+
+![](.)
+*JAX-like pseudocode for the core of an implementation of CLIP:*
 
 ### Diffusion models
 
@@ -809,7 +849,7 @@ we get total objective
 
 $$L_{\operatorname{ELBO}}= \sum_{t=0}^{T} L_t.$$
 
-Last term $L_T$ can be ignored, as $q$ doesn't depend on $\theta$ and $p_\theta(\mathbf{x}_T)$ is isotropic Gaussian. All KL divergences in equation above are comparisons between Gaussians, so they can be calculated with closed form expressions instead of high variance Monte Carlo estimates. One can try to estimate $\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}$ directly with
+Last term $L_T$ can be ignored, as $q$ doesn't depend on $\theta$ and $p_\theta(\mathbf{x}_T)$ is isotropic Gaussian. All KL divergences in equation above are comparisons between Gaussians, so they can be calculated with closed form expressions instead of high variance Monte Carlo estimates. One can estimate $\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}$ directly with
 
 $$ L_t = \mathbb{E}_q \Big[ \frac{1}{2\sigma_t^2}  \|{\color{#5286A5}{\tilde\mu(\mathbf{x}_t, \mathbf{x}_0)}} - \mu_\theta(\mathbf{x}_t, t)  \|^2 \Big] + C,$$
 
@@ -982,14 +1022,15 @@ d\mathbf{x} = [f(\mathbf{x}, t) - g(t)^2 &\underbrace{\nabla_{\mathbf{x}} \log q
 &\color{Salmon}{\text{Score Function}} \\
 \end{aligned}$$
 
-where $\bar{\mathbf{w}}$ is a standard Wiener process when time flows backwards from $T$ to $0$. Once the score of each marginal distribution is known for all $t$, we can derive the reverse diffusion process from and simulate it to sample from $q_0$. In our case with
+where $\bar{\mathbf{w}}$ is a standard Wiener process when time flows backwards from $T$ to $0$. In our case with
 
 $$f(\mathbf{x},t) = -\frac{1}{2}\beta(t)\mathbf{x}(t) \ \text{ and } \ g(t) = \sqrt{\beta(t)}$$
 
 we have reverse diffusion process
 
 $$d\mathbf{x} = \big[-\frac{1}{2}\beta(t)\mathbf{x} - \beta(t) \nabla_{\mathbf{x}} \log q_t(\mathbf{x})\big] dt + \sqrt{\beta(t)}d\bar{\mathbf{w}}.$$
-    
+
+Once the score of each marginal distribution is known for all $t$, we can map data to a noise (prior) distribution with a forward SDE, and reverse this SDE for to sample from $q_0$.     
 
 <div id="cntns_chain" class="svg-container" align="center"></div> 
 
@@ -1121,9 +1162,7 @@ $$q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) \sim \mathcal{N}(\sqrt{\bar{\alpha}(t)}
 
 with $\bar{\alpha}(t) = e^{\int_0^t \beta(s) ds}$. Therefore we can minimize
 
-$$\mathcal{L} = \mathbb{E}_{t \sim \mathcal{U}(0, t)} \mathbb{E}_{\mathbf{x}(0) \sim q_0(\mathbf{x})} \mathbb{E}_{\mathbf{x}(t) \sim q_t(\mathbf{x}(t) \vert \mathbf{x}(0))}[ \| \mathbf{s}_\theta(\mathbf{x}(t), t) - \nabla_{\mathbf{x}(t)} \log q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) \|^2 ],$$
-
-and after expectations, $\mathbf{s}_\theta(\mathbf{x}, t) \approx \nabla_{\mathbf{x}} \log q_t(\mathbf{x}).$
+$$\mathcal{L} = \mathbb{E}_{t \sim \mathcal{U}(0, t)} \mathbb{E}_{\mathbf{x}(0) \sim q_0(\mathbf{x})} \mathbb{E}_{\mathbf{x}(t) \sim q_t(\mathbf{x}(t) \vert \mathbf{x}(0))}[ \| \mathbf{s}_\theta(\mathbf{x}(t), t) - \nabla_{\mathbf{x}(t)} \log q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) \|^2 ].$$
 
 //TODO: sampling and training Jax code
 
@@ -1150,7 +1189,9 @@ $$\mathbf{s}_\theta(\mathbf{x}, t) = -\frac{\epsilon_\theta(\mathbf{x}, t)}{\sqr
  
 ### Guided diffusion
 
-Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. Now there is the question: how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t \vert y)$ to generate specific images by feeding additional information about class $y$ during the training process?
+Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations.
+
+Now there is the question: how can we guide the class-conditional model $\hat{\epsilon}_\theta(\mathbf{x}_t,t,y)$ to generate specific images by feeding additional information about class $y$ during the training process?
 
 If we have a differentiable discriminative model $f_\phi(y \vert \mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, we can use its gradients to guide the diffusion sampling process toward the conditioning information $y$  by altering the noise prediction. 
 
@@ -1159,66 +1200,50 @@ We can write the score function for the joint distribution $q(\mathbf{x}, y)$ as
 $$
 \begin{aligned}
 \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t, y) &= \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t) + \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t) \\
-& \approx  -\frac{\epsilon_\theta(\mathbf{x}_t, t)}{\sqrt{1 - \bar{\alpha}_t}} + \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).
+& \approx  -\frac{\epsilon_\theta(\mathbf{x}_t, t)}{\sqrt{1 - \bar{\alpha}_t}} + \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t)
+\\ &= -\frac{1}{\sqrt{1 - \bar{\alpha}_t}}\big(\epsilon_\theta(\mathbf{x}_t, t) - \sqrt{1 - \bar{\alpha}_t}\nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t)\big).
 \end{aligned}
 $$
 
-At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\epsilon_\theta$:
+At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\hat{\epsilon}_\theta$:
 
-$$\epsilon_\theta(\mathbf{x}_t, t \vert y) = \epsilon_\theta(\mathbf{x}_t, t) + \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
+$$\epsilon_\theta(\mathbf{x}_t, t, y) = \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
 
-If we revert the gradient and the logarithm operations, we observe that we are raising the conditional part of the distribution to a power:
-
-$$q(\mathbf{x}_t, y) \propto q(\mathbf{x}) \cdot q(y \vert \mathbf{x})^\omega.$$
-
-This corresponds to tuning the temperature of distribution, taking $\omega > 1$ we sharpen the distribution, which usually leads to better individual sample quality, but less sample diversity. 
-
-Unfortunately, there are a few problems, which make this approach impractical...
+A downside of classifier guidance is that it requires an additional classifier model and thus complicates the training pipeline. One can't plug in a standard pre-trained classifier, because this model has to be trained on noisy data $\mathbf{x}_t$. 
 
 //TODO: draw diagrams on guidance
 
 #### Classifier-free guidance
 
-A downside of classifier guidance is that it requires an additional classifier model and thus complicates the training pipeline. You can't plug in a standard pre-trained classifier, because this model has to be trained on noisy data $\mathbf{x}_t$. [Ho & Salimans](https://openreview.net/pdf?id=qw8AKxfYbI) proposed an alternative method, **a classifier-free guidance**, which doesn't require training a separate classifier. Instead, one trains a conditional diffusion model $p_\theta(\mathbf{x} \vert y)$ parameterized through $\epsilon(\mathbf{x}_t, t, \vert y)$ with conditioning dropout: 10-20% of the time, the conditioning information $y$ is removed. This way model knows how to generate images unconditionally as well, i.e.
+[Ho & Salimans](https://openreview.net/pdf?id=qw8AKxfYbI) proposed an alternative method, **a classifier-free guidance**, which doesn't require training a separate classifier. Instead, one trains a conditional diffusion model, parameterized by $\epsilon_\theta(\mathbf{x}_t, t \vert y)$ with conditioning dropout: 10-20% of the time, the conditioning information $y$ is removed. In practice, it is replaced with a special input value $y=\emptyset$ representing the absence of conditioning information. This way model knows how to generate images unconditionally as well, i.e.
 
 $$\epsilon(\mathbf{x}_t, t) = \epsilon(\mathbf{x}_t, t \vert \emptyset).$$
 
+How could we use it for sampling? By Bayes rule we have
+
+$$
+\begin{aligned}
+q(y \vert \mathbf{x}_t) &= \frac{q(\mathbf{x}_t \vert y) q(y)}{q(\mathbf{x}_t)} \\
+\Longrightarrow \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t) &= \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t \vert y) - \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t) \\
+& \approx -\frac{\epsilon_\theta(\mathbf{x}_t, t \vert y) - \epsilon_\theta(\mathbf{x}_t, t)}{\sqrt{1 -\bar{\alpha}_t}}. 
+\end{aligned}$$
+
+Substituting this into the formula for classifier guidance, we get
+
+$$
+\begin{aligned}
+\epsilon_\theta(\mathbf{x}_t, t, y) &= \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t)
+\\ &= (1-\omega) \epsilon_\theta(\mathbf{x}_t, t) + \omega\epsilon_\theta(\mathbf{x}_t, t \vert y).
+\end{aligned}
+$$
+
+The classifier-free guided model is a linear transformation between two models: for $\omega=0$ we get unconditional model, and for $\omega=1$ we get the standard conditional model. But it turned out that for classifier-free guidance it works even better if $\omega > 1$.
+
+### GLIDE
+
+### Imagen
+
 ### DALL·E 2
-
-#### CLIP
-
-![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
-*CLIP architecture*
-
-![](.)
-*JAX-like pseudocode for the core of an implementation of CLIP:*
-
-```python
-# image_encoder - ResNet or Vision Transformer
-# text_encoder - CBOW or Text Transformer
-# I[n, h, w, c] - minibatch of aligned images
-# T[n, l] - minibatch of aligned texts
-# W_i[d_i, d_e] - learned proj of image to embed
-# W_t[d_t, d_e] - learned proj of text to embed
-# t - learned temperature parameter
-
-# extract feature representations of each modality
-I_f = image_encoder(I) #[n, d_i]
-T_f = text_encoder(T) #[n, d_t]
-
-# joint multimodal embedding [n, d_e]
-I_e = l2_normalize(jnp.dot(I_f, W_i), axis=1)
-T_e = l2_normalize(jnp.dot(T_f, W_t), axis=1)
-
-# scaled pairwise cosine similarities [n, n]
-logits = jnp.dot(I_e, T_e.T) * jnp.exp(t)
-
-# symmetric loss function
-labels = jnp.arange(n)
-loss_i = cross_entropy_loss(logits, labels, axis=0)
-loss_t = cross_entropy_loss(logits, labels, axis=1)
-loss = (loss_i + loss_t) / 2
-```
 
 ![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
 *Bear in mind, digital art. Image source: DALL·E 2 by OpenAI Instagram account.*
