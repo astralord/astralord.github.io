@@ -25,45 +25,8 @@ Data Distribution](https://arxiv.org/pdf/1907.05600.pdf)
 - Posts:
 	- [What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models)
 	- [Denoising Diffusion-based Generative Modeling: Foundations and Applications](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view)
-	- [The recent rise of diffusion-based models](https://maciejdomagala.github.io/generative_models/2022/06/06/The-recent-rise-of-diffusion-based-models.html#citation-14)
-
-### DALL·E
-
-#### CLIP
-
-![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
-*CLIP architecture*
-
-```python
-# image_encoder - ResNet or Vision Transformer
-# text_encoder - CBOW or Text Transformer
-# I[n, h, w, c] - minibatch of aligned images
-# T[n, l] - minibatch of aligned texts
-# W_i[d_i, d_e] - learned proj of image to embed
-# W_t[d_t, d_e] - learned proj of text to embed
-# t - learned temperature parameter
-
-# extract feature representations of each modality
-I_f = image_encoder(I) #[n, d_i]
-T_f = text_encoder(T) #[n, d_t]
-
-# joint multimodal embedding [n, d_e]
-I_e = l2_normalize(jnp.dot(I_f, W_i), axis=1)
-T_e = l2_normalize(jnp.dot(T_f, W_t), axis=1)
-
-# scaled pairwise cosine similarities [n, n]
-logits = jnp.dot(I_e, T_e.T) * jnp.exp(t)
-
-# symmetric loss function
-labels = jnp.arange(n)
-loss_i = cross_entropy_loss(logits, labels, axis=0)
-loss_t = cross_entropy_loss(logits, labels, axis=1)
-loss = (loss_i + loss_t) / 2
-```
-
-![](.)
-*JAX-like pseudocode for the core of an implementation of CLIP:*
-
+	- [The recent rise of diffusion-based models](https://maciejdomagala.github.io/generative_models/2022/06/06/The-recent-rise-of-diffusion-based-models.html)
+	
 ### Diffusion models
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -1189,9 +1152,9 @@ $$\mathbf{s}_\theta(\mathbf{x}, t) = -\frac{\epsilon_\theta(\mathbf{x}, t)}{\sqr
  
 ### Guided diffusion
 
-Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations.
+Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. But how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t,y)$ to generate specific images by feeding additional information about class $y$ during the training process?
 
-Now there is the question: how can we guide the class-conditional model $\hat{\epsilon}_\theta(\mathbf{x}_t,t,y)$ to generate specific images by feeding additional information about class $y$ during the training process?
+#### Classifier guidance
 
 If we have a differentiable discriminative model $f_\phi(y \vert \mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, we can use its gradients to guide the diffusion sampling process toward the conditioning information $y$  by altering the noise prediction. 
 
@@ -1205,7 +1168,7 @@ $$
 \end{aligned}
 $$
 
-At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\hat{\epsilon}_\theta$:
+At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\epsilon_\theta$:
 
 $$\epsilon_\theta(\mathbf{x}_t, t, y) = \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
 
@@ -1237,7 +1200,72 @@ $$
 \end{aligned}
 $$
 
-The classifier-free guided model is a linear transformation between two models: for $\omega=0$ we get unconditional model, and for $\omega=1$ we get the standard conditional model. But it turned out that for classifier-free guidance it works even better if $\omega > 1$.
+The classifier-free guided model is a linear interpolation between models with and without labels: for $\omega=0$ we get unconditional model, and for $\omega=1$ we get the standard conditional model. However, it turned out that for classifier-free guidance it works even better if $\omega > 1$. WHY???
+
+#### CLIP guidance
+
+With CLIP guidance the classifier is replaced with a **CLIP model** (abbreviation for **C**ontrastive **L**anguage-**I**mage **P**re-training). CLIP was originally a separate auxiliary model to rank the results from generative model, called **DALL·E**. DALL·E was the first public system capable of creating images based on a textual description from OpenAI. DALL·E's name is a portmanteau of the names of animated robot Pixar character WALL-E and the Spanish surrealist artist Salvador Dalí.
+
+The idea behind CLIP is fairly simple:
+
+- Take two encoders, one for a text snippet and another one for an image
+- Collect a sufficiently large dataset of image-text pairs (400 million scraped from the Internet in [CLIP paper](https://arxiv.org/pdf/2103.00020.pdf))
+- Train the model in a contrastive fashion: it must produce high similarity score for an image and a text from the same pair and a low similarity score for mismatched image and text.
+
+![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
+*CLIP approach: jointly train an image encoder and a text encoder to predict the correct pairings of a batch of (image, text) training examples. At test time the learned text encoder synthesizes a zero-shot linear classifier by embedding the names or descriptions of the target dataset’s classes. The classes can be adjustable without retraining a model.*
+
+
+```python
+# image_encoder - ResNet or Vision Transformer
+# text_encoder - CBOW or Text Transformer
+# I[n, h, w, c] - minibatch of aligned images
+# T[n, l] - minibatch of aligned texts
+# W_i[d_i, d_e] - learned proj of image to embed
+# W_t[d_t, d_e] - learned proj of text to embed
+# tau - learned temperature parameter
+
+# extract feature representations of each modality
+I_f = image_encoder(I) #[n, d_i]
+T_f = text_encoder(T) #[n, d_t]
+
+# joint multimodal embedding [n, d_e]
+I_e = l2_normalize(jnp.dot(I_f, W_i), axis=1)
+T_e = l2_normalize(jnp.dot(T_f, W_t), axis=1)
+
+# scaled pairwise cosine similarities [n, n]
+logits = jnp.dot(I_e, T_e.T) * jnp.exp(tau)
+
+# symmetric loss function
+labels = jnp.arange(n)
+loss_i = cross_entropy_loss(logits, labels, axis=0)
+loss_t = cross_entropy_loss(logits, labels, axis=1)
+loss = (loss_i + loss_t) / 2
+```
+![](.)
+*JAX-like pseudocode for the core of an implementation of CLIP*
+
+Let $f(\mathbf{x})$ and $g(y)$ be image and text encoders respectively. Then CLIP loss for $(i, j)$ pair is 
+
+$$
+\begin{aligned}
+\mathcal{L}_{\operatorname{CLIP}}(i, j) &= \frac{1}{2} \bigg(-\log \frac{\exp(f(\mathbf{x}_i) \cdot g(y_j) / \tau)}{\sum_k \exp(f(\mathbf{x}_i) \cdot g(y_k) / \tau)}-\log \frac{\exp(f(\mathbf{x}_i) \cdot g(y_j) / \tau)}{\sum_k \exp(f(\mathbf{x}_k) \cdot g(y_j) / \tau)} \bigg).
+\end{aligned}$$
+
+Basically, $f(\mathbf{x}) \cdot g(y)$ approximates
+
+$$ \frac{q(\mathbf{x}, y)}{q(\mathbf{x}) q(y)} = \frac{q(y \vert \mathbf{x})}{ q(y)}$$
+
+and it can be used to steer generative models instead of pretrained classifier:
+
+$$
+\begin{aligned}
+\nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t, y) &= \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t) + \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t) \\&= \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t) + \nabla_{\mathbf{x}_t} (\log q(y \vert \mathbf{x}_t) -\log q(y)) \\
+& \approx  -\frac{\epsilon_\theta(\mathbf{x}_t, t)}{\sqrt{1 - \bar{\alpha}_t}} + \nabla_{\mathbf{x}_t} \log (f(\mathbf{x}_t) \cdot g(y)).
+\end{aligned}
+$$
+
+Similar to classifier guidance, CLIP must be trained on noised images $\mathbf{x}_t$ to obtain the correct gradient in the reverse process.
 
 ### GLIDE
 
@@ -1245,10 +1273,13 @@ The classifier-free guided model is a linear transformation between two models: 
 
 ### DALL·E 2
 
-![Bear in mind]({{'/assets/img/bear-in-mind.jpg'|relative_url}})
-*Bear in mind, digital art. Image source: DALL·E 2 by OpenAI Instagram account.*
+![unCLIP]({{'/assets/img/unCLIP.png'|relative_url}})
+*unCLIP architecture. Below the dotted line the text-to-image process is depicted. Prior produces CLIP image embeddings conditioned on the caption. Decoder produces images conditioned on CLIP image embeddings and text.*
+
+Autoregressive prior: quantize image embedding to a seq. of discrete codes and predict them autoregressively. Diffusion prior: model the continuous image embedding by diffusion models conditioned on caption.
 
 ![Outpainting]({{'/assets/img/outpainting.jpeg'|relative_url}})
+*Outpainting with DALL·E 2*
 
 ### Disco diffusion
 
