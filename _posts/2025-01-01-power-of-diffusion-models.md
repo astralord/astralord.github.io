@@ -466,10 +466,9 @@ and
 
 $$q(\mathbf{x}_t \vert  \mathbf{x}_{0}) \sim \mathcal{N}\big(\sqrt{\overline\alpha_t}\mathbf{x}_{0}, \sqrt{1-\overline\alpha_t} \mathbf{I}\big).$$
 
-If we were able to reverse diffusion process and sample from $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$, we could recreate samples from a true distribution $q(\mathbf{x}_0)$ with only a Gaussian noise input $\mathbf{x}_T$. 
-In general $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$ is intractable, since its calculation would require marginalization over the entire data distribution. However, it is worth to note that with $\beta_t$ small enough $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$ is also Gaussian.
+If we were able to reverse diffusion process and sample from reverse process distribution $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$, we could recreate samples from a true distribution $q(\mathbf{x}_0)$ with only a Gaussian noise input $\mathbf{x}_T$. In general reverse process distribution is intractable, since its calculation would require marginalization over the entire data distribution.
 
-The core idea of diffusion algorithm is to train a model $p_\theta$ to approximate these conditional probabilities in order to run the reverse diffusion process:
+The core idea of diffusion algorithm is to train a model $p_\theta$ to approximate $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$ in order to run the reverse diffusion process:
 
 $$p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mu_\theta(\mathbf{x}_t, t), \Sigma_\theta(\mathbf{x}_t, t)),$$
 
@@ -835,7 +834,7 @@ $$\begin{aligned}
 \end{aligned}
 $$
 
-where $f(\mathbf{x}_t, \mathbf{x}_0)$ is some function independent of $\mathbf{x}_{t-1}$. 
+where $f$ is some function independent of $\mathbf{x}_{t-1}$. 
 
 Now following the standard Gaussian density function, the mean and variance can be parameterized as follows (recall that $\alpha_t +\beta_t=1$):
 
@@ -947,7 +946,7 @@ def sample_batch():
 
 ### Score based generative modelling
 
-Diffusion model is an example of discrete Markov chain. We can extend it to continuous stochastic process. Let's define **Wiener process (Brownian motion)** $\mathbf{w}_t$ - a random process, such that it starts with $0$, its samples are continuous paths and all of its increments are independent and normally distributed:
+Diffusion model is an example of discrete Markov chain. We can extend it to continuous stochastic process. Let's define **Wiener process (Brownian motion)** $\mathbf{w}_t$ - a random process, such that it starts with $0$, its samples are continuous paths and all of its increments are independent and normally distributed, i.e.
 
 $$\frac{\mathbf{w}(t) - \mathbf{w}(s)}{\sqrt{t - s}} \sim \mathcal{N}(0, \mathbf{I}), \quad t > s.$$ 
 
@@ -959,7 +958,7 @@ then
 
 $$\mathbf{x}\big(\frac{t + 1}{T}\big) = \sqrt{1-\frac{\beta(t/T)}{T}} \mathbf{x}(t/T) + \sqrt{\beta(t/T)} \Big( \mathbf{w}\big(\frac{t+1}{T}\big)-\mathbf{w}\big(\frac{t}{T}\big) \Big).$$
 
-Rewriting equation above with $t:=\frac{t}{T}$ and $\Delta t = \frac{1}{T}$, we get
+Rewriting equation above with $t:=\frac{t}{T}$ and $\Delta t := \frac{1}{T}$, we get
 
 $$
 \begin{aligned}
@@ -977,7 +976,7 @@ $$d\mathbf{x} = f(\mathbf{x}, t)dt + g(t)d\mathbf{w}$$
 
 has a unique strong solution as long as the coefficients are globally Lipschitz in both state and time ([Øksendal (2003)](http://www.stat.ucla.edu/~ywu/research/documents/StochasticDifferentialEquations.pdf)). We hereafter denote by $q_t(\mathbf{x})$ probability density of $\mathbf{x}(t)$. 
 
-By starting from samples of $\mathbf{x}_T \sim q_T(\mathbf{x})$ and reversing the process, we can obtain samples $\mathbf{x}_0 \sim q_0(\mathbf{x})$. It was proved in [Anderson (1982)](https://reader.elsevier.com/reader/sd/pii/0304414982900515?token=87C349DB9BEE275FFC8CA1B9E94F4EB84D25343F2FBCF9886B08402A7CE1C334B1ECBC2A7DB2805CD00A2BD720F9FBFF&originRegion=eu-west-1&originCreation=20220906054001) that the reverse of a diffusion process is also a diffusion process, running backwards in time and given by the reverse-time SDE:
+By starting from samples of $\mathbf{x}_T \sim q_T(\mathbf{x})$ and reversing the process, we can obtain samples $\mathbf{x}_0 \sim q_0(\mathbf{x})$. It was proved by [Anderson (1982)](https://reader.elsevier.com/reader/sd/pii/0304414982900515?token=87C349DB9BEE275FFC8CA1B9E94F4EB84D25343F2FBCF9886B08402A7CE1C334B1ECBC2A7DB2805CD00A2BD720F9FBFF&originRegion=eu-west-1&originCreation=20220906054001) that the reverse of a diffusion process is also a diffusion process, running backwards in time and given by the reverse-time SDE:
 
 $$
 \begin{aligned}
@@ -1152,7 +1151,7 @@ $$\mathbf{s}_\theta(\mathbf{x}, t) = -\frac{\epsilon_\theta(\mathbf{x}, t)}{\sqr
  
 ### Guided diffusion
 
-Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. But how can we guide the class-conditional model $\epsilon_\theta(\mathbf{x}_t,t,y)$ to generate specific images by feeding additional information about class $y$ during the training process?
+Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. But how can we guide the class-conditional model to generate specific images by feeding additional information about class $y$ during the training process?
 
 #### Classifier guidance
 
@@ -1168,13 +1167,22 @@ $$
 \end{aligned}
 $$
 
-At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\epsilon_\theta$:
+At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\tilde{\epsilon}_\theta$:
 
-$$\epsilon_\theta(\mathbf{x}_t, t, y) = \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
+$$\tilde{\epsilon}_\theta(\mathbf{x}_t, t) = \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
+
+We can then use the exact same sampling procedure, but with the modified noise predictions $\tilde{\epsilon}_\theta$ instead of $\epsilon_\theta$. This results in approximate sampling from distribution:
+
+$$\tilde{q}(\mathbf{x}_t \vert y) \propto q(\mathbf{x}_t) \cdot q(y \vert \mathbf{x}_t)^\omega.$$ 
+
+Basically, we are raising the conditional part of the distribution to a power, which corresponds to tuning the inverse temperature of that distribution. With large $\omega$ we focus onto distribution modes and produce higher fidelity (but less diverse) samples.
+
+![Guided Gaussians]({{'/assets/img/guided-gaussian.png'|relative_url}})
+*Guidance on a toy 2D example of three classes, in which the conditional distribution for each class is an isotropic Gaussian, each mixture component representing data conditioned on a class. The leftmost plot is the non-guided marginal density. Left to right are densities of mixtures of normalized guided conditionals with increasing guidance strength. [Image source](https://arxiv.org/pdf/2207.12598.pdf)*
 
 A downside of classifier guidance is that it requires an additional classifier model and thus complicates the training pipeline. One can't plug in a standard pre-trained classifier, because this model has to be trained on noisy data $\mathbf{x}_t$. 
 
-//TODO: draw diagrams on guidance
+And even having a classifier, which is robust to noise, classifier guidance is inherently limited in its effectiveness. Most of the information in the input $\mathbf{x}_t$ is not relevant to predicting $y$, and as a result, taking the gradient of the classifier w.r.t. its input can yield arbitrary (and even adversarial) directions in input space.
 
 #### Classifier-free guidance
 
@@ -1195,21 +1203,36 @@ Substituting this into the formula for classifier guidance, we get
 
 $$
 \begin{aligned}
-\epsilon_\theta(\mathbf{x}_t, t, y) &= \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t)
+\tilde{\epsilon}_\theta(\mathbf{x}_t, t \vert y) &= \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t)
 \\ &= (1-\omega) \epsilon_\theta(\mathbf{x}_t, t) + \omega\epsilon_\theta(\mathbf{x}_t, t \vert y).
 \end{aligned}
 $$
 
-The classifier-free guided model is a linear interpolation between models with and without labels: for $\omega=0$ we get unconditional model, and for $\omega=1$ we get the standard conditional model. However, it turned out that for classifier-free guidance it works even better if $\omega > 1$. WHY???
+The classifier-free guided model is a linear interpolation between models with and without labels: for $\omega=0$ we get unconditional model, and for $\omega=1$ we get the standard conditional model. However, as experiments have shown in [Dhariwal & Nichol paper](https://arxiv.org/pdf/2105.05233.pdf), guidance works even better with $\omega > 1$.
+
+#####Note on notation
+
+Authors of original paper applied classifier guidance to already conditional diffusion model $\epsilon(\mathbf{x}_t, t \vert y)$:
+
+$$
+\begin{aligned}
+\tilde{\epsilon}_\theta(\mathbf{x}_t, t \vert y) &= \epsilon_\theta(\mathbf{x}_t, t \vert y) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t)
+\\ &= (\omega + 1) \epsilon_\theta(\mathbf{x}_t, t \vert y) - \omega\epsilon_\theta(\mathbf{x}_t, t).
+\end{aligned}
+$$
+
+This is the same as applying guidance to unconditional model with $\omega + 1$ scale, because
+
+$$\tilde{q}(\mathbf{x}_t \vert y) \propto q(\mathbf{x}_t \vert y) \cdot q(y \vert \mathbf{x}_t)^\omega \propto q(\mathbf{x}_t) \cdot q(y \vert \mathbf{x}_t)^{\omega+1}.$$
 
 #### CLIP guidance
 
-With CLIP guidance the classifier is replaced with a **CLIP model** (abbreviation for **C**ontrastive **L**anguage-**I**mage **P**re-training). CLIP was originally a separate auxiliary model to rank the results from generative model, called **DALL·E**. DALL·E was the first public system capable of creating images based on a textual description from OpenAI. DALL·E's name is a portmanteau of the names of animated robot Pixar character WALL-E and the Spanish surrealist artist Salvador Dalí.
+With CLIP guidance the classifier is replaced with a **CLIP model** (abbreviation for **C**ontrastive **L**anguage-**I**mage **P**re-training). CLIP was originally a separate auxiliary model to rank the results from generative model, called **DALL·E**. DALL·E was the first public system capable of creating images based on a textual description from OpenAI, however it was not a diffusion model and is therefore out of the scope for this post. DALL·E's name is a portmanteau of the names of animated robot Pixar character WALL-E and the Spanish surrealist artist Salvador Dalí.
 
 The idea behind CLIP is fairly simple:
 
 - Take two encoders, one for a text snippet and another one for an image
-- Collect a sufficiently large dataset of image-text pairs (400 million scraped from the Internet in [CLIP paper](https://arxiv.org/pdf/2103.00020.pdf))
+- Collect a sufficiently large dataset of image-text pairs (e.g. 400 million scraped from the Internet in [original paper](https://arxiv.org/pdf/2103.00020.pdf))
 - Train the model in a contrastive fashion: it must produce high similarity score for an image and a text from the same pair and a low similarity score for mismatched image and text.
 
 ![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
@@ -1252,11 +1275,11 @@ $$
 \mathcal{L}_{\operatorname{CLIP}}(i, j) &= \frac{1}{2} \bigg(-\log \frac{\exp(f(\mathbf{x}_i) \cdot g(y_j) / \tau)}{\sum_k \exp(f(\mathbf{x}_i) \cdot g(y_k) / \tau)}-\log \frac{\exp(f(\mathbf{x}_i) \cdot g(y_j) / \tau)}{\sum_k \exp(f(\mathbf{x}_k) \cdot g(y_j) / \tau)} \bigg).
 \end{aligned}$$
 
-Basically, $f(\mathbf{x}) \cdot g(y)$ approximates
+Ideally, we get
 
-$$ \frac{q(\mathbf{x}, y)}{q(\mathbf{x}) q(y)} = \frac{q(y \vert \mathbf{x})}{ q(y)}$$
+$$ f(\mathbf{x}) \cdot g(y) \approx \frac{q(\mathbf{x}, y)}{q(\mathbf{x}) q(y)} = \frac{q(y \vert \mathbf{x})}{ q(y)},$$
 
-and it can be used to steer generative models instead of pretrained classifier:
+which be used to steer generative models instead of pretrained classifier:
 
 $$
 \begin{aligned}
@@ -1268,6 +1291,9 @@ $$
 Similar to classifier guidance, CLIP must be trained on noised images $\mathbf{x}_t$ to obtain the correct gradient in the reverse process.
 
 ### GLIDE
+
+GLIDE, which stands for **G**uided **L**anguage to **I**mage **D**iffusion for Generation and **E**diting, is a text-guided image generation model by OpenAI that has beaten DALL·E, yet received comparatively little attention.
+
 
 ### Imagen
 
