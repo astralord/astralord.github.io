@@ -1171,7 +1171,7 @@ At each step of denoising, the classifier checks whether the image is denoised i
 
 $$\tilde{\epsilon}_\theta(\mathbf{x}_t, t) = \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
 
-We can then use the exact same sampling procedure, but with the modified noise predictions $\tilde{\epsilon}_\theta$ instead of $\epsilon_\theta$. This results in approximate sampling from distribution:
+We can then use the exact same sampling procedure, but with the modified noise predictions $\tilde{\epsilon}_\theta$ instead of $\epsilon_\theta$. This results in approximate sampling from distribution:
 
 $$\tilde{q}(\mathbf{x}_t \vert y) \propto q(\mathbf{x}_t) \cdot q(y \vert \mathbf{x}_t)^\omega.$$ 
 
@@ -1210,6 +1210,20 @@ $$
 
 The classifier-free guided model is a linear interpolation between models with and without labels: for $\omega=0$ we get unconditional model, and for $\omega=1$ we get the standard conditional model. However, as experiments have shown in [Dhariwal & Nichol paper](https://arxiv.org/pdf/2105.05233.pdf), guidance works even better with $\omega > 1$.
 
+#####Note on notation
+
+Authors of original paper applied classifier guidance to already conditional diffusion model $\epsilon(\mathbf{x}_t, t \vert y)$:
+
+$$
+\begin{aligned}
+\tilde{\epsilon}_\theta(\mathbf{x}_t, t \vert y) &= \epsilon_\theta(\mathbf{x}_t, t \vert y) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t)
+\\ &= (\omega + 1) \epsilon_\theta(\mathbf{x}_t, t \vert y) - \omega\epsilon_\theta(\mathbf{x}_t, t).
+\end{aligned}
+$$
+
+This is the same as applying guidance to unconditional model with $\omega + 1$ scale, because
+
+$$\tilde{q}(\mathbf{x}_t \vert y) \propto q(\mathbf{x}_t \vert y) \cdot q(y \vert \mathbf{x}_t)^\omega \propto q(\mathbf{x}_t) \cdot q(y \vert \mathbf{x}_t)^{\omega+1}.$$
 
 #### CLIP guidance
 
@@ -1223,7 +1237,6 @@ The idea behind CLIP is fairly simple:
 
 ![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
 *CLIP approach: jointly train an image encoder and a text encoder to predict the correct pairings of a batch of (image, text) training examples. At test time the learned text encoder synthesizes a zero-shot linear classifier by embedding the names or descriptions of the target dataset’s classes. The classes can be adjustable without retraining a model.*
-
 
 ```python
 # image_encoder - ResNet or Vision Transformer
