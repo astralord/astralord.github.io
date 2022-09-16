@@ -974,7 +974,7 @@ The equation of type
 
 $$d\mathbf{x} = f(\mathbf{x}, t)dt + g(t)d\mathbf{w}$$
 
-has a unique strong solution as long as the coefficients are globally Lipschitz in both state and time ([Øksendal (2003)](http://www.stat.ucla.edu/~ywu/research/documents/StochasticDifferentialEquations.pdf)). We hereafter denote by $q_t(\mathbf{x})$ probability density of $\mathbf{x}(t)$. 
+has a unique strong solution as long as the coefficients are globally Lipschitz in both state and time ([Oksendal (2003)](http://www.stat.ucla.edu/~ywu/research/documents/StochasticDifferentialEquations.pdf)). We hereafter denote by $q_t(\mathbf{x})$ probability density of $\mathbf{x}(t)$. 
 
 By starting from samples of $\mathbf{x}_T \sim q_T(\mathbf{x})$ and reversing the process, we can obtain samples $\mathbf{x}_0 \sim q_0(\mathbf{x})$. It was proved by [Anderson (1982)](https://reader.elsevier.com/reader/sd/pii/0304414982900515?token=87C349DB9BEE275FFC8CA1B9E94F4EB84D25343F2FBCF9886B08402A7CE1C334B1ECBC2A7DB2805CD00A2BD720F9FBFF&originRegion=eu-west-1&originCreation=20220906054001) that the reverse of a diffusion process is also a diffusion process, running backwards in time and given by the reverse-time SDE:
 
