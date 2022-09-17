@@ -3,16 +3,16 @@ layout: post
 title: 'Power of Diffusion Models'
 date: 2022-01-01 11:00 +0800
 categories: [Generative AI]
-tags: [diffusion-models, jax, clip, dalle-2, midjourney, stable-diffusion]
+tags: [diffusion-models, jax, clip, guided-diffusion, dalle-2, imagen, stable-diffusion]
 math: true
 enable_d3: true
 published: true
 ---
 
-> The purpose of this post is...
+> The purpose of this post is to ... Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
 
 ![Space Opera]({{'/assets/img/space-opera.png'|relative_url}})
-*In 2022 'Théâtre D’opéra Spatial', an artwork by Jason M. Allen with help of Midjourney took 1st place at Colorado State Fair. Here I chose this picture emerging from noise as a symbol of an upcoming age of art, created by artificial intelligence.*
+*In 2022 'Théâtre D’opéra Spatial', an artwork by Jason M. Allen with help of Midjourney took 1st place in the digital art competition at Colorado State Fair. This event sparked a backslash from artists, claiming that creative jobs are now not safe from machines and in danger of becoming obsolete. Here I chose this picture emerging from noise as a symbol of an upcoming age of art, created by artificial intelligence.*
 
 Sources:
 
@@ -26,8 +26,10 @@ Data Distribution](https://arxiv.org/pdf/1907.05600.pdf)
 	- [What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models)
 	- [Denoising Diffusion-based Generative Modeling: Foundations and Applications](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view)
 	- [The recent rise of diffusion-based models](https://maciejdomagala.github.io/generative_models/2022/06/06/The-recent-rise-of-diffusion-based-models.html)
-	
-### Diffusion models
+
+### Diffusion probabilistic models
+
+To define a **diffusion probabilistic model** (usually called a **“diffusion model”** for brevity), we first define a Markov chain, which starts from initial datapoint $\mathbf{x}_0$, then gradually adds noise to the data, creating sequence $\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{x}_T$, until signal is destroyed.
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
@@ -449,8 +451,8 @@ Conditional distribution for the forward process is
 
 $$q(\mathbf{x}_t \vert  \mathbf{x}_{t-1}) = \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_t, \beta_t \mathbf{I}), \quad q(\mathbf{x}_{1:T} \vert  \mathbf{x}_0) = \prod_{t=1}^T q(\mathbf{x}_t \vert \mathbf{x}_{t-1}).$$
 
-Recall that Gaussian distribution has the following property: for $\epsilon_1 \sim \mathcal{N}(0, \sigma^2_1\mathbf{I})$ and $\epsilon_2 \sim \mathcal{N}(0, \sigma^2_2 \mathbf{I})$ we have
-
+Recall that for two Gaussian random variables $\epsilon_1 \sim \mathcal{N}(0, \sigma^2_1\mathbf{I})$ and $\epsilon_2 \sim \mathcal{N}(0, \sigma^2_2 \mathbf{I})$ we have
+ 
 $$\epsilon_1 + \epsilon_2 \sim \mathcal{N}(0, (\sigma_1^2 + \sigma_2^2)\mathbf{I}).$$
 
 Therefore for each latent $\mathbf{x}_t$ at arbitrary step $t$ we can sample it in a closed form. 
@@ -459,20 +461,20 @@ Using the notation $\alpha_t := 1 - \beta_t$ and $\overline\alpha_t := \prod_{s=
 
 $$
 \begin{aligned}
-\mathbf{x}_t & = {\color{#5286A5} {\sqrt{\alpha_t} \mathbf{x}_{t-1}}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = {\color{#5286A5} {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{\alpha_t (1-\alpha_{t-1})} \epsilon_{t-2}}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = {\color{#5286A5} {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2}}} + \sqrt{1-\alpha_t \alpha_{t-1}} \bar\epsilon_{t-2} \qquad \color{Salmon}{\leftarrow \bar\epsilon_{t-2} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \cdots \\ &= \sqrt{\overline\alpha_t} \mathbf{x}_0 + \sqrt{1-\overline\alpha_t} \epsilon
+\mathbf{x}_t & = {{\sqrt{\alpha_t} \mathbf{x}_{t-1}}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = { {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{\alpha_t (1-\alpha_{t-1})} \epsilon_{t-2}}} + { \sqrt{1-\alpha_t} \epsilon_{t-1}} \\ & = { {\sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2}}} + \sqrt{1-\alpha_t \alpha_{t-1}} \bar\epsilon_{t-2} \qquad \color{Salmon}{\leftarrow \bar\epsilon_{t-2} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \cdots \\ &= \sqrt{\overline\alpha_t} \mathbf{x}_0 + \sqrt{1-\overline\alpha_t} \epsilon
 \end{aligned} $$
 
 and 
 
 $$q(\mathbf{x}_t \vert  \mathbf{x}_{0}) \sim \mathcal{N}\big(\sqrt{\overline\alpha_t}\mathbf{x}_{0}, \sqrt{1-\overline\alpha_t} \mathbf{I}\big).$$
 
-If we were able to reverse diffusion process and sample from reverse process distribution $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$, we could recreate samples from a true distribution $q(\mathbf{x}_0)$ with only a Gaussian noise input $\mathbf{x}_T$. In general reverse process distribution is intractable, since its calculation would require marginalization over the entire data distribution.
+If we were able to go in the opposite direction and sample from reverse process distribution $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$, we could recreate samples from a true distribution $q(\mathbf{x}_0)$ with only a Gaussian noise input $\mathbf{x}_T$. In general reverse process distribution is intractable, since its calculation would require marginalization over the entire data distribution.
 
 The core idea of diffusion algorithm is to train a model $p_\theta$ to approximate $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$ in order to run the reverse diffusion process:
 
 $$p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mu_\theta(\mathbf{x}_t, t), \Sigma_\theta(\mathbf{x}_t, t)),$$
 
-where $\mu_\theta(\mathbf{x}_t, t)$  and $\Sigma_\theta(\mathbf{x}_t, t)$ are trainable networks. Although, for simplicity we can decide for 
+where $\mu_\theta$  and $\Sigma_\theta$ are trainable networks. Although, for simplicity we can decide for 
 
 $$\Sigma_\theta(\mathbf{x}_t, t) = \sigma_t^2 \mathbf{I}.$$
 
@@ -1126,8 +1128,6 @@ with $\bar{\alpha}(t) = e^{\int_0^t \beta(s) ds}$. Therefore we can minimize
 
 $$\mathcal{L} = \mathbb{E}_{t \sim \mathcal{U}(0, t)} \mathbb{E}_{\mathbf{x}(0) \sim q_0(\mathbf{x})} \mathbb{E}_{\mathbf{x}(t) \sim q_t(\mathbf{x}(t) \vert \mathbf{x}(0))}[ \| \mathbf{s}_\theta(\mathbf{x}(t), t) - \nabla_{\mathbf{x}(t)} \log q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) \|^2 ].$$
 
-//TODO: sampling and training Jax code
-
 #### Connection to diffusion model
 
 Given a Gaussian distribution
@@ -1228,7 +1228,7 @@ With CLIP guidance the classifier is replaced with a **CLIP model** (abbreviatio
 The idea behind CLIP is fairly simple:
 
 - Take two encoders, one for a text snippet and another one for an image
-- Collect a sufficiently large dataset of image-text pairs (e.g. 400 million scraped from the Internet in [original paper](https://arxiv.org/pdf/2103.00020.pdf))
+- Collect a sufficiently large dataset of image-text pairs (e.g. 400 million scraped from the Internet in the [original paper](https://arxiv.org/pdf/2103.00020.pdf))
 - Train the model in a contrastive fashion: it must produce high similarity score for an image and a text from the same pair and a low similarity score for mismatched image and text.
 
 ![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
@@ -1287,17 +1287,62 @@ Similar to classifier guidance, CLIP must be trained on noised images $\mathbf{x
 
 ### GLIDE
 
-GLIDE, which stands for **G**uided **L**anguage to **I**mage **D**iffusion for Generation and **E**diting, is a text-guided image generation model by OpenAI that has beaten DALL·E, yet received comparatively little attention.
+[GLIDE](https://arxiv.org/pdf/2112.10741.pdf), which stands for **G**uided **L**anguage to **I**mage **D**iffusion for Generation and **E**diting, is a model by OpenAI that has beaten DALL·E, arguably presented the most novel and interesting ideas and yet received comparatively little publicity. 
 
-### DALL·E 2
+Motivated by the ability of guided diffusion models to generate photorealistic samples and the ability of text-to-image models to handle free-form prompts, authors of the paper applied guided diffusion to the problem of text-conditional image synthesis. They also compared two techniques for guiding diffusion models towards text prompts: CLIP guidance and classifier-free guidance. Using human and automated evaluations, they found that classifier-free guidance yields higher-quality images.
+
+An architecture of GLIDE consists of three major blocks:
+
+- U-Net based text-conditional diffusion model at 64 × 64 resolution (2.3B parameters)
+- Transformer based text encoder to condition on natural language descriptions (1.2B parameters)
+- Another text-conditional upsampling diffusion model to increase the resolution to 256 × 256 (1.5B parameters)
+
+The U-Net model as usual stacks residual layers with downsampling convolutions, followed by a stack of residual layers with upsampling convolutions, with skip connections connecting the layers with the same spatial size. It also consists of attention layers which are crucial for simultaneous text processing.
+
+The text encoder was built from 24 residual blocks of width 2048. The input is a sequence of $K$ tokens. The output of the transformer is used in two ways:
+
+- the final token embedding token is used in place of a class embedding $y$,
+- the final layer of token embeddings is added to every attention layer of the model.
+
+Model has fewer parameters than DALL·E (5B vs 12B) and was trained on the same dataset, however was favored over it by human evaluators and has beaten it by [FID score](https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance). However, as the authors mentioned, unoptimized GLIDE takes 15 seconds to sample one image on a single A100 GPU. This is much slower than sampling for related GAN methods, which produce images in a single forward pass and are thus more favorable for use in real-time applications.
+
+### DALL·E 2 (unCLIP)
+
+In April 2022, OpenAI released a new model, called **DALL·E 2** (or **unCLIP** in the paper), which is a clever combination of CLIP and GLIDE. The CLIP model is trained separately on a data of image-text pairs $(\mathbf{x}, y)$. Let
+
+$$\mathbf{z}_i = \operatorname{CLIP}(\mathbf{x}) \quad \text{and} \quad \mathbf{z}_t = \operatorname{CLIP}(y)$$
+
+be CLIP image and text embeddings respectively. In the paper Vision Transformer was used as image encoder and Transformer with a causal attention mask as text encoder. Then CLIP is frozen and the unCLIP learns two models in parallel:
+
+* a special prior model $q(\mathbf{z}_i \vert y)$ outputs CLIP image embedding given the text $y$,
+* a diffusion decoder (modified GLIDE) $q(\mathbf{x} \vert \mathbf{z}_i, [y])$ generates the image $\mathbf{x}$ given CLIP image embedding $\mathbf{z}_i$ and optionally the original text $y$.
+
+Stacking these two components yields a generative model of images $\mathbf{x}$ given captions $y$:
+
+$$q(\mathbf{x} \vert y) = q(\mathbf{x}, \mathbf{z}_i \vert y) = q(\mathbf{x} \vert \mathbf{z}_i, y) \cdot q(\mathbf{z}_i \vert y).$$
 
 ![unCLIP]({{'/assets/img/unCLIP.png'|relative_url}})
-*unCLIP architecture. Below the dotted line the text-to-image process is depicted. Prior produces CLIP image embeddings conditioned on the caption. Decoder produces images conditioned on CLIP image embeddings and text.*
+*unCLIP architecture. Below the dotted line the text-to-image process is depicted. Given a text $y$ the CLIP text encoder generates a text embedding $\mathbf{z}_t$. Then a diffusion or autoregressive prior model processes this CLIP text embedding to construct an image embedding $\mathbf{z}_i$. Then a diffusion decoder generates images conditioned on CLIP image embeddings (and text). The decoder essentially inverts image embeddings back into images*
 
-Autoregressive prior: quantize image embedding to a seq. of discrete codes and predict them autoregressively. Diffusion prior: model the continuous image embedding by diffusion models conditioned on caption.
+- Autoregressive prior quantizes image embedding to a sequence of discrete codes and predict them autoregressively. 
+- Diffusion prior models the continuous image embedding by diffusion models conditioned on $y$.
+
+Diffusion prior outperforms the autoregressive prior for comparable model size and reduced training compute. The diffusion prior also performs better than the autoregressive prior in pairwise comparisons against GLIDE.
+
+The bipartite latent representation enables several text-guided image manipulation tasks. For example, one can fix CLIP image embeddings $\mathbf{z}_i$ and run decoder with different decoder latents $\mathbf{x}_T$.
+
+![unCLIP manipulation]({{'/assets/img/unCLIP-manipulation'|relative_url}})
+*Variations of an input image by encoding with CLIP and then decoding with a diffusion model. The variations preserve both semantic information like presence of a clock in the painting and the overlapping strokes in the logo, as well as stylistic elements like the surrealism in the painting and the color gradients in the logo, while varying the non-essential details.*
+
+Or one can change $\mathbf{z}_i$ towards the difference of the text CLIP embeddings $\mathbf{z}_t$ of two prompts.
+
+![unCLIP manipulation 2]({{'/assets/img/unCLIP-manipulation-2'|relative_url}})
+*Text diffs applied to images by interpolating between their CLIP image embeddings and a normalised difference of the CLIP text embeddings produced from the two descriptions. Decoder latent $\mathbf{x}_T$ is kept as a constant.*
+
+Recently OpenAI also introduced outpainting by DALL·E 2.
 
 ![Outpainting]({{'/assets/img/outpainting.jpeg'|relative_url}})
-*Outpainting with DALL·E 2*
+*Outpainting by DALL·E 2 applied to a 'Girl with a Pearl Earring' by Johannes Vermeer*
 
 ### Imagen
 
