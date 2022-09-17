@@ -447,7 +447,7 @@ $$\mathbf{x}_t = \sqrt{1-\beta_t} \mathbf{x}_{t-1} + \sqrt{\beta_t} \epsilon_{t-
 
 Conditional distribution for the forward process is
 
-$$q(\mathbf{x}_t \vert  \mathbf{x}_{t-1}) = \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_t, \beta_t \mathbf{I}) \quad q(\mathbf{x}_{1:T} \vert  \mathbf{x}_0) = \prod_{t=1}^T q(\mathbf{x}_t \vert \mathbf{x}_{t-1})$$
+$$q(\mathbf{x}_t \vert  \mathbf{x}_{t-1}) = \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_t, \beta_t \mathbf{I}), \quad q(\mathbf{x}_{1:T} \vert  \mathbf{x}_0) = \prod_{t=1}^T q(\mathbf{x}_t \vert \mathbf{x}_{t-1}).$$
 
 Recall that Gaussian distribution has the following property: for $\epsilon_1 \sim \mathcal{N}(0, \sigma^2_1\mathbf{I})$ and $\epsilon_2 \sim \mathcal{N}(0, \sigma^2_2 \mathbf{I})$ we have
 
@@ -1111,7 +1111,7 @@ svg.append('text')
 continuous_chain();
 
 </script>
-![](.)
+![Panoramic]({{'/assets/img/panoramic-noised.jpg'|relative_url}})
 *Forward and reverse generative diffusion SDEs.*
 
 In order to estimate $\nabla_{\mathbf{x}} \log q_t(\mathbf{x})$ we can train a time-dependent score-based model $\mathbf{s}_\theta(\mathbf{x}, t)$, such that
@@ -1180,9 +1180,7 @@ Basically, we are raising the conditional part of the distribution to a power, w
 ![Guided Gaussians]({{'/assets/img/guided-gaussian.png'|relative_url}})
 *Guidance on a toy 2D example of three classes, in which the conditional distribution for each class is an isotropic Gaussian, each mixture component representing data conditioned on a class. The leftmost plot is the non-guided marginal density. Left to right are densities of mixtures of normalized guided conditionals with increasing guidance strength. [Image source](https://arxiv.org/pdf/2207.12598.pdf)*
 
-A downside of classifier guidance is that it requires an additional classifier model and thus complicates the training pipeline. One can't plug in a standard pre-trained classifier, because this model has to be trained on noisy data $\mathbf{x}_t$. 
-
-And even having a classifier, which is robust to noise, classifier guidance is inherently limited in its effectiveness. Most of the information in the input $\mathbf{x}_t$ is not relevant to predicting $y$, and as a result, taking the gradient of the classifier w.r.t. its input can yield arbitrary (and even adversarial) directions in input space.
+A downside of classifier guidance is that it requires an additional classifier model and thus complicates the training pipeline. One can't plug in a standard pre-trained classifier, because this model has to be trained on noisy data $\mathbf{x}_t$. And even having a classifier, which is robust to noise, classifier guidance is inherently limited in its effectiveness. Most of the information in the input $\mathbf{x}_t$ is not relevant to predicting $y$, and as a result, taking the gradient of the classifier w.r.t. its input can yield arbitrary (and even adversarial) directions in input space.
 
 #### Classifier-free guidance
 
@@ -1210,9 +1208,7 @@ $$
 
 The classifier-free guided model is a linear interpolation between models with and without labels: for $\omega=0$ we get unconditional model, and for $\omega=1$ we get the standard conditional model. However, as experiments have shown in [Dhariwal & Nichol paper](https://arxiv.org/pdf/2105.05233.pdf), guidance works even better with $\omega > 1$.
 
-#####Note on notation
-
-Authors of original paper applied classifier guidance to already conditional diffusion model $\epsilon(\mathbf{x}_t, t \vert y)$:
+Note on notation: authors of original paper applied classifier guidance to already conditional diffusion model $\epsilon(\mathbf{x}_t, t \vert y)$:
 
 $$
 \begin{aligned}
@@ -1278,7 +1274,7 @@ Ideally, we get
 
 $$ f(\mathbf{x}) \cdot g(y) \approx \frac{q(\mathbf{x}, y)}{q(\mathbf{x}) q(y)} = \frac{q(y \vert \mathbf{x})}{ q(y)},$$
 
-which be used to steer generative models instead of pretrained classifier:
+which can be used to steer generative models instead of pretrained classifier:
 
 $$
 \begin{aligned}
@@ -1293,9 +1289,6 @@ Similar to classifier guidance, CLIP must be trained on noised images $\mathbf{x
 
 GLIDE, which stands for **G**uided **L**anguage to **I**mage **D**iffusion for Generation and **E**diting, is a text-guided image generation model by OpenAI that has beaten DALL·E, yet received comparatively little attention.
 
-
-### Imagen
-
 ### DALL·E 2
 
 ![unCLIP]({{'/assets/img/unCLIP.png'|relative_url}})
@@ -1306,8 +1299,6 @@ Autoregressive prior: quantize image embedding to a seq. of discrete codes and p
 ![Outpainting]({{'/assets/img/outpainting.jpeg'|relative_url}})
 *Outpainting with DALL·E 2*
 
-### Disco diffusion
-
-### Midjourney
+### Imagen
 
 ### Stable diffusion
