@@ -1113,7 +1113,7 @@ svg.append('text')
 continuous_chain();
 
 </script>
-![Panoramic]({{'/assets/img/panoramic-noised.jpg'|relative_url}})
+![](.)
 *Forward and reverse generative diffusion SDEs.*
 
 In order to estimate $\nabla_{\mathbf{x}} \log q_t(\mathbf{x})$ we can train a time-dependent score-based model $\mathbf{s}_\theta(\mathbf{x}, t)$, such that
@@ -1324,19 +1324,31 @@ $$q(\mathbf{x} \vert y) = q(\mathbf{x}, \mathbf{z}_i \vert y) = q(\mathbf{x} \ve
 ![unCLIP]({{'/assets/img/unCLIP.png'|relative_url}})
 *unCLIP architecture. Below the dotted line the text-to-image process is depicted. Given a text $y$ the CLIP text encoder generates a text embedding $\mathbf{z}_t$. Then a diffusion or autoregressive prior model processes this CLIP text embedding to construct an image embedding $\mathbf{z}_i$. Then a diffusion decoder generates images conditioned on CLIP image embeddings (and text). The decoder essentially inverts image embeddings back into images*
 
+The authors tested two model classes for the prior:
+
 - Autoregressive prior quantizes image embedding to a sequence of discrete codes and predict them autoregressively. 
 - Diffusion prior models the continuous image embedding by diffusion models conditioned on $y$.
+
+As opposed to the way of training proposed by [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf), predicting the unnoised image embedding directly instead of predicting the noise was a better fit. Meaning, that instead of 
+
+$$L_t = \mathbb{E}_{\mathbf{x}_0, \epsilon} \big[  \|\epsilon - \epsilon_\theta(\mathbf{x}_t, t \vert y)  \|^2 \big]$$
+
+the unCLIP diffusion prior loss is
+
+$$L_t = \mathbb{E}_{\mathbf{x}_0, \epsilon} \big[ \| \mathbf{z}_i - f_\theta(\mathbf{z}_i^{(t)}, t \vert y) \|^2 \big],$$
+
+where $f_\theta$ stands for the prior model and $\mathbf{z}_i^{(t)}$ is the noised image embedding.
 
 Diffusion prior outperforms the autoregressive prior for comparable model size and reduced training compute. The diffusion prior also performs better than the autoregressive prior in pairwise comparisons against GLIDE.
 
 The bipartite latent representation enables several text-guided image manipulation tasks. For example, one can fix CLIP image embeddings $\mathbf{z}_i$ and run decoder with different decoder latents $\mathbf{x}_T$.
 
-![unCLIP manipulation]({{'/assets/img/unCLIP-manipulation'|relative_url}})
+![unCLIP manipulation]({{'/assets/img/unCLIP-manipulation.png'|relative_url}})
 *Variations of an input image by encoding with CLIP and then decoding with a diffusion model. The variations preserve both semantic information like presence of a clock in the painting and the overlapping strokes in the logo, as well as stylistic elements like the surrealism in the painting and the color gradients in the logo, while varying the non-essential details.*
 
 Or one can change $\mathbf{z}_i$ towards the difference of the text CLIP embeddings $\mathbf{z}_t$ of two prompts.
 
-![unCLIP manipulation 2]({{'/assets/img/unCLIP-manipulation-2'|relative_url}})
+![unCLIP manipulation 2]({{'/assets/img/unCLIP-manipulation-2.png'|relative_url}})
 *Text diffs applied to images by interpolating between their CLIP image embeddings and a normalised difference of the CLIP text embeddings produced from the two descriptions. Decoder latent $\mathbf{x}_T$ is kept as a constant.*
 
 Recently OpenAI also introduced outpainting by DALL·E 2.
