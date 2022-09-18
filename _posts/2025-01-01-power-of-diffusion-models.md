@@ -1358,7 +1358,7 @@ Recently OpenAI also introduced [outpainting with DALL·E 2](https://openai.com/
 
 Two months after the publication of DALL·E 2 Google Brain team presented [**Imagen**](https://arxiv.org/pdf/2205.11487.pdf). It uses a pre-trained T5-XXL language model instead of CLIP to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it. Authors of the paper noted, that scaling text encoder is extremely efficient and more important than scaling diffusion model size.
 
-Next, the resolution is increased via super-resolution diffusion models.
+Next, the resolution is increased via super-resolution diffusion models. There is another key observation from authors: noise conditioning augmentation weakens information from low-resolution models, thus it is beneficial to use text conditioning as extra information input.
 
 ![Imagen]({{'/assets/img/imagen-arch.png'|relative_url}})
 *Visualization of Imagen. Imagen uses a frozen text encoder to encode the input text into text embeddings. A conditional diffusion model maps the text embedding into a 64 × 64 image. Imagen further utilizes text-conditional super-resolution diffusion models to upsample the image, first 64 × 64 → 256 × 256, and then 256 × 256 → 1024 × 1024.*
@@ -1366,6 +1366,7 @@ Next, the resolution is increased via super-resolution diffusion models.
 #### Noise conditioning augmentation
 
 The solution can be viewed as a sequence of diffusion models, which was called **cascaded diffusion models** in [Ho et al. (2021)](https://arxiv.org/pdf/2106.15282.pdf). Noise conditioning augmentation between these models is crucial to the final image quality, which is to apply strong data augmentation to the low-resolution image $\mathbf{z}$ of each super-resolution model $p_\theta(\mathbf{x} \vert \mathbf{z})$. In simple terms, it is equivalent to applying various data augmentation techniques, such as a Gaussian noise/blur, to a low-resolution image before it is fed into the super-resolution models. 
+
 
 ```python
 def train_step_base(z_0):
@@ -1389,12 +1390,14 @@ def train_step_sr(z_0, x_0):
     ...
 ```
 ![](.)
-*Pseudo-code implementation for training model using conditioning augmentation. Functions `train_step_base` and `train_step_sr` can run in parallel.*
+*Pseudocode implementation for training model using conditioning augmentation. Functions `train_step_base` and `train_step_sr` can run in parallel.*
+
 
 In addition, there are also two similar forms of conditioning augmentation that require small modification to the training process:
 
 - Truncated conditioning augmentation stops the diffusion process early at step $t > 0$ for low resolution.
-- Non-truncated conditioning augmentation runs the full low resolution reverse process until step $0$ but then corrupt it by $\mathbf{x}_t' \sim q(\mathbf{x}_t \vert \mathbf{x}_0)$ and then feeds the corrupted $\mathbf{x}_t'$ into the super-resolution model.
+- Non-truncated conditioning augmentation runs the full low resolution reverse process until step $0$ but then corrupt it by $\mathbf{z}_t' \sim q(\mathbf{z}_t \vert \mathbf{z}_0)$ and then feeds the corrupted $\mathbf{z}_t'$ into the super-resolution model.
+
 
 ```python
 def sample_step(params, x_t, t, condition=None):
@@ -1414,7 +1417,7 @@ def sample_base():
         z_t = apply_noising(z_t, alpha_bars[s], eps_z)
     return z_t
 
-def sample():
+def sample_sr():
     # sample augmented low-resolution image
     z_0 = sample_base()
     # sample high-resolution image
@@ -1424,44 +1427,32 @@ def sample():
     return x_t
 ```
 ![](.)
-*Pseudo-code implementation for sampling using conditioning augmentation*
+*Pseudocode implementation for sampling using conditioning augmentation*
+
 
 #### Dynamic thresholding
 
-Another major key feature of Imagen is a so-called **dynamic thresholding**.  
+Another major key feature of Imagen is a so-called **dynamic thresholding**. Authors of the model found out that larger classifier-free guidance scale $\omega$ leads to better text alignment, but worse image fidelity producing highly saturated and unnatural images. They hypothesised that large $\omega$ increases train-test mismatch and generated images are saturated due to the very large gradient updates during sampling. 
+
+At each sampling step $t$, the prediction $\mathbf{x}_t$ must be within the same bounds as training data, i.e. within $[−1, 1]$, but we find empirically that high guidance weights cause predictions to exceed these bounds. To counter this problem, two approaches could be applied:
+
+- Static thresholding: clip $\mathbf{x}_t$ to $[-1, 1]$.
+- Dynamic thresholding: at each sampling step $t$, compute $s$ as a certain $p-$-percentile absolute pixel value; if $s > 1$ clip the prediction to $[-s, s]$ and divide by $s$.
 
 ```python
 def sample():
+    x_t = random.normal(key, shape=img_shape)
     for t in reversed(range(T)):
-        # forward pass to get x0_t from z_t.
-        x0_t = nn(z_t, t)
-        # static thresholding
-        x0_t = jnp.clip(x0_t, -1.0, 1.0)
-        
-        
-        # sampler step
-        z_tm1 = sampler_step(x0_t, z_t, t)
-        z_t = z_tm1
-    return x0_t
+        x_t = sample_step(params, x_t, t)
+        if using_static:
+            x_t = jnp.clip(x_t, -1.0, 1.0)
+        else:
+            s = jnp.percentile(jnp.abs(x_t), p, axis=tuple(range(1, x_t.ndim)))
+            s = jnp.max(s, 1.0)
+            x_t = jnp.clip(x_t, -s, s) / s
+    return x_t
 ```
 ![](.)
-*Pseudo code implementation for static thresholding*
-
-```python
-def sample(p: float):
-    for t in reversed(range(T)):
-        # forward pass to get x0_t from z_t
-        x0_t = nn(z_t, t)
-        # dynamic thresholding
-        s = jnp.percentile(jnp.abs(x0_t), p, axis=tuple(range(1, x0_t.ndim)))
-        s = jnp.max(s, 1.0)
-        x0_t = jnp.clip(x0_t, -s, s) / s
-        # sampler step
-        z_tm1 = sampler_step(x0_t, z_t, t)
-        z_t = z_tm1
-    return x0_t
-```
-![](.)
-*Pseudo code implementation for dynamic thresholding*
+*Pseudocode implementation for static and dynamic thresholdings*
 
 ### Stable diffusion
