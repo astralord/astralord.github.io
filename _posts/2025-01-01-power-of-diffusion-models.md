@@ -897,17 +897,15 @@ def loss(params, eps, x_t, t):
     return jnp.sum((eps - model.apply(params, x_t, t)) ** 2)
 
 @jit
-def apply_noising(a, img, noise):
+def apply_noising(img, a, noise):
     return jnp.sqrt(a) * img + jnp.sqrt(1 - a) * noise
 	    
-def train_step():
-    # sample from train data
-    x_0 = sample_batch(key, batch_size)
+def train_step(x_0):
     # choose random steps
-    t = random.randint(key, shape=(batch_size,), minval=0, maxval=T)
+    t = random.randint(key, shape=(x_0.shape[0],), minval=0, maxval=T)
     # add noise
     eps = random.normal(key, shape=x_0.shape)
-    x_t = jit(vmap(apply_noising))(alpha_bars[t], x_0, eps)
+    x_t = jit(vmap(apply_noising))(x_0, alpha_bars[t], eps)
     # calculate gradients
     grads = jit(grad(loss))(params, eps, x_t)
     # update parameters with gradients and your favourite optimizer
@@ -1287,7 +1285,7 @@ Similar to classifier guidance, CLIP must be trained on noised images $\mathbf{x
 
 ### GLIDE
 
-[GLIDE](https://arxiv.org/pdf/2112.10741.pdf), which stands for **G**uided **L**anguage to **I**mage **D**iffusion for Generation and **E**diting, is a model by OpenAI that has beaten DALL·E, arguably presented the most novel and interesting ideas and yet received comparatively little publicity. 
+[**GLIDE**](https://arxiv.org/pdf/2112.10741.pdf), which stands for **G**uided **L**anguage to **I**mage **D**iffusion for Generation and **E**diting, is a model by OpenAI that has beaten DALL·E, arguably presented the most novel and interesting ideas and yet received comparatively little publicity. 
 
 Motivated by the ability of guided diffusion models to generate photorealistic samples and the ability of text-to-image models to handle free-form prompts, authors of the paper applied guided diffusion to the problem of text-conditional image synthesis. They also compared two techniques for guiding diffusion models towards text prompts: CLIP guidance and classifier-free guidance. Using human and automated evaluations, they found that classifier-free guidance yields higher-quality images.
 
@@ -1308,7 +1306,7 @@ Model has fewer parameters than DALL·E (5B vs 12B) and was trained on the same 
 
 ### DALL·E 2 (unCLIP)
 
-In April 2022, OpenAI released a new model, called **DALL·E 2** (or **unCLIP** in the paper), which is a clever combination of CLIP and GLIDE. The CLIP model is trained separately on a data of image-text pairs $(\mathbf{x}, y)$. Let
+In April 2022, OpenAI released a new model, called [**DALL·E 2**](https://arxiv.org/pdf/2204.06125.pdf) (or **unCLIP** in the paper), which is a clever combination of CLIP and GLIDE. The CLIP model is trained separately on a data of image-text pairs $(\mathbf{x}, y)$. Let
 
 $$\mathbf{z}_i = \operatorname{CLIP}(\mathbf{x}) \quad \text{and} \quad \mathbf{z}_t = \operatorname{CLIP}(y)$$
 
@@ -1358,35 +1356,51 @@ Recently OpenAI also introduced [outpainting with DALL·E 2](https://openai.com/
 
 ### Imagen
 
-Two months after the publication of DALL·E 2 Google Brain team presented **Imagen**. Instead of CLIP it uses a pre-trained T5-XXL language model to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it.
+Two months after the publication of DALL·E 2 Google Brain team presented [**Imagen**](https://arxiv.org/pdf/2205.11487.pdf). It uses a pre-trained T5-XXL language model instead of CLIP to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it.
 
 Next, the resolution is increased via super-resolution diffusion models.
 
 ![Imagen]({{'/assets/img/imagen-arch.png'|relative_url}})
 *Visualization of Imagen. Imagen uses a frozen text encoder to encode the input text into text embeddings. A conditional diffusion model maps the text embedding into a 64 × 64 image. Imagen further utilizes text-conditional super-resolution diffusion models to upsample the image, first 64 × 64 → 256 × 256, and then 256 × 256 → 1024 × 1024.*
 
-#### Noise-conditional augmentation
+Since the solution can be viewed as a sequence of diffusion models, there is an argument to be made about enhancements in the areas where the models are linked. Ho et al. [10] presented a solution called conditioning augmentation. In simple terms, it is equivalent to applying various data augmentation techniques, such as a Gaussian blur, to a low-resolution image before it is fed into the super-resolution models.
+
+#### Noise conditioning augmentation
+
+The solution can be viewed as a sequence of diffusion models, which was called **cascaded diffusion models** in [Ho et al. (2021)](https://arxiv.org/pdf/2106.15282.pdf). Noise conditioning augmentation between these models is crucial to the final image quality, which is to apply strong data augmentation to the conditioning input $\mathbf{z}$ of each super-resolution model $p_\theta(\mathbf{x} \vert \mathbf{z})$. In simple terms, it is equivalent to applying various data augmentation techniques, such as a Gaussian noise/blur, to a low-resolution image before it is fed into the super-resolution models. In addition, there are also two similar forms of conditioning augmentation that require small modification to the training process:
+
+- Truncated conditioning augmentation stops the diffusion process early at step $t > 0$ for low resolution.
+- Non-truncated conditioning augmentation runs the full low resolution reverse process until step $0$ but then corrupt it by $\mathbf{x}_t' \sim q(\mathbf{x}_t \vert \mathbf{x}_0)$ and then feeds the corrupted $\mathbf{x}_t'$ into the super-resolution model.
 
 ```python
-def train_step(x_lr: jnp.ndarray, x_hr: jnp.ndarray):
-    # add augmentation to the low-resolution image
-    aug_level = jnp.random.uniform(0.0, 1.0)
-    x_lr = apply_aug(x_lr, aug_level)
+def train_step_base(x_lr):
     # diffusion forward process
-    t = jnp.random.uniform(0.0, 1.0)
-    z_t = forward_process(x_hr, t)
-    # optimize loss(x_hr, nn(z_t, x_lr, t, aug_level))
+    t = random.randint(key, shape=(x_lr.shape[0],), minval=0, maxval=T)
+    eps = random.normal(key, shape=x_0.shape)
+    x_t = jit(vmap(apply_noising))(x_lr, alpha_bars[t], eps)
+    # optimize loss(x_lr, model(x_t, t))
+    ...
+    
+def train_step_sr(x_lr, x_hr):
+    # add gaussian conditioning augmentation to the low-resolution image
+    s = random.randint(key, shape=(x_hr.shape[0],), minval=0, maxval=T)
+    eps_lr = random.normal(key, shape=x_0.shape)
+    x_lr = jit(vmap(apply_noising))(x_lr, alpha_bars[s], eps_lr)    
+    # diffusion forward process
+    t = random.randint(key, shape=(x_hr.shape[0],), minval=0, maxval=T)
+    eps_hr = random.normal(key, shape=x_0.shape)
+    x_t = jit(vmap(apply_noising))(x_hr, alpha_bars[t], eps_hr)
+    # optimize loss(x_hr, model(x_t, x_lr, t, s))
     ...
 ```
-![](.)
-*Pseudo-code implementation for training using conditioning augmentation*
+*Pseudo-code implementation for training model using conditioning augmentation. `train_step_base` and `train_step_sr` can run in parallel.*
 
 ```python
 def sample(aug_level: float, x_lr: jnp.ndarray):
     # add augmentation to the low-resolution image
     x_lr = apply_aug(x_lr, aug_level)
     for t in reversed(range(T)):
-        x_hr_t = nn(z_t, x_lr, t, aug_level)
+        x_hr_t = model(z_t, x_lr, t, aug_level)
         # sampler step
         z_tm1 = sampler_step(x_hr_t, z_t, t)
         z_t = z_tm1
@@ -1428,7 +1442,6 @@ def sample(p: float):
         z_t = z_tm1
     return x0_t
 ```
-![](.)
 *Pseudo code implementation for dynamic thresholding*
 
 ### Stable diffusion
