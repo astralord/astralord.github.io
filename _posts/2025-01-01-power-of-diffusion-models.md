@@ -900,7 +900,7 @@ def loss(params, eps, x_t, t):
 def apply_noising(a, img, noise):
     return jnp.sqrt(a) * img + jnp.sqrt(1 - a) * noise
 	    
-def train_on_batch():
+def train_step():
     # sample from train data
     x_0 = sample_batch(key, batch_size)
     # choose random steps
@@ -1351,11 +1351,84 @@ Or one can change $\mathbf{z}_i$ towards the difference of the text CLIP embeddi
 ![unCLIP manipulation 2]({{'/assets/img/unCLIP-manipulation-2.png'|relative_url}})
 *Text diffs applied to images by interpolating between their CLIP image embeddings and a normalised difference of the CLIP text embeddings produced from the two descriptions. Decoder latent $\mathbf{x}_T$ is kept as a constant.*
 
-Recently OpenAI also introduced outpainting by DALL·E 2.
+Recently OpenAI also introduced [outpainting with DALL·E 2](https://openai.com/blog/dall-e-introducing-outpainting/).
 
 ![Outpainting]({{'/assets/img/outpainting.jpeg'|relative_url}})
-*Outpainting by DALL·E 2 applied to a 'Girl with a Pearl Earring' by Johannes Vermeer*
+*Outpainting applied to a 'Girl with a Pearl Earring' by Johannes Vermeer*
 
 ### Imagen
+
+Two months after the publication of DALL·E 2 Google Brain team presented **Imagen**. Instead of CLIP it uses a pre-trained T5-XXL language model to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it.
+
+Next, the resolution is increased via super-resolution diffusion models.
+
+![Imagen]({{'/assets/img/imagen-arch.png'|relative_url}})
+*Visualization of Imagen. Imagen uses a frozen text encoder to encode the input text into text embeddings. A conditional diffusion model maps the text embedding into a 64 × 64 image. Imagen further utilizes text-conditional super-resolution diffusion models to upsample the image, first 64 × 64 → 256 × 256, and then 256 × 256 → 1024 × 1024.*
+
+#### Noise-conditional augmentation
+
+```python
+def train_step(x_lr: jnp.ndarray, x_hr: jnp.ndarray):
+    # add augmentation to the low-resolution image
+    aug_level = jnp.random.uniform(0.0, 1.0)
+    x_lr = apply_aug(x_lr, aug_level)
+    # diffusion forward process
+    t = jnp.random.uniform(0.0, 1.0)
+    z_t = forward_process(x_hr, t)
+    # optimize loss(x_hr, nn(z_t, x_lr, t, aug_level))
+    ...
+```
+![](.)
+*Pseudo-code implementation for training using conditioning augmentation*
+
+```python
+def sample(aug_level: float, x_lr: jnp.ndarray):
+    # add augmentation to the low-resolution image
+    x_lr = apply_aug(x_lr, aug_level)
+    for t in reversed(range(T)):
+        x_hr_t = nn(z_t, x_lr, t, aug_level)
+        # sampler step
+        z_tm1 = sampler_step(x_hr_t, z_t, t)
+        z_t = z_tm1
+    return x_hr_t
+```
+![](.)
+*Pseudo-code implementation for sampling using conditioning augmentation*
+
+#### Dynamic thresholding
+
+```python
+def sample():
+    for t in reversed(range(T)):
+        # forward pass to get x0_t from z_t.
+        x0_t = nn(z_t, t)
+        # static thresholding
+        x0_t = jnp.clip(x0_t, -1.0, 1.0)
+        
+        
+        # sampler step
+        z_tm1 = sampler_step(x0_t, z_t, t)
+        z_t = z_tm1
+    return x0_t
+```
+![](.)
+*Pseudo code implementation for static thresholding*
+
+```python
+def sample(p: float):
+    for t in reversed(range(T)):
+        # forward pass to get x0_t from z_t
+        x0_t = nn(z_t, t)
+        # dynamic thresholding
+        s = jnp.percentile(jnp.abs(x0_t), p, axis=tuple(range(1, x0_t.ndim)))
+        s = jnp.max(s, 1.0)
+        x0_t = jnp.clip(x0_t, -s, s) / s
+        # sampler step
+        z_tm1 = sampler_step(x0_t, z_t, t)
+        z_t = z_tm1
+    return x0_t
+```
+![](.)
+*Pseudo code implementation for dynamic thresholding*
 
 ### Stable diffusion
