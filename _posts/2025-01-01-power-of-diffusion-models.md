@@ -880,7 +880,7 @@ $$\nabla_\theta \| \epsilon - \epsilon_\theta(\mathbf{x}_t, t) \|^2$$
 import jax.numpy as jnp
 from jax import grad, jit, vmap, random
 
-batch_size = 32
+img_shape = (256, 256)
 T = 100
 key = random.PRNGKey(42)
 
@@ -889,7 +889,7 @@ alphas = jnp.linspace(1, 0, T)
 alpha_bars = jnp.cumprod(alphas)
 
 # initial model weights
-dummy = sample_batch(key, batch_size)
+dummy = random.uniform(key, shape=img_shape)
 params = model.init(key, dummy)
 
 @jit
@@ -929,16 +929,16 @@ $$\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\bar\alpha_t}}\Big(\mathbf{x}_t -
 - Return $\mathbf{x}_0$
 
 ```python
-def get_x_tm1(params, x_t, t):
+def sample_step(params, x_t, t):
     eps = model.apply(params, x_t, t)
     mu_t = x_t - eps * (1 - alphas[t]) / jnp.sqrt(1 - alpha_bars[t])
     mu_t /= jnp.sqrt(alpha_bars[t])
     return mu_t + sigma_t * random.normal(key, shape=x_0.shape)
 
-def sample_batch():
-    x_t = random.normal(key, shape=x_0.shape)
-    for t in range(T, 1, -1):
-        x_t = get_x_tm1(params, x_t, t)
+def sample():
+    x_t = random.normal(key, shape=img_shape)
+    for t in reversed(range(T)):
+        x_t = sample_step(params, x_t, t)
     return x_t
 ```
 ![](.)
@@ -1165,11 +1165,11 @@ $$
 \end{aligned}
 $$
 
-At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model $\tilde{\epsilon}_\theta$:
+At each step of denoising, the classifier checks whether the image is denoised in the right direction and contributes its own gradient of loss function into the overall loss of diffusion model. To control the strength of the classifier guidance, we can add a weight $\omega$, called the **guidance scale**, and here is our new classifier-guided model:
 
 $$\tilde{\epsilon}_\theta(\mathbf{x}_t, t) = \epsilon_\theta(\mathbf{x}_t, t) - \omega \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi (y \vert \mathbf{x}_t).$$
 
-We can then use the exact same sampling procedure, but with the modified noise predictions $\tilde{\epsilon}_\theta$ instead of $\epsilon_\theta$. This results in approximate sampling from distribution:
+We can then use the exact same sampling procedure, but with the modified noise predictions $\tilde{\epsilon}_\theta$. This results in approximate sampling from distribution:
 
 $$\tilde{q}(\mathbf{x}_t \vert y) \propto q(\mathbf{x}_t) \cdot q(y \vert \mathbf{x}_t)^\omega.$$ 
 
@@ -1221,12 +1221,12 @@ $$\tilde{q}(\mathbf{x}_t \vert y) \propto q(\mathbf{x}_t \vert y) \cdot q(y \ver
 
 #### CLIP guidance
 
-With CLIP guidance the classifier is replaced with a **CLIP model** (abbreviation for **C**ontrastive **L**anguage-**I**mage **P**re-training). CLIP was originally a separate auxiliary model to rank the results from generative model, called **DALL·E**. DALL·E was the first public system capable of creating images based on a textual description from OpenAI, however it was not a diffusion model and is therefore out of the scope for this post. DALL·E's name is a portmanteau of the names of animated robot Pixar character WALL-E and the Spanish surrealist artist Salvador Dalí.
+With CLIP guidance the classifier is replaced with a [**CLIP**](https://arxiv.org/pdf/2103.00020.pdf) **model** (abbreviation for **C**ontrastive **L**anguage-**I**mage **P**re-training). CLIP was originally a separate auxiliary model to rank the results from generative model, called [**DALL·E**](https://arxiv.org/pdf/2102.12092.pdf). DALL·E was the first public system capable of creating images based on a textual description from OpenAI, however it was not a diffusion model and is therefore out of the scope for this post. DALL·E's name is a portmanteau of the names of animated robot Pixar character WALL-E and the Spanish surrealist artist Salvador Dalí.
 
 The idea behind CLIP is fairly simple:
 
 - Take two encoders, one for a text snippet and another one for an image
-- Collect a sufficiently large dataset of image-text pairs (e.g. 400 million scraped from the Internet in the [original paper](https://arxiv.org/pdf/2103.00020.pdf))
+- Collect a sufficiently large dataset of image-text pairs (e.g. 400 million scraped from the Internet in the paper)
 - Train the model in a contrastive fashion: it must produce high similarity score for an image and a text from the same pair and a low similarity score for mismatched image and text.
 
 ![CLIP]({{'/assets/img/clip-arch.png'|relative_url}})
@@ -1327,6 +1327,8 @@ The authors tested two model classes for the prior:
 - Autoregressive prior quantizes image embedding to a sequence of discrete codes and predict them autoregressively. 
 - Diffusion prior models the continuous image embedding by diffusion models conditioned on $y$.
 
+Diffusion prior outperforms the autoregressive prior for comparable model size and reduced training compute. The diffusion prior also performs better than the autoregressive prior in pairwise comparisons against GLIDE.
+
 As opposed to the way of training proposed by [Ho et al.](https://arxiv.org/pdf/2006.11239.pdf), predicting the unnoised image embedding directly instead of predicting the noise was a better fit. Meaning, that instead of 
 
 $$L_t = \mathbb{E}_{\mathbf{x}_0, \epsilon} \big[  \|\epsilon - \epsilon_\theta(\mathbf{x}_t, t \vert y)  \|^2 \big]$$
@@ -1336,8 +1338,6 @@ the unCLIP diffusion prior loss is
 $$L_t = \mathbb{E}_{\mathbf{x}_0, \epsilon} \big[ \| \mathbf{z}_i - f_\theta(\mathbf{z}_i^{(t)}, t \vert y) \|^2 \big],$$
 
 where $f_\theta$ stands for the prior model and $\mathbf{z}_i^{(t)}$ is the noised image embedding.
-
-Diffusion prior outperforms the autoregressive prior for comparable model size and reduced training compute. The diffusion prior also performs better than the autoregressive prior in pairwise comparisons against GLIDE.
 
 The bipartite latent representation enables several text-guided image manipulation tasks. For example, one can fix CLIP image embeddings $\mathbf{z}_i$ and run decoder with different decoder latents $\mathbf{x}_T$.
 
@@ -1356,60 +1356,79 @@ Recently OpenAI also introduced [outpainting with DALL·E 2](https://openai.com/
 
 ### Imagen
 
-Two months after the publication of DALL·E 2 Google Brain team presented [**Imagen**](https://arxiv.org/pdf/2205.11487.pdf). It uses a pre-trained T5-XXL language model instead of CLIP to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it.
+Two months after the publication of DALL·E 2 Google Brain team presented [**Imagen**](https://arxiv.org/pdf/2205.11487.pdf). It uses a pre-trained T5-XXL language model instead of CLIP to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it. Authors of the paper noted, that scaling text encoder is extremely efficient and more important than scaling diffusion model size.
 
 Next, the resolution is increased via super-resolution diffusion models.
 
 ![Imagen]({{'/assets/img/imagen-arch.png'|relative_url}})
 *Visualization of Imagen. Imagen uses a frozen text encoder to encode the input text into text embeddings. A conditional diffusion model maps the text embedding into a 64 × 64 image. Imagen further utilizes text-conditional super-resolution diffusion models to upsample the image, first 64 × 64 → 256 × 256, and then 256 × 256 → 1024 × 1024.*
 
-Since the solution can be viewed as a sequence of diffusion models, there is an argument to be made about enhancements in the areas where the models are linked. Ho et al. [10] presented a solution called conditioning augmentation. In simple terms, it is equivalent to applying various data augmentation techniques, such as a Gaussian blur, to a low-resolution image before it is fed into the super-resolution models.
-
 #### Noise conditioning augmentation
 
-The solution can be viewed as a sequence of diffusion models, which was called **cascaded diffusion models** in [Ho et al. (2021)](https://arxiv.org/pdf/2106.15282.pdf). Noise conditioning augmentation between these models is crucial to the final image quality, which is to apply strong data augmentation to the conditioning input $\mathbf{z}$ of each super-resolution model $p_\theta(\mathbf{x} \vert \mathbf{z})$. In simple terms, it is equivalent to applying various data augmentation techniques, such as a Gaussian noise/blur, to a low-resolution image before it is fed into the super-resolution models. In addition, there are also two similar forms of conditioning augmentation that require small modification to the training process:
+The solution can be viewed as a sequence of diffusion models, which was called **cascaded diffusion models** in [Ho et al. (2021)](https://arxiv.org/pdf/2106.15282.pdf). Noise conditioning augmentation between these models is crucial to the final image quality, which is to apply strong data augmentation to the low-resolution image $\mathbf{z}$ of each super-resolution model $p_\theta(\mathbf{x} \vert \mathbf{z})$. In simple terms, it is equivalent to applying various data augmentation techniques, such as a Gaussian noise/blur, to a low-resolution image before it is fed into the super-resolution models. 
+
+```python
+def train_step_base(z_0):
+    # diffusion forward process
+    s = random.randint(key, shape=(z.shape[0],), minval=0, maxval=T)
+    eps = random.normal(key, shape=z.shape)
+    z_s = jit(vmap(apply_noising))(z, alpha_bars[s], eps)
+    # optimize loss(z_0, model(z_s, s))
+    ...
+    
+def train_step_sr(z_0, x_0):
+    # add gaussian conditioning augmentation to the low-resolution image
+    s = random.randint(key, shape=(z_0.shape[0],), minval=0, maxval=T)
+    eps_z = random.normal(key, shape=z_0.shape)
+    z_0 = jit(vmap(apply_noising))(z_0, alpha_bars[s], eps_z)    
+    # diffusion forward process
+    t = random.randint(key, shape=(x_0.shape[0],), minval=0, maxval=T)
+    eps_x = random.normal(key, shape=x_0.shape)
+    x_t = jit(vmap(apply_noising))(x_0, alpha_bars[t], eps_x)
+    # optimize loss(x_0, model(x_t, z_0, t, s))
+    ...
+```
+![](.)
+*Pseudo-code implementation for training model using conditioning augmentation. Functions `train_step_base` and `train_step_sr` can run in parallel.*
+
+In addition, there are also two similar forms of conditioning augmentation that require small modification to the training process:
 
 - Truncated conditioning augmentation stops the diffusion process early at step $t > 0$ for low resolution.
 - Non-truncated conditioning augmentation runs the full low resolution reverse process until step $0$ but then corrupt it by $\mathbf{x}_t' \sim q(\mathbf{x}_t \vert \mathbf{x}_0)$ and then feeds the corrupted $\mathbf{x}_t'$ into the super-resolution model.
 
 ```python
-def train_step_base(x_lr):
-    # diffusion forward process
-    t = random.randint(key, shape=(x_lr.shape[0],), minval=0, maxval=T)
-    eps = random.normal(key, shape=x_0.shape)
-    x_t = jit(vmap(apply_noising))(x_lr, alpha_bars[t], eps)
-    # optimize loss(x_lr, model(x_t, t))
-    ...
-    
-def train_step_sr(x_lr, x_hr):
-    # add gaussian conditioning augmentation to the low-resolution image
-    s = random.randint(key, shape=(x_hr.shape[0],), minval=0, maxval=T)
-    eps_lr = random.normal(key, shape=x_0.shape)
-    x_lr = jit(vmap(apply_noising))(x_lr, alpha_bars[s], eps_lr)    
-    # diffusion forward process
-    t = random.randint(key, shape=(x_hr.shape[0],), minval=0, maxval=T)
-    eps_hr = random.normal(key, shape=x_0.shape)
-    x_t = jit(vmap(apply_noising))(x_hr, alpha_bars[t], eps_hr)
-    # optimize loss(x_hr, model(x_t, x_lr, t, s))
-    ...
-```
-*Pseudo-code implementation for training model using conditioning augmentation. `train_step_base` and `train_step_sr` can run in parallel.*
+def sample_step(params, x_t, t, condition=None):
+    eps = model.apply(params, x_t, t, condition)
+    mu_t = x_t - eps * (1 - alphas[t]) / jnp.sqrt(1 - alpha_bars[t])
+    mu_t /= jnp.sqrt(alpha_bars[t])
+    return mu_t + sigma_t * random.normal(key, shape=x_0.shape)
 
-```python
-def sample(aug_level: float, x_lr: jnp.ndarray):
-    # add augmentation to the low-resolution image
-    x_lr = apply_aug(x_lr, aug_level)
+def sample_base():
+    z_t = random.normal(key, shape=img_shape)
+    for t in reversed(range(s, T)):
+        z_t = sample_step(params, z_t, t)
+    if not_using_truncated:
+        for t in reversed(range(s)):
+            z_t = sample_step(params, z_t, t)
+        eps_z = random.normal(key, shape=z_t.shape)
+        z_t = apply_noising(z_t, alpha_bars[s], eps_z)
+    return z_t
+
+def sample():
+    # sample augmented low-resolution image
+    z_0 = sample_base()
+    # sample high-resolution image
+    x_t = random.normal(key, shape=img_shape)
     for t in reversed(range(T)):
-        x_hr_t = model(z_t, x_lr, t, aug_level)
-        # sampler step
-        z_tm1 = sampler_step(x_hr_t, z_t, t)
-        z_t = z_tm1
-    return x_hr_t
+        x_t = sample_step(params, x_t, t, z_t)
+    return x_t
 ```
 ![](.)
 *Pseudo-code implementation for sampling using conditioning augmentation*
 
 #### Dynamic thresholding
+
+Another major key feature of Imagen is a so-called **dynamic thresholding**.  
 
 ```python
 def sample():
@@ -1442,6 +1461,7 @@ def sample(p: float):
         z_t = z_tm1
     return x0_t
 ```
+![](.)
 *Pseudo code implementation for dynamic thresholding*
 
 ### Stable diffusion
