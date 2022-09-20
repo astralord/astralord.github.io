@@ -24,10 +24,11 @@ Sources:
 Data Distribution](https://arxiv.org/pdf/1907.05600.pdf)
 - Posts:
 	- [What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models)
+	- [Generative Modeling by Estimating Gradients of the Data Distribution](https://yang-song.net/blog/2021/score/)
 	- [Denoising Diffusion-based Generative Modeling: Foundations and Applications](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view)
 	- [The recent rise of diffusion-based models](https://maciejdomagala.github.io/generative_models/2022/06/06/The-recent-rise-of-diffusion-based-models.html)
 
-### Diffusion probabilistic models
+### Denoising diffusion probabilistic models (DDPM)
 
 To define a **diffusion probabilistic model** (usually called a **“diffusion model”** for brevity), we first define a Markov chain, which starts from initial datapoint $\mathbf{x}_0$, then gradually adds noise to the data, creating sequence $\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{x}_T$, until signal is destroyed.
 
@@ -649,20 +650,6 @@ svg.append('text')
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 342)
-  .attr('y', 55)
-  .text("x")
-  .style("font-size", "21px")
-  .attr("font-family", "Arvo");
-  
-svg.append('text')
-  .attr('x', 355)
-  .attr('y', 60)
-  .text("t")
-  .style("font-size", "11px")
-  .attr("font-family", "Arvo");
-
-svg.append('text')
   .attr('x', 272)
   .attr('y', 97)
   .text("q(x")
@@ -880,12 +867,14 @@ $$\nabla_\theta \| \epsilon - \epsilon_\theta(\mathbf{x}_t, t) \|^2$$
 import jax.numpy as jnp
 from jax import grad, jit, vmap, random
 
+# hyperparameters
 img_shape = (256, 256)
-T = 100
+T = 1000
 key = random.PRNGKey(42)
 
 # linear schedule
-alphas = jnp.linspace(1, 0, T) 
+betas = jnp.linspace(1e-4, 0.02, T)
+alphas = 1 - betas
 alpha_bars = jnp.cumprod(alphas)
 
 # initial model weights
@@ -911,8 +900,6 @@ def train_step(x_0):
     # update parameters with gradients and your favourite optimizer
     ...
 ```
-![](.)
-*Diffusion model training in JAX*
 
 
 Inference process consists of the following steps:
@@ -941,8 +928,6 @@ def sample():
         x_t = sample_step(params, x_t, t)
     return x_t
 ```
-![](.)
-*Diffusion model sampling in JAX*
 
 ### Score based generative modelling
 
@@ -1111,6 +1096,7 @@ svg.append('text')
 continuous_chain();
 
 </script>
+
 ![](.)
 *Forward and reverse generative diffusion SDEs.*
 
@@ -1258,8 +1244,6 @@ loss_i = cross_entropy_loss(logits, labels, axis=0)
 loss_t = cross_entropy_loss(logits, labels, axis=1)
 loss = (loss_i + loss_t) / 2
 ```
-![](.)
-*JAX-like pseudocode for the core of an implementation of CLIP*
 
 Let $f(\mathbf{x})$ and $g(y)$ be image and text encoders respectively. Then CLIP loss for $(i, j)$ pair is 
 
@@ -1349,11 +1333,6 @@ Or one can change $\mathbf{z}_i$ towards the difference of the text CLIP embeddi
 ![unCLIP manipulation 2]({{'/assets/img/unCLIP-manipulation-2.png'|relative_url}})
 *Text diffs applied to images by interpolating between their CLIP image embeddings and a normalised difference of the CLIP text embeddings produced from the two descriptions. Decoder latent $\mathbf{x}_T$ is kept as a constant.*
 
-Recently OpenAI also introduced [outpainting with DALL·E 2](https://openai.com/blog/dall-e-introducing-outpainting/).
-
-![Outpainting]({{'/assets/img/outpainting.jpeg'|relative_url}})
-*Outpainting applied to a 'Girl with a Pearl Earring' by Johannes Vermeer*
-
 ### Imagen
 
 Two months after the publication of DALL·E 2 Google Brain team presented [**Imagen**](https://arxiv.org/pdf/2205.11487.pdf). It uses a pre-trained T5-XXL language model instead of CLIP to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it. Authors of the paper noted, that scaling text encoder is extremely efficient and more important than scaling diffusion model size.
@@ -1389,8 +1368,6 @@ def train_step_sr(z_0, x_0):
     # optimize loss(x_0, model(x_t, z_0, t, s))
     ...
 ```
-![](.)
-*Pseudocode implementation for training model using conditioning augmentation. Functions `train_step_base` and `train_step_sr` can run in parallel.*
 
 
 In addition, there are also two similar forms of conditioning augmentation that require small modification to the training process:
@@ -1426,18 +1403,16 @@ def sample_sr():
         x_t = sample_step(params, x_t, t, z_t)
     return x_t
 ```
-![](.)
-*Pseudocode implementation for sampling using conditioning augmentation*
 
 
 #### Dynamic thresholding
 
 Another major key feature of Imagen is a so-called **dynamic thresholding**. Authors of the model found out that larger classifier-free guidance scale $\omega$ leads to better text alignment, but worse image fidelity producing highly saturated and unnatural images. They hypothesised that large $\omega$ increases train-test mismatch and generated images are saturated due to the very large gradient updates during sampling. 
 
-At each sampling step $t$, the prediction $\mathbf{x}_t$ must be within the same bounds as training data, i.e. within $[−1, 1]$, but we find empirically that high guidance weights cause predictions to exceed these bounds. To counter this problem, two approaches could be applied:
+At each sampling step $t$, the prediction $\mathbf{x}_t$ must be within the same bounds as training data, i.e. within $[−1, 1]$, but authors of Imagen found empirically that high guidance weights cause predictions to exceed these bounds. To counter this problem, they proposed to adjust the pixel values of samples at each sampling step to be within this range. Basically, two approaches could be applied:
 
 - Static thresholding: clip $\mathbf{x}_t$ to $[-1, 1]$.
-- Dynamic thresholding: at each sampling step $t$, compute $s$ as a certain $p-$-percentile absolute pixel value; if $s > 1$ clip the prediction to $[-s, s]$ and divide by $s$.
+- Dynamic thresholding: at each sampling step $t$, compute $s$ as a certain $p$-percentile absolute pixel value; if $s > 1$ clip the prediction to $[-s, s]$ and divide by $s$.
 
 ```python
 def sample():
@@ -1452,7 +1427,183 @@ def sample():
             x_t = jnp.clip(x_t, -s, s) / s
     return x_t
 ```
-![](.)
-*Pseudocode implementation for static and dynamic thresholdings*
 
-### Stable diffusion
+### Denoising diffusion implicit models (DDIM)
+
+A critical drawback of these models is that they require many iterations to produce a high quality sample. Revers diffusion process could have thousands of steps and iterating over all the steps is required to produce a single sample, which is much slower compared to GANs, which only needs one pass through a network. For example, it takes around 20 hours to sample 50k images of size 32 × 32 from a DDPM, but less than a minute to do so from a GAN on a Nvidia 2080 Ti GPU. This becomes more problematic for larger images as sampling 50k images of size 256 × 256 could take nearly 1000 hours on the same GPU.
+
+![Trillema]({{'/assets/img/generative-trillema.png'|relative_url}})
+*Generative learning trillema. [Image source](https://arxiv.org/pdf/2112.07804.pdf)*
+
+<div id="ddim_chain" class="svg-container" align="center"></div> 
+
+<script>
+
+function ddim_chain() {
+
+var svg = d3.select("#ddim_chain")
+			  .append("svg")
+			  .attr("width", 600)
+			  .attr("height", 105);
+
+svg.append('circle')
+  .attr('cx', 50)
+  .attr('cy', 50)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.85)
+  .attr('fill', '#348ABD');
+  
+svg.append('text')
+  .attr('x', 42)
+  .attr('y', 55)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 55)
+  .attr('y', 60)
+  .text("0")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+draw_uroboros(svg, 100);
+
+svg.append('circle')
+  .attr('cx', 217)
+  .attr('cy', 50)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.75)
+  .attr('fill', '#4388B1');
+  
+svg.append('text')
+  .attr('x', 209)
+  .attr('y', 55)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 222)
+  .attr('y', 60)
+  .text("1")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+
+ svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 533, y: 35}, {x: 500, y: 20}, {x: 384, y: 15}, {x: 267, y: 20}, {x: 234, y: 35}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+	.style("stroke-dasharray", ("4, 4"))
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+draw_triangle(svg, 236, 34, 240);
+
+svg.append('circle')
+  .attr('cx', 383)
+  .attr('cy', 50)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.25)
+  .attr('fill', '#5286A5');
+  
+svg.append('text')
+  .attr('x', 375)
+  .attr('y', 55)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("opacity", 0.5)
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 388)
+  .attr('y', 60)
+  .text("2")
+  .style("font-size", "11px")
+  .attr("opacity", 0.5)
+  .attr("font-family", "Arvo");
+
+svg.append('circle')
+  .attr('cx', 550)
+  .attr('cy', 50)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.7)
+  .attr('fill', '#628498');
+  
+svg.append('text')
+  .attr('x', 542)
+  .attr('y', 55)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 555)
+  .attr('y', 60)
+  .text("3")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+}
+
+ddim_chain();
+
+</script>
+
+We can redefine joint distribution $q(\mathbf{x}_{1 : T} \vert \mathbf{x}_0)$ in a way such that forward process is non-Markovian, while marginals stay the same. Let
+
+$$
+\begin{aligned}
+\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0 &= \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1}} \epsilon_{t-1} & \color{Salmon}{\epsilon_{t-1} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \epsilon_{t} + \sigma_t^2 \epsilon & \color{Salmon}{\epsilon \sim \mathcal{N}(0, \mathbf{I})}
+\\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}} + \sigma_t^2 \epsilon
+\end{aligned}
+$$
+
+with some deviation process $\sigma_t$. Then we have
+
+$$q_\sigma(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}}, \sigma^2_t \mathbf{I})$$
+
+and
+
+$$q_\sigma(\mathbf{x}_{t} \vert \mathbf{x}_0) = \mathcal{N}(\sqrt{\bar\alpha_{t}} \mathbf{x}_0, \sqrt{1 - \bar\alpha_{t}} \mathbf{I}).$$
+
+Recall that for Markovian diffusion process we have distribution 
+
+$$q(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}({\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}}, {\color{#C19454}{\tilde \beta_t \mathbf{I}}})$$
+
+with
+
+$${\color{#C19454}{\tilde \beta_t}} = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t} \beta_t. $$
+
+Hence, we can parameterize distribution $q_\sigma(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0)$ with hyperparamer $\eta > 0$, such that
+
+$$\sigma_t^2 = \eta {\color{#C19454}{\tilde \beta_t}}.$$
+
+Different choices of $\eta$ results in different generative processes, all while using the same model $\epsilon_\theta$, so re-training the model is unnecessary. The special case of $\eta = 1$ corresponds to DDPM. Setting $\eta = 0$ makes the sampling process deterministic. Such a model is named the **denoising diffusion implicit model (DDIM)**. In general, one can generate samples in autoregressive way by formula
+
+$$\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - \sqrt{1-\bar\alpha_t}\epsilon_\theta(\mathbf{x}_t, t)) + \sqrt{1-\bar\alpha_{t-1} - \sigma_t^2} \epsilon_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon.$$
+
+We can accelerate inference process by only sampling a subset of $S$ diffusion steps $\lbrace \tau_1, \dots, \tau_S \rbrace$.
+
+```python
+def sample_step(params, x_t, t):
+    eps = model.apply(params, x_t, t)
+    x_0_scaled = (x_t - eps * jnp.sqrt(1 - alpha_bars[t])) / jnp.sqrt(alphas[t])
+    mu_t = x_0_scaled + jnp.sqrt(1 - alpha_bars[t-1] - sigma_t ** 2)
+    return mu_t + sigma_t * random.normal(key, shape=x_0.shape)
+    
+def sample(taus):
+    x_t = random.normal(key, shape=img_shape)
+    for t in reversed(taus):
+        x_t = sample_step(params, x_t, t)
+    return x_t
+```
+
+### Stable diffusion / Latent diffusion model
