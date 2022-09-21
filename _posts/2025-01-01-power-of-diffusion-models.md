@@ -1435,6 +1435,10 @@ A critical drawback of these models is that they require many iterations to prod
 ![Trillema]({{'/assets/img/generative-trillema.png'|relative_url}})
 *Generative learning trillema. [Image source](https://arxiv.org/pdf/2112.07804.pdf)*
 
+One simple acceleration method is to reduce diffusion time steps in training. Another one is strided sampling schedule: take sampling update every $[T/S]$ steps to reduce process from $T$ down to $S$ steps. However, both of them lead to immediate worse performance.
+
+In DDPMs, the generative process is defined as the reverse of a particular Markovian diffusion process. [Song et al.](https://arxiv.org/pdf/2010.02502.pdf) generalized DDPMs via a class of non-Markovian diffusion processes that lead to the same training objective.
+
 <div id="ddim_chain" class="svg-container" align="center"></div> 
 
 <script>
@@ -1586,7 +1590,7 @@ Hence, we can parameterize distribution $q_\sigma(\mathbf{x}_{t-1} \vert  \mathb
 
 $$\sigma_t^2 = \eta {\color{#C19454}{\tilde \beta_t}}.$$
 
-Different choices of $\eta$ results in different generative processes, all while using the same model $\epsilon_\theta$, so re-training the model is unnecessary. The special case of $\eta = 1$ corresponds to DDPM. Setting $\eta = 0$ makes the sampling process deterministic. Such a model is named the **denoising diffusion implicit model (DDIM)**. In general, one can generate samples in autoregressive way by formula
+Different choices of $\eta$ result in different generative processes, all while using the same model $\epsilon_\theta$, so re-training the model is unnecessary. The special case of $\eta = 1$ corresponds to DDPM. Setting $\eta = 0$ makes the sampling process deterministic. Such a model is named the **denoising diffusion implicit model (DDIM)**. In general, one can generate samples in autoregressive way by formula
 
 $$\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - \sqrt{1-\bar\alpha_t}\epsilon_\theta(\mathbf{x}_t, t)) + \sqrt{1-\bar\alpha_{t-1} - \sigma_t^2} \epsilon_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon.$$
 
