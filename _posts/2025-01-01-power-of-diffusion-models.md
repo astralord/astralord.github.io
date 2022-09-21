@@ -9,12 +9,12 @@ enable_d3: true
 published: true
 ---
 
-> The purpose of this post is to ... Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
+> This post focuses on a theory behind diffusion models and core ideas of newest generative neural networks, which took Internet by storm in 2022. Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
 
 ![Space Opera]({{'/assets/img/space-opera.png'|relative_url}})
 *In 2022 'Théâtre D’opéra Spatial', an artwork by Jason M. Allen with help of Midjourney took 1st place in the digital art competition at Colorado State Fair. This event sparked a backslash from artists, claiming that creative jobs are now not safe from machines and in danger of becoming obsolete. Here I chose this picture emerging from noise as a symbol of an upcoming age of art, created by artificial intelligence.*
 
-Sources:
+Before we start, I want to mention all the sources which were helpful to write this post:
 
 - Papers:
 	- [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf)
@@ -611,39 +611,39 @@ svg.append('text')
   .attr('x', 275)
   .attr('y', 15)
   .text("θ")
-  .style("font-size", "11px")
+  .style("font-size", "8px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 282)
+  .attr('x', 280)
   .attr('y', 10)
   .text("(x")
   .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 295)
+  .attr('x', 293)
   .attr('y', 15)
   .text("t-1")
-  .style("font-size", "11px")
+  .style("font-size", "8px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 309)
+  .attr('x', 304)
   .attr('y', 10)
   .text("| x")
   .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 323)
+  .attr('x', 319)
   .attr('y', 15)
   .text("t")
-  .style("font-size", "11px")
+  .style("font-size", "8px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 327)
+  .attr('x', 322)
   .attr('y', 10)
   .text(")")
   .style("font-size", "14px")
@@ -660,7 +660,7 @@ svg.append('text')
   .attr('x', 293)
   .attr('y', 102)
   .text("t")
-  .style("font-size", "11px")
+  .style("font-size", "8px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -674,11 +674,11 @@ svg.append('text')
   .attr('x', 312)
   .attr('y', 102)
   .text("t-1")
-  .style("font-size", "11px")
+  .style("font-size", "8px")
   .attr("font-family", "Arvo");
   
 svg.append('text')
-  .attr('x', 325)
+  .attr('x', 323)
   .attr('y', 97)
   .text(")")
   .style("font-size", "14px")
@@ -925,6 +925,411 @@ def sample_step(params, x_t, t):
 def sample():
     x_t = random.normal(key, shape=img_shape)
     for t in reversed(range(T)):
+        x_t = sample_step(params, x_t, t)
+    return x_t
+```
+
+### Denoising diffusion implicit models (DDIM)
+
+A critical drawback of these models is that they require many iterations to produce a high quality sample. Revers diffusion process could have thousands of steps and iterating over all the steps is required to produce a single sample, which is much slower compared to GANs, which only needs one pass through a network. For example, it takes around 20 hours to sample 50k images of size 32 × 32 from a DDPM, but less than a minute to do so from a GAN on a Nvidia 2080 Ti GPU. This becomes more problematic for larger images as sampling 50k images of size 256 × 256 could take nearly 1000 hours on the same GPU.
+
+![Trillema]({{'/assets/img/generative-trillema.png'|relative_url}})
+*Generative learning trillema. [Image source](https://arxiv.org/pdf/2112.07804.pdf)*
+
+One simple acceleration method is to reduce diffusion time steps in training. Another one is strided sampling schedule: take sampling update every $[T/S]$ steps to reduce process from $T$ down to $S$ steps. However, both of them lead to immediate worse performance.
+
+In DDPMs, the generative process is defined as the reverse of a particular Markovian diffusion process, meaning that $\mathbf{x}_t$ depends only on $\mathbf{x}_{t-1}$. [Song et al.](https://arxiv.org/pdf/2010.02502.pdf) generalized DDPMs via a class of non-Markovian diffusion processes that lead to the same training objective.
+
+We can redefine joint distribution $q(\mathbf{x}_{1 : T} \vert \mathbf{x}_0)$ in a way such that forward process is non-Markovian, while marginals stay the same. Let
+
+$$
+\begin{aligned}
+\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0 &= \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1}} \epsilon_{t-1} & \color{Salmon}{\epsilon_{t-1} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \epsilon_{t} + \sigma_t^2 \epsilon & \color{Salmon}{\epsilon \sim \mathcal{N}(0, \mathbf{I})}
+\\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}} + \sigma_t^2 \epsilon
+\end{aligned}
+$$
+
+with some deviation process $\sigma_t$. Then we have
+
+$$q_\sigma(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}}, \sigma^2_t \mathbf{I})$$
+
+and
+
+$$q_\sigma(\mathbf{x}_{t} \vert \mathbf{x}_0) = \mathcal{N}(\sqrt{\bar\alpha_{t}} \mathbf{x}_0, \sqrt{1 - \bar\alpha_{t}} \mathbf{I}).$$
+
+Recall that for Markovian diffusion process we have distribution 
+
+$$q(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}({\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}}, {\color{#C19454}{\tilde \beta_t \mathbf{I}}})$$
+
+with
+
+$${\color{#C19454}{\tilde \beta_t}} = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t} \beta_t. $$
+
+Hence, we can parameterize distribution $q_\sigma(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0)$ with hyperparamer $\eta > 0$, such that
+
+$$\sigma_t^2 = \eta {\color{#C19454}{\tilde \beta_t}}.$$
+
+Different choices of $\eta$ result in different generative processes, all while using the same model $\epsilon_\theta$, so re-training the model is unnecessary. The special case of $\eta = 1$ corresponds to DDPM. Setting $\eta = 0$ makes the sampling process deterministic. Such a model is named the **denoising diffusion implicit model (DDIM)**. In general, one can generate samples in autoregressive way by formula
+
+$$\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - \sqrt{1-\bar\alpha_t}\epsilon_\theta(\mathbf{x}_t, t)) + \sqrt{1-\bar\alpha_{t-1} - \sigma_t^2} \epsilon_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon.$$
+
+We can accelerate inference process by only sampling a subset of $S$ diffusion steps $\lbrace \tau_1, \dots, \tau_S \rbrace$.
+<div id="ddim_chain" class="svg-container" align="center"></div> 
+
+<script>
+
+function ddim_chain() {
+
+var svg = d3.select("#ddim_chain")
+			  .append("svg")
+			  .attr("width", 600)
+			  .attr("height", 158);
+
+svg.append('circle')
+  .attr('cx', 50)
+  .attr('cy', 70)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.85)
+  .attr('fill', '#348ABD');
+  
+svg.append('text')
+  .attr('x', 42)
+  .attr('y', 75)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 55)
+  .attr('y', 80)
+  .text("0")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+
+ svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 200, y: 55}, {x: 187, y: 40}, {x: 134, y: 20}, {x: 80, y: 40}, {x: 67, y: 55}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+	.style("stroke-dasharray", ("4, 4"))
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+
+draw_triangle(svg, 69, 52, 230);
+
+ svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 200, y: 85}, {x: 187, y: 100}, {x: 134, y: 120}, {x: 80, y: 100}, {x: 67, y: 85}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+
+draw_triangle(svg, 198, 88, 50);
+
+svg.append('text')
+  .attr('x', 110)
+  .attr('y', 130)
+  .text("q(x ")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 137)
+  .attr('y', 130)
+  .text("| x")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 131)
+  .attr('y', 133)
+  .text("1")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 151)
+  .attr('y', 133)
+  .text("0")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 155)
+  .attr('y', 130)
+  .text(")")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('circle')
+  .attr('cx', 217)
+  .attr('cy', 70)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.75)
+  .attr('fill', '#4388B1');
+  
+svg.append('text')
+  .attr('x', 209)
+  .attr('y', 75)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 222)
+  .attr('y', 80)
+  .text("1")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+
+ svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 536, y: 55}, {x: 520, y: 40}, {x: 385, y: 25}, {x: 250, y: 40}, {x: 233, y: 55}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+	.style("stroke-dasharray", ("4, 4"))
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+draw_triangle(svg, 236, 52, 240);
+
+
+ svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 550, y: 140}, {x: 50, y: 140}, {x: 50, y: 90}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+       
+ svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 550, y: 90}, {x: 550, y: 140}, {x: 217, y: 140}, {x: 217, y: 90}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+   .attr("d",  d3.line()
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+
+draw_triangle(svg, 550, 94, 0);
+
+svg.append('text')
+  .attr('x', 350)
+  .attr('y', 155)
+  .text("q(x ")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 377)
+  .attr('y', 155)
+  .text("| x")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 371)
+  .attr('y', 158)
+  .text("3")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 391)
+  .attr('y', 158)
+  .text("1")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 395)
+  .attr('y', 155)
+  .text(", x   )")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 408)
+  .attr('y', 158)
+  .text("0")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+
+svg.append('circle')
+  .attr('cx', 383)
+  .attr('cy', 70)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.25)
+  .attr('fill', '#5286A5');
+  
+svg.append('text')
+  .attr('x', 375)
+  .attr('y', 75)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("opacity", 0.5)
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 388)
+  .attr('y', 80)
+  .text("2")
+  .style("font-size", "11px")
+  .attr("opacity", 0.5)
+  .attr("font-family", "Arvo");
+
+svg.append('circle')
+  .attr('cx', 550)
+  .attr('cy', 70)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.7)
+  .attr('fill', '#628498');
+  
+svg.append('text')
+  .attr('x', 542)
+  .attr('y', 75)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 555)
+  .attr('y', 80)
+  .text("3")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 105)
+  .attr('y', 15)
+  .text("p")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 112)
+  .attr('y', 20)
+  .text("θ")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 119)
+  .attr('y', 15)
+  .text("(x")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 132)
+  .attr('y', 20)
+  .text("0")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 137)
+  .attr('y', 15)
+  .text("| x")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 151)
+  .attr('y', 20)
+  .text("1")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 155)
+  .attr('y', 15)
+  .text(")")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+
+
+  svg.append('text')
+  .attr('x', 350)
+  .attr('y', 15)
+  .text("p")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 357)
+  .attr('y', 20)
+  .text("θ")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 364)
+  .attr('y', 15)
+  .text("(x")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 377)
+  .attr('y', 20)
+  .text("1")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 381)
+  .attr('y', 15)
+  .text("| x")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 396)
+  .attr('y', 20)
+  .text("2")
+  .style("font-size", "8px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 400)
+  .attr('y', 15)
+  .text(")")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+}
+
+ddim_chain();
+
+</script>
+
+![](.)
+*Accelerated generation with DDIM and $\tau = [1, 3]$.*
+
+```python
+def sample_step(params, x_t, t):
+    eps = model.apply(params, x_t, t)
+    x_0_scaled = (x_t - eps * jnp.sqrt(1 - alpha_bars[t])) / jnp.sqrt(alphas[t])
+    mu_t = x_0_scaled + jnp.sqrt(1 - alpha_bars[t-1] - sigma_t ** 2)
+    return mu_t + sigma_t * random.normal(key, shape=x_0.shape)
+    
+def sample(taus):
+    x_t = random.normal(key, shape=img_shape)
+    for t in reversed(taus):
         x_t = sample_step(params, x_t, t)
     return x_t
 ```
@@ -1425,188 +1830,6 @@ def sample():
             s = jnp.percentile(jnp.abs(x_t), p, axis=tuple(range(1, x_t.ndim)))
             s = jnp.max(s, 1.0)
             x_t = jnp.clip(x_t, -s, s) / s
-    return x_t
-```
-
-### Denoising diffusion implicit models (DDIM)
-
-A critical drawback of these models is that they require many iterations to produce a high quality sample. Revers diffusion process could have thousands of steps and iterating over all the steps is required to produce a single sample, which is much slower compared to GANs, which only needs one pass through a network. For example, it takes around 20 hours to sample 50k images of size 32 × 32 from a DDPM, but less than a minute to do so from a GAN on a Nvidia 2080 Ti GPU. This becomes more problematic for larger images as sampling 50k images of size 256 × 256 could take nearly 1000 hours on the same GPU.
-
-![Trillema]({{'/assets/img/generative-trillema.png'|relative_url}})
-*Generative learning trillema. [Image source](https://arxiv.org/pdf/2112.07804.pdf)*
-
-One simple acceleration method is to reduce diffusion time steps in training. Another one is strided sampling schedule: take sampling update every $[T/S]$ steps to reduce process from $T$ down to $S$ steps. However, both of them lead to immediate worse performance.
-
-In DDPMs, the generative process is defined as the reverse of a particular Markovian diffusion process. [Song et al.](https://arxiv.org/pdf/2010.02502.pdf) generalized DDPMs via a class of non-Markovian diffusion processes that lead to the same training objective.
-
-<div id="ddim_chain" class="svg-container" align="center"></div> 
-
-<script>
-
-function ddim_chain() {
-
-var svg = d3.select("#ddim_chain")
-			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 105);
-
-svg.append('circle')
-  .attr('cx', 50)
-  .attr('cy', 50)
-  .attr('r', 20)
-  .attr('stroke', 'black')
-  .attr("opacity", 0.85)
-  .attr('fill', '#348ABD');
-  
-svg.append('text')
-  .attr('x', 42)
-  .attr('y', 55)
-  .text("x")
-  .style("font-size", "21px")
-  .attr("font-family", "Arvo");
-  
-svg.append('text')
-  .attr('x', 55)
-  .attr('y', 60)
-  .text("0")
-  .style("font-size", "11px")
-  .attr("font-family", "Arvo");
-  
-draw_uroboros(svg, 100);
-
-svg.append('circle')
-  .attr('cx', 217)
-  .attr('cy', 50)
-  .attr('r', 20)
-  .attr('stroke', 'black')
-  .attr("opacity", 0.75)
-  .attr('fill', '#4388B1');
-  
-svg.append('text')
-  .attr('x', 209)
-  .attr('y', 55)
-  .text("x")
-  .style("font-size", "21px")
-  .attr("font-family", "Arvo");
-  
-svg.append('text')
-  .attr('x', 222)
-  .attr('y', 60)
-  .text("1")
-  .style("font-size", "11px")
-  .attr("font-family", "Arvo");
-
- svg.append("path")
-   .attr("stroke", "black")
-   .datum([{x: 533, y: 35}, {x: 500, y: 20}, {x: 384, y: 15}, {x: 267, y: 20}, {x: 234, y: 35}])
-   .attr("fill", "none")
-   .attr("opacity", "0.8")
-	.style("stroke-dasharray", ("4, 4"))
-   .attr("d",  d3.line()
-       .curve(d3.curveBasis)
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-draw_triangle(svg, 236, 34, 240);
-
-svg.append('circle')
-  .attr('cx', 383)
-  .attr('cy', 50)
-  .attr('r', 20)
-  .attr('stroke', 'black')
-  .attr("opacity", 0.25)
-  .attr('fill', '#5286A5');
-  
-svg.append('text')
-  .attr('x', 375)
-  .attr('y', 55)
-  .text("x")
-  .style("font-size", "21px")
-  .attr("opacity", 0.5)
-  .attr("font-family", "Arvo");
-  
-svg.append('text')
-  .attr('x', 388)
-  .attr('y', 60)
-  .text("2")
-  .style("font-size", "11px")
-  .attr("opacity", 0.5)
-  .attr("font-family", "Arvo");
-
-svg.append('circle')
-  .attr('cx', 550)
-  .attr('cy', 50)
-  .attr('r', 20)
-  .attr('stroke', 'black')
-  .attr("opacity", 0.7)
-  .attr('fill', '#628498');
-  
-svg.append('text')
-  .attr('x', 542)
-  .attr('y', 55)
-  .text("x")
-  .style("font-size", "21px")
-  .attr("font-family", "Arvo");
-  
-svg.append('text')
-  .attr('x', 555)
-  .attr('y', 60)
-  .text("3")
-  .style("font-size", "11px")
-  .attr("font-family", "Arvo");
-  
-}
-
-ddim_chain();
-
-</script>
-
-We can redefine joint distribution $q(\mathbf{x}_{1 : T} \vert \mathbf{x}_0)$ in a way such that forward process is non-Markovian, while marginals stay the same. Let
-
-$$
-\begin{aligned}
-\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0 &= \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1}} \epsilon_{t-1} & \color{Salmon}{\epsilon_{t-1} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \epsilon_{t} + \sigma_t^2 \epsilon & \color{Salmon}{\epsilon \sim \mathcal{N}(0, \mathbf{I})}
-\\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}} + \sigma_t^2 \epsilon
-\end{aligned}
-$$
-
-with some deviation process $\sigma_t$. Then we have
-
-$$q_\sigma(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}}, \sigma^2_t \mathbf{I})$$
-
-and
-
-$$q_\sigma(\mathbf{x}_{t} \vert \mathbf{x}_0) = \mathcal{N}(\sqrt{\bar\alpha_{t}} \mathbf{x}_0, \sqrt{1 - \bar\alpha_{t}} \mathbf{I}).$$
-
-Recall that for Markovian diffusion process we have distribution 
-
-$$q(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}({\color{#5286A5}{\tilde \mu(\mathbf{x}_t, \mathbf{x}_0)}}, {\color{#C19454}{\tilde \beta_t \mathbf{I}}})$$
-
-with
-
-$${\color{#C19454}{\tilde \beta_t}} = \frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t} \beta_t. $$
-
-Hence, we can parameterize distribution $q_\sigma(\mathbf{x}_{t-1} \vert  \mathbf{x}_t, \mathbf{x}_0)$ with hyperparamer $\eta > 0$, such that
-
-$$\sigma_t^2 = \eta {\color{#C19454}{\tilde \beta_t}}.$$
-
-Different choices of $\eta$ result in different generative processes, all while using the same model $\epsilon_\theta$, so re-training the model is unnecessary. The special case of $\eta = 1$ corresponds to DDPM. Setting $\eta = 0$ makes the sampling process deterministic. Such a model is named the **denoising diffusion implicit model (DDIM)**. In general, one can generate samples in autoregressive way by formula
-
-$$\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - \sqrt{1-\bar\alpha_t}\epsilon_\theta(\mathbf{x}_t, t)) + \sqrt{1-\bar\alpha_{t-1} - \sigma_t^2} \epsilon_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon.$$
-
-We can accelerate inference process by only sampling a subset of $S$ diffusion steps $\lbrace \tau_1, \dots, \tau_S \rbrace$.
-
-```python
-def sample_step(params, x_t, t):
-    eps = model.apply(params, x_t, t)
-    x_0_scaled = (x_t - eps * jnp.sqrt(1 - alpha_bars[t])) / jnp.sqrt(alphas[t])
-    mu_t = x_0_scaled + jnp.sqrt(1 - alpha_bars[t-1] - sigma_t ** 2)
-    return mu_t + sigma_t * random.normal(key, shape=x_0.shape)
-    
-def sample(taus):
-    x_t = random.normal(key, shape=img_shape)
-    for t in reversed(taus):
-        x_t = sample_step(params, x_t, t)
     return x_t
 ```
 
