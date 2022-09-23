@@ -483,10 +483,10 @@ $$\Sigma_\theta(\mathbf{x}_t, t) = \sigma_t^2 \mathbf{I}.$$
 
 <script>
 
-function draw_uroboros(svg, x) {
+function draw_uroboros(svg, x, y=35) {
  svg.append("path")
    .attr("stroke", "black")
-   .datum([{x: x + 33, y: 35}, {x: x + 20, y: 20}, {x: x, y: 15}, {x: x - 20, y: 20}, {x: x - 33, y: 35}])
+   .datum([{x: x + 33, y: y}, {x: x + 20, y: y - 15}, {x: x, y: y - 20}, {x: x - 20, y: y - 15}, {x: x - 33, y: y}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
 	.style("stroke-dasharray", ("4, 4"))
@@ -495,11 +495,11 @@ function draw_uroboros(svg, x) {
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
        
-draw_triangle(svg, x - 31, 33, 220);
+draw_triangle(svg, x - 31, y - 2, 220);
        
 svg.append("path")
    .attr("stroke", "black")
-   .datum([{x: x + 33, y: 65}, {x: x + 20, y: 80}, {x: x, y: 85}, {x: x - 20, y: 80}, {x: x - 33, y: 65}])
+   .datum([{x: x + 33, y: y + 30}, {x: x + 20, y: y + 45}, {x: x, y: y + 50}, {x: x - 20, y: y + 45}, {x: x - 33, y: y + 30}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
    .attr("d",  d3.line()
@@ -507,7 +507,7 @@ svg.append("path")
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
        
-draw_triangle(svg, x + 31, 67, 40);
+draw_triangle(svg, x + 31, y + 32, 40);
 
 }
 
@@ -933,12 +933,9 @@ def sample():
 
 A critical drawback of these models is that they require many iterations to produce a high quality sample. Revers diffusion process could have thousands of steps and iterating over all the steps is required to produce a single sample, which is much slower compared to GANs, which only needs one pass through a network. For example, it takes around 20 hours to sample 50k images of size 32 × 32 from a DDPM, but less than a minute to do so from a GAN on a Nvidia 2080 Ti GPU. This becomes more problematic for larger images as sampling 50k images of size 256 × 256 could take nearly 1000 hours on the same GPU.
 
-![Trillema]({{'/assets/img/generative-trillema.png'|relative_url}})
-*Generative learning trillema. [Image source](https://arxiv.org/pdf/2112.07804.pdf)*
-
 One simple acceleration method is to reduce diffusion time steps in training. Another one is strided sampling schedule: take sampling update every $[T/S]$ steps to reduce process from $T$ down to $S$ steps. However, both of them lead to immediate worse performance.
 
-In DDPMs, the generative process is defined as the reverse of a particular Markovian diffusion process, meaning that $\mathbf{x}_t$ depends only on $\mathbf{x}_{t-1}$. [Song et al.](https://arxiv.org/pdf/2010.02502.pdf) generalized DDPMs via a class of non-Markovian diffusion processes that lead to the same training objective.
+In DDPMs, the generative process is defined as the reverse of a particular Markovian diffusion process, meaning that each event $t$ depends only on the state attained in the previous event $t-1$. [Song et al.](https://arxiv.org/pdf/2010.02502.pdf) generalized DDPMs via a class of non-Markovian diffusion processes that lead to the same training objective.
 
 We can redefine joint distribution $q(\mathbf{x}_{1 : T} \vert \mathbf{x}_0)$ in a way such that forward process is non-Markovian, while marginals stay the same. Let
 
@@ -1105,7 +1102,7 @@ draw_triangle(svg, 236, 52, 240);
 
  svg.append("path")
    .attr("stroke", "black")
-   .datum([{x: 550, y: 140}, {x: 50, y: 140}, {x: 50, y: 90}])
+   .datum([{x: 217, y: 140}, {x: 50, y: 140}, {x: 50, y: 90}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
    .attr("d",  d3.line()
@@ -1260,9 +1257,7 @@ svg.append('text')
   .style("font-size", "14px")
   .attr("font-family", "Arvo");
   
-
-
-  svg.append('text')
+svg.append('text')
   .attr('x', 350)
   .attr('y', 15)
   .text("p")
@@ -1833,4 +1828,345 @@ def sample():
     return x_t
 ```
 
-### Stable diffusion / Latent diffusion model
+### Latent-space diffusion model / Stable diffusion
+
+Main Idea
+
+Encoder maps the input data to an embedding space
+
+Denoising diffusion models are applied in the latent space
+
+<div id="ltnt_dffsn" class="svg-container" align="center"></div> 
+
+<script>
+
+function latent_diffusion() {
+
+var svg = d3.select("#ltnt_dffsn")
+			  .append("svg")
+			  .attr("width", 600)
+			  .attr("height", 200);
+
+svg.append('circle')
+  .attr('cx', 50)
+  .attr('cy', 150)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.85)
+  .attr('fill', '#348ABD');
+  
+svg.append('text')
+  .attr('x', 42)
+  .attr('y', 155)
+  .text("x")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 55)
+  .attr('y', 160)
+  .text("0")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+draw_uroboros(svg, 100, 135);
+  
+svg.append('text')
+  .attr('x', 70)
+  .attr('y', 112)
+  .text("Decoder")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 70)
+  .attr('y', 196)
+  .text("Encoder")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+
+svg.append('circle')
+  .attr('cx', 150)
+  .attr('cy', 150)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.75)
+  .attr('fill', '#A4D8D8');
+  
+svg.append('text')
+  .attr('x', 143)
+  .attr('y', 155)
+  .text("z")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 155)
+  .attr('y', 160)
+  .text("0")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+
+draw_uroboros(svg, 200, 135);
+
+svg.append('circle')
+  .attr('cx', 250)
+  .attr('cy', 150)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.75)
+  .attr('fill', '#9EC9C9');
+  
+svg.append('text')
+  .attr('x', 243)
+  .attr('y', 155)
+  .text("z")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 255)
+  .attr('y', 160)
+  .text("1")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+ 
+draw_uroboros(svg, 300, 135);
+  
+svg.append('circle')
+  .attr('cx', 330)
+  .attr('cy', 150)
+  .attr('r', 1)
+  .attr('stroke', 'black')
+  .attr("opacity", 1)
+  .attr('fill', 'black');
+  
+svg.append('circle')
+  .attr('cx', 350)
+  .attr('cy', 150)
+  .attr('r', 1)
+  .attr('stroke', 'black')
+  .attr("opacity", 1)
+  .attr('fill', 'black');
+  
+svg.append('circle')
+  .attr('cx', 370)
+  .attr('cy', 150)
+  .attr('r', 1)
+  .attr('stroke', 'black')
+  .attr("opacity", 1)
+  .attr('fill', 'black');
+  
+draw_uroboros(svg, 400, 135);
+       
+svg.append('circle')
+  .attr('cx', 450)
+  .attr('cy', 150)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.5)
+  .attr('fill', '#808080');
+   
+svg.append('text')
+  .attr('x', 442)
+  .attr('y', 155)
+  .text("z")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 454)
+  .attr('y', 160)
+  .text("T")
+  .style("font-size", "11px")
+  .attr("font-family", "Arvo");
+  
+svg.append('circle')
+  .attr('cx', 550)
+  .attr('cy', 50)
+  .attr('r', 20)
+  .attr('stroke', 'black')
+  .attr("opacity", 0.5)
+  .attr('fill', '#65AD69');
+   
+svg.append('text')
+  .attr('x', 545)
+  .attr('y', 55)
+  .text("y")
+  .style("font-size", "21px")
+  .attr("font-family", "Arvo");
+
+svg.append('rect')
+  .attr('x', 181)
+  .attr('y', 79)
+  .attr('width', 40)
+  .attr('height', 20)
+  .attr('stroke', 'black')
+  .attr("rx", 3)
+  .attr("opacity", 0.9)
+  .attr('fill', '#EDA137');
+
+svg.append('rect')
+  .attr('x', 181)
+  .attr('y', 99)
+  .attr('width', 40)
+  .attr('height', 20)
+  .attr('stroke', 'black')
+  .attr("rx", 3)
+  .attr("opacity", 0.9)
+  .attr('fill', '#EDA137');
+  
+svg.append('text')
+  .attr('x', 189)
+  .attr('y', 95)
+  .text("K V")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 196)
+  .attr('y', 115)
+  .text("Q")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+   
+svg.append('rect')
+  .attr('x', 281)
+  .attr('y', 79)
+  .attr('width', 40)
+  .attr('height', 20)
+  .attr('stroke', 'black')
+  .attr("rx", 3)
+  .attr("opacity", 0.9)
+  .attr('fill', '#EDA137');
+   
+svg.append('rect')
+  .attr('x', 281)
+  .attr('y', 99)
+  .attr('width', 40)
+  .attr('height', 20)
+  .attr('stroke', 'black')
+  .attr("rx", 3)
+  .attr("opacity", 0.9)
+  .attr('fill', '#EDA137');
+  
+svg.append('text')
+  .attr('x', 289)
+  .attr('y', 95)
+  .text("K V")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 296)
+  .attr('y', 115)
+  .text("Q")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('rect')
+  .attr('x', 381)
+  .attr('y', 79)
+  .attr('width', 40)
+  .attr('height', 20)
+  .attr('stroke', 'black')
+  .attr("rx", 3)
+  .attr("opacity", 0.9)
+  .attr('fill', '#EDA137');
+  
+svg.append('rect')
+  .attr('x', 381)
+  .attr('y', 99)
+  .attr('width', 40)
+  .attr('height', 20)
+  .attr('stroke', 'black')
+  .attr("rx", 3)
+  .attr("opacity", 0.9)
+  .attr('fill', '#EDA137');
+  
+svg.append('text')
+  .attr('x', 389)
+  .attr('y', 95)
+  .text("K V")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append('text')
+  .attr('x', 396)
+  .attr('y', 115)
+  .text("Q")
+  .style("font-size", "14px")
+  .attr("font-family", "Arvo");
+  
+svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 530, y: 50}, {x: 420, y: 50}, {x: 401, y: 50}, {x: 401, y: 79}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+  
+svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 420, y: 50}, {x: 380, y: 50}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+  
+svg.append('circle')
+  .attr('cx', 330)
+  .attr('cy', 50)
+  .attr('r', 1)
+  .attr('stroke', 'black')
+  .attr("opacity", 1)
+  .attr('fill', 'black');
+  
+svg.append('circle')
+  .attr('cx', 350)
+  .attr('cy', 50)
+  .attr('r', 1)
+  .attr('stroke', 'black')
+  .attr("opacity", 1)
+  .attr('fill', 'black');
+  
+svg.append('circle')
+  .attr('cx', 370)
+  .attr('cy', 50)
+  .attr('r', 1)
+  .attr('stroke', 'black')
+  .attr("opacity", 1)
+  .attr('fill', 'black');
+  
+svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 320, y: 50}, {x: 301, y: 50}, {x: 301, y: 79}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+  
+svg.append("path")
+   .attr("stroke", "black")
+   .datum([{x: 320, y: 50}, {x: 220, y: 50}, {x: 201, y: 50}, {x: 201, y: 79}])
+   .attr("fill", "none")
+   .attr("opacity", "0.8")
+   .attr("d",  d3.line()
+       .curve(d3.curveBasis)
+       .x(function(d) { return d.x; })
+       .y(function(d) { return d.y; }));
+}
+
+latent_diffusion();
+
+</script>
+
+![](.)
+*Latent diffusion models*
+
