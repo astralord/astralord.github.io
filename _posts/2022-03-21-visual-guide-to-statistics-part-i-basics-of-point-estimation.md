@@ -2,7 +2,7 @@
 layout: post
 title: 'Visual Guide to Statistics. Part I: Basics of Point Estimation'
 date: 2022-03-21 11:00 +0800
-categories: [Statistics]
+categories: [Statistics, Visual Guide]
 tags: [statistics, parameter-estimation, frequentist-inference, exponential-family, cramer-rao-inequality, fisher-information, maximum-likelihood-estimator, method-of-moments]
 math: true
 ---

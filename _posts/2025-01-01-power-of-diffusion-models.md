@@ -1,12 +1,11 @@
 ---
 layout: post
 title: 'Power of Diffusion Models'
-date: 2022-01-01 11:00 +0800
-categories: [Generative AI]
-tags: [diffusion-models, jax, clip, guided-diffusion, dalle-2, imagen, stable-diffusion]
+date: 2022-09-25 11:00 +0800
+categories: [Generative AI, Diffusion Models]
+tags: [diffusion-models, jax, clip, ddim, score-based-model, guided-diffusion, dalle-2, imagen, stable-diffusion, latent-diffusion-model]
 math: true
 enable_d3: true
-published: true
 ---
 
 > This post focuses on a theory behind diffusion models and core ideas of newest generative neural networks, which took Internet by storm in 2022. Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
@@ -1423,7 +1422,7 @@ svg.append('line')
   .style("stroke-width", 1)
   .attr('stroke', 'black');
   
-draw_triangle(svg, 525, 40, 90);
+draw_triangle(svg, 525, 60, 90);
   
 svg.append('line')
   .attr('x1', 70)
@@ -1433,7 +1432,7 @@ svg.append('line')
   .style("stroke-width", 1)
   .attr('stroke', 'black');
   
-draw_triangle(svg, 75, 60, 270);
+draw_triangle(svg, 75, 40, 270);
   
 svg.append('circle')
   .attr('cx', 550)
@@ -1465,7 +1464,7 @@ d3.select("#cntns_chain")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", "285px")
-  .style("top", "10px");
+  .style("top", "70px");
   
 d3.select("#cntns_chain")
   .append("span")
@@ -1475,7 +1474,7 @@ d3.select("#cntns_chain")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
   .style("left", "215px")
-  .style("top", "70px");
+  .style("top", "10px");
   
 svg.append('text')
   .attr('x', 33)
@@ -1830,16 +1829,31 @@ def sample():
 
 ### Latent-space diffusion model / Stable diffusion
 
-Main Idea
+[Rombach & Blattmann, et al. 2022](https://arxiv.org/pdf/2112.10752.pdf) presented **latent diffusion models (LDM)**, which operate in the latent space of pretrained variational autoencoders instead of pixel space, making training cost lower and inference speed faster.
 
-Encoder maps the input data to an embedding space
+The diffusion and denoising processes happen on a 2D latent vector $\mathbf{z}$, which is an image $\mathbf{x}$, compressed by encoder. Then an decoder reconstructs the images from the latent vector. The paper explored two types of regularization in autoencoder training to avoid arbitrarily high-variance in the latent spaces:
 
-Denoising diffusion models are applied in the latent space
+- KL-regularization: a small KL penalty towards a standard normal distribution over the learned latent, similar to VAE.
+- VQ-regularization: Uses a vector quantization layer within the decoder, like VQVAE but the quantization layer is absorbed by the decoder.
+
+The denoising model is a time-conditioned U-Net. Authors also introduced cross-attention layers into the model architecture to handle flexible conditioning information. Each type of conditioning information is paired with a domain-specific encoder $\tau_\theta$ to project the conditioning input $y$ to an intermediate representation, which is then mapped to the intermediate layers of the UNet via a cross-attention layer implementing
+
+$$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d}}  \Big) \cdot \mathbf{V},$$
+
+where
+
+$$\mathbf{Q} = \mathbf{W}_Q^{(i)} \cdot \varphi_i(\mathbf{z}_t), \ \mathbf{K} =\mathbf{W}_K^{(i)} \cdot \tau_\theta(y), \ \mathbf{V} =\mathbf{W}_V^{(i)} \cdot \tau_\theta(y). $$
+
+Here $\varphi_i(\mathbf{z}_t)$ denotes a (flattened) intermediate representation of the UNet implementing $\epsilon_\theta$.
+
 
 <div id="ltnt_dffsn" class="svg-container" align="center"></div> 
 
 <script>
 
+d3.select("#ltnt_dffsn")
+  .style("position", "relative");
+  
 function latent_diffusion() {
 
 var svg = d3.select("#ltnt_dffsn")
@@ -1884,7 +1898,7 @@ svg.append('text')
   .text("Encoder")
   .style("font-size", "14px")
   .attr("font-family", "Arvo");
-
+  
 svg.append('circle')
   .attr('cx', 150)
   .attr('cy', 150)
@@ -2161,6 +2175,17 @@ svg.append("path")
        .curve(d3.curveBasis)
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; }));
+       
+d3.select("#ltnt_dffsn")
+  .append("span")
+  .text("\\( \\tau_\\theta \\)")
+  .style("font-size", "14px")
+  .style("font-weight", "700")
+  .attr("font-family", "Arvo")
+  .style("position", "absolute")
+  .style("left", "515px")
+  .style("top", "25px");
+
 }
 
 latent_diffusion();
@@ -2168,5 +2193,20 @@ latent_diffusion();
 </script>
 
 ![](.)
-*Latent diffusion models*
+*The architecture of latent diffusion model.*
 
+
+In 2022 in collaboration with [Stability AI](https://stability.ai/) and [Runway](https://runwayml.com/) a text-to-image LDM called Stable Diffusion was released. Stable Diffusion was trained on 256x256 (then finetuned on 512x512) images from a subset of the [LAION-Aesthetics V2 dataset](https://laion.ai/blog/laion-aesthetics/), using 256 Nvidia A100 GPUs on Amazon Web Service for a total of 150,000 GPU-hours, at a cost of $600,000.
+
+Similar to Google's Imagen, this model uses a frozen CLIP ViT-L/14 text encoder to condition the model on text prompts. With its 860M UNet and 123M text encoder, the model is relatively lightweight and runs on a GPU with at least 10GB VRAM.
+
+![Stable-Diffusion-Examples]({{'/assets/img/stable-diffusion-ex.png'|relative_url}})
+*Stable diffusion samples.*
+
+Unlike previous models, Stable Diffusion makes its [source code](https://github.com/CompVis/stable-diffusion) available, along with pre-trained weights.
+
+### Conclusion
+
+Diffusion models are both analytically tractable and flexible: they can be analytically evaluated and cheaply fit arbitrary structures in data. There are also a lot of interesting characteristics of the models which were not covered in this post, such as image in-/outpainting, style transfer and image editing.
+
+There is also a shortcoming embedded into the diffusion process structure: the sampling relies on a long Markov chain of diffusion steps and it is still slower than GAN.
