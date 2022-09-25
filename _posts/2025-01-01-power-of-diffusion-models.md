@@ -1844,7 +1844,7 @@ where
 
 $$\mathbf{Q} = \mathbf{W}_Q^{(i)} \cdot \varphi_i(\mathbf{z}_t), \ \mathbf{K} =\mathbf{W}_K^{(i)} \cdot \tau_\theta(y), \ \mathbf{V} =\mathbf{W}_V^{(i)} \cdot \tau_\theta(y). $$
 
-Here $\varphi_i(\mathbf{z}_t)$ denotes a (flattened) intermediate representation of the UNet implementing $\epsilon_\theta$.
+Here $\varphi_i$ denotes a (flattened) intermediate representation of the UNet implementing $\epsilon_\theta$.
 
 
 <div id="ltnt_dffsn" class="svg-container" align="center"></div> 
