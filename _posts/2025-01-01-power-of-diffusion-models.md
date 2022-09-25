@@ -8,7 +8,7 @@ math: true
 enable_d3: true
 ---
 
-> This post focuses on a theory behind diffusion models and core ideas of newest generative neural networks, which took Internet by storm in 2022. Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
+> In 2022, insanely beautiful and original images created with generative neural networks are taking the internet by storm. This post focuses on the theory behind diffusion models that underpin the core ideas of the latest generative AI. Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
 
 ![Space Opera]({{'/assets/img/space-opera.png'|relative_url}})
 *In 2022 'Théâtre D’opéra Spatial', an artwork by Jason M. Allen with help of Midjourney took 1st place in the digital art competition at Colorado State Fair. This event sparked a backslash from artists, claiming that creative jobs are now not safe from machines and in danger of becoming obsolete. Here I chose this picture emerging from noise as a symbol of an upcoming age of art, created by artificial intelligence.*
