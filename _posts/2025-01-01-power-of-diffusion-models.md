@@ -17,10 +17,17 @@ Before we start, I want to mention all the sources which were helpful to write t
 
 - Papers:
 	- [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf)
-	- [Improved Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2102.09672.pdf) 
+	- [Improved Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2102.09672.pdf)
+	- [Denoising Diffusion Implicit Models](https://arxiv.org/pdf/2010.02502.pdf)
 	- [Diffusion Models Beat GANs on Image Synthesis](https://arxiv.org/pdf/2105.05233.pdf)
 	- [Generative Modeling by Estimating Gradients of the
 Data Distribution](https://arxiv.org/pdf/1907.05600.pdf)
+	- [Classifier-free diffusion guidance](https://arxiv.org/pdf/2207.12598.pdf)
+	- [GLIDE: Towards Photorealistic Image Generation and Editing with
+Text-Guided Diffusion Models](https://arxiv.org/pdf/2112.10741.pdf)
+	- [Hierarchical Text-Conditional Image Generation with CLIP Latents](https://arxiv.org/pdf/2204.06125.pdf)
+	- [Photorealistic Text-to-Image Diffusion Models with Deep Language Understanding](https://arxiv.org/pdf/2205.11487.pdf)
+	- [High-Resolution Image Synthesis with Latent Diffusion Models](https://arxiv.org/pdf/2112.10752.pdf)
 - Posts:
 	- [What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models)
 	- [Generative Modeling by Estimating Gradients of the Data Distribution](https://yang-song.net/blog/2021/score/)
