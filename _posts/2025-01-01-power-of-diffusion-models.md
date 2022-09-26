@@ -2214,6 +2214,6 @@ Unlike previous models, Stable Diffusion makes its [source code](https://github.
 
 ### Conclusion
 
-Diffusion models are both analytically tractable and flexible: they can be analytically evaluated and cheaply fit arbitrary structures in data. There are also a lot of interesting characteristics of the models which were not covered in this post, such as image in-/outpainting, style transfer and image editing.
+Diffusion models have shown amazing capabilities as generative models. They are both analytically tractable and flexible: they can be analytically evaluated and cheaply fit arbitrary structures in data. Besides text-conditioned image generation there a lot of interesting characteristics of the models which were not covered in this post, such as image in-/outpainting, style transfer and image editing.
 
-There is also a shortcoming embedded into the diffusion process structure: the sampling relies on a long Markov chain of diffusion steps and it is still slower than GAN.
+On the other hand, there is a shortcoming embedded into the diffusion process structure: the sampling relies on a long Markov chain of diffusion steps and it is still slower than GAN. Latent diffusion models have shown that performance gains can be achieved by learning semantically meaningful latent space with complex compressing encoders.
