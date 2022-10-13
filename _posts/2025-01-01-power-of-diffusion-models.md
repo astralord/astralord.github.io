@@ -937,7 +937,7 @@ def sample():
 
 ### Denoising diffusion implicit models (DDIM)
 
-A critical drawback of these models is that they require many iterations to produce a high quality sample. Revers diffusion process could have thousands of steps and iterating over all the steps is required to produce a single sample, which is much slower compared to GANs, which only needs one pass through a network. For example, it takes around 20 hours to sample 50k images of size 32 × 32 from a DDPM, but less than a minute to do so from a GAN on a Nvidia 2080 Ti GPU. This becomes more problematic for larger images as sampling 50k images of size 256 × 256 could take nearly 1000 hours on the same GPU.
+A critical drawback of these models is that they require many iterations to produce a high quality sample. Reverse diffusion process could have thousands of steps and iterating over all the steps is required to produce a single sample, which is much slower compared to GANs, which only needs one pass through a network. For example, it takes around 20 hours to sample 50k images of size 32 × 32 from a DDPM, but less than a minute to do so from a GAN on a Nvidia 2080 Ti GPU. This becomes more problematic for larger images as sampling 50k images of size 256 × 256 could take nearly 1000 hours on the same GPU.
 
 One simple acceleration method is to reduce diffusion time steps in training. Another one is strided sampling schedule: take sampling update every $[T/S]$ steps to reduce process from $T$ down to $S$ steps. However, both of them lead to immediate worse performance.
 
@@ -972,7 +972,7 @@ Hence, we can parameterize distribution $q_\sigma(\mathbf{x}_{t-1} \vert  \mathb
 
 $$\sigma_t^2 = \eta {\color{#C19454}{\tilde \beta_t}}.$$
 
-Different choices of $\eta$ result in different generative processes, all while using the same model $\epsilon_\theta$, so re-training the model is unnecessary. The special case of $\eta = 1$ corresponds to DDPM. Setting $\eta = 0$ makes the sampling process deterministic. Such a model is named the **denoising diffusion implicit model (DDIM)**. In general, one can generate samples in autoregressive way by formula
+Different choices of $\eta$ result in different generative processes, all while using the same model $\epsilon_\theta$, so re-training the model is unnecessary. The special case of $\eta = 1$ corresponds to DDPM. Setting $\eta = 0$ makes the sampling process deterministic. Such model is named the **denoising diffusion implicit model (DDIM)**. In general, one can generate samples in autoregressive way by formula
 
 $$\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - \sqrt{1-\bar\alpha_t}\epsilon_\theta(\mathbf{x}_t, t)) + \sqrt{1-\bar\alpha_{t-1} - \sigma_t^2} \epsilon_\theta(\mathbf{x}_t, t) + \sigma_t \epsilon.$$
 
@@ -1576,7 +1576,7 @@ A downside of classifier guidance is that it requires an additional classifier m
 
 [Ho & Salimans](https://openreview.net/pdf?id=qw8AKxfYbI) proposed an alternative method, **a classifier-free guidance**, which doesn't require training a separate classifier. Instead, one trains a conditional diffusion model, parameterized by $\epsilon_\theta(\mathbf{x}_t, t \vert y)$ with conditioning dropout: 10-20% of the time, the conditioning information $y$ is removed. In practice, it is replaced with a special input value $y=\emptyset$ representing the absence of conditioning information. This way model knows how to generate images unconditionally as well, i.e.
 
-$$\epsilon(\mathbf{x}_t, t) = \epsilon(\mathbf{x}_t, t \vert \emptyset).$$
+$$\epsilon_\theta(\mathbf{x}_t, t) = \epsilon_\theta(\mathbf{x}_t, t \vert \emptyset).$$
 
 How could we use it for sampling? By Bayes rule we have
 

@@ -269,7 +269,7 @@ graph_zoomed();
 </script>
 
 ![](.)
-*Fig. 3. Graph zoomed in. Each node corresponds to a tile on the board, each edge represents that either nodes are spatial neighbors, or they are the same tiles but at adjacent timestamps. Graph is oriented, nodes from future graphs are pointing at nodes at previous steps. This way all the information flows to current board representation which later is going to be used for actions generation.*
+*Fig. 3. Graph zoomed in. Each node corresponds to a tile on the board, each edge represents that either nodes are spatial neighbors, or they are the same tiles but at adjacent timestamps. Graph is oriented, nodes from future graphs are pointing at nodes at previous steps. Thus, all the information flows to current board representation which will be used for actions generation later.*
 
 Node input features $\mathbf{v}_i$ contain kore amount on the tile, timestamp, total amount of kore collected by player and its opponent. Also, if any fleet is located on the tile - its cargo, collection rate and number of ships. If any shipyard is on the tile - its number of ships, maximum plan length for this number and maximum number of ships, which can be spawned.
 
@@ -2074,7 +2074,7 @@ $$
 
 where $A_\omega(a, s)$ is an advantage, obtained by [UPGO](https://paperswithcode.com/method/alphastar) method.
 
-RL helped to stabilize inference, but sadly it didn't go far beyond that. New agent was able to beat rule-based agents, which were on top of Kore Beta competition) ~80% of the time.
+RL helped to stabilize inference, but sadly it didn't go far beyond that. New agent was able to beat rule-based agents, which were on top of Kore Beta competition ~80% of the time.
 
 
 ### Results and conclusions
