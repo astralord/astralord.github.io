@@ -18,7 +18,6 @@ That's how entry to Kore competition looks like:
 
 
 ![Kore Gameplay]({{'/assets/img/kore-gameplay.gif'|relative_url}})
-
 *Fig. 1. Gameplay visualization by [Tong Hui Kang](https://www.kaggle.com/competitions/kore-2022/discussion/320987)*
 
 Game setup looks extremely complex at first glance (at least compared to the other Kaggle simulation competitions like [Hungry Geese](https://www.kaggle.com/competitions/hungry-geese), which was basically a variation of Tetris Snake game). 
@@ -52,7 +51,6 @@ Another way is to think of this task as text generation. One can train a network
 One can also represent board as graph, where each tile is a node and edges connect adjacent tiles. Then each turn, when a fleet is sent from shipyard, searching for optimal flight plan is equivalent to searching for optimal path on a graph.
 
 ![Torus Graph]({{'/assets/img/torus.png'|relative_url}})
-
 *Fig. 2. This is how periodic 21x21 grid looks like: a doughnut.*
 
 One of the main advantages of an algorithm on a graph is rotation equivariance. Board is symmetric, therefore algorithm behaviour must not change if we swap players initial positions. With standard convolutional networks we can try to overcome this issue by using augmentations, but there is no need for them if we use graph neural networks.
