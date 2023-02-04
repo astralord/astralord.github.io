@@ -6,6 +6,7 @@ categories: [Deep Learning in Biology, Protein Folding]
 tags: [alphafold, protein-folding, protein-structure-prediction, deepmind]
 math: true
 enable_d3: true
+display: false
 ---
 
 > It was a breakthrough moment for science when AlphaFold 2, a deep-learning-based artificial intelligence system, was able to solve a problem that had perplexed researchers for more than 50 years. This remarkable achievement was the result of a decade-long effort from an international team of scientists and engineers from DeepMind, and it has the potential to revolutionize the field of protein folding and open the doors to a new era of medical discoveries.
@@ -49,8 +50,4 @@ The most difficult category is *ab initio* modeling, i.e. structure prediction f
 #### Network architecture
 
 ![AlphaFold Detailed]({{'/assets/img/alphafold-network.png'|relative_url}})
-*AlphaFold 2 architecture. Source: AlphaFold 2 paper*
-
-
-![AlphaFold Detailed]({{'/assets/img/alphafold-network-modified.png'|relative_url}})
 *AlphaFold 2 architecture. Source: AlphaFold 2 paper*
