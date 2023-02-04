@@ -10,11 +10,11 @@ enable_d3: true
 
 > It was a breakthrough moment for science when AlphaFold 2, a deep-learning-based artificial intelligence system, was able to solve a problem that had perplexed researchers for more than 50 years. This remarkable achievement was the result of a decade-long effort from an international team of scientists and engineers from DeepMind, and it has the potential to revolutionize the field of protein folding and open the doors to a new era of medical discoveries.
 
-- Useful sources:
- - [Highly accurate protein structure prediction with AlphaFold](https://www.nature.com/articles/s41586-021-03819-2) 
- - [AlphaFold: Using AI for scientific discovery](https://www.deepmind.com/blog/alphafold-using-ai-for-scientific-discovery-2020)
- - [Protein Structure](https://www.nature.com/scitable/topicpage/protein-structure-14122136/)
- - [A few words about AlphaFold 2](https://yakovlev.me/para-slov-za-alphafold2/) (in Russian)
+- Sources:
+	- [Highly accurate protein structure prediction with AlphaFold](https://www.nature.com/articles/s41586-021-03819-2) 
+	- [AlphaFold: Using AI for scientific discovery](https://www.deepmind.com/blog/alphafold-using-ai-for-scientific-discovery-2020)
+	- [Protein Structure](https://www.nature.com/scitable/topicpage/protein-structure-14122136/)
+	- [A few words about AlphaFold 2](https://yakovlev.me/para-slov-za-alphafold2/) (in Russian)
 
 ### Protein structure prediction
 
@@ -25,12 +25,12 @@ enable_d3: true
 
 The primary structure of a protein drives the folding and intramolecular bonding of the linear amino acid chain, which ultimately determines the protein's unique three-dimensional shape. Amino acids in neighboring regions of the protein chain sometimes interact with each other and cause certain patterns of folding to occur. Known as alpha helices and beta sheets, these stable folding patterns make up the **secondary structure** of a protein. Most proteins contain multiple helices and sheets, in addition to other less common patterns. The ensemble of formations and folds in a single linear chain of amino acids — sometimes called a **polypeptide** — constitutes the **tertiary structure** of a protein. Finally, the **quaternary structure** of a protein refers to those macromolecules with multiple polypeptide chains or subunits. 
 
-![Protein Folding]({{'/assets/img/protein-folding.png'|relative_url}})
+![Protein Folding]({{'/assets/img/protein-folding.svg'|relative_url}})
 *Complex 3D shapes emerge from a string of amino acids. Source: DeepMind website*
 
 Protein structures help us understand how proteins work and what function they fulfil. For example, antibody proteins utilised by our immune systems are ‘Y-shaped’, and form unique hooks. By latching on to viruses and bacteria, these antibody proteins are able to detect and tag disease - causing microorganisms for elimination. Collagen proteins are shaped like cords, which transmit tension between cartilage, ligaments, bones, and skin. Other types of proteins include Cas9, which, using CRISPR sequences as a guide, act like scissors to cut and paste sections of DNA; antifreeze proteins, whose 3D structure allows them to bind to ice crystals and prevent organisms from freezing; and ribosomes, which act like a programmed assembly line, helping to build proteins themselves.
 
-The recipes for those proteins - called **genes** - are directly encoded in our DNA. If you are able to read a DNA sequence, you know which protein will be synthesized from it. An error in the genetic recipe may result in a malformed protein, which could result in disease or death for an organism. <span style="background-color: #FF8C69">Many diseases, therefore, are fundamentally linked to proteins.</span>
+The recipes for those proteins - called **genes** - are directly encoded in our DNA. If you are able to read a DNA sequence, you know which protein will be synthesized from it. An error in the genetic recipe may result in a malformed protein, which could result in disease or death for an organism. Many diseases, therefore, are fundamentally linked to proteins.
 
 But just because you know the genetic recipe for a protein doesn’t mean you automatically know its shape. DNA only contains information about the sequence of amino acids - not how they fold into shape. The bigger the protein, the more difficult it is to model, because there are more interactions between amino acids to take into account. As demonstrated by [Levinthal’s paradox](https://en.wikipedia.org/wiki/Levinthal%27s_paradox), it would take longer than the age of the known universe to randomly enumerate all possible configurations of a typical protein before reaching the true 3D structure - yet proteins themselves fold spontaneously, within milliseconds. Predicting how these chains will fold into the intricate 3D structure of a protein is what’s known as the **protein-folding problem** - a challenge that scientists have worked on for decades.
 
@@ -48,8 +48,5 @@ The most difficult category is *ab initio* modeling, i.e. structure prediction f
 
 #### Network architecture
 
-![AlphaFold Simple]({{'/assets/img/alphafold-bird-eye-view.jpeg'|relative_url}})
-*Img description. Source: DeepMind website*
-
 ![AlphaFold Detailed]({{'/assets/img/alphafold-network.png'|relative_url}})
-*Img description. Source: AlphaFold 2 paper*
+*AlphaFold 2 architecture. Source: AlphaFold 2 paper*
