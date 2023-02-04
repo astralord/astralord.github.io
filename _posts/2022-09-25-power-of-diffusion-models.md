@@ -947,8 +947,8 @@ We can redefine joint distribution $q(\mathbf{x}_{1 : T} \vert \mathbf{x}_0)$ in
 
 $$
 \begin{aligned}
-\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0 &= \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1}} \epsilon_{t-1} & \color{Salmon}{\epsilon_{t-1} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \epsilon_{t} + \sigma_t^2 \epsilon & \color{Salmon}{\epsilon \sim \mathcal{N}(0, \mathbf{I})}
-\\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}} + \sigma_t^2 \epsilon
+\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0 &= \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1}} \epsilon_{t-1} & \color{Salmon}{\epsilon_{t-1} \sim \mathcal{N}(0, \mathbf{I})} \\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \epsilon_{t} + \sigma_t \epsilon & \color{Salmon}{\epsilon \sim \mathcal{N}(0, \mathbf{I})}
+\\ & = \sqrt{\bar\alpha_{t-1}} \mathbf{x}_0 + \sqrt{1 - \bar\alpha_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar\alpha_t}\mathbf{x}_0}{\sqrt{1-\bar\alpha_t}} + \sigma_t \epsilon
 \end{aligned}
 $$
 
