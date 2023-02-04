@@ -50,3 +50,7 @@ The most difficult category is *ab initio* modeling, i.e. structure prediction f
 
 ![AlphaFold Detailed]({{'/assets/img/alphafold-network.png'|relative_url}})
 *AlphaFold 2 architecture. Source: AlphaFold 2 paper*
+
+
+![AlphaFold Detailed]({{'/assets/img/alphafold-network-modified.png'|relative_url}})
+*AlphaFold 2 architecture. Source: AlphaFold 2 paper*
