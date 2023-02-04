@@ -1,12 +1,12 @@
 ---
 layout: post
-title: 'Unfolding AlphaFold 2'
-date: 2020-01-01 11:00 +0800
+title: 'Unfolding AlphaFold'
+date: 2023-01-01 11:00 +0800
 categories: [Deep Learning in Biology, Protein Folding]
 tags: [alphafold, protein-folding, protein-structure-prediction, deepmind]
 math: true
 enable_d3: true
-visible: false
+published: false
 ---
 
 > It was a breakthrough moment for science when AlphaFold 2, a deep-learning-based artificial intelligence system, was able to solve a problem that had perplexed researchers for more than 50 years. This remarkable achievement was the result of a decade-long effort from an international team of scientists and engineers from DeepMind, and it has the potential to revolutionize the field of protein folding and open the doors to a new era of medical discoveries.
@@ -24,7 +24,7 @@ visible: false
 ![Amino Acids]({{'/assets/img/amino-acids.png'|relative_url}})
 *Building blocks of our life. Source: DeepMind website*
 
-The primary structure of a protein drives the folding and intramolecular bonding of the linear amino acid chain, which ultimately determines the protein's unique three-dimensional shape. Amino acids in neighboring regions of the protein chain sometimes interact with each other and cause certain patterns of folding to occur. Known as alpha helices and beta sheets, these stable folding patterns make up the **secondary structure** of a protein. Most proteins contain multiple helices and sheets, in addition to other less common patterns. The ensemble of formations and folds in a single linear chain of amino acids — sometimes called a **polypeptide** — constitutes the **tertiary structure** of a protein. Finally, the **quaternary structure** of a protein refers to those macromolecules with multiple polypeptide chains or subunits. 
+The primary structure of a protein drives the folding and intramolecular bonding of the linear amino acid chain, which ultimately determines the protein's unique three-dimensional shape. Amino acids in neighboring regions of the protein chain interact with each other and cause certain patterns of folding to occur. Known as alpha helices and beta sheets, these stable folding patterns make up the **secondary structure** of a protein. Most proteins contain multiple helices and sheets, in addition to other less common patterns. The ensemble of formations and folds in a single linear chain of amino acids — sometimes called a **polypeptide** — constitutes the **tertiary structure** of a protein. Finally, the **quaternary structure** of a protein refers to those macromolecules with multiple polypeptide chains or subunits. 
 
 ![Protein Folding]({{'/assets/img/protein-folding.svg'|relative_url}})
 *Complex 3D shapes emerge from a string of amino acids. Source: DeepMind website*
