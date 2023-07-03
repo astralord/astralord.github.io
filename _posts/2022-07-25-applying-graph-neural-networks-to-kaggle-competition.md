@@ -3,7 +3,7 @@ layout: post
 title: 'Applying Graph Neural Networks to Kaggle Competition'
 date: 2022-07-25 00:00 +0800
 categories: [Graph Neural Networks]
-tags: [graph-neural-networks, kaggle, reinforcement-learning]
+tags: [kaggle, reinforcement learning]
 math: true
 enable_d3: true
 ---

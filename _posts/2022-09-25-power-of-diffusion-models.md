@@ -3,7 +3,7 @@ layout: post
 title: 'Power of Diffusion Models'
 date: 2022-09-25 11:00 +0800
 categories: [Generative AI, Diffusion Models]
-tags: [diffusion-models, jax, clip, ddim, score-based-model, guided-diffusion, dalle-2, imagen, stable-diffusion, latent-diffusion-model]
+tags: [clip, ddim, score-based model, guided diffusion, dall·e 2, imagen, stable diffusion, latent diffusion model, jax]
 math: true
 enable_d3: true
 ---
@@ -1429,8 +1429,6 @@ svg.append('line')
   .style("stroke-width", 1)
   .attr('stroke', 'black');
   
-draw_triangle(svg, 525, 60, 90);
-  
 svg.append('line')
   .attr('x1', 70)
   .attr('y1', 60)
@@ -1439,6 +1437,7 @@ svg.append('line')
   .style("stroke-width", 1)
   .attr('stroke', 'black');
   
+draw_triangle(svg, 525, 60, 90);
 draw_triangle(svg, 75, 40, 270);
   
 svg.append('circle')
