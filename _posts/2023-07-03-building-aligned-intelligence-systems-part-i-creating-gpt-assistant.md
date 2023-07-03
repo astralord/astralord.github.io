@@ -6,7 +6,7 @@ categories: [AI Alignment, Large Language Models]
 tags: [transformer, llm, gpt, chatgpt, rlhf]
 math: true
 enable_d3: true
-published: false
+published: true
 ---
 
 > In recent years, the field of natural language processing has witnessed a remarkable breakthrough with the advent of Large Language Models (LLMs). These models have demonstrated unprecedented performance in a wide range of language tasks, from text generation to question answering. However, the mathematical formulation of these models and the techniques used to fine-tune them for specific tasks can be complex and daunting for many researchers and practitioners. In this post, we will delve into the mathematical underpinnings of LLMs, with a focus on ChatGPT and parameter efficient fine-tuning. We will explore the key concepts and techniques involved in these models, and provide a comprehensive guide to help you understand and apply them in your own research and development. So, whether you're a seasoned NLP expert or just starting out, join us on this journey to unlock the secrets of LLMs and take your NLP skills to the next level.
