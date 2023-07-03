@@ -1561,7 +1561,7 @@ d3.select("#backup_diagram")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "130px")
+  .style("left", "160px")
   .style("top", "15px");
   
 d3.select("#backup_diagram")
@@ -1571,7 +1571,7 @@ d3.select("#backup_diagram")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "340px")
+  .style("left", "355px")
   .style("top", "15px");
   
 d3.select("#backup_diagram")
@@ -1581,7 +1581,7 @@ d3.select("#backup_diagram")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "390px")
+  .style("left", "445px")
   .style("top", "25px");
   
 d3.select("#backup_diagram")
@@ -1698,7 +1698,7 @@ The main advantage of $k_2$ and $k_3$ estimators is the zero probability of gett
 ### GPT chatbot limitations
 
 ![Shoggoth]({{'/assets/img/shoggoth.jpg'|relative_url}})
-*Shoggoth. [Image source](https://thorehusfeldt.com/2023/03/02/reinforcement-learning-using-human-feedback-is-putting-smileys-on-a-shoggoth/)*
+*[Is RLHF just putting smileys on a shoggoth?](https://thorehusfeldt.com/2023/03/02/reinforcement-learning-using-human-feedback-is-putting-smileys-on-a-shoggoth/)*
 
 AI alignment may be difficult and ambiguous to assess. While being powerful tools, GPT assistants can still output harmful or factually inaccurate text without any uncertainty. OpenAI [admits](https://openai.com/blog/chatgpt) that ChatGPT sometimes gives convincing-sounding answers that are incorrect or even complete nonsense. Fixing this issue is a long-term challenge, as:
 
