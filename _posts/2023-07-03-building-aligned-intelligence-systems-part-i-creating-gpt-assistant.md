@@ -56,20 +56,20 @@ $$\mathcal{L}(\phi) = -\mathbb{E}_{x \sim \mathcal{D}}[\log \pi_\phi(x_{k+1} \mi
 
 where $\pi_\phi$ is a language model output. 
 
-Though GPT-1 is pre-trained as an autoregressive language model, transformer's fine-tuning and inference doesn't have to be autoregressive and language model can be further fine-tuned for specialized natural language processing tasks.
+Though GPT-1 was pre-trained as an autoregressive language model, transformer's fine-tuning and inference didn't have to be autoregressive and language model could be further fine-tuned for specialized natural language processing tasks.
 
 ![GPT-1 downstream]({{'/assets/img/gpt-1-downstream.png'|relative_url}})
 *Input transformations for fine-tuning GPT on different tasks.*
 
-The major conclusion from this paper was that it is no longer necessary to develop specific neural network architectures for specific natural language processing tasks. Transfer learning from GPT language model pre-trained with large corpus of text data is already sufficient for specific natural language processing tasks.
+The major conclusion from this paper was that it is no longer necessary to develop specific neural network architectures for specific natural language processing tasks. Transfer learning from GPT language model pre-trained with large corpus of text data was already sufficient for specific natural language processing tasks.
 
 #### Transformer architecture
 
-The process of text generation is the following. During model run, sequence of tokens $x$ first goes through embedding layer:
+The process of text generation with GPT is the following. First, sequence of tokens $x$ goes through embedding layer:
 
 $$h_0 = x W_e + W_p,$$
 
-where $W_e$ is token embedding matrix and $W_p$ is position embedding matrix. Then embedding vectors pass through so-called **transformer**, consisting of multiple transformer blocks (more about it later):
+where $W_e$ is token embedding matrix and $W_p$ is position embedding matrix. Then embedding vectors go through so-called **transformer**, consisting of multiple transformer blocks (more about it later):
 
 $$h_l = \operatorname{Transformer-block}(h_{l-1}) \quad \forall l \in [1, n].$$
 
@@ -284,9 +284,9 @@ gpt_arch_simple();
 </script>
 
 ![](.)
-*Bird-eye view of GPT architecture. Recently other techniques to encode token positions have appeared, such as [Rotary Position Embeddings (RoPE)](https://arxiv.org/pdf/2104.09864.pdf) and [Attention with Linear Biases (ALiBi)](https://arxiv.org/pdf/2108.12409.pdf). They are out of the scope of this post*
+*Simplified view of GPT architecture. Recently other techniques to encode token positions have appeared, such as [Rotary Position Embeddings (RoPE)](https://arxiv.org/pdf/2104.09864.pdf) and [Attention with Linear Biases (ALiBi)](https://arxiv.org/pdf/2108.12409.pdf). They are out of the scope of this post*
 
-The key innovation of GPT was its use of a transformer architecture, which allowed the model to process long sequences of text more efficiently than previous models. This made GPT particularly well-suited for tasks that require generating long, coherent pieces of text, such as writing articles or answering questions. The core of the transformer is a dot product attention operation, which takes as input a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ and outputs
+The key innovation of GPT is its use of a transformer architecture, which allows the model to process long sequences of text efficiently. This makes GPT particularly well-suited for tasks that require generating long, coherent pieces of text, such as writing articles or answering questions. The core of the transformer is a dot product attention operation, which takes as input a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ and outputs
 
 $$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d_k}}  \Big) \cdot \mathbf{V}, $$
 
@@ -1299,7 +1299,7 @@ $$\mathbb{P}(y_i \succ y_j \mid x) = \frac{\exp(r_\theta(x, y_i))}{\exp(r_\theta
 Framing the problem as a balanced binary classification we come up to the negative log-likelihood loss:
 
 $$
-\mathcal{L}(\theta) = -\mathbb{E}_{(x, y_w, y_l) \sim \mathcal{D}}\Big[\frac{1}{\binom{K_x}{2}}\log \sigma (r_\theta(x, y_w) - r_\theta(x, y_l))\Big].
+\mathcal{L}(\theta) = -\mathbb{E}_{(x, y_w, y_l) \sim \mathcal{D}}\bigg[\frac{1}{\binom{K_x}{2}}\log \sigma (r_\theta(x, y_w) - r_\theta(x, y_l))\bigg].
 $$
 
 This way model learns to maximize the difference between rewards for chosen and rewards for rejected answers. At the end of training, the reward model is normalized so that
@@ -1463,7 +1463,7 @@ $$
 \end{aligned}
 $$
 
-where $\pi_\phi^{\operatorname{RL}}$ is the learned RL policy, $\pi^{\operatorname{SFT}}$ is the supervised trained model. The KL-divergence coefficient, $\beta$ controls the strength of the KL penalty. Authors also experimented with mixing the pretraining gradients into the PPO gradients, in order to fix the performance regressions on public NLP datasets. They called these models “PPO-ptx”:
+where $\pi_\phi^{\operatorname{RL}}$ is the learned RL policy, $\pi^{\operatorname{SFT}}$ is the supervised trained model. The KL-divergence coefficient, $\beta$ controls the strength of the KL penalty. InstructGPT authors also experimented with mixing the pretraining gradients into the PPO gradients, in order to fix the performance regressions on public NLP datasets. They called these models “PPO-ptx”:
 
 $$
 \mathcal{J}_{\operatorname{PPO-ptx}}(\phi) = \mathcal{J}_{\operatorname{PPO}}(\phi) + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\operatorname{pretrain}}}[\log\pi_\phi^{\operatorname{RL}}(x)],
@@ -1571,7 +1571,7 @@ d3.select("#backup_diagram")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "355px")
+  .style("left", "360px")
   .style("top", "15px");
   
 d3.select("#backup_diagram")
@@ -1581,7 +1581,7 @@ d3.select("#backup_diagram")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .style("position", "absolute")
-  .style("left", "445px")
+  .style("left", "455px")
   .style("top", "25px");
   
 d3.select("#backup_diagram")
@@ -1636,11 +1636,7 @@ $$\mathcal{L}^{\operatorname{PG}}(\phi) = -\mathbb{E}_t[\log \pi_\phi(y_t \mid s
 
 This way, when $\hat{A}_t$ is positive, meaning that the action agent took resulted in a better than average return, we will increase probabilities of selecting it again in the future. On the other hand, if an advantage was negative, we will reduce the likelihood of selected actions.
 
-However, consider the case of optimizing target policy $\pi_\phi$, when the behaviour policy $\pi_{\phi_{\text{old}}}$ is used for collecting trajectories with $\phi_{\text{old}}$ policy parameters before the update. In an original PPO paper it is stated, that
-
-*While it is appealing to perform multiple steps of optimization on this loss using the same trajectory, doing so is not well-justified, and empirically it often leads to destructively large policy updates.* 
- 
-In other words, we have to impose the constraint which won't allow our new policy to move too far away from an old one. Let $\rho_t(\phi)$ denote the probability ratio between target and behaviour policies:
+However, consider the case of optimizing target policy $\pi_\phi$, when the behaviour policy $\pi_{\phi_{\text{old}}}$ is used for collecting trajectories with $\phi_{\text{old}}$ policy parameters before the update. In an original PPO paper it is stated, that while it is appealing to perform multiple steps of optimization on this loss using the same trajectory, doing so is not well-justified, and empirically it often leads to destructively large policy updates. In other words, we have to impose the constraint which won't allow our new policy to move too far away from an old one. Let $\rho_t(\phi)$ denote the probability ratio between target and behaviour policies:
 
 $$\rho_t(\phi) = \frac{\pi_\phi(y_t \mid x)}{\pi_{\phi_{\operatorname{old}}}(y_t \mid x)},$$
 
@@ -1661,8 +1657,13 @@ $$\mathcal{L}^{\text{CLIP}}(\phi) = -\mathbb{E}_t\Big[\min \big(\rho_t(\phi) \ha
 
 where $\epsilon$ is a **clip ratio** hyperparameter. The first term inside $\min$ function, $\rho_t(\phi) \hat{A}_t$ is a normal policy gradient objective. And the second one is its clipped version, which doesn't allow us to destroy our current policy based on a single estimate, because the value of $\hat{A}_t$ is noisy (as it is based on an output of our network).
 
+
+The total objective is a combination of clipped loss and error term on the value estimation
+
+$$\mathcal{L}(\phi, \theta) = \mathcal{L}^{\text{CLIP}}(\phi) + c\mathcal{L}_V(\theta).$$
+
 ```python
-# model - actor neural net
+# actor - policy neural network
 # params - learnable parameters
 # states[B] - batch of input states
 # token_ids[B] - generated response token indices
@@ -1671,17 +1672,21 @@ where $\epsilon$ is a **clip ratio** hyperparameter. The first term inside $\min
 # eps - clip ratio, usually around 0.2
 
 @jax.jit
-def actor_loss(model, params, states, token_ids, advantages, logp_old, eps=0.2)
-	logp_dist = model.apply(params, states)
-	logp = jnp.stack([lp[y] for lp, y in zip(logp_dist, token_ids)])
-	ratio = jnp.exp(logp - logp_old)
-	clip_adv = jnp.clip(ratio, 1 - eps, 1 + eps) * advantages
-	return -jnp.min(ratio * advs, clip_adv)
+def actor_loss(actor, params, states, token_ids, advantages, logp_old, eps=0.2):
+    logp_dist = actor.apply(params, states)
+    logp = jnp.stack([lp[y] for lp, y in zip(logp_dist, token_ids)])
+    ratio = jnp.exp(logp - logp_old)
+    clip_adv = jnp.clip(ratio, 1 - eps, 1 + eps) * advantages
+    return -jnp.min(ratio * advs, clip_adv)
+    
+# critic - value prediction neural network
+# returns[B] - batch of discounted returns
+
+@jax.jit
+def critic_loss(critic, params, states, returns):
+    values = critic.apply(params, states)
+    return (values - returns) ** 2
 ```
-
-The total objective is a combination of clipped loss and error term on the value estimation
-
-$$\mathcal{L}(\phi, \theta) = \mathcal{L}^{\text{CLIP}}(\phi) + c\mathcal{L}_V(\theta).$$
 
 #### Note on KL approximations
 
@@ -1719,6 +1724,7 @@ OpenAI states that one of the biggest open questions is how to design an alignme
 [^GELU]: Authors of original GPT-1 paper were using Gaussian Error Linear Unit (GELU) activation in Feed-Forward layers
 
     $$\operatorname{GELU}(x) = x \Phi(x).$$ 
+
 
 [^AE]: The hat sign means that $\hat{A}_t$ is an estimator of the true advantage, which is:
 
