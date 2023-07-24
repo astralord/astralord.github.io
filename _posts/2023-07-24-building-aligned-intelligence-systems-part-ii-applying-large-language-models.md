@@ -6,7 +6,7 @@ categories: [Generative AI, Large Language Models]
 tags: [prompt engineering, chain-of-thought, tree of thoughts, peft, prompt-tuning, prefix-tuning, lora, ia3, talm, toolformer]
 math: true
 enable_d3: true
-published: false
+published: true
 ---
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
