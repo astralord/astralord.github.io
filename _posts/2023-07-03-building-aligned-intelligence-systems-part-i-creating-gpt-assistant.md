@@ -2,7 +2,7 @@
 layout: post
 title: 'Building Aligned Intelligence System. Part I: Creating GPT Assistant'
 date: 2023-07-03 11:00 +0800
-categories: [AI Alignment, Large Language Models]
+categories: [Generative AI, Large Language Models]
 tags: [transformer, llm, gpt, chatgpt, rlhf]
 math: true
 enable_d3: true
@@ -67,15 +67,15 @@ The major conclusion from this paper was that it is no longer necessary to devel
 
 The process of text generation with GPT is the following. First, sequence of tokens $x$ goes through embedding layer:
 
-$$h_0 = x W_e + W_p,$$
+$$h_0 = x \mathbf{W_e} + \mathbf{W_p},$$
 
-where $W_e$ is token embedding matrix and $W_p$ is position embedding matrix. Then embedding vectors go through so-called **transformer**, consisting of multiple transformer blocks (more about it later):
+where $\mathbf{W_e}$ and $\mathbf{W_p}$ are token and position embedding matrices respectively. Then embedding vectors go through so-called **transformer**, consisting of multiple transformer blocks (more about it later):
 
 $$h_l = \operatorname{Transformer-block}(h_{l-1}) \quad \forall l \in [1, n].$$
 
 And finally we get the token output distribution by passing $h_n$ through unembedding layer and softmax function: 
 
-$$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_n W_e^T).$$
+$$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_n \mathbf{W_e}^T).$$
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
@@ -286,7 +286,7 @@ gpt_arch_simple();
 ![](.)
 *Simplified view of GPT architecture. Recently other techniques to encode token positions have appeared, such as [Rotary Position Embeddings (RoPE)](https://arxiv.org/pdf/2104.09864.pdf) and [Attention with Linear Biases (ALiBi)](https://arxiv.org/pdf/2108.12409.pdf). They are out of the scope of this post*
 
-The key innovation of GPT is its use of a transformer architecture, which allows the model to process long sequences of text efficiently. This makes GPT particularly well-suited for tasks that require generating long, coherent pieces of text, such as writing articles or answering questions. The core of the transformer is a dot product attention operation, which takes as input a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ and outputs
+The key innovation of GPT is its use of a transformer architecture, which allows the model to process long sequences of text efficiently. This makes GPT particularly well-suited for tasks that require generating long, coherent pieces of text, such as writing articles or answering questions. The core of the transformer is a **dot product attention** operation, which takes as input a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ and outputs
 
 $$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d_k}}  \Big) \cdot \mathbf{V}, $$
 
@@ -302,7 +302,7 @@ where
 
 $$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_i^W, \mathbf{VW}_i^V).$$
 
-We'll refer to this as **multi-head attention layer** with the learnable parameters $W^Q_{1 \dots h}, W^K_{1 \dots h}, W^V_{1 \dots h}$ and $W^O$. The output is added to the original input using a residual connection, and we apply a consecutive layer normalization on the sum.
+We'll refer to this as **multi-head attention layer** with the learnable parameters $\mathbf{W}^Q_{1 \dots h}, \mathbf{W}^K_{1 \dots h}, \mathbf{W}^V_{1 \dots h}$ and $\mathbf{W}^O$. The output is added to the original input using a residual connection, and we apply a consecutive layer normalization on the sum.
 
 Transformer is basically a stack of $N$ identical blocks with multi-head attention. In addition to attention sub-layers, each block contains a fully connected feed-forward network, which is applied to each position separately and identically. This consists of two linear transformations with a nonlinear function in between, e.g. ReLU[^GELU]:
 
@@ -1634,7 +1634,7 @@ To train actor network vanilla policy gradient loss can be used:
 
 $$\mathcal{L}^{\operatorname{PG}}(\phi) = -\mathbb{E}_t[\log \pi_\phi(y_t \mid s_t) \hat{A}_t].$$
 
-This way, when $\hat{A}_t$ is positive, meaning that the action agent took resulted in a better than average return, we will increase probabilities of selecting it again in the future. On the other hand, if an advantage was negative, we will reduce the likelihood of selected actions.
+This way, when $\hat{A}_t$ is positive, meaning that the action agent took resulted in a better than average return, we increase the probability of selecting it again in the future. On the other hand, if an advantage is negative, we reduce the likelihood of selected action.
 
 However, consider the case of optimizing target policy $\pi_\phi$, when the behaviour policy $\pi_{\phi_{\text{old}}}$ is used for collecting trajectories with $\phi_{\text{old}}$ policy parameters before the update. In an original PPO paper it is stated, that while it is appealing to perform multiple steps of optimization on this loss using the same trajectory, doing so is not well-justified, and empirically it often leads to destructively large policy updates. In other words, we have to impose the constraint which won't allow our new policy to move too far away from an old one. Let $\rho_t(\phi)$ denote the probability ratio between target and behaviour policies:
 
