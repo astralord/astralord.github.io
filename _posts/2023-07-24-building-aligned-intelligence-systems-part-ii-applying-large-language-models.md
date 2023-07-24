@@ -260,25 +260,22 @@ In [previous part](https://astralord.github.io/posts/building-aligned-intelligen
 
 *Standard few-shot example:*
 
-<pre>
-<b>Q</b>: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can
+<pre><code><b>Q</b>: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can
 has 3 tennis balls. How many tennis balls does he have now?
 <b>A</b>: The answer is 11.
 
 <b>Q</b>: A juggler can juggle 16 balls. Half of the balls are golf balls, and half 
 of the golf balls are blue. How many blue golf balls are there?
 <b>A</b>:
-</pre>
-<pre>
-The answer is 8.
-</pre>
+</code></pre>
+<pre><code>The answer is 8.
+</code></pre>
 
 A technique known as **chain-of-thought (CoT)** introduced in [Wei et al. (2022)](https://arxiv.org/pdf/2201.11903.pdf) is to prompt the model to explain step-by-step how it arrives at an answer.
 
 *CoT few-shot example:*
 
-<pre>
-<b>Q</b>: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can
+<pre><code><b>Q</b>: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can
 has 3 tennis balls. How many tennis balls does he have now?
 <b>A</b>: <span style="color:Salmon">Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 
 5 + 6 = 11.</span> The answer is 11.
@@ -286,12 +283,12 @@ has 3 tennis balls. How many tennis balls does he have now?
 <b>Q</b>: A juggler can juggle 16 balls. Half of the balls are golf balls, and half 
 of the golf balls are blue. How many blue golf balls are there?
 <b>A</b>:
-</pre>
-<pre>
+</code></pre>
+<pre><code>
 The juggler can juggle 16 balls. Half of the balls are golf balls. So there are 
 16 / 2 = 8 golf balls. Half of the golf balls are blue. So there are 8 / 2 = 4
 blue golf balls. The answer is 4.
-</pre>
+</code></pre>
 
 Tests with [PaLM 540B](https://ai.googleblog.com/2022/04/pathways-language-model-palm-scaling-to.html) on [GSM8K](https://paperswithcode.com/dataset/gsm8k) benchmark have shown that chain-of-thought outperforms few-shot prompting by a large margin: 57% solving rate on math problems, compared to near 18% with standard prompting. In addition to math problems, CoT also lifted performance on questions related to sports understanding, coin flip tracking, and last letter concatenation.
 
@@ -299,16 +296,16 @@ CoT enables complex reasoning capabilities, but it comes with a price: the incre
 
 *Zero-shot CoT example:*
 
-<pre>
+<pre><code>
 <b>Q</b>: A juggler can juggle 16 balls. Half of the balls are golf balls, and half 
 of the golf balls are blue. How many blue golf balls are there?
 <b>A</b>: Let’s think step by step.
-</pre>
-<pre>
+</code></pre>
+<pre><code>
 There are 16 balls in total. Half of the balls are golf balls. That means that
 there are 8 golf balls. Half of the golf balls are blue. That means that there 
 are 4 blue golf balls.
-</pre>
+</code></pre>
 
 On GSM8K benchmark the "Let's think step by step" trick raised solving rate up to 41% with InstructGPT. Similar magnitudes of improvements have been acheived with PaLM 540B as well. At the same time, while this trick works on math problems, it's not effective in general. The authors found that it was most helpful for multi-step arithmetic problems, symbolic reasoning problems, strategy problems, and other reasoning problems. It didn't help with simple math problems or common sense questions, and presumably wouldn't help with many other non-reasoning tasks either.
 
@@ -811,7 +808,7 @@ $$h = x\mathbf{W},$$
 
 parameterized with a pretrained weight matrix $\mathbf{W}$, with an additional parameter update $\Delta \mathbf{W}$, which can be decomposed into a product of two low-rank matrices:
 
-$$h \leftarrow h + x \Delta\mathbf{W} = x(\mathbf{W} + \Delta \mathbf{W})=x\mathbf{W}+x\mathbf{W_dW_u}.$$
+$$h \leftarrow h + x \Delta\mathbf{W} = x(\mathbf{W} + \Delta \mathbf{W})=x\mathbf{W}+x\mathbf{W_d W_u}.$$
 
 Here $\mathbf{W}_d \in \mathbb{R}^{d \times r}$ is down-projection, $\mathbf{W}_u \in \mathbb{R}^{r \times k}$ is up-projection and $r \ll \min(d, k)$ is a bottleneck dimension.
 
@@ -1139,7 +1136,7 @@ adapter();
 ![](.)
 *Architecture of the adapter module and its integration with the transformer block.*
 
-<pre>
+<pre><code>
 def transformer_block_with_adapter(x):
     h = self_attention(x)
     <span style="color:Salmon">h = h + ffn(h) # adapter</span>
@@ -1148,7 +1145,7 @@ def transformer_block_with_adapter(x):
     <span style="color:Salmon">h = h + ffn(h) # adapter</span>
     h = layer_norm(x + h)
     return h
-</pre>
+</code></pre>
 
 Adapter tuning is highly parameter-efficient: training with adapters of sizes 0.5-5% of the original model produces strong performance, comparable to full fine-tuning. In addition to that, [Lin et al. (2020)](https://arxiv.org/pdf/2004.03829.pdf) and [Pfeiffer et al. (2021)](https://arxiv.org/pdf/2005.00247.pdf) proposed a more efficient design with the adapter layer applied only after the FFN "Add & Norm" sub-layer, which achieves similar performance as using two adapters per transformer block.
 
@@ -1271,7 +1268,7 @@ prl_adapter();
 
 They also considered scaling adapter output with tunable parameter $s$. Changing $s$ is roughly the same as changing the learning rate for adapter block if we scale the initialization appropriately. Experiments have shown that scaled parallel adapters outperform series adapters and that placing an adapter in parallel to FFN outperforms adapters parallel to multi-head attention. Finally, they propose MAM adapter, which is a combination of scaled parallel adapter for FFN layer and soft prompt.
 
-<pre>
+<pre><code>
 def transformer_block_with_mam(x):
     x = jnp.concatenate([soft_prompt, x])
     h = self_attention(x)
@@ -1280,7 +1277,7 @@ def transformer_block_with_mam(x):
     <span style="color:Salmon">h2 = scale * ffn(x) # MAM adapter</span>
     h = layer_norm(x + h1 + h2)
     return h
-</pre>
+</code></pre>
 
 #### (IA)³
 
@@ -1297,7 +1294,7 @@ where $f$ is a nonlinearity activation function. Authors also experimented with 
 ![IA3]({{'/assets/img/IA3.png'|relative_url}})
 *Diagram of (IA)³ and the loss terms used in the T-Few recipe. Left: (IA)³ introduces the learned vectors $l_k$, $l_v$, and $l_{ff}$ which respectively rescale (via element-wise multiplication, visualized as $\odot$) the keys and values in attention mechanisms and the inner activations in  position-wise feed-forward networks. Right: In addition to a standard cross-entropy loss $L_{LM}$, an unlikelihood loss $L_{UL}$ and length-normalized loss $L_{LN}$ are introduced. Former lowers the probability of incorrect outputs while latter applies a standard softmax cross-entropy loss to length-normalized log-probabilities of all output choices.*
 
-<pre>
+<pre><code>
 def scaled_self_attention(x):
     k, q, v = x @ W_k, x @ W_q, x @ W_v
     k = <span style="color:Salmon">l_k</span> * k
@@ -1316,7 +1313,7 @@ def transformer_block_with_ia3(x):
     h = scaled_ffn(x)
     h = layer_norm(x + h)
     return h
-</pre>
+</code></pre>
 
 (IA)³ adds smaller overhead compared to adapter methods as scale vectors $l_v$ and $l_k$ can be merged into $\mathbf{W}^V$ and $\mathbf{W}^K$ respectively, thus leaving the only overhead from $l_{ff}$. With minimal number of training parameters it achieves comparable results with LoRA and outperforms prompt- and prefix-tuning methods on multiple benchmarks.
 
@@ -1455,21 +1452,21 @@ talm();
 
 TALM is guided to generate a ``tool call`` and ``tool input text`` conditioned on the task input text and invokes a tool’s API by generating a delimiter, such as ``|result``. Whenever this delimiter is detected, the tool API is called and its result appended to the text sequence. TALM then continues to generate the final task output, following ``|output`` token:
 
-<pre>
+<pre><code>
 Input text 
 |<span style="color:SteelBlue"><b>tool-call</b> tool input text 
 |<b>result</b> tool output text</span>
 |<span style="color:#508450"><b>output</b> Output text</span>
-</pre>
+</code></pre>
 
 A weather task example:
 
-<pre>
+<pre><code>
 How hot will it get in NYC today? 
 |<span style="color:SteelBlue"><b>weather</b> lookup region=NYC
 |<b>result</b> precipitation chance: 10, high temp: 20°C, low-temp: 12°C</span>
 |<span style="color:#508450"><b>output</b> Today’s high will be 20°C</span>
-</pre>
+</code></pre>
 
 To train TALM authors propose to iteratively fine-tune model on a dataset of tool use examples. Each round model interacts with a tool, then expands the dataset based on whether a newly added tool can improve the generated outputs. Such technique helps to boost the model performance on knowledge and reasoning tasks drastically.
  
@@ -1478,8 +1475,7 @@ To train TALM authors propose to iteratively fine-tune model on a dataset of too
 **Toolformer** [(Schick et al. 2023)](https://arxiv.org/pdf/2302.04761.pdf) approach is similar to TALM in that they both aimed for LLMs to teach themselves how to use external tools via simple APIs. Toolformer is trained as follows:
 
 - **Sample API calls**. First, we annotate a dataset with API call usage examples. It can be done by prompting a pre-trained LM via few-shot learning. An exemplary prompt to generate API calls: <br>
-<pre>
-<i>Your task is to add calls to a Question Answering API to a piece of text.
+<pre><code><i>Your task is to add calls to a Question Answering API to a piece of text.
 The questions should help you get information required to complete the text. You
 can call the API by writing "[QA(question)]" where "question" is the question you
 want to ask. Here are some examples of API calls:</i>
@@ -1492,10 +1488,12 @@ the Coca-Cola Company.
 a carbonated soft drink manufactured by <b><span style="color:#008bda;background-color:#cce8f7">[QA("Who manufactures Coca-Cola?")]</span></b>
 the Coca-Cola Company.
 <br><b>Input: x</b>
-<b>Output:</b>
-</pre>
+<b>Output:</b></code></pre>
 - **Execute API calls** to obtain the corresponding results. The response for each API call $c_i$ needs to be a single text sequence $r_i$.
-- **Filter annotations** based on whether API calls help model predict future tokens. Let $i$ be the position of the API call $c_i$ in the sequence $(x_1, \dots x_n)$ and let $r_i$ be the response from the API. Let also <br> $$L_i(\mathbf{z}) = \sum_{j=i}^n w_{j-i} \log \pi(x_j \mid z, x_{1:j-1})$$ be a weighted cross-entropy loss with condition $\mathbf{z}$, given as a prefix. Then to decide which API calls are actually helpful, we compare the difference of losses $L_i^- - L_i^+$ to some threshold, where <br> $$L_i^+ = L_i(c_i \rightarrow r_i),$$ $$L_i^- = \min(L_i(\varepsilon), L_i(c_i \rightarrow \varepsilon))$$ and $\varepsilon$ is an empty sequence. Only API calls with $L_i^- - L_i^+$ larger than some threshold are kept. 
+- **Filter annotations** based on whether API calls help model predict future tokens. Let $i$ be the position of the API call $c_i$ in the sequence $(x_1, \dots x_n)$ and let $r_i$ be the response from the API. Let also <br> $$L_i(\mathbf{z}) = \sum_{j=i}^n w_{j-i} \log \pi(x_j \mid z, x_{1:j-1})$$ be a weighted cross-entropy loss with condition $\mathbf{z}$, given as a prefix. Then to decide which API calls are actually helpful, we compare the difference of losses $L_i^- - L_i^+$ to some threshold, where
+$$L_i^+ = L_i(c_i \rightarrow r_i),$$
+$$L_i^- = \min(L_i(\varepsilon), L_i(c_i \rightarrow \varepsilon))$$
+and $\varepsilon$ is an empty sequence. Only API calls with $L_i^- - L_i^+$ larger than some threshold are kept. 
 - **Fine-tune LM on this annotated dataset**. 
 
 ![Toolformer pipeline]({{'/assets/img/toolformer_pipeline.png'|relative_url}})
