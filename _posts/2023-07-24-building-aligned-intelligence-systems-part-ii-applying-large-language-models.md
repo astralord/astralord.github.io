@@ -282,13 +282,10 @@ has 3 tennis balls. How many tennis balls does he have now?
 
 <b>Q</b>: A juggler can juggle 16 balls. Half of the balls are golf balls, and half 
 of the golf balls are blue. How many blue golf balls are there?
-<b>A</b>:
-</code></pre>
-<pre><code>
-The juggler can juggle 16 balls. Half of the balls are golf balls. So there are 
+<b>A</b>:</code></pre>
+<pre><code>The juggler can juggle 16 balls. Half of the balls are golf balls. So there are 
 16 / 2 = 8 golf balls. Half of the golf balls are blue. So there are 8 / 2 = 4
-blue golf balls. The answer is 4.
-</code></pre>
+blue golf balls. The answer is 4.</code></pre>
 
 Tests with [PaLM 540B](https://ai.googleblog.com/2022/04/pathways-language-model-palm-scaling-to.html) on [GSM8K](https://paperswithcode.com/dataset/gsm8k) benchmark have shown that chain-of-thought outperforms few-shot prompting by a large margin: 57% solving rate on math problems, compared to near 18% with standard prompting. In addition to math problems, CoT also lifted performance on questions related to sports understanding, coin flip tracking, and last letter concatenation.
 
@@ -296,16 +293,12 @@ CoT enables complex reasoning capabilities, but it comes with a price: the incre
 
 *Zero-shot CoT example:*
 
-<pre><code>
-<b>Q</b>: A juggler can juggle 16 balls. Half of the balls are golf balls, and half 
+<pre><code><b>Q</b>: A juggler can juggle 16 balls. Half of the balls are golf balls, and half 
 of the golf balls are blue. How many blue golf balls are there?
-<b>A</b>: Let’s think step by step.
-</code></pre>
-<pre><code>
-There are 16 balls in total. Half of the balls are golf balls. That means that
+<b>A</b>: Let’s think step by step.</code></pre>
+<pre><code>There are 16 balls in total. Half of the balls are golf balls. That means that
 there are 8 golf balls. Half of the golf balls are blue. That means that there 
-are 4 blue golf balls.
-</code></pre>
+are 4 blue golf balls.</code></pre>
 
 On GSM8K benchmark the "Let's think step by step" trick raised solving rate up to 41% with InstructGPT. Similar magnitudes of improvements have been acheived with PaLM 540B as well. At the same time, while this trick works on math problems, it's not effective in general. The authors found that it was most helpful for multi-step arithmetic problems, symbolic reasoning problems, strategy problems, and other reasoning problems. It didn't help with simple math problems or common sense questions, and presumably wouldn't help with many other non-reasoning tasks either.
 
@@ -1346,7 +1339,7 @@ This produces $n$ candidate answers $(a)_n$, which can be re-ranked with conditi
 #### TALM
 **Tool Augmented Language Model (TALM)** [Parisi et al. 2022](https://arxiv.org/pdf/2205.12255.pdf) is a LLM augmented with text-to-text API calls. It learns two subtasks at the same time: calling a tool and generating an answer based on tool results.
 
-<div id="talm" class="svg-container" align="center"></div> 
+<div id="talm_svg" class="svg-container" align="center"></div> 
 
 <script>
 
@@ -1371,7 +1364,7 @@ function tool_block(svg, x, y, text, shift) {
 }
 
 function talm() {
-  var svg = d3.select("#talm")
+  var svg = d3.select("#talm_svg")
             .append("svg")
 			  .attr("width", 700)
 			  .attr("height", 131);
