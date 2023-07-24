@@ -812,10 +812,9 @@ $$h \leftarrow h + x \Delta\mathbf{W} = x(\mathbf{W} + \Delta \mathbf{W})=x\math
 
 Here $\mathbf{W}_d \in \mathbb{R}^{d \times r}$ is down-projection, $\mathbf{W}_u \in \mathbb{R}^{r \times k}$ is up-projection and $r \ll \min(d, k)$ is a bottleneck dimension.
 
-<div id="lora" class="svg-container" align="center"></div> 
+<div id="lora_svg" class="svg-container" align="center"></div> 
 
 <script>
-
 function adapter_block(svg, x, y) {
 	svg.append('rect')
 	  .attr('x', x)
@@ -920,7 +919,7 @@ function lora_block(svg, x, y) {
 }
 
 function lora() {
-  var svg = d3.select("#lora")
+  var svg = d3.select("#lora_svg")
             .append("svg")
 			  .attr("width", 400)
 			  .attr("height", 270);
@@ -1017,11 +1016,11 @@ $$h \leftarrow h + f(h\mathbf{W_d})\mathbf{W_u},$$
 
 where $f(\cdot)$ is a nonlinear activation function, e.g. ReLU.
 
-<div id="adapter" class="svg-container" align="center"></div> 
+<div id="adapter_svg" class="svg-container" align="center"></div> 
 
 <script>
 function adapter() {
-  var svg = d3.select("#adapter")
+  var svg = d3.select("#adapter_svg")
             .append("svg")
 			  .attr("width", 400)
 			  .attr("height", 400);
@@ -1136,16 +1135,16 @@ adapter();
 ![](.)
 *Architecture of the adapter module and its integration with the transformer block.*
 
-<pre><code>
+```python
 def transformer_block_with_adapter(x):
     h = self_attention(x)
-    <span style="color:Salmon">h = h + ffn(h) # adapter</span>
+    h = h + ffn(h) # adapter
     x = layer_norm(x + h)
     h = ffn(x) # transformer FFN
-    <span style="color:Salmon">h = h + ffn(h) # adapter</span>
+    h = h + ffn(h) # adapter
     h = layer_norm(x + h)
     return h
-</code></pre>
+```
 
 Adapter tuning is highly parameter-efficient: training with adapters of sizes 0.5-5% of the original model produces strong performance, comparable to full fine-tuning. In addition to that, [Lin et al. (2020)](https://arxiv.org/pdf/2004.03829.pdf) and [Pfeiffer et al. (2021)](https://arxiv.org/pdf/2005.00247.pdf) proposed a more efficient design with the adapter layer applied only after the FFN "Add & Norm" sub-layer, which achieves similar performance as using two adapters per transformer block.
 
@@ -1268,16 +1267,16 @@ prl_adapter();
 
 They also considered scaling adapter output with tunable parameter $s$. Changing $s$ is roughly the same as changing the learning rate for adapter block if we scale the initialization appropriately. Experiments have shown that scaled parallel adapters outperform series adapters and that placing an adapter in parallel to FFN outperforms adapters parallel to multi-head attention. Finally, they propose MAM adapter, which is a combination of scaled parallel adapter for FFN layer and soft prompt.
 
-<pre><code>
+```python
 def transformer_block_with_mam(x):
     x = jnp.concatenate([soft_prompt, x])
     h = self_attention(x)
     x = layer_norm(x + h)
     h1 = ffn(x) # transformer FFN
-    <span style="color:Salmon">h2 = scale * ffn(x) # MAM adapter</span>
+    h2 = scale * ffn(x) # MAM adapter
     h = layer_norm(x + h1 + h2)
     return h
-</code></pre>
+```
 
 #### (IA)³
 
@@ -1294,16 +1293,16 @@ where $f$ is a nonlinearity activation function. Authors also experimented with 
 ![IA3]({{'/assets/img/IA3.png'|relative_url}})
 *Diagram of (IA)³ and the loss terms used in the T-Few recipe. Left: (IA)³ introduces the learned vectors $l_k$, $l_v$, and $l_{ff}$ which respectively rescale (via element-wise multiplication, visualized as $\odot$) the keys and values in attention mechanisms and the inner activations in  position-wise feed-forward networks. Right: In addition to a standard cross-entropy loss $L_{LM}$, an unlikelihood loss $L_{UL}$ and length-normalized loss $L_{LN}$ are introduced. Former lowers the probability of incorrect outputs while latter applies a standard softmax cross-entropy loss to length-normalized log-probabilities of all output choices.*
 
-<pre><code>
+```python
 def scaled_self_attention(x):
     k, q, v = x @ W_k, x @ W_q, x @ W_v
-    k = <span style="color:Salmon">l_k</span> * k
-    v = <span style="color:Salmon">l_v</span> * v
+    k = l_k * k
+    v = l_v * v
     return softmax(q @ k.T) @ V
     
 def scaled_ffn(x):
     x = x @ W_1
-    x = <span style="color:Salmon">l_ff</span> * f(x) # f is nonlinear activation
+    x = l_ff * f(x) # f is nonlinear activation
     x = x @ W_2
     return x
 
@@ -1313,7 +1312,7 @@ def transformer_block_with_ia3(x):
     h = scaled_ffn(x)
     h = layer_norm(x + h)
     return h
-</code></pre>
+```
 
 (IA)³ adds smaller overhead compared to adapter methods as scale vectors $l_v$ and $l_k$ can be merged into $\mathbf{W}^V$ and $\mathbf{W}^K$ respectively, thus leaving the only overhead from $l_{ff}$. With minimal number of training parameters it achieves comparable results with LoRA and outperforms prompt- and prefix-tuning methods on multiple benchmarks.
 
@@ -1452,8 +1451,7 @@ talm();
 
 TALM is guided to generate a ``tool call`` and ``tool input text`` conditioned on the task input text and invokes a tool’s API by generating a delimiter, such as ``|result``. Whenever this delimiter is detected, the tool API is called and its result appended to the text sequence. TALM then continues to generate the final task output, following ``|output`` token:
 
-<pre><code>
-Input text 
+<pre><code>Input text 
 |<span style="color:SteelBlue"><b>tool-call</b> tool input text 
 |<b>result</b> tool output text</span>
 |<span style="color:#508450"><b>output</b> Output text</span>
@@ -1461,8 +1459,7 @@ Input text
 
 A weather task example:
 
-<pre><code>
-How hot will it get in NYC today? 
+<pre><code>How hot will it get in NYC today? 
 |<span style="color:SteelBlue"><b>weather</b> lookup region=NYC
 |<b>result</b> precipitation chance: 10, high temp: 20°C, low-temp: 12°C</span>
 |<span style="color:#508450"><b>output</b> Today’s high will be 20°C</span>
@@ -1474,7 +1471,8 @@ To train TALM authors propose to iteratively fine-tune model on a dataset of too
 
 **Toolformer** [(Schick et al. 2023)](https://arxiv.org/pdf/2302.04761.pdf) approach is similar to TALM in that they both aimed for LLMs to teach themselves how to use external tools via simple APIs. Toolformer is trained as follows:
 
-- **Sample API calls**. First, we annotate a dataset with API call usage examples. It can be done by prompting a pre-trained LM via few-shot learning. An exemplary prompt to generate API calls: <br>
+- **Sample API calls**. First, we annotate a dataset with API call usage examples. It can be done by prompting a pre-trained LM via few-shot learning. An exemplary prompt to generate API calls:
+
 <pre><code><i>Your task is to add calls to a Question Answering API to a piece of text.
 The questions should help you get information required to complete the text. You
 can call the API by writing "[QA(question)]" where "question" is the question you
@@ -1490,9 +1488,17 @@ the Coca-Cola Company.
 <br><b>Input: x</b>
 <b>Output:</b></code></pre>
 - **Execute API calls** to obtain the corresponding results. The response for each API call $c_i$ needs to be a single text sequence $r_i$.
-- **Filter annotations** based on whether API calls help model predict future tokens. Let $i$ be the position of the API call $c_i$ in the sequence $(x_1, \dots x_n)$ and let $r_i$ be the response from the API. Let also <br> $$L_i(\mathbf{z}) = \sum_{j=i}^n w_{j-i} \log \pi(x_j \mid z, x_{1:j-1})$$ be a weighted cross-entropy loss with condition $\mathbf{z}$, given as a prefix. Then to decide which API calls are actually helpful, we compare the difference of losses $L_i^- - L_i^+$ to some threshold, where
-$$L_i^+ = L_i(c_i \rightarrow r_i),$$
-$$L_i^- = \min(L_i(\varepsilon), L_i(c_i \rightarrow \varepsilon))$$
+- **Filter annotations** based on whether API calls help model predict future tokens. Let $i$ be the position of the API call $c_i$ in the sequence $(x_1, \dots x_n)$ and let $r_i$ be the response from the API. Let also 
+
+$$L_i(\mathbf{z}) = \sum_{j=i}^n w_{j-i} \log \pi(x_j \mid z, x_{1:j-1})$$ 
+
+be a weighted cross-entropy loss with condition $\mathbf{z}$, given as a prefix. Then to decide which API calls are actually helpful, we compare the difference of losses $L_i^- - L_i^+$ to some threshold, where
+
+$$\begin{aligned}
+L_i^+ &= L_i(c_i \rightarrow r_i),\\
+L_i^- &= \min(L_i(\varepsilon), L_i(c_i \rightarrow \varepsilon))
+\end{aligned}$$
+
 and $\varepsilon$ is an empty sequence. Only API calls with $L_i^- - L_i^+$ larger than some threshold are kept. 
 - **Fine-tune LM on this annotated dataset**. 
 
