@@ -65,17 +65,17 @@ The major conclusion from this paper was that it is no longer necessary to devel
 
 #### Transformer architecture
 
-The process of text generation with GPT is the following. First, sequence of tokens $x$ goes through embedding layer:
+The process of text generation with GPT is the following. First, embedding layer takes sequence of tokens $x$ and outputs
 
 $$h_0 = x \mathbf{W_e} + \mathbf{W_p},$$
 
-where $\mathbf{W_e}$ and $\mathbf{W_p}$ are token and position embedding matrices respectively. Then embedding vectors go through so-called **transformer**, consisting of multiple transformer blocks (more about it later):
+where $\mathbf{W_e}$ and $\mathbf{W_p}$ are token and position embedding matrices respectively. Then these embedding vectors are processed by so-called **transformer**, consisting of multiple transformer blocks (more about it later):
 
-$$h_l = \operatorname{Transformer-block}(h_{l-1}) \quad \forall l \in [1, n].$$
+$$h_n = \operatorname{Transformer-block}(h_{n-1}) \quad n = 1, \dots, N.$$
 
-And finally we get the token output distribution by passing $h_n$ through unembedding layer and softmax function: 
+And finally we get the token output distribution by taking $h_N$ and run it through unembedding layer and softmax function: 
 
-$$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_n \mathbf{W_e}^T).$$
+$$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_N \mathbf{W_e}^T).$$
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
@@ -286,23 +286,23 @@ gpt_arch_simple();
 ![](.)
 *Simplified view of GPT architecture. Recently other techniques to encode token positions have appeared, such as [Rotary Position Embeddings (RoPE)](https://arxiv.org/pdf/2104.09864.pdf) and [Attention with Linear Biases (ALiBi)](https://arxiv.org/pdf/2108.12409.pdf). They are out of the scope of this post*
 
-The key innovation of GPT is its use of a transformer architecture, which allows the model to process long sequences of text efficiently. This makes GPT particularly well-suited for tasks that require generating long, coherent pieces of text, such as writing articles or answering questions. The core of the transformer is a **dot product attention** operation, which takes as input a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ and outputs
+The key innovation of GPT is its use of a transformer architecture, which allows the model to process long sequences of text efficiently. This makes GPT particularly well-suited for tasks that require generating long, coherent pieces of text, such as writing articles or answering questions. The core of the transformer is a **scaled dot product attention** operation, which takes as input a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ and outputs
 
-$$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d_k}}  \Big) \cdot \mathbf{V}, $$
+$$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d}}  \Big) \cdot \mathbf{V}, $$
 
-where $d_k$ is a hidden dimensionality for queries and keys. The goal is to have an attention mechanism with which any element in a sequence can attend to any other while still being efficient to compute.
+where $d$ is a hidden dimensionality for queries and keys. The goal is to have an attention mechanism with which any element in a sequence can attend to any other while still being efficient to compute.
 
-Transformer architecture can be one of two types: **encoder** or **decoder**. The only difference between the two is whether mask is applied to attention layer. This modification in decoder architecture is crucial for next-token-prediction task, because it prevents positions from attending to subsequent positions attention layer modified by mask. Combined with the fact that the output embeddings are offset by one position, masking ensures that the predictions for position $i$ can depend only on the known outputs at positions less than $i$. It can be implemented inside of scaled dot-product attention by masking out (setting to $-\infty$) all values in the input of the softmax which correspond to illegal connections.
+Transformer architecture can be one of two types: **encoder** or **decoder**. The only difference between the two is whether mask is applied to attention layer. This modification in decoder architecture is crucial for next-token-prediction task, because it prevents positions from attending to subsequent positions attention layer modified by mask. Combined with the fact that the output embeddings are offset by one position, masking ensures that the predictions for position $i$ can depend only on the known outputs at positions less than $i$. It can be implemented inside of scaled dot-product attention by masking out (setting to $-\infty$) all values in the $\mathbf{QK}^T$ matrix which correspond to illegal connections.
 
-The scaled dot product attention allows a network to attend over a sequence. However, often there are multiple different aspects a sequence element wants to attend to, and a single weighted average is not a good option for it. This is the attention mechanism is extended to multiple heads, i.e. multiple different query-key-value triplets on the same features. Specifically, given a query, key, and value matrix, we transform those into $h$ sub-queries, sub-keys, and sub-values, which we pass through the scaled dot product attention independently. Afterward, we concatenate the heads and combine them with a final weight matrix. Mathematically, we can express this operation as:
+The scaled dot product attention allows a network to attend over a sequence. However, often there are multiple different aspects a sequence element wants to attend to, and a single weighted average is not a good option for it. The attention mechanism can be extended to multiple heads, i.e. multiple different query-key-value triplets on the same features. Specifically, given $\mathbf{Q}$, $\mathbf{K}$, and $\mathbf{V}$ matrices, we transform those into $k$ sub-queries, sub-keys, and sub-values, respectively, which we run through the scaled dot product attention independently. Afterward, we concatenate the heads and combine them with a final weight matrix $\mathbf{W}^O$. Mathematically, we can express this operation as:
  
-$$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=\operatorname{Concat}(\operatorname{head}_1, \dots, \operatorname{head}_h) \cdot \mathbf{W}^O,$$
+$$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=[\operatorname{head}_1; \dots; \operatorname{head}_k] \cdot \mathbf{W}^O,$$
 
 where
 
-$$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_i^W, \mathbf{VW}_i^V).$$
+$$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_i^W, \mathbf{VW}_i^V), \quad i = 1, \dots, k.$$
 
-We'll refer to this as **multi-head attention layer** with the learnable parameters $\mathbf{W}^Q_{1 \dots h}, \mathbf{W}^K_{1 \dots h}, \mathbf{W}^V_{1 \dots h}$ and $\mathbf{W}^O$. The output is added to the original input using a residual connection, and we apply a consecutive layer normalization on the sum.
+We'll refer to this as **multi-head attention layer** with the learnable parameters $\mathbf{W}^Q_{1 \dots k}, \mathbf{W}^K_{1 \dots k}, \mathbf{W}^V_{1 \dots k}$ and $\mathbf{W}^O$ (also called **multi-head self-attention** for $\mathbf{Q} = \mathbf{K} = \mathbf{V}$). Such mechanism allows the model to jointly attend to information from different representation subspaces at different positions. The output of multi-head attention is added to the original input using a residual connection, and we apply a consecutive layer normalization on the sum.
 
 Transformer is basically a stack of $N$ identical blocks with multi-head attention. In addition to attention sub-layers, each block contains a fully connected feed-forward network, which is applied to each position separately and identically. This consists of two linear transformations with a nonlinear function in between, e.g. ReLU[^GELU]:
 
@@ -1663,6 +1663,9 @@ The total objective is a combination of clipped loss and error term on the value
 $$\mathcal{L}(\phi, \theta) = \mathcal{L}^{\text{CLIP}}(\phi) + c\mathcal{L}_V(\theta).$$
 
 ```python
+import jax
+import jax.numpy as jnp
+
 # actor - policy neural network
 # params - learnable parameters
 # states[B] - batch of input states
@@ -1677,7 +1680,7 @@ def actor_loss(actor, params, states, token_ids, advantages, logp_old, eps=0.2):
     logp = jnp.stack([lp[y] for lp, y in zip(logp_dist, token_ids)])
     ratio = jnp.exp(logp - logp_old)
     clip_adv = jnp.clip(ratio, 1 - eps, 1 + eps) * advantages
-    return -jnp.min(ratio * advs, clip_adv)
+    return -jnp.min(ratio * advantages, clip_adv)
     
 # critic - value prediction neural network
 # returns[B] - batch of discounted returns
@@ -1698,7 +1701,7 @@ John Schulman, author of PPO algorithm, proposes different estimators of KL-dive
 | $k_2$|$\frac{1}{2}(\log \kappa)^2$ | Low | Low |
 | $k_3$|$(\kappa-1)-\log \kappa$ | $0$ | Low |
 
-The main advantage of $k_2$ and $k_3$ estimators is the zero probability of getting negative values. Although, with larger true KL-divergence between $\pi$ and $\pi'$ we can observe that bias for $k_2$ is increasing as well as variance for $k_3$. One can also use $\min(k_2, k_3)$ as an estimator, which is biased, but has the lowest variance.
+The main advantage of $k_2$ and $k_3$ estimators is the zero probability of getting negative values. Although, with true KL-divergence between $\pi$ and $\pi'$ getting larger we can observe that bias for $k_2$ and variance for $k_3$ are increasing as well. One can also use $\min(k_2, k_3)$ as an estimator, which is biased, but is the most stable.
 
 ### GPT chatbot limitations
 
