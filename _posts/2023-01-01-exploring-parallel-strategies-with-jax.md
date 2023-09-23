@@ -544,7 +544,7 @@ x = jax.device_put(x, sharding.replicate())
 w = jax.device_put(w, sharding.reshape(1, n_devices))
 ```
 
-We can see that the amount memory transfer from each device is $O(dh)$ for DP versus $O(dn)$ for TP. Thus for DP is a preferable strategy for small networks (e.g. model can fit onto one GPU or at least onto one node), while TP works better with larger models and smaller batches.
+We can see that the amount memory transfer from each device is $O(dh)$ for DP versus $O(dn)$ for TP. Thus DP is a preferable strategy for small networks (e.g. model can fit onto one GPU or at least onto one node), while TP works better with larger models and smaller batches.
 
 TODO: check with https://irhum.github.io/blog/pjit/#partitioning-in-jax
 
