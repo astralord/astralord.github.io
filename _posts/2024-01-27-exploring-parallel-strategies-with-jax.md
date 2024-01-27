@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Exploring Parallel Strategies with Jax'
-date: 2023-01-01 11:00 +0800
+date: 2024-01-27 11:00 +0800
 categories: [ML Engineering]
 tags: [jax, data-parallel, model-parallel, pipeline-paralell, tensor-parallel, mixture-of-experts]
 math: true
@@ -76,12 +76,12 @@ def visualize(tensor, color_map="Set3"):
 visualize(sharded_x)
 ```
 
-![Column-wise shard]({{'/assets/img/8_cpus.png'|relative_url}})
+![Column-wise shard]({{'/assets/img/8_cpus_col.png'|relative_url}})
 *Column-wise sharding of tensor with 8 emulated devices.*
 
 There are various other ways to shard our tensor: we can split it along batch dimension or, even more, arrange our devices in 4x2 mesh and mesh both axes:
 
-![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}})
+![Different sharding]({{'/assets/img/8_bla.png'|relative_url}})
 *Some other ways to shard tensor.*
 
 Another way to place a tensor on devices that we need to look at before moving forward is **tensor replication**. Replicating tensor means that several devices will store their own copies of the whole tensor `x`:
@@ -1521,6 +1521,7 @@ function pipeline_parallel_as_tensor() {
 
 pipeline_parallel_as_tensor();
 </script>
+![]()
 *Pipeline Parallel inference with inter-batch parallelism. White cells represent zero-paddings.*
 
 The extra iterations are equivalent to the bubbles that describe the idle time due to data dependency, although the waiting devices compute on padded data instead of being idle. One can notice that if we split our batch into multiple micro-batches and enable each stage worker to process one micro-batch simultaneously, idle bubbles become much smaller, compared to naive PP. 
@@ -1532,7 +1533,6 @@ def stack_stage_weights(params: list):
     '''
     L = len(params)
     G = jax.local_device_count()
-    assert L % G == 0, f"Number of layers {L} isn't divisible by number of stages {G}"
     stage_layers = L // G
     out_params = []
     for l in range(stage_layers):
@@ -1589,7 +1589,7 @@ def dense_gating(x: jnp.ndarray, gating_weights: jnp.ndarray):
 
 However, this choice raises two problems:
 
-- MoE layer with dense control vector $\mathcal{G}(x)$ requires computation of all $E$ experts, even those whose impact to the output may be negligible. It would be more efficietn if we didn't have to compute $\operatorname{FFN}_i(x)$ when $\mathcal{G}(x)_i=0$.
+- MoE layer with dense control vector $\mathcal{G}(x)$ requires computation of all $E$ experts, even those whose impact to the output may be negligible. It would be more efficient if we didn't have to compute $\operatorname{FFN}_i(x)$ when $\mathcal{G}(x)_i=0$.
 - Self-reinforcing effect: gating network might favor a few strong experts everytime, leaving the rest of the layers redundant.
 
 To overcome these issues we introduce sparsity through $\operatorname{topk}$ function and noise via standard Gaussian variable $\epsilon \sim \mathcal{N}(0, 1)$. The amount of noise per component is controlled by a second trainable weight matrix $\mathbf{W}_{\text{noise}}$. Modified gating function would like like this:
@@ -1780,7 +1780,7 @@ function expert_parallel_dispatch() {
 		1: {0: [3, 0], 1: [2, 0], 2: [3, 1], 3: [2, 1], 4: [0, 0]},
 		2: {0: [3, 0], 1: [0, 0], 2: [0, 1], 3: [3, 1], 4: [2, 0]},
 		3: {0: [1, 0], 1: [0, 0], 2: [2, 0], 3: [2, 1], 4: [1, 1]}
-	}
+	};
 
 	x_start = 85;
 	y_shift = 100;
@@ -2118,6 +2118,7 @@ function expert_parallel_dispatch() {
 
 expert_parallel_dispatch();
 </script>
+![]()
 *A schematic representation of top-1 expert parallel dispatching with data parallel. Number of experts $E$ is set to the number of devices $G$ and capacity $C$ is equal to 2. Any white cell represents zero element. Vectors associated with the first token placed on GPU-1 (initially) are shaded as an example so that the flow of elements in the image can be easily followed. Note that the embedding of this token was dispatched to the last expert by `Gating` and therefore put to the last device accordingly.*
 
 The auxiliary loss $\ell_{\text{aux}}$ is similar to GShard, except that $f_i$ is derived through dense gating function and aggregated over whole batch:
