@@ -30,7 +30,7 @@ os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
 
 With this little trick `jax.devices()` now shows us eight "different" devices:
 
-```python
+```
 [CpuDevice(id=0), CpuDevice(id=1), CpuDevice(id=2), CpuDevice(id=3),
  CpuDevice(id=4), CpuDevice(id=5), CpuDevice(id=6), CpuDevice(id=7)]
 ```
@@ -81,7 +81,7 @@ visualize(sharded_x)
 
 There are various other ways to shard our tensor: we can split it along batch dimension or, even more, arrange our devices in 4x2 mesh and mesh both axes:
 
-![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}}){: .w-30}
+![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}}){: .w-25}
 *Some other ways to shard tensor.*
 
 Another way to place a tensor on devices that we need to look at before moving forward is **tensor replication**. Replicating tensor means that several devices will store their own copies of the whole tensor `x`:
@@ -91,17 +91,17 @@ replicated_x = jax.device_put(x, sharding.replicate(0))
 visualize(replicated_x, color_map="Pastel2_r")
 ```
 
-![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}}){: .w-20}
+![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}}){: .w-25}
 *Device placement for replicated tensor $x$.*
 
 One can also combine sharding with replicating:
 
-```
+```python
 combined_x = jax.device_put(x, sharding.reshape(2, G // 2).replicate(0))
 visualize(combined_x)
 ```
 
-![Replication with sharding]({{'/assets/img/8_combined.png'|relative_url}}){: .w-20}
+![Replication with sharding]({{'/assets/img/8_combined.png'|relative_url}}){: .w-25}
 *Device placement for sharded and replicated tensor $x$.*
 
 We will follow the similar way for visualization
