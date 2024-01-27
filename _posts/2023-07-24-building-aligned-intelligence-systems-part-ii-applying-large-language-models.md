@@ -637,7 +637,7 @@ def prompt_tuned_model(token_ids):
     return model(x)
 ```
 
-Prompt-tuning only requires storing a small task-specific prompt for each task, and enables mixed-task inference using the original pretrained model. Experiments have shown that for large models prompt-tuning produces competitive results as model fine-tuning and its efficiency grows with model size. Also with learned task-specific parameters, prompt-tuning achieves better resilience on domain shift problems. Authors also showed that prompt ensembling of multiple prompts beats or matches individual prompts.
+Prompt-tuning only requires storing a small task-specific prompt for each task, and enables mixed-task inference using the original pretrained model. Experiments have shown that for large models prompt-tuning produces competitive results as model fine-tuning and its efficiency grows with model size. Also with learned task-specific parameters, prompt-tuning achieves better resilience on domain shift problems. In addition, authors showed that prompt ensembling of multiple prompts beats or matches singular prompts.
 
 Overall soft prompts are incredibly parameter-efficient at the cost of inference overhead (given the quadratic complexity of transformer) and more applicable to larger models (> 10B).
 
