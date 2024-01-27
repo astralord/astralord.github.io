@@ -76,12 +76,12 @@ def visualize(tensor, color_map="Set3"):
 visualize(sharded_x)
 ```
 
-![Column-wise shard]({{'/assets/img/8_cpus_col.png'|relative_url}})
+![Column-wise shard]({{'/assets/img/8_cpus_col.png'|relative_url}}){: .w-50}
 *Column-wise sharding of tensor with 8 emulated devices.*
 
 There are various other ways to shard our tensor: we can split it along batch dimension or, even more, arrange our devices in 4x2 mesh and mesh both axes:
 
-![Different sharding]({{'/assets/img/8_bla.png'|relative_url}})
+![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}}){: .w-50}
 *Some other ways to shard tensor.*
 
 Another way to place a tensor on devices that we need to look at before moving forward is **tensor replication**. Replicating tensor means that several devices will store their own copies of the whole tensor `x`:
@@ -91,7 +91,7 @@ replicated_x = jax.device_put(x, sharding.replicate(0))
 visualize(replicated_x, color_map="Pastel2_r")
 ```
 
-![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}})
+![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}}){: .w-50}
 *Device placement for replicated tensor $x$.*
 
 One can also combine sharding with replicating:
@@ -101,7 +101,7 @@ combined_x = jax.device_put(x, sharding.reshape(2, G // 2).replicate(0))
 visualize(combined_x)
 ```
 
-![Replication with sharding]({{'/assets/img/8_combined.png'|relative_url}})
+![Replication with sharding]({{'/assets/img/8_combined.png'|relative_url}}){: .w-50}
 *Device placement for sharded and replicated tensor $x$.*
 
 We will follow the similar way for visualization
