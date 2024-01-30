@@ -57,7 +57,7 @@ from jax.sharding import PositionalSharding
 sharding = PositionalSharding(jax.devices())
 ```
 
-We can split our tensor `x` multiple ways. For example, we can split it column-wise along embedding dimension:
+We can split our tensor `x` in multiple ways. For example, we can split it column-wise along embedding dimension:
 
 ```python
 G = jax.local_device_count()
@@ -81,7 +81,7 @@ visualize(sharded_x)
 
 There are various other ways to shard our tensor: we can split it along batch dimension or, even more, arrange our devices in 4x2 mesh and mesh both axes:
 
-![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}}){: .w-25}
+![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}}){: .w-35}
 *Some other ways to shard tensor.*
 
 Another way to place a tensor on devices that we need to look at before moving forward is **tensor replication**. Replicating tensor means that several devices will store their own copies of the whole tensor `x`:
@@ -91,7 +91,7 @@ replicated_x = jax.device_put(x, sharding.replicate(0))
 visualize(replicated_x, color_map="Pastel2_r")
 ```
 
-![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}}){: .w-25}
+![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}}){: .w-45}
 *Device placement for replicated tensor $x$.*
 
 One can also combine sharding with replicating:
@@ -527,7 +527,6 @@ function legend() {
 
 legend();
 </script>
-
 ![](.)
 *Visualization of tensors locations. On the left side - tensor is split column-wise by 4 subtensors, each located on its designated device. On the right side - tensor is copied on 2 devices.*
 
@@ -613,7 +612,7 @@ function data_parallel() {
 	var svg = d3.select("#data_prll")
 				  .append("svg")
 				  .attr("width", 700)
-				  .attr("height", 450);
+				  .attr("height", 455);
 	     
 	x_start = 50;
 	y_shift = 100;
@@ -765,7 +764,6 @@ function data_parallel() {
 
 data_parallel();
 </script>
-
 ![](.)
 *Data Parallel strategy with 4 devices. Embedding and hidden dimensions $d$ and $h$ are equal to 2 and 4 respectively. Each device runs computations with its own separate shard of size $S$ equal to 5*
 
@@ -1154,7 +1152,6 @@ function tensor_parallel() {
 
 tensor_parallel();
 </script>
-
 ![](.)
 *Tensor Parallel strategy with batch size $B$ set to 5. Each device stores its own part of model weights. Activations are aggregated after each FFN layer.*
 
@@ -1211,7 +1208,7 @@ def train_with_hybrid_parallel(dataset, params, num_epochs, DP, TP):
 
 #### Pipeline Parallelism
 
-Suppose our neural network, a stack of $L$ FFN layers, is so deep, that it doesn't fit on a single device. Such scenario is practical because a common way to scale up models is to stack layers of the same pattern. It might feel straightforward for us to split our model by layer and that is what **Pipeline Parallel (PP)** strategy does. It splits up the model weights vertically, so that only a small group of consecutive layers of the model are placed on a single device. 
+Suppose our neural network, a stack of $L$ FFN layers, is so deep, that it doesn't fit on a single device. This scenario is practical because a common way to scale up models is to stack layers of the same pattern. It might feel straightforward for us to split our model by layer and that is what **Pipeline Parallel (PP)** strategy does. It splits up the model weights vertically, so that only a small group of consecutive layers of the model are placed on a single device. 
 
 <div id="pp_prll" class="svg-container" align="center"></div> 
 
@@ -1430,11 +1427,12 @@ function pipeline_parallel() {
 
 pipeline_parallel();
 </script>
+![](.)
 *Naive Pipeline Parallel strategy. Each stage represent forward/backward pass through its own sequence of $\frac{L}{G}$ FFN layers on each device. It can be seen that running every data batch through multiple workers with sequential dependencies leads to large idle bubbles and severe under-utilization of computation resources.*
 
 To implement naive PP strategy in Jax we just have to place layers to their corresponding devices and whenever the data goes in each layer it must be switched to the same device.
 
-Clearly, the main disadvantage of such parallelization is that all but one device is idle at any given moment. In addition, at the end of each stage there is a serious communication overhead for transferring data between devices. To reduce idling problem we have to explore other approaches.
+Clearly, the main disadvantage of this type of parallelization is that all but one device is idle at any given moment. In addition, at the end of each stage there is a serious communication overhead for transferring data between devices. To reduce idling problem we have to explore other approaches.
 
 ##### Pipeline Parallel reduced to tensor sharding
 
@@ -1521,7 +1519,7 @@ function pipeline_parallel_as_tensor() {
 
 pipeline_parallel_as_tensor();
 </script>
-![]()
+![](.)
 *Pipeline Parallel inference with inter-batch parallelism. White cells represent zero-paddings.*
 
 The extra iterations are equivalent to the bubbles that describe the idle time due to data dependency, although the waiting devices compute on padded data instead of being idle. One can notice that if we split our batch into multiple micro-batches and enable each stage worker to process one micro-batch simultaneously, idle bubbles become much smaller, compared to naive PP. 
@@ -1568,7 +1566,7 @@ To reduce memory footprint **gradient checkpointing** can be applied, meaning th
 
 ### Expert Parallelism
 
-With **Mixture-of-Experts (MoE)** models, different sub-networks (FFN layers in our case) or so-called "experts" specialize in different parts of the input space. For example, in a language model, some experts may specialize in grammar while others focus on semantic understanding. The key to mixture of experts is having a gating network $\mathcal{G}$ that assigns different parts of each input to the most relevant experts.
+With **Mixture-of-Experts (MoE)** models, different sub-networks (FFN layers in our case) or so-called "experts" specialize in different parts of the input space. For example, in a language model, some experts may specialize in grammar while others focus on semantic understanding. The key to a mixture of experts is having a gating network $\mathcal{G}$ that assigns different parts of each input to the most relevant experts.
 
 During training, only the experts assigned to a given input have their parameters updated. This sparse update allows mixture of experts models to scale to thousands or even tens of thousands of experts. Each expert can be updated in parallel by a different set of accelerators without heavy communication overhead.
 
@@ -1583,8 +1581,8 @@ The simple choice of gating function is to create trainable weight matrix $\math
 $$\mathcal{G}(x)=\operatorname{softmax}(x\mathbf{W}_{\text{G}}).$$
 
 ```python    
-def dense_gating(x: jnp.ndarray, gating_weights: jnp.ndarray):
-    return jax.nn.softmax(x @ gating_weights)
+def dense_gating(x: jnp.ndarray, gate_params: jnp.ndarray):
+    return jax.nn.softmax(x @ gate_params)
 ```
 
 However, this choice raises two problems:
@@ -1627,11 +1625,11 @@ def index_to_mask(index: jnp.ndarray, input_shape: tuple):
     return scatter(zeros, 1, index, True)
 
 def sparse_gating(x: jnp.ndarray, 
-                  gating_weights: jnp.ndarray,  
+                  gate_params: jnp.ndarray,  
                   topk: int, 
                   noise_weights: jnp.ndarray=None,
                   rng: ArrayLike=None):
-    h = x @ gating_weights 
+    h = x @ gate_params 
     if noise_weights is not None:
         assert rng is not None, "Random seed is required to use noisy gating"
         eps = random.normal(rng, h.shape)
@@ -1690,16 +1688,89 @@ where $c$ is a capacity factor. A capacity factor greater than 1.0 creates addit
 
 Let's dive into implementation details and describe step-by-step how to combine Switch layer with Data Parallel strategy.
 
-- Switch Transformer allocates all of their cores to the data partitioning dimension $G$, which will also correspond to the number of experts in the model $E$. For each token per core gating function locally computes assignments to the experts. 
-- The output is a **dispatch mask**, a 4-D binary tensor of shape $[G, S, E, C]$, which is partitioned across the first dimension and determines expert assignment. 
-- This mask is then used to do a gather via matrix multiplication with the partitioned input tensor $x$ of size $[G, S, d]$, resulting in the final tensor of shape $[E, G, C, d]$:
+- Switch Transformer is allocated on $G$ devices, which will also correspond to the number of experts $E$. For each token per device gating function locally computes assignments to the experts. 
 
 ```python
-dispatched_expert_inputs = jnp.einsum("GSEC,GSd->EGCd", dispatch_mask, inputs)
+# Probabilities for each token of what expert it should be sent to.
+# gating_probs shape: [G, S, E]
+gating_probs = jax.nn.softmax(x @ gate_params)
+
+# Get the top−1 expert for each token. 
+# expert_gate is the probability from the gating to top-1 expert
+# expert_index is what expert each token is going to be routed to
+# expert_gate shape: [G, S]
+# expert_index shape: [G, S]
+expert_gate, expert_index = jax.lax.top_k(gating_probs, 1)
+expert_gate, expert_index = expert_gate.squeeze(), expert_index.squeeze()
 ```
 
-- Because each core has its own expert, we do an all-to-all communication of
-size $[E, C, d]$ to now shard the $E$ dimension instead of the $G$-dimension.
+- The output is a **dispatch mask**, a 4-D binary tensor of shape $[G, S, E, C]$, which is partitioned across the first dimension and determines expert assignment. On each device $g$ for each token $s$ 2-D slice of dispatch mask contains at most one non-zero element.
+
+```python
+# expert_mask shape: [G, S, E]
+expert_mask = jax.nn.one_hot(expert_index, num_classes=gating_probs.shape[2])
+    
+# Experts have a fixed capacity C, ensure we do not exceed it. 
+# Construct the batch indices, to each expert, with position in expert
+# make sure that not more that C examples can be routed to each expert.
+position_in_expert = jnp.cumsum(expert_mask, axis=1) * expert_mask
+    
+# Keep only tokens that fit within expert capacity.
+expert_mask_trunc = expert_mask * jnp.less(position_in_expert, expert_capacity)
+expert_mask_flat = jnp.sum(expert_mask_trunc, axis=2)
+
+# Mask out the experts that have overflowed the expert capacity.
+expert_gate *= expert_mask_flat
+
+# combine_tensor used for combining expert outputs and scaling with gating probability.
+# combine_tensor shape: [G, S, E, C]
+expert_capacity_int = int(jnp.ceil(expert_capacity))
+combine_tensor = (expert_gate[..., None, None] *
+                  expert_mask[..., None] *
+                  jax.nn.one_hot(position_in_expert, num_classes=expert_capacity_int))
+combine_tensor = combine_tensor[..., 1:] # cut 0-dimension which is always 0s
+dispatch_mask = combine_tensor.astype(bool)
+```
+- This mask is then used to do a gather via Einstein summation with the partitioned input tensor $x$ of size $[G, S, d]$, resulting in the final tensor of shape $[E, G, C, d]$, which is sharded across second dimension. Because each device has its own expert, we do an all-to-all communication of size $[E, C, d]$ to now shard the $E$ dimension instead of the $G$-dimension.
+
+```python
+# Matmul with large boolean tensor to assign tokens to the correct expert.
+# device layout: [G, 1, 1], −> [1, G, 1, 1]
+# expert inputs shape: [E, G, C, d]
+expert_inputs = jnp.einsum("GSEC,GSd->EGCd", dispatch_mask, x)
+
+# All−to−All communication. Cores split across G and now we want to split
+# across E. This sends tokens, routed locally, to the correct expert now
+# split across different cores.
+# device layout: [1, G, 1, 1] −> [G, 1, 1, 1]
+sharding = PositionalSharding(jax.devices())
+expert_inputs = jax.device_put(expert_inputs, sharding.reshape(G, 1, 1, 1))
+```
+
+- Next, we run experts computation with re-sharded inputs and perform all-to-all communication once again to shard expert outputs back along $G$ dimension.  
+
+```python
+# Standard FFN computation, where each expert has
+# its own unique set of parameters.
+# Total unique parameters created: E * (d * h * 2).
+# expert_outputs shape: [E, G, C, d]
+expert_outputs = ffn(expert_inputs, ffn_params)
+    
+# All−to−All communication. Cores are currently split across the experts
+# dimension, which needs to be switched back to being split across num cores.
+# device layout: [G, 1, 1, 1] −> [1, G, 1, 1]
+expert_outputs = jax.device_put(expert_outputs, sharding.reshape(1, G, 1, 1))
+```
+
+- And finally, to get $y$, we average expert outputs based on gating probabilities:
+
+```python
+# Convert back to input shape and multiply outputs of experts by the gating probability
+# expert_outputs shape: [E, G, C, d]
+# expert_outputs_combined shape: [G, S, d]
+# device layout: [1, G, 1, 1] −> [G, 1, 1]
+expert_outputs_combined = jnp.einsum("EGCd,GSEC->GSd", expert_outputs, combine_tensor)
+```
 
 <div id="expert_prll_dsptch" class="svg-container" align="center"></div> 
 
@@ -1770,7 +1841,7 @@ function expert_parallel_dispatch() {
 	var svg = d3.select("#expert_prll_dsptch")
 				  .append("svg")
 				  .attr("width", 600)
-				  .attr("height", 630);
+				  .attr("height", 615);
 	
 	const num_experts = 4;
 	const expert_capacity = 2;
@@ -2118,8 +2189,8 @@ function expert_parallel_dispatch() {
 
 expert_parallel_dispatch();
 </script>
-![]()
-*A schematic representation of top-1 expert parallel dispatching with data parallel. Number of experts $E$ is set to the number of devices $G$ and capacity $C$ is equal to 2. Any white cell represents zero element. Vectors associated with the first token placed on GPU-1 (initially) are shaded as an example so that the flow of elements in the image can be easily followed. Note that the embedding of this token was dispatched to the last expert by `Gating` and therefore put to the last device accordingly.*
+![](.)
+*A schematic representation of top-1 expert parallel dispatching with data parallel and batch size per device $S=5$. Number of experts $E$ is equal to the number of devices $G$ and capacity factor $c$ is set to 2 (therefore expert capacity $C = \frac{S}{E} \cdot c = 2.5$). Any white cell represents zero element. Vectors associated with the first token placed on GPU-1 (initially) are shaded as an example so that the flow of elements in the image can be easily followed. Note that the embedding of this token was dispatched to the last expert by `Gating` and therefore put to the last device accordingly.*
 
 The auxiliary loss $\ell_{\text{aux}}$ is similar to GShard, except that $f_i$ is derived through dense gating function and aggregated over whole batch:
 
@@ -2127,9 +2198,37 @@ $$f_i = \frac{1}{B} \sum_{x \in \mathcal{B}} \mathbb{1}_{ \lbrace \operatorname{
 
 The same goes for $\bar{p}_i$.
 
-### Mixtral of Experts
+```python
+def load_balance_loss(gating_probs, expert_mask):
+    '''
+        Calculate load−balancing loss to ensure diverse expert routing.
+    '''
+    # gating probs is the probability assigned for each expert per token
+    # gating probs shape: [G, S, E]
+    # expert index contains the expert with the highest gating
+    # probability in one−hot format
+    # expert mask shape: [G, S, E]
+    # For each core, get the fraction of tokens routed to each expert
+    # density_1 shape: [G, E]
+    density_1 = jnp.mean(expert_mask, axis=1)
+    # For each core, get fraction of probability mass assigned to each expert
+    # from the router across all tokens.
+    # density_1_proxy shape: [G, E]
+    density_1_proxy = jnp.mean(gating_probs, axis=1)
+    # density_1 for a single device: vector of length E that sums to 1.
+    # density_1_proxy for a single device: vector of length E that sums to 1.
+    # Want both vectors to have uniform allocation (1/E) across all E elements.
+    # The two vectors will be pushed towards uniform allocation when the dot product 
+    # is minimized.
+    loss = jnp.mean(density_1_proxy * density_1) * (density_1.shape[-1] ** 2)
+    return loss
+```
 
-Recently an open-source language model called Mixtral 8x7B was introduced in [Mixture of Experts](https://arxiv.org/pdf/2401.04088.pdf) paper and is claimed to outperform Llama-2 70B and GPT-3.5 on many benchmarks. As the name suggests, inference requires going through only 7B parameters, which is possible thanks to 8 distinct experts for each layer. For Mixtral 8x7B authors use deterministic sparse gating function, routing to top 2 experts:
+Full code for Switch Layer can be found [here](https://github.com/astralord/jax_parallel/blob/main/6_switch.py).
+
+#### Mixtral of Experts
+
+Recently an open-source language model called Mixtral 8x7B was introduced in [Mixture of Experts](https://arxiv.org/pdf/2401.04088.pdf) paper and is claimed to outperform Llama-2 70B and GPT-3.5 on many benchmarks. As the name suggests, inference requires running only through 7B parameters, which is possible thanks to 8 distinct experts for each layer. For Mixtral 8x7B authors use deterministic sparse gating function, routing to top 2 experts:
 
 $$\mathcal{G}(x) = \operatorname{softmax}(\operatorname{topk} (x\mathbf{W}_{\text{G}}, 2)).$$
 
@@ -2159,24 +2258,42 @@ def swiglu(x: jnp.ndarray, params: SwiGLUParams):
 ![Mixtral-of-Experts]({{'/assets/img/mixtral-of-experts.png'|relative_url}})
 *Routing analysis: each token is colored with the first expert choice in Mixtral 8x7B. Authors notice that the selection of experts appears to be more aligned with the syntax rather than the domain, especially at the initial and final layers.*
 
+### Strategies worth considering but beyond the scope of this post
+
+[**Zero Redundancy Optimizer (ZeRO)**](https://arxiv.org/pdf/1910.02054.pdf) - it also performs sharding of the tensors somewhat similar to TP, except the whole tensor gets reconstructed in time for a forward or backward computation, therefore the model doesn’t need to be modified. It also supports various offloading techniques to compensate for limited GPU memory.
+
+[**Fully sharded data parallel (FSDP)**](https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/) - is a type of data parallel training, but unlike traditional DP strategy, which maintains a per-GPU copy of a model’s parameters, gradients and optimizer states, it shards all of these states across data parallel workers and can optionally offload the sharded model parameters to CPUs.
+
 ### Conclusion
 
+Training ever-larger neural networks requires creative parallelization techniques to distribute computation and memory efficiently across accelerators. In this post, we explored some of the predominant strategies used today like data, tensor, pipeline, and mixture-of-experts parallelism.
 
-Wasn't included:
-Zero Redundancy Optimizer (ZeRO) - Also performs sharding of the tensors somewhat similar to TP, except the whole tensor gets reconstructed in time for a forward or backward computation, therefore the model does’t need to be modified. It also supports various offloading techniques to compensate for limited GPU memory.
+While simple data parallelism can work for smaller models, combining it with model parallel approaches becomes essential to scale up to the massive architectures used in LLMs. Each strategy makes tradeoffs between computation efficiency, communication overheads, and implementation complexity.
 
-FSDP - fully sharded data parallel
+Hybrid schemes are often needed in practice, tailored to optimize parallelism for a specific model architecture. As models continue growing in size, new innovations in efficient distributed training will be crucial to unlock further breakthroughs in AI. The insights from this post can guide decisions on parallelization strategies when training large neural networks.
 
-- [Tim Dettmers Data](https://timdettmers.com/2014/10/09/deep-learning-data-parallelism/)
-- [Tim Dettmers Model](https://timdettmers.com/2014/11/09/model-parallelism-deep-learning/)
-- [Megatron-LM](https://arxiv.org/pdf/1909.08053.pdf) (Shoeybi et al. 2020)
-- [Another Megatron](https://arxiv.org/pdf/2201.11990.pdf)
-- [GSPMD: General and Scalable Parallelization for ML
-Computation Graphs](https://arxiv.org/pdf/2105.04663.pdf) (Xu et al. 2021)
-- [GPipe](https://arxiv.org/pdf/1811.06965.pdf) 
-- [PipeDream](https://people.eecs.berkeley.edu/~matei/papers/2019/sosp_pipedream.pdf).
-- [Parallel evaluation in Jax](https://jax.readthedocs.io/en/latest/jax-101/06-parallelism.html)
-- [Distributed arrays and automatic parallelization in Jax](https://jax.readthedocs.io/en/latest/notebooks/Distributed_arrays_and_automatic_parallelization.html)
+Sources:
+
+- Parallelization with Jax
+	- [Parallel evaluation in Jax](https://jax.readthedocs.io/en/latest/jax-101/06-parallelism.html)
+	- [Distributed arrays and automatic parallelization in Jax](https://jax.readthedocs.io/en/latest/notebooks/Distributed_arrays_and_automatic_parallelization.html)
+- Data/model parallel strategies:
+	- [Megatron-LM (Shoeybi et al. 2020)](https://arxiv.org/pdf/1909.08053.pdf)
+	- [Using DeepSpeed and Megatron to Train Megatron-Turing NLG
+	530B (Smith et al. 2022)](https://arxiv.org/pdf/2201.11990.pdf)
+	- [GSPMD: General and Scalable Parallelization for ML
+	Computation Graphs (Xu et al. 2021)](https://arxiv.org/pdf/2105.04663.pdf)
+	- [GPipe: Easy Scaling with Micro-Batch Pipeline
+Parallelism (Huang et al. 2019)](https://arxiv.org/pdf/1811.06965.pdf) 
+	- How to Parallelize Deep Learning on GPUs.
+		- [Part 1: Data Parallelism](https://timdettmers.com/2014/10/09/deep-learning-data-parallelism/)
+		- [Part 2: Model Parallelism](https://timdettmers.com/2014/11/09/model-parallelism-deep-learning/)
+- Mixture of Experts:
+	- [Sparse MoE Layer (Shazeer et al. 2017)](https://arxiv.org/pdf/1701.06538.pdf)	
+	- [GShard (Lepikhin et al. 2020)](https://arxiv.org/pdf/2006.16668.pdf)
+	- [Switch Transformers (Fedus et al. 2021)](https://arxiv.org/pdf/2101.03961.pdf)
+
+[**Supplementary code on GitHub**](https://github.com/astralord/jax_parallel)
 
 
 
