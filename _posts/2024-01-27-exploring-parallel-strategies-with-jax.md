@@ -81,7 +81,7 @@ visualize(sharded_x)
 
 There are various other ways to shard our tensor: we can split it along batch dimension or, even more, arrange our devices in 4x2 mesh and mesh both axes:
 
-![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}}){: .w-35}
+![Different sharding]({{'/assets/img/8_cpus_mesh.png'|relative_url}}){: .w-25}
 *Some other ways to shard tensor.*
 
 Another way to place a tensor on devices that we need to look at before moving forward is **tensor replication**. Replicating tensor means that several devices will store their own copies of the whole tensor `x`:
@@ -91,7 +91,7 @@ replicated_x = jax.device_put(x, sharding.replicate(0))
 visualize(replicated_x, color_map="Pastel2_r")
 ```
 
-![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}}){: .w-45}
+![Replicated weights]({{'/assets/img/8_cpus_repl.png'|relative_url}}){: .w-25}
 *Device placement for replicated tensor $x$.*
 
 One can also combine sharding with replicating:
