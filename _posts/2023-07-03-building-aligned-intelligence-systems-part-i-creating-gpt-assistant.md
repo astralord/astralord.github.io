@@ -111,26 +111,8 @@ function triangle(svg, x, y, rotate=0, opacity=1, stroke="black") {
 }
 
 function up_arrow(svg, x1, y1, y2, opacity=1) {
-	var stroke = "red";
-	const html = document.documentElement;
-
-    if (html.hasAttribute('data-mode')) 
-    {
-    	if (html.getAttribute('data-mode') === 'dark') 
-    	{
-    		stroke = "white";
-    	}
-    	else 
-    	{
-    		stroke = "black";
-    	}
-    }
-    else {
-    	stroke = "blue";
-    }
-
-	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke=stroke);
-	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke=stroke);
+	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke="black");
+	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke="black");
 }
 
 function bckg_block(svg, x, y, height=280) {
@@ -319,6 +301,8 @@ $$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=[\operatorname{he
 where
 
 $$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_i^W, \mathbf{VW}_i^V), \quad i = 1, \dots, k.$$
+
+Test{: .dark}
 
 We'll refer to this as **multi-head attention layer** with the learnable parameters $\mathbf{W}^Q_{1 \dots k}, \mathbf{W}^K_{1 \dots k}, \mathbf{W}^V_{1 \dots k}$ and $\mathbf{W}^O$ (also called **multi-head self-attention** for $\mathbf{Q} = \mathbf{K} = \mathbf{V}$). Such mechanism allows the model to jointly attend to information from different representation subspaces at different positions. The output of multi-head attention is added to the original input using a residual connection, and we apply a consecutive layer normalization on the sum.
 
