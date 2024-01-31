@@ -937,7 +937,7 @@ $$x\mathbf{W}_1=\begin{pmatrix} x\color{#8ED3C7}{\mathbf{W}_1^1} & x\color{#D9D9
 
 and for $z = \max(x\mathbf{W}_1, 0)$ we have
 
-$$z\mathbf{W}_2=z\color{#8ED3C7}{\mathbf{W}_2^1} + z\color{#D9D9D9}{\mathbf{W}_2^2} + \cdots + z\color{#FDBFB9}{\mathbf{W}_2^G}.$$
+$$z\mathbf{W}_2=z {\color{#8ED3C7}{\mathbf{W}_2^1}} + z {\color{#D9D9D9}{\mathbf{W}_2^2}} + \cdots + z {\color{#FDBFB9}{\mathbf{W}_2^G}}.$$
 
 The model weights on different devices do not overlap, and the only communication between devices occurs at the end of the FFN layer when we need to sum all the outputs. We can already see the advantage of TP over DP here: computational costs for each device decreases drastically with growing number of devices. On the other hand, the deficiency of TP is that the input data is replicated, so that the batch size per device is now equal to the total batch size. Hence if we are restricted by GPU memory we have to reduce our $B$. Otherwise, we can increase our $S$ by a factor of $G$ to keep up with the same batch size $B=S \times G$ as in DP strategy.
 
