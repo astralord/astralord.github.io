@@ -302,8 +302,6 @@ where
 
 $$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_i^W, \mathbf{VW}_i^V), \quad i = 1, \dots, k.$$
 
-Test{: .dark}
-
 We'll refer to this as **multi-head attention layer** with the learnable parameters $\mathbf{W}^Q_{1 \dots k}, \mathbf{W}^K_{1 \dots k}, \mathbf{W}^V_{1 \dots k}$ and $\mathbf{W}^O$ (also called **multi-head self-attention** for $\mathbf{Q} = \mathbf{K} = \mathbf{V}$). Such mechanism allows the model to jointly attend to information from different representation subspaces at different positions. The output of multi-head attention is added to the original input using a residual connection, and we apply a consecutive layer normalization on the sum.
 
 Transformer is basically a stack of $N$ identical blocks with multi-head attention. In addition to attention sub-layers, each block contains a fully connected feed-forward network, which is applied to each position separately and identically. This consists of two linear transformations with a nonlinear function in between, e.g. ReLU[^GELU]:
