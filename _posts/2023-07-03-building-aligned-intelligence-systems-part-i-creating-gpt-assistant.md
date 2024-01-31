@@ -84,8 +84,7 @@ $$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_N \mathbf{W_e}^T).$$
 
 <script>
 
-function line(svg, x1, y1, x2, y2, opacity=1.0, width=2) {
-	if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='black') {
 	svg.append('line')
 	  .attr('x1', x1)
 	  .attr('y1', y1)
@@ -93,29 +92,18 @@ function line(svg, x1, y1, x2, y2, opacity=1.0, width=2) {
 	  .attr('y2', y2)
 	  .style("stroke-width", width)
 	  .attr("opacity", opacity)
-	  .attr('stroke', 'white');
-	}
-	else {
-		svg.append('line')
-		  .attr('x1', x1)
-		  .attr('y1', y1)
-		  .attr('x2', x2)
-		  .attr('y2', y2)
-		  .style("stroke-width", width)
-		  .attr("opacity", opacity)
-		  .attr('stroke', 'dark');
-	}
+	  .attr('stroke', stroke);
 }
 
-function triangle(svg, x, y, rotate=0, opacity=1) {
-	var triangleSize = 25;
+function triangle(svg, x, y, rotate=0, opacity=1, stroke="black") {
+	const triangleSize = 25;
 	var triangle_symb = d3.symbol()
 	            .type(d3.symbolTriangle)
 	            .size(triangleSize);
-	
+
 	svg.append("path")
 	   .attr("d", triangle_symb)
-	   .attr("stroke", "black")
+	   .attr("stroke", stroke)
 	   .attr("fill", "#404040")
 	   .attr("opacity", opacity)
 	   .attr("transform",
@@ -123,8 +111,12 @@ function triangle(svg, x, y, rotate=0, opacity=1) {
 }
 
 function up_arrow(svg, x1, y1, y2, opacity=1) {
-	line(svg, x1, y1 + 7, x1, y2, opacity=opacity);
-	triangle(svg, x1, y1 + 5, 0, opacity=opacity);
+	var stroke = "black";
+	if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+		stroke = "white";
+	}
+	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke=stroke);
+	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke=stroke);
 }
 
 function bckg_block(svg, x, y, height=280) {
