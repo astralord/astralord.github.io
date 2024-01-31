@@ -53,7 +53,8 @@ jobs:
         run: |
           bundle exec htmlproofer _site \
             \-\-disable-external=true \
-            \-\-ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/,^http:\/\/joschu.net\/blog\/kl-approx.html,^http:\/\/www.stat.ucla.edu\/~ywu\/research\/documents\/StochasticDifferentialEquations.pdf"
+            \-\-enforce-https=false \
+            \-\-ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/"
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v1
