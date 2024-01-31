@@ -821,7 +821,7 @@ gpt_arch();
 ![](.)
 *Generative pre-trained transformer decoder architecture. In some recent implementations one can find layer normalization being applied to input stream of the submodules (right before multi-head attention and feed forward layers, not after).*
 
-There are many guides on the internet for implementing a transformer. To get more detailed explanations one can follow [this tutorial on PyTorch](http://nlp.seas.harvard.edu/2018/04/03/attention.html) or [this one on Jax](https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/JAX/tutorial6/Transformers_and_MHAttention.html).
+There are many guides on the internet for implementing a transformer. To get more detailed explanations one can follow [this tutorial on PyTorch](https://nlp.seas.harvard.edu/2018/04/03/attention.html) or [this one on Jax](https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/JAX/tutorial6/Transformers_and_MHAttention.html).
 
 It turned out that the transformer architecture is highly scalable, meaning that it is able to handle large amounts of data and perform well on tasks of varying complexity. It has been shown to achieve SoTA performance on a variety of NLP benchmarks, demonstrating its ability to scale to handle complex tasks and large datasets. GPT-1 was just a starting point and later OpenAI presented much bigger models, such as [GPT-2](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) and [GPT-3](https://arxiv.org/pdf/2005.14165.pdf). Here is a table for comparison:
 
