@@ -111,10 +111,17 @@ function triangle(svg, x, y, rotate=0, opacity=1, stroke="black") {
 }
 
 function up_arrow(svg, x1, y1, y2, opacity=1) {
-	var stroke = "black";
-	if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-		stroke = "white";
-	}
+	var stroke = "blue";
+	var mode = sessionStorage.getItem('mode');
+	if (mode === 'light') {
+        stroke = "black";
+    } else if (mode === 'dark') {
+        stroke = "white";
+    }
+    else if (mode == null) {
+    	stroke = "red";
+    }
+    
 	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke=stroke);
 	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke=stroke);
 }
