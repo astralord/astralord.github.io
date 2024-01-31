@@ -1671,9 +1671,9 @@ $$f_i = \frac{1}{S} \sum_{x \in \mathcal{S}} \mathbb{1}_{ \lbrace \operatorname{
 
 The goal is to minimize mean squared ratio of tokens per expert: $\frac{1}{E} \sum_{i=1}^E f_i^2$. But since this value is derived from $\operatorname{topk}$ function, it's non-differentiable, so authors propose to use mean gating weights as differentiable approximation: 
 
-$$\bar{p}_i = \frac{1}{S} \sum_{x \in \mathcal{S}} p(x) \approx f_i.$$
+$$\bar{p}_i = \frac{1}{S} \sum_{x \in \mathcal{S}} p(x)_i \approx f_i.$$
 
-Then $\ell_{\text{aux}} = \sum_{i=1}^E f_i \cdot p_i$.
+Then $\ell_{\text{aux}} = \sum_{i=1}^E f_i \cdot \bar{p}_i$.
 
 #### Switch Transformer
 
