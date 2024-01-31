@@ -1,22 +1,15 @@
-<!-- Switch the mode between dark and light. -->
+<!--
+  Switch the mode between dark and light.
+-->
+
+<i class="mode-toggle fas fa-adjust"></i>
 
 <script type="text/javascript">
+
   class ModeToggle {
-    static get MODE_KEY() {
-      return 'mode';
-    }
-    static get MODE_ATTR() {
-      return 'data-mode';
-    }
-    static get DARK_MODE() {
-      return 'dark';
-    }
-    static get LIGHT_MODE() {
-      return 'light';
-    }
-    static get ID() {
-      return 'mode-toggle';
-    }
+    static get MODE_KEY() { return "mode"; }
+    static get DARK_MODE() { return "dark"; }
+    static get LIGHT_MODE() { return "light"; }
 
     constructor() {
       if (this.hasMode) {
@@ -31,15 +24,16 @@
         }
       }
 
-      let self = this;
+      var self = this;
 
       /* always follow the system prefers */
-      this.sysDarkPrefers.addEventListener('change', () => {
+      this.sysDarkPrefers.addListener(function() {
         if (self.hasMode) {
           if (self.isDarkMode) {
             if (!self.isSysDarkPrefer) {
               self.setDark();
             }
+
           } else {
             if (self.isSysDarkPrefer) {
               self.setLight();
@@ -49,67 +43,64 @@
           self.clearMode();
         }
 
-        self.notify();
+        self.updateMermaid();
       });
+
     } /* constructor() */
 
-    get sysDarkPrefers() {
-      return window.matchMedia('(prefers-color-scheme: dark)');
+
+    setDark() {
+      $('html').attr(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE);
+      sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE);
     }
 
-    get isSysDarkPrefer() {
-      return this.sysDarkPrefers.matches;
+    setLight() {
+      $('html').attr(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE);
+      sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE);
     }
 
-    get isDarkMode() {
-      return this.mode === ModeToggle.DARK_MODE;
+    clearMode() {
+      $('html').removeAttr(ModeToggle.MODE_KEY);
+      sessionStorage.removeItem(ModeToggle.MODE_KEY);
     }
 
-    get isLightMode() {
-      return this.mode === ModeToggle.LIGHT_MODE;
-    }
+    get sysDarkPrefers() { return window.matchMedia("(prefers-color-scheme: dark)"); }
 
-    get hasMode() {
-      return this.mode != null;
-    }
+    get isSysDarkPrefer() { return this.sysDarkPrefers.matches; }
 
-    get mode() {
-      return sessionStorage.getItem(ModeToggle.MODE_KEY);
-    }
+    get isDarkMode() { return this.mode == ModeToggle.DARK_MODE; }
+
+    get isLightMode() { return this.mode == ModeToggle.LIGHT_MODE; }
+
+    get hasMode() { return this.mode != null; }
+
+    get mode() { return sessionStorage.getItem(ModeToggle.MODE_KEY); }
 
     /* get the current mode on screen */
     get modeStatus() {
-      if (this.isDarkMode || (!this.hasMode && this.isSysDarkPrefer)) {
+      if (this.isDarkMode
+        || (!this.hasMode && this.isSysDarkPrefer) ) {
         return ModeToggle.DARK_MODE;
       } else {
         return ModeToggle.LIGHT_MODE;
       }
     }
 
-    setDark() {
-      document.documentElement.setAttribute(ModeToggle.MODE_ATTR, ModeToggle.DARK_MODE);
-      sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE);
-    }
+    updateMermaid() {
+      if (typeof mermaid !== "undefined") {
+        let expectedTheme = (this.modeStatus === ModeToggle.DARK_MODE? "dark" : "default");
+        let config = { theme: expectedTheme };
 
-    setLight() {
-      document.documentElement.setAttribute(ModeToggle.MODE_ATTR, ModeToggle.LIGHT_MODE);
-      sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE);
-    }
+        /* re-render the SVG › <https://github.com/mermaid-js/mermaid/issues/311#issuecomment-332557344> */
+        $(".mermaid").each(function() {
+          let svgCode = $(this).prev().children().html();
+          $(this).removeAttr("data-processed");
+          $(this).html(svgCode);
+        });
 
-    clearMode() {
-      document.documentElement.removeAttribute(ModeToggle.MODE_ATTR);
-      sessionStorage.removeItem(ModeToggle.MODE_KEY);
-    }
-
-    /* Notify another plugins that the theme mode has changed */
-    notify() {
-      window.postMessage(
-        {
-          direction: ModeToggle.ID,
-          message: this.modeStatus
-        },
-        '*'
-      );
+        mermaid.initialize(config);
+        mermaid.init(undefined, ".mermaid");
+      }
     }
 
     flipMode() {
@@ -120,6 +111,7 @@
           } else {
             this.setLight();
           }
+
         } else {
           if (this.isDarkMode) {
             this.clearMode();
@@ -127,6 +119,7 @@
             this.setDark();
           }
         }
+
       } else {
         if (this.isSysDarkPrefer) {
           this.setLight();
@@ -135,9 +128,18 @@
         }
       }
 
-      this.notify();
+      this.updateMermaid();
+
     } /* flipMode() */
+
   } /* ModeToggle */
 
-  const modeToggle = new ModeToggle();
+  let toggle = new ModeToggle();
+
+  $(".mode-toggle").click(function() {
+
+    toggle.flipMode();
+
+  });
+
 </script>
