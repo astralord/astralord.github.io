@@ -17,7 +17,7 @@ Jax is a great fit for implementing parallel LLM training thanks to its high-lev
 
 #### Device placement
 
-Let's discover now how to run particular operations on a device of your choice. Don't worry if you don't have multiple GPUs, an arbitrary number of devices can be emulated even with single CPU by setting `--xla_force_host_platform_device_count` flag:
+First, let's discover how to run particular operations on a device of your choice. Don't worry if you don't have multiple GPUs, an arbitrary number of devices can be emulated even with single CPU by setting `--xla_force_host_platform_device_count` flag:
 
 ```python
 import os
@@ -49,7 +49,7 @@ To put tensor `x` on specific device one can simply use `device_put` function:
 jax.device_put(x, jax.devices()[1]).device() # TFRT_CPU_1
 ```
 
-What if we want to place different parts of our tensor on different devices? There is a technique called **tensor sharding**: we split `x` by multiple sub-tensors and place each on its own device. But firstly, we need to create a `sharding` object, which is basically a device placement configuration:
+What if we want to place different parts of our tensor on different devices? There is a technique called **tensor sharding**: we split `x` by multiple sub-tensors and place each on its own device. But before we do that, we need to create a `sharding` object, which is basically a device placement configuration:
 
 ```python
 from jax.sharding import PositionalSharding
