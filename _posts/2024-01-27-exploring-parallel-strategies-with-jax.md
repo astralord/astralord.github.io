@@ -11,11 +11,11 @@ published: true
           
 > Training large language models either like GPT, LlaMa or Mixtral requires immense computational resources. With model sizes ballooning into the billions or sometimes even trillions of parameters, specialized parallelization techniques are essential to make training feasible. In this post, we’ll explore implementing some of these scaling strategies in Jax - a Python framework designed for high-performance numerical computing with support for accelerators like GPU and TPU.
 
-### Tensors sharding
+## Tensors sharding
 
 Jax is a great fit for implementing parallel LLM training thanks to its high-level APIs for composing parallel functions and its seamless acceleration on GPU/TPU hardware. We’ll walk through code examples for data, tensor, pipeline and expert parallelisms in Jax while training a "toy" FFN model for demonstration. The insights from this exercise will help us understand how state-of-the-art systems actually parallelize and distribute LLM training in practice.
 
-#### Device placement
+### Device placement
 
 First, let's discover how to run particular operations on a device of your choice. Don't worry if you don't have multiple GPUs, an arbitrary number of devices can be emulated even with single CPU by setting `--xla_force_host_platform_device_count` flag:
 
@@ -531,7 +531,7 @@ legend();
 *Visualization of tensors locations. On the left side - tensor is split column-wise by 4 subtensors, each located on its designated device. On the right side - tensor is copied on 2 devices.*
 
 
-#### Parallel processing
+### Parallel processing
 
 Let's create a simple feed-forward layer (FFN), which is one of the core components in modern LLMs. It consists of two linear layers and an activation function between them. If we omit bias and use ReLU as activation between layers, then FFN can be written as
 
@@ -598,7 +598,7 @@ sharded_x = jax.device_put(x, sharding.reshape(G, 1))
 visualize(ffn(sharded_x, params))
 ```
 
-### Data Parallelism 
+## Data Parallelism 
 
 **Data Parallel (DP)** is a relatively simple strategy, but it allows scaling to large data batches: the training data is partitioned across $G$ distributed workers and fed to the model, which is replicated. The training process is done in parallel: dataloader spits out a batch of the total size $B$, then each worker computes activations, loss values $\ell$ and model gradients with its independent data split of size $S=\frac{B}{G}$. Gradients are then synchronized at the end of each training step before the weights update, so that all workers observe consistent model parameters throughout training.
 
@@ -919,11 +919,11 @@ The described strategy above is also called **Distributed Data Parallel (DDP)** 
 
 Another common strategy for amortizing communication cost is **gradient accumulation**. We can run multiple forward and backward propagations and accumulate local gradients on each device in parallel before launching data synchronization and taking optimizer step. Additionally, performance can be improved by synchronizing the computed gradients for some tensors while simultaneously computing gradients for anothers.
 
-### Model parallelism
+## Model parallelism
 
 With the advent of large neural networks that do not fit on one device, the need to parallelize models has increased. This is especially true in the case of LLMs, whose number of parameters can exceed the already considerable amount of input data. To distribute computation and memory we can split the model across multiple devices and across multiple dimensions.
 
-#### Tensor Parallelism
+### Tensor Parallelism
 
 The idea of sharding, the way it was applied to data tensors, can be used in a similar way with respect to the model weights. We can divide each tensor $\mathbf{W}$ into chunks distributed across multiple devices, so instead of having the whole tensor reside on a single device, each shard of the tensor resides on its own accelerator. Each part gets processed separately in parallel on different devices and after processing the results are synced at the end of the step. 
 
@@ -1177,7 +1177,7 @@ def train_with_tensor_parallel(dataset, params, num_epochs):
 
 Since in TP the size of synchronized weights equals to the batch size $B$ multiplied by embedding size $d$, when we operate with float32, each device sends $32 \cdot d \cdot B$ bits to each other device. Thus, the amount of memory transfer between each pair of devices is $O(dh)$ for DP versus $O(dB)$ for TP. We can conclude, that DP is a preferable strategy for small networks (e.g. model can fit onto one device), while TP works better with larger models and smaller batches.
 
-#### Hybrid data and model tensor parallelism
+### Hybrid data and model tensor parallelism
 
 It is common to mix both data and tensor parallelism for large scale models. With a total of $G=\operatorname{TP}\times \operatorname{DP}$ devices, each device stores $\frac{B}{\operatorname{DP}}$ embedding vectors and $\frac{h}{\operatorname{TP}}$ of both the weights and intermediate activations. 
 
@@ -1206,7 +1206,7 @@ def train_with_hybrid_parallel(dataset, params, num_epochs, DP, TP):
 ```
 
 
-#### Pipeline Parallelism
+### Pipeline Parallelism
 
 Suppose our neural network, a stack of $L$ FFN layers, is so deep, that it doesn't fit on a single device. This scenario is practical because a common way to scale up models is to stack layers of the same pattern. It might feel straightforward for us to split our model by layer and that is what **Pipeline Parallel (PP)** strategy does. It splits up the model weights vertically, so that only a small group of consecutive layers of the model are placed on a single device. 
 
@@ -1434,7 +1434,7 @@ To implement naive PP strategy in Jax we just have to place layers to their corr
 
 Clearly, the main disadvantage of this type of parallelization is that all but one device is idle at any given moment. In addition, at the end of each stage there is a serious communication overhead for transferring data between devices. To reduce idling problem we have to explore other approaches.
 
-##### Pipeline Parallel reduced to tensor sharding
+#### Pipeline Parallel reduced to tensor sharding
 
 Since our model only consists of $L$ equal (not shared) layers, when we split it vertically, our pipelining scenario looks like $G$ stages of the same subcomputation except for having different weight values. The similar picture we could've seen in TP strategy - every device is doing the same operations but with different operands.
 
@@ -1564,13 +1564,13 @@ This is the main idea in [GPipe (Huang et al. 2019)](https://arxiv.org/pdf/1811.
 
 To reduce memory footprint **gradient checkpointing** can be applied, meaning that during forward computation, each device only stores output activations at the stage boundaries. During the backward pass on $k$-th device the $k$-th stage forward pass re-computes the rest of activations. While it doubles time, required for forward calculations, it helps to reduce peak activation memory requirement to $O \big(B + \frac{L}{G} \times \frac{B}{M}\big)$. In comparison, memory requirement without PP and gradient checkpointing would be $O(B \times L)$, since computing the gradients requires both the next layer gradients and the cached activations.
 
-### Expert Parallelism
+## Expert Parallelism
 
 With **Mixture-of-Experts (MoE)** models, different sub-networks (FFN layers in our case) or so-called "experts" specialize in different parts of the input space. For example, in a language model, some experts may specialize in grammar while others focus on semantic understanding. The key to a mixture of experts is having a gating network $\mathcal{G}$ that assigns different parts of each input to the most relevant experts.
 
 During training, only the experts assigned to a given input have their parameters updated. This sparse update allows mixture of experts models to scale to thousands or even tens of thousands of experts. Each expert can be updated in parallel by a different set of accelerators without heavy communication overhead.
 
-#### Mixture of Expert Routing
+### Mixture of Expert Routing
 
 MoE layer was proposed by [Shazeer et al. (2017)](https://arxiv.org/pdf/1701.06538.pdf). It takes a token representation $x$ and then routes it through gating network $\mathcal{G}$ to determined experts. Say, we have $E$ experts in total, then the output of the MoE layer $y$ is the linearly weighted combination of each expert’s output by the gate value
 
@@ -1649,7 +1649,7 @@ Such constraint encourages all experts to have equal importance values.
 
 Another important detail is that since each expert network receives only a portion of the training samples, we should try to use as large a batch size as possible in MoE. To improve the throughput MoE can be combined with DP strategy.
 
-#### GShard
+### GShard
 
 Additional experts increase the amount of model parameters significantly. Basically MoE layer requires $E$ times more parameters than a single FFN layer (plus gating tensor $\mathbf{W}_{\text{G}}$). But what if we had each expert reside on its own device? [**GShard** (Lepikhin et al., 2020)](https://arxiv.org/pdf/2006.16668.pdf) uses the idea of sharding across expert dimension to scale up the MoE transformer model up to 600B parameters. The MoE transformer replaces every other FFN with a MoE layer. All MoE layers are different across devices, while other layers are duplicated.
 
@@ -1675,7 +1675,7 @@ $$\bar{p}_i = \frac{1}{S} \sum_{x \in \mathcal{S}} p(x)_i \approx f_i.$$
 
 Then $\ell_{\text{aux}} = \sum_{i=1}^E f_i \cdot \bar{p}_i$.
 
-#### Switch Transformer
+### Switch Transformer
 
 [**Switch Transformer**](https://arxiv.org/pdf/2101.03961.pdf) scales the model size even more, up to 1.6 trillion parameters, by replacing FFN layer with a sparse MoE layer in which each input is routed to only one expert network. Authors refer to such routing strategy as a **Switch layer**. Similar to how it is done in GShard each expert has its capacity $C$, which depends on batch size $B$ and number of experts $E$ by formula
 
@@ -2226,7 +2226,7 @@ def load_balance_loss(gating_probs, expert_mask):
 
 Full code for Switch Layer can be found [here](https://github.com/astralord/jax_parallel/blob/main/6_switch.py).
 
-#### Mixtral of Experts
+### Mixtral of Experts
 
 Recently an open-source language model called Mixtral 8x7B was introduced in [Mixture of Experts](https://arxiv.org/pdf/2401.04088.pdf) paper and is claimed to outperform Llama-2 70B and GPT-3.5 on many benchmarks. As the name suggests, inference requires running only through 7B parameters, which is possible thanks to 8 distinct experts for each layer. For Mixtral 8x7B authors use deterministic sparse gating function, routing to top 2 experts:
 
@@ -2258,13 +2258,13 @@ def swiglu(x: jnp.ndarray, params: SwiGLUParams):
 ![Mixtral-of-Experts]({{'/assets/img/mixtral-of-experts.png'|relative_url}})
 *Routing analysis: each token is colored with the first expert choice in Mixtral 8x7B. Authors notice that the selection of experts appears to be more aligned with the syntax rather than the domain, especially at the initial and final layers.*
 
-### Strategies worth considering but beyond the scope of this post
+## Strategies worth considering but beyond the scope of this post
 
 [**Zero Redundancy Optimizer (ZeRO)**](https://arxiv.org/pdf/1910.02054.pdf) - it also performs sharding of the tensors somewhat similar to TP, except the whole tensor gets reconstructed in time for a forward or backward computation, therefore the model doesn’t need to be modified. It also supports various offloading techniques to compensate for limited GPU memory.
 
 [**Fully sharded data parallel (FSDP)**](https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/) - is a type of data parallel training, but unlike traditional DP strategy, which maintains a per-GPU copy of a model’s parameters, gradients and optimizer states, it shards all of these states across data parallel workers and can optionally offload the sharded model parameters to CPUs.
 
-### Conclusion
+## Conclusion
 
 Training ever-larger neural networks requires creative parallelization techniques to distribute computation and memory efficiently across accelerators. In this post, we explored some of the predominant strategies used today like data, tensor, pipeline, and mixture-of-experts parallelism.
 
