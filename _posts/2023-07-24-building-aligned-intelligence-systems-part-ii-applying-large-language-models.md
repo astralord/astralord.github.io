@@ -242,7 +242,7 @@ function mha_block(svg, x, y, frozen=false) {
 
 > In this post we will look at different techniques for steering LLMs behaviour to get desired outcomes, starting with some basic general principles such as *writing a good prompt* and ending with fine-tuning and augmenting models with external knowledge. Methods discussed in this post are mainly aimed at improving LLMs reliability and ensuring the consistency and factual accuracy of their outputs.
 
-### Prompt design
+## Prompt design
 
 Smart prompt design essentially produces efficient context that can lead to desired completion. Such approach is important, because it does not require to change model weights and with a single model checkpoint one can perform many tasks. The general advice for writing a smart prompt is to start simple and iteratively adding more elements and context as you aim for better results. 
 
@@ -254,7 +254,7 @@ Although some of the techniques are specific to certain types of problems, many 
 - Generate multiple possible answer, ask for justifications and then pick the best one.
 - Prompt the model to explain before answering. Ask it to write down the series of steps explaining its reasoning.
 
-#### Chain-of-Thought
+### Chain-of-Thought
 
 In [previous part](https://astralord.github.io/posts/building-aligned-intelligence-systems-part-i-creating-gpt-assistant/#supervised-fine-tuning-sft-for-dialogue) we saw such techniques as **zero-shot**, when user gives a direct instruction, and **few-shot**, when instruction is followed by examples in the prompt. But this simple methods could be still unreliable on tasks that require reasoning abilities. As an example, if you simply ask `text-davinci-002` (GPT-3.5 model trained with SFT) the arithmetic problem, in most cases the answer will be wrong.
 
@@ -304,7 +304,7 @@ On GSM8K benchmark the "Let's think step by step" trick raised solving rate up t
 
 Also, if you apply this technique to your own tasks, don't be afraid to experiment with customizing the instruction. "Let's think step by step" is rather generic prompt, so you may find better performance with instructions that hew to a stricter format customized to your use case.
 
-#### Self-consistency
+### Self-consistency
 
 The idea of **self-consistency** proposed by [Wang et al. (2022)](https://arxiv.org/pdf/2203.11171.pdf) is to sample multiple, diverse reasoning paths through few-shot CoT, and use the generations to select the most consistent answer. There are generally different thought processes for the same problem (e.g. different ways to prove the same theorem), and the output decision can be more faithful by exploring a richer set of thoughts. The output response can be picked either by majority vote, or by language model itself. 
 
@@ -315,7 +315,7 @@ Self-consistency technique helps to boost the performance of CoT prompting on ta
 
 Although this technique is simple to implement, it can be costly. Remember, that generating a set of *N* answers will increase your costs *N* times. Another limitation is that the "most frequent" heuristic only applies when the output space is limited (e.g. multi-choice QA).
 
-#### Tree of Thoughts
+### Tree of Thoughts
 
 Simple prompting techniques can fall short in tasks that require exploration, strategic lookahead, or where initial decisions play a pivotal role. To overcome these challenges [Yao et el. (2023)](https://arxiv.org/pdf/2305.10601.pdf) proposed **Tree of Thoughts (ToT)**, a framework that generalizes over chain-of-thought prompting and encourages exploration over thoughts[^ToT]. ToT allows LLMs to perform deliberate decision making by searching over multiple different reasoning paths and self-evaluating choices to decide the next course of action, as well as looking ahead or backtracking when necessary to make global choices.
 
@@ -618,13 +618,13 @@ Finally, search algorithm over a tree is applied. Authors of ToT explored two cl
 
 ToT can substantially outperform simple sampling methods, but it requires more resources and effort to implement. Although, the modular flexibility of ToT allows users to customize such performance-cost tradeoffs.
 
-### Parameter Efficient Fine-Tuning
+## Parameter Efficient Fine-Tuning
 
 Smart prompting is an important tool, but it doesn't help when the model has not learned how to solve the problems that will be given to it. A huge performance gains over using the pretrained LLMs out-of-the-box can be achieved via fine-tuning on downstream tasks. However, training the entire model, which has billions of parameters, is computationally expensive and time-consuming, not to mention impossible on most consumer hardware. 
 
 This is where **Parameter-Efficient Fine-tuning (PEFT)** comes in handy. PEFT approaches only fine-tune a small number of (extra) model parameters while freezing most parameters of the pretrained LLMs, thereby greatly decreasing the computational and storage costs.
 
-#### Prompt-tuning
+### Prompt-tuning
 
 **Prompt-tuning** [(Lester et al. 2021)](https://arxiv.org/pdf/2104.08691.pdf) is a simple mechanism, which allows to condition frozen LLM to perform specific downstream task. The idea is to prepend different trainable tensors $\mathbf{P_\theta}$ (so called **soft prompts**) to input embeddings per each task. Unlike the discrete text prompts, soft prompts do not tie to any embeddings associated with the real words and thus they are more expressive for steering the context.
 
@@ -641,7 +641,7 @@ Prompt-tuning only requires storing a small task-specific prompt for each task, 
 
 Overall soft prompts are incredibly parameter-efficient at the cost of inference overhead (given the quadratic complexity of transformer) and more applicable to larger models (> 10B).
 
-#### Prefix-tuning
+### Prefix-tuning
 
 In **prefix-tuning** [(Li & Liang 2021)](https://arxiv.org/pdf/2101.00190.pdf) instead of adding a soft prompt to the model input, trainable embeddings are prepended to the hidden states of all transformer layers. In practice, directly updating $\mathbf{P_\theta}$ leads to unstable optimization and poor performance. To reduce the difficulty associated with high dimensionality training, the matrix $\mathbf{P_\theta}$ is reparameterized by a smaller matrix $\mathbf{P_\theta'}$ composed with a large linear layer $\mathbf{W}$:
 
@@ -793,7 +793,7 @@ prompt_tuning();
 ![](.)
 *Prompt-tuning (left) vs prefix-tuning. Note that after training, only $\mathbf{P_\theta}$ is needed for inference, and tensor $\mathbf{W}$ can be discarded.*
 
-#### LoRA 
+### LoRA 
 
 **Low-Rank Adaptation (LoRA)** [(Hu et. al 2021)](https://arxiv.org/pdf/2106.09685.pdf) freezes the pretrained model weights and injects trainable rank decomposition matrices into each layer of the transformer architecture, greatly reducing the number of trainable parameters for downstream tasks. The core idea is to modify linear transformation of input vector $x$
 
@@ -999,7 +999,7 @@ In general, LoRA possesses several key advantages:
 
 Interestingly, studying the relationship between $\Delta \mathbf{W}$ and $\mathbf{W}$ authors concluded that the low-rank adaptation matrix potentially *amplifies the important features for specific downstream tasks that were learned but not emphasized in the general pre-training model*. Such statement suggests that LoRA can be applied to RLHF fine-tuning stage, which [according to OpenAI](https://openai.com/research/instruction-following) is required to “unlock” model capabilities it has already learned.
 
-#### Adapter
+### Adapter
 
 [Houlsby et al. (2019)](https://arxiv.org/pdf/1902.00751.pdf) proposed to modify transformer block with additional FFN layers, called **(series) adapters**. The adapter module is added twice to each transformer layer: after the projection following multi-head attention and after the two feed-forward layers. But like in LoRA, the adapter consists of a bottleneck which has smaller hidden dimension than the input and therefore contains fewer parameters relative to the attention and feed-forward layers in the original model.
 
@@ -1141,7 +1141,7 @@ def transformer_block_with_adapter(x):
 
 Adapter tuning is highly parameter-efficient: training with adapters of sizes 0.5-5% of the original model produces strong performance, comparable to full fine-tuning. In addition to that, [Lin et al. (2020)](https://arxiv.org/pdf/2004.03829.pdf) and [Pfeiffer et al. (2021)](https://arxiv.org/pdf/2005.00247.pdf) proposed a more efficient design with the adapter layer applied only after the FFN "Add & Norm" sub-layer, which achieves similar performance as using two adapters per transformer block.
 
-#### MAM adapter
+### MAM adapter
 
 **Mix-and-match (MAM) adapter** was proposed in a paper by [He et al. (2022)](https://arxiv.org/pdf/2110.04366.pdf), where adapter placement and combinations with soft prompts were studied. They measured the performance of all prior methods on four different downstream tasks (summarization, translation, entailment/contradiction and classification), where they also included comparisons with **parralel adapters**.
 
@@ -1271,7 +1271,7 @@ def transformer_block_with_mam(x):
     return h
 ```
 
-#### (IA)³
+### (IA)³
 
 [Liu et al. (2022)](https://arxiv.org/pdf/2205.05638.pdf) proposed another PEFT technique, called **(IA)³**, which stands for "**I**nfused **A**dapter by **I**nhibiting and **A**mplifying **I**nner **A**ctivations". (IA)³ introduces new parameters $l_v$ and $l_k$, which rescale key and value in attention mechanism:
 
@@ -1309,11 +1309,11 @@ def transformer_block_with_ia3(x):
 
 (IA)³ adds smaller overhead compared to adapter methods as scale vectors $l_v$ and $l_k$ can be merged into $\mathbf{W}^V$ and $\mathbf{W}^K$ respectively, thus leaving the only overhead from $l_{ff}$. With minimal number of training parameters it achieves comparable results with LoRA and outperforms prompt- and prefix-tuning methods on multiple benchmarks.
 
-### Providing external knowledge
+## Providing external knowledge
 
 Language models show remarkable abilities to solve new problems with just a few examples or textual instructions. At the same time, they struggle with basic functionality, such as arithmetic or factual lookup, where they are outperformed by much simpler and smaller models. They are also unable to solve tasks that require access to changing or private data that was unavailable at training time. To be able to do that LLM must be augmented with additional tools that can provide an external information.
 
-#### Internet-augmented language models
+### Internet-augmented language models
 
 [Lazaridou et. al (2022)](https://arxiv.org/pdf/2203.05115.pdf) proposed to use few-shot prompting to condition LMs on information returned from a broad and constantly updated knowledge source, for example, Google Search. Such approach does not involve fine-tuning or learning additional parameters, thus making it applicable to any language model.
 
@@ -1336,7 +1336,7 @@ This produces $n$ candidate answers $(a)_n$, which can be re-ranked with conditi
 ![Retrieval pipeline]({{'/assets/img/retrieval.png'|relative_url}})
 *Schematic representation of Internet-augmented LM*
 
-#### TALM
+### TALM
 **Tool Augmented Language Model (TALM)** [Parisi et al. 2022](https://arxiv.org/pdf/2205.12255.pdf) is a LLM augmented with text-to-text API calls. It learns two subtasks at the same time: calling a tool and generating an answer based on tool results.
 
 <div id="talm_svg" class="svg-container" align="center"></div> 
@@ -1460,7 +1460,7 @@ A weather task example:
 
 To train TALM authors propose to iteratively fine-tune model on a dataset of tool use examples. Each round model interacts with a tool, then expands the dataset based on whether a newly added tool can improve the generated outputs. Such technique helps to boost the model performance on knowledge and reasoning tasks drastically.
  
-#### Toolformer
+### Toolformer
 
 **Toolformer** [(Schick et al. 2023)](https://arxiv.org/pdf/2302.04761.pdf) approach is similar to TALM in that they both aimed for LLMs to teach themselves how to use external tools via simple APIs. Toolformer is trained as follows:
 
@@ -1503,7 +1503,7 @@ At inference time, decoding runs until the model produces "$\rightarrow$" token,
 
 Toolformer considerably improves zero-shot performance of language model, e.g. augmented GPT-J (6.3B) even outperformed a much larger GPT-3 model on a range of different downstream tasks.
 
-### Conclusion
+## Conclusion
 
 The list of techniques in this post is far from complete, but it provides direction for those who are looking for a way to make their language model more useful. Assistants based on Large Language Models are relatively new and, while extremely powerful, still face many limitations that can be worked around in a variety of ways. It is only a matter of time before language models cease to be used for entertainment purposes and enter our daily lives as a complete and useful tool.
 

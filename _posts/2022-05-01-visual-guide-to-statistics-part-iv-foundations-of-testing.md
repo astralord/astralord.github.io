@@ -10,7 +10,7 @@ math: true
 > This is the fourth and the last part of a 'Visual Guide to Statistics' cycle. All the previous parts and other topics related to statistics could be found [here](https://astralord.github.io/categories/statistics/). 
 > In this post we will test hypotheses about the unknown parameter $\vartheta$. As before, we have a statistical experiment with sample space $\mathcal{X}$ and family of probability measures $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$.
 
-### Introductory example
+## Introductory example
 
 Let's discuss a simplified clinical study, in which we want to decide whether a newly invented drug $B$ is better than a well-known drug $A$ or not. Suppose that you know from previous years that $A$ has a chance of healing about $p_a$. The new drug $B$ was tested on $n$ persons and $m$ became healthy. Do we choose $A$ or $B$? In terms of mathematics we test
 
@@ -733,7 +733,7 @@ basic_test();
 ![](.)
 *Fig. 1. Visualization of basic test experiment. Parameters $p_a$ and $c$ are draggable.*
 
-### Power of a test
+## Power of a test
 
 Ideally we want to minimize both errors simulaneously and pick the optimal test. The problem is that criterias $\varphi_0(x) \equiv 0$ and $\varphi_1(x) \equiv 1$ are optimal if one needs to minimize one of the errors, but they don't minimize both errors at the same time. In practice, the upper bound $\alpha$ is taken for the probability of error of the 1st kind and probability of error of the 2nd kind is minimized. Typically, $0.01 \leq \alpha \leq 0.1$ (the set belonging to the more severe consequences is the alternative).
 
@@ -768,7 +768,7 @@ Test $\tilde{\varphi} \in \Phi_{\alpha\alpha}$ is called **uniformly most powerf
 
 $$\beta_{\tilde{\varphi}}(\vartheta) = \inf_{\varphi \in \Phi_{\alpha\alpha}} \beta_\varphi(\vartheta) \quad \forall \vartheta \in \Theta_K.$$
 
-### Neyman-Pearson lemma
+## Neyman-Pearson lemma
 
 Let's start with *simple hypothesis*:
 
@@ -843,7 +843,7 @@ $$1-\beta_\varphi(\vartheta_1) \leq 1-\beta_{\tilde{\varphi}}(\vartheta_1).$$
 If $\alpha = 1-\beta_{\tilde{\varphi}}(\vartheta_1) < 1$, then $\varphi \equiv \alpha$ is UMP. Since every UMP test is an NP test, we know that $p_1(x) = \tilde{c}p_0(x)$ for almost all $x$. Therefore, $\tilde{c}=1$ and $p_1 = p_0$ a.s. and also $P_{\vartheta_0} = P_{\vartheta_1}$, which is contradictory.
 </details>
 
-### Confidence interval
+## Confidence interval
 
 Let $X_1, \dots X_n$ i.i.d. $\sim \mathcal{N}(\mu,\sigma^2)$ with $\sigma^2$ known. We test
 
@@ -1767,7 +1767,7 @@ In addition, simple hypotheses tell you on which side the alternative lies.
 * Formal results like the NP lemma are useful to derive more relevant results. 
 
 
-### Monotone likelihood ratio
+## Monotone likelihood ratio
 
 Let $\Theta = \mathbb{R}$, $\mathcal{P} = \lbrace P_\vartheta \mid \vartheta \in \Theta \rbrace$ and $T\colon \mathcal{X} \rightarrow \mathbb{R}$ be some statistic. Family $\mathcal{P}$ is called **class with monotone (isotonic) likelihood ratio** if for every $\vartheta < \vartheta_1$ there exists monotonically increasing function $H_{\vartheta_0, \vartheta_1} \colon \mathbb{R} \rightarrow [0, \infty)$, such that
 
@@ -1893,7 +1893,7 @@ $$\phi(x) = 1_{\lbrace \overline{x}_n > \mu_0 + \frac{\hat{\sigma}_n}{\sqrt{n}}t
 
 is called **the one-sided t-test**.
 
-### Two-sided tests
+## Two-sided tests
 
 There are in general no UMP tests for
 
@@ -1961,7 +1961,7 @@ Solving this for $c_1$ and $c_2$ we get
 
 $$c_1 = \ln\frac{2}{2-\alpha}, \quad c_2 = \ln\frac{2}{\alpha}.$$
 
-### Asymptotic properties of tests
+## Asymptotic properties of tests
 
 Let $X_1, \dots , X_m$ i.i.d. $\sim \mathcal{N}(\mu_1, \sigma^2)$ and $Y_1, \dots , Y_n$ i.i.d. $\sim \mathcal{N}(\mu_2, \tau^2)$ are two independent samples. We want to test the hypothesis:
 
@@ -2035,7 +2035,7 @@ $$\lim_{n \rightarrow \infty} \beta_{\varphi_n}(\vartheta) = 0 \quad \forall \va
 
 In our example $\varphi_{m,n}^*(x)$ is consistent and has asymptotic significance level $\alpha$.
 
-### Likelihood ratio
+## Likelihood ratio
 
 The common principle of building tests for 
 
@@ -2162,7 +2162,7 @@ if $\vartheta \neq h(\eta)$. Hence for $\vartheta \in \Theta_K$
 
 $$-2\log(\lambda(X^{(n)}))\xrightarrow{\mathcal{L}} \infty.$$
 
-### Likelihood-ratio tests
+## Likelihood-ratio tests
 
 Take an example: let $X_{ij} \sim \mathcal{N}(\mu_i, \sigma_i^2)$, $i = 1, \dots, r$ and $j = 1, \dots, n_i$, where $n_i \rightarrow \infty$ with the same speed. We test equivalence of variances:
 

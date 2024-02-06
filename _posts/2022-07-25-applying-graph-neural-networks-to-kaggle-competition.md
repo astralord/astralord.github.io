@@ -10,7 +10,7 @@ enable_d3: true
 
 Few months ago, Kaggle launched featured simulation competition [Kore-2022](https://www.kaggle.com/competitions/kore-2022). In this kind of competitions participants bots are competing against each other in an game environment, supported by Kaggle. Often there are 2 or 4 players in a game, at the end each winner/loser moves up/down according to skill rating system. Team reaching top-rating wins.
 
-### Kore rules
+## Kore rules
 
 That's how entry to Kore competition looks like:
 
@@ -42,7 +42,7 @@ Here I'll try to list the main rules:
 
 In a nutshell: you collect kore, spawn ships and try to destroy all of enemy objects before he destroys yours. The main difficulty for player is to construct an optimal path planning solution for fleet flights. Players must calculate many steps ahead as the effects of their actions in most cases do not appear immediately.
   
-### Graph construction
+## Graph construction
 
 Now how one can approach this task? Prior to this competition, Kaggle launched its trial version, Kore Beta, with the only difference being that it was 4-players game. First places were taken by rule-based agents, based mostly on simple heuristics. 
 
@@ -273,7 +273,7 @@ Node input features $\mathbf{v}_i$ contain kore amount on the tile, timestamp, t
 
 The edge input features $\mathbf{e}_{ji}$ are $(1, 0, 0)^T$, $(0, 1, 0)^T$ and $(0, 0, 1)^T$ for temporal, lateral and longitudinal edges respectively. Basically, they are one-hot representations of these edge classes. Why treat spatial edges differently? When you create a flight plan, its length increases when fleet makes a turn: while for both "N1S" and "NEWS" fleet moves 2 tiles from shipyard and returns back, the first one is smaller and requires fewer ships.
 
-### Graph Encoder Architecture
+## Graph Encoder Architecture
 
 If we had to work with standard representations of board, we would most likely use convolutional layers. There exists an analogue of convolutions in a graph world, called, big surprise, graph convolutions. Similarly to ResNet architecture we can build a ResGCN encoder:
 
@@ -1145,7 +1145,7 @@ resgcn_head();
 ![](.)
 *Fig. 6. ResGCN block schema. [GraphNorm](https://arxiv.org/pdf/2009.03294.pdf) layer normalizes node features over each graph in a batch.*
 
-### Imitation learning
+## Imitation learning
 
 Now, we can train our network to imitate actions of best agents on a leaderboard. Each turn for each node with player shipyard on it, we have to decide for two things:
 
@@ -2060,7 +2060,7 @@ path_search();
 
 Now having probabilities for each move, we can generate path by greedy or beam search, cutting path when it reaches shipyard or when there is no more space left. There is also a case, when path stuck in a loop like 'NW999..', and it can take forever until we won't have enough space. For such thing it is useful to make a stop by some maximum-moves threshold.
 
-#### Bonus: reinforcement learning
+### Bonus: reinforcement learning
 
 In my experiments, imitation learning was good enough for an agent to start making good moves, however, there was constant instability on inference. At some point an agent could make a ridiculously stupid move (with small probability, but nevertheless), effecting balance of the game dramatically. This move could've never been made by an expert agent, therefore we end up with board state which neural network didn't see in training data. So the chance of making wrong moves increases at each step and finally imitation agent loses. 
 
@@ -2075,7 +2075,7 @@ where $A_\omega(a, s)$ is an advantage, obtained by [UPGO](https://paperswithcod
 RL helped to stabilize inference, but sadly it didn't go far beyond that. New agent was able to beat rule-based agents, which were on top of Kore Beta competition ~80% of the time.
 
 
-### Results and conclusions
+## Results and conclusions
 
 Unfortunately, best of my agents were able to reach only up to 30-ish places, but still, it was a fun ride. What could've been done better? Here is my list:
 

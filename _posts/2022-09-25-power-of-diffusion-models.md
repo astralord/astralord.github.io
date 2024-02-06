@@ -34,7 +34,7 @@ Text-Guided Diffusion Models](https://arxiv.org/pdf/2112.10741.pdf)
 	- [Denoising Diffusion-based Generative Modeling: Foundations and Applications](https://drive.google.com/file/d/1DYHDbt1tSl9oqm3O333biRYzSCOtdtmn/view)
 	- [The recent rise of diffusion-based models](https://maciejdomagala.github.io/generative_models/2022/06/06/The-recent-rise-of-diffusion-based-models.html)
 
-### Denoising diffusion probabilistic models (DDPM)
+## Denoising diffusion probabilistic models (DDPM)
 
 To define a **diffusion probabilistic model** (usually called a **“diffusion model”** for brevity), we first define a Markov chain, which starts from initial datapoint $\mathbf{x}_0$, then gradually adds noise to the data, creating sequence $\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{x}_T$, until signal is destroyed.
 
@@ -935,7 +935,7 @@ def sample():
     return x_t
 ```
 
-### Denoising diffusion implicit models (DDIM)
+## Denoising diffusion implicit models (DDIM)
 
 A critical drawback of these models is that they require many iterations to produce a high quality sample. Reverse diffusion process could have thousands of steps and iterating over all the steps is required to produce a single sample, which is much slower compared to GANs, which only needs one pass through a network. For example, it takes around 20 hours to sample 50k images of size 32 × 32 from a DDPM, but less than a minute to do so from a GAN on a Nvidia 2080 Ti GPU. This becomes more problematic for larger images as sampling 50k images of size 256 × 256 could take nearly 1000 hours on the same GPU.
 
@@ -1335,7 +1335,7 @@ def sample(taus):
     return x_t
 ```
 
-### Score based generative modelling
+## Score based generative modelling
 
 Diffusion model is an example of discrete Markov chain. We can extend it to continuous stochastic process. Let's define **Wiener process (Brownian motion)** $\mathbf{w}_t$ - a random process, such that it starts with $0$, its samples are continuous paths and all of its increments are independent and normally distributed, i.e.
 
@@ -1517,7 +1517,7 @@ with $\bar{\alpha}(t) = e^{\int_0^t \beta(s) ds}$. Therefore we can minimize
 
 $$\mathcal{L} = \mathbb{E}_{t \sim \mathcal{U}(0, t)} \mathbb{E}_{\mathbf{x}(0) \sim q_0(\mathbf{x})} \mathbb{E}_{\mathbf{x}(t) \sim q_t(\mathbf{x}(t) \vert \mathbf{x}(0))}[ \| \mathbf{s}_\theta(\mathbf{x}(t), t) - \nabla_{\mathbf{x}(t)} \log q_t(\mathbf{x}(t) \vert \mathbf{x}(0)) \|^2 ].$$
 
-#### Connection to diffusion model
+### Connection to diffusion model
 
 Given a Gaussian distribution
 
@@ -1538,11 +1538,11 @@ Also,
 $$\mathbf{s}_\theta(\mathbf{x}, t) = -\frac{\epsilon_\theta(\mathbf{x}, t)}{\sqrt{1 - \bar{\alpha}(t)}}.$$
 
  
-### Guided diffusion
+## Guided diffusion
 
 Once the model $\epsilon_\theta(\mathbf{x}_t, t)$ is trained, we can use it to run the isotropic Gaussian distribution $\mathbf{x}_T$ back to $\mathbf{x}_0$ and generate limitless image variations. But how can we guide the class-conditional model to generate specific images by feeding additional information about class $y$ during the training process?
 
-#### Classifier guidance
+### Classifier guidance
 
 If we have a differentiable discriminative model $f_\phi(y \vert \mathbf{x}_t)$, trained to classify noisy images $\mathbf{x}_t$, we can use its gradients to guide the diffusion sampling process toward the conditioning information $y$  by altering the noise prediction. 
 
@@ -1571,7 +1571,7 @@ Basically, we are raising the conditional part of the distribution to a power, w
 
 A downside of classifier guidance is that it requires an additional classifier model and thus complicates the training pipeline. One can't plug in a standard pre-trained classifier, because this model has to be trained on noisy data $\mathbf{x}_t$. And even having a classifier, which is robust to noise, classifier guidance is inherently limited in its effectiveness. Most of the information in the input $\mathbf{x}_t$ is not relevant to predicting $y$, and as a result, taking the gradient of the classifier w.r.t. its input can yield arbitrary (and even adversarial) directions in input space.
 
-#### Classifier-free guidance
+### Classifier-free guidance
 
 [Ho & Salimans](https://openreview.net/pdf?id=qw8AKxfYbI) proposed an alternative method, **a classifier-free guidance**, which doesn't require training a separate classifier. Instead, one trains a conditional diffusion model, parameterized by $\epsilon_\theta(\mathbf{x}_t, t \vert y)$ with conditioning dropout: 10-20% of the time, the conditioning information $y$ is removed. In practice, it is replaced with a special input value $y=\emptyset$ representing the absence of conditioning information. This way model knows how to generate images unconditionally as well, i.e.
 
@@ -1610,7 +1610,7 @@ This is the same as applying guidance to unconditional model with $\omega + 1$ s
 
 $$\tilde{q}(\mathbf{x}_t \vert y) \propto q(\mathbf{x}_t \vert y) \cdot q(y \vert \mathbf{x}_t)^\omega \propto q(\mathbf{x}_t) \cdot q(y \vert \mathbf{x}_t)^{\omega+1}.$$
 
-#### CLIP guidance
+### CLIP guidance
 
 With CLIP guidance the classifier is replaced with a [**CLIP**](https://arxiv.org/pdf/2103.00020.pdf) **model** (abbreviation for **C**ontrastive **L**anguage-**I**mage **P**re-training). CLIP was originally a separate auxiliary model to rank the results from generative model, called [**DALL·E**](https://arxiv.org/pdf/2102.12092.pdf). DALL·E was the first public system capable of creating images based on a textual description from OpenAI, however it was not a diffusion model and is therefore out of the scope for this post. DALL·E's name is a portmanteau of the names of animated robot Pixar character WALL-E and the Spanish surrealist artist Salvador Dalí.
 
@@ -1672,7 +1672,7 @@ $$
 
 Similar to classifier guidance, CLIP must be trained on noised images $\mathbf{x}_t$ to obtain the correct gradient in the reverse process.
 
-### GLIDE
+## GLIDE
 
 [**GLIDE**](https://arxiv.org/pdf/2112.10741.pdf), which stands for **G**uided **L**anguage to **I**mage **D**iffusion for Generation and **E**diting, is a model by OpenAI that has beaten DALL·E, arguably presented the most novel and interesting ideas and yet received comparatively little publicity. 
 
@@ -1693,7 +1693,7 @@ The text encoder was built from 24 residual blocks of width 2048. The input is a
 
 Model has fewer parameters than DALL·E (5B vs 12B) and was trained on the same dataset, however was favored over it by human evaluators and has beaten it by [FID score](https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance). However, as the authors mentioned, unoptimized GLIDE takes 15 seconds to sample one image on a single A100 GPU. This is much slower than sampling for related GAN methods, which produce images in a single forward pass and are thus more favorable for use in real-time applications.
 
-### DALL·E 2 (unCLIP)
+## DALL·E 2 (unCLIP)
 
 In April 2022, OpenAI released a new model, called [**DALL·E 2**](https://arxiv.org/pdf/2204.06125.pdf) (or **unCLIP** in the paper), which is a clever combination of CLIP and GLIDE. The CLIP model is trained separately on a data of image-text pairs $(\mathbf{x}, y)$. Let
 
@@ -1738,7 +1738,7 @@ Or one can change $\mathbf{z}_i$ towards the difference of the text CLIP embeddi
 ![unCLIP manipulation 2]({{'/assets/img/unCLIP-manipulation-2.png'|relative_url}})
 *Text diffs applied to images by interpolating between their CLIP image embeddings and a normalised difference of the CLIP text embeddings produced from the two descriptions. Decoder latent $\mathbf{x}_T$ is kept as a constant.*
 
-### Imagen
+## Imagen
 
 Two months after the publication of DALL·E 2 Google Brain team presented [**Imagen**](https://arxiv.org/pdf/2205.11487.pdf). It uses a pre-trained T5-XXL language model instead of CLIP to encode text for image generation. The idea is that this model has vastly more context regarding language processing than a model trained only on the image captions, and so is able to produce more valuable embeddings without the need to additionally fine-tune it. Authors of the paper noted, that scaling text encoder is extremely efficient and more important than scaling diffusion model size.
 
@@ -1747,7 +1747,7 @@ Next, the resolution is increased via super-resolution diffusion models. There i
 ![Imagen]({{'/assets/img/imagen-arch.png'|relative_url}})
 *Visualization of Imagen. Imagen uses a frozen text encoder to encode the input text into text embeddings. A conditional diffusion model maps the text embedding into a 64 × 64 image. Imagen further utilizes text-conditional super-resolution diffusion models to upsample the image, first 64 × 64 → 256 × 256, and then 256 × 256 → 1024 × 1024.*
 
-#### Noise conditioning augmentation
+### Noise conditioning augmentation
 
 The solution can be viewed as a sequence of diffusion models, which was called **cascaded diffusion models** in [Ho et al. (2021)](https://arxiv.org/pdf/2106.15282.pdf). Noise conditioning augmentation between these models is crucial to the final image quality, which is to apply strong data augmentation to the low-resolution image $\mathbf{z}$ of each super-resolution model $p_\theta(\mathbf{x} \vert \mathbf{z})$. In simple terms, it is equivalent to applying various data augmentation techniques, such as a Gaussian noise/blur, to a low-resolution image before it is fed into the super-resolution models. 
 
@@ -1810,7 +1810,7 @@ def sample_sr():
 ```
 
 
-#### Dynamic thresholding
+### Dynamic thresholding
 
 Another major key feature of Imagen is a so-called **dynamic thresholding**. Authors of the model found out that larger classifier-free guidance scale $\omega$ leads to better text alignment, but worse image fidelity producing highly saturated and unnatural images. They hypothesised that large $\omega$ increases train-test mismatch and generated images are saturated due to the very large gradient updates during sampling. 
 
@@ -1833,7 +1833,7 @@ def sample():
     return x_t
 ```
 
-### Latent-space diffusion model / Stable diffusion
+## Latent-space diffusion model / Stable diffusion
 
 [Rombach & Blattmann, et al. 2022](https://arxiv.org/pdf/2112.10752.pdf) presented **latent diffusion models (LDM)**, which operate in the latent space of pretrained variational autoencoders instead of pixel space, making training cost lower and inference speed faster.
 
@@ -2211,7 +2211,7 @@ Similar to Google's Imagen, this model uses a frozen CLIP ViT-L/14 text encoder 
 
 Unlike previous models, Stable Diffusion makes its [source code](https://github.com/CompVis/stable-diffusion) available, along with pre-trained weights.
 
-### Conclusion
+## Conclusion
 
 Diffusion models have shown amazing capabilities as generative models. They are both analytically tractable and flexible: they can be analytically evaluated and cheaply fit arbitrary structures in data. Besides text-conditioned image generation there a lot of interesting characteristics of the models which were not covered in this post, such as image in-/outpainting, style transfer and image editing.
 

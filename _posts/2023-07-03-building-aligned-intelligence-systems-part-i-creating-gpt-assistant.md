@@ -44,9 +44,9 @@ GPT assistant building pipeline can be divided into 4 stages, each of which will
 ![GPT assistant pipeline]({{'/assets/img/rlhf_karpathy.png'|relative_url}})
 *A diagram from [Andrej Karpathy talk](https://build.microsoft.com/en-US/sessions/db3f4859-cd30-4445-a0cd-553c3304f8e2) illustrating the four steps of GPT assistant training pipeline: (1) base model pretraining, (2) supervised fine-tuning (SFT), (3) reward model (RM) training, and (4) reinforcement learning via policy optimization on this reward model and human feedback (RLHF).*
 
-### Pretraining Base model
+## Pretraining Base model
 
-#### Language modelling
+### Language modelling
 
 In 2018 OpenAI presented **Generative pre-trained transformer (GPT)**, a type of deep learning model, that is designed to generate natural language text. Their work, which they humbly called [Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf), along with famous [Attention is all you need](https://arxiv.org/pdf/1706.03762.pdf) paper, gave birth to the entire family of large language models and changed an entire AI industry in just 5 years.
 
@@ -63,7 +63,7 @@ Though GPT-1 was pre-trained as an autoregressive language model, transformer's 
 
 The major conclusion from this paper was that it is no longer necessary to develop specific neural network architectures for specific natural language processing tasks. Transfer learning from GPT language model pre-trained with large corpus of text data was already sufficient.
 
-#### Transformer architecture
+### Transformer architecture
 
 The process of text generation with GPT is the following. First, embedding layer takes sequence of tokens $x$ and outputs
 
@@ -835,7 +835,7 @@ There is no official information yet on how large [GPT-4](https://arxiv.org/pdf/
 
 Language modelling is by far the most resource-intensive phase in InstructGPT training. [According to OpenAI](https://openai.com/research/instruction-following) the rest of their pipeline used less than 2% of the compute and data relative to model pretraining. One way of thinking about this process is that at the end of this phase base LLM already has all the required capabilities, but they are difficult to elicit and the rest of the process is aimed to “unlock” them.
 
-### Supervised fine-tuning (SFT) for dialogue
+## Supervised fine-tuning (SFT) for dialogue
 
 Suppose we have a pretrained large language model. But this model is far from being a useful assistant. It doesn't answer questions, it only wants to complete internet documents. Chip Huyen provided a good example [in her blogpost](https://huyenchip.com/2023/05/02/rlhf.html#phase_2_sft): if you give the pretrained model a question, say, `How to make pizza`, any of the following could be valid completion.
 
@@ -1063,7 +1063,7 @@ sft_learning();
 
 Basically, SFT model is an initial language model for RLHF. For InstructGPT training OpenAI fine-tuned three different versions of GPT-3 (1.3B, 6B and 175B) on labeler-written demonstration prompts. OpenAI called supervised finetuning *behavior cloning*: we demonstrate how the model should behave, and the model clones this behavior. Anthropic, for example, used a different technique: they trained their SFT model by distilling an original language model on context clues for their “helpful, honest, and harmless” criteria. 
 
-### Reward Model (RM) training
+## Reward Model (RM) training
 
 The problem with SFT is that model learns what kind of responses are plausible for a given context, but it receives no information on how good or bad a response is. At the same time while it is easy for humans to understand which sentences are better than others, it is difficult to formulate and automate reasons for their choice.
 
@@ -1310,7 +1310,7 @@ for all $x$.
 
 The success of reward modeling relies heavily on the quality of the reward model. If the reward model only captures most aspects of the objective but not all of it, this can lead the agent to find undesirable degenerate solutions. In other words, the agent’s behavior depends on the reward model in a way that is potentially very fragile.
 
-### Reinforcement Learning with Human Feedback (RLHF)
+## Reinforcement Learning with Human Feedback (RLHF)
 
 At final stage output of the reward model used as a scalar reward to optimize a policy. Following [Stiennon et al. (2020)](https://arxiv.org/pdf/2009.01325.pdf), authors of InstructGPT fine-tuned the SFT model on their environment using on-policy algorithm, called **Proximal Policy Optimization (PPO)**, [Schulman et al. (2017)](https://arxiv.org/pdf/1707.06347.pdf). The environment is a bandit environment which presents a random customer prompt to language model and expects a response to the prompt with a sequence of probability distributions over tokens $\pi(y \mid x)$. The action space of this policy is all the tokens corresponding to the vocabulary of the language model and the observation space is the distribution of possible input token sequences.
 
@@ -1475,7 +1475,7 @@ At this stage one has to be careful to avoid **reward hacking** - an effect that
 
 Finally, RM stage and RL stage can be iterated continuously: collect more comparison data on the current best policy, then use it to train a new RM and then a new policy. In InstructGPT pipeline, most of comparison data comes from supervised policies, with some coming from PPO policies.
 
-#### Details of RL algorithm
+### Details of RL algorithm
 
 Consider response generation as a sequence of input states and actions. Let's denote input state at timestep $t$ as
 
@@ -1691,7 +1691,7 @@ def critic_loss(critic, params, states, returns):
     return (values - returns) ** 2
 ```
 
-#### Note on KL approximations
+### Note on KL approximations
 
 John Schulman, author of PPO algorithm, proposes different estimators of KL-divergence $D_{\operatorname{KL}}(\pi' \mid \mid \pi)$ in his [blogpost](http://joschu.net/blog/kl-approx.html). Let $\kappa=\frac{\pi(x)}{\pi'(x)}$, then for $\pi \approx \pi'$ we get empirically:
 
@@ -1703,7 +1703,7 @@ John Schulman, author of PPO algorithm, proposes different estimators of KL-dive
 
 The main advantage of $k_2$ and $k_3$ estimators is the zero probability of getting negative values. Although, with true KL-divergence between $\pi$ and $\pi'$ getting larger we can observe that bias for $k_2$ and variance for $k_3$ are increasing as well.
 
-### GPT chatbot limitations
+## GPT chatbot limitations
 
 ![Shoggoth]({{'/assets/img/shoggoth.jpg'|relative_url}})
 *[Is RLHF just putting smileys on a shoggoth?](https://thorehusfeldt.com/2023/03/02/reinforcement-learning-using-human-feedback-is-putting-smileys-on-a-shoggoth/)*

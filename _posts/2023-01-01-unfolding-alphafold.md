@@ -17,7 +17,7 @@ published: false
 	- [Protein Structure](https://www.nature.com/scitable/topicpage/protein-structure-14122136/)
 	- [A few words about AlphaFold 2](https://yakovlev.me/para-slov-za-alphafold2/) (in Russian)
 
-### Protein structure prediction
+## Protein structure prediction
 
 **Proteins** are large, complex molecules essential to all of life. Nearly every function that our body performs - contracting muscles, sensing light, or turning food into energy - relies on proteins, and how they move and change. Proteins are built from small organic molecules, called **amino acids** or **residues**, which are linked together by **peptide bonds**, thereby forming a long chain. There are 20 different types of amino acids, so a protein can be represented as a string from an alphabet of 20 letters. The linear sequence of amino acids within a protein is considered the **primary structure** of the protein.
 
@@ -35,7 +35,7 @@ The recipes for those proteins - called **genes** - are directly encoded in our 
 
 But just because you know the genetic recipe for a protein doesn’t mean you automatically know its shape. DNA only contains information about the sequence of amino acids - not how they fold into shape. The bigger the protein, the more difficult it is to model, because there are more interactions between amino acids to take into account. As demonstrated by [Levinthal’s paradox](https://en.wikipedia.org/wiki/Levinthal%27s_paradox), it would take longer than the age of the known universe to randomly enumerate all possible configurations of a typical protein before reaching the true 3D structure - yet proteins themselves fold spontaneously, within milliseconds. Predicting how these chains will fold into the intricate 3D structure of a protein is what’s known as the **protein-folding problem** - a challenge that scientists have worked on for decades.
 
-#### CASP competition
+### CASP competition
 
 In 1958, Sir John Kendrew, an English biochemist, determined the world’s first protein structure by decoding myoglobin – a protein found in the heart and skeletal muscle tissue of mammals. Since then through an enormous experimental effort the structures of around 100,000 unique protein have been determined. But this is a tiny fraction, compared to the over 200 millions of known protein sequences. The reason is that experimental protein structure determination is an extremely hard task.
  
@@ -45,9 +45,9 @@ In 1994, computational biologist John Moult set up an international competition,
 
 The most difficult category is *ab initio* modeling, i.e. structure prediction from scratch, without additional information about similar proteins. For a long time, there were practically no breakthroughs in this area, until CASP13 in 2018. The first place in this competition was take by team called 'A7D', the results of which were much better than the results of other competitors. It turned out that under this name was hidden the new AlphaFold algorithm from the company DeepMind, which had already made a splash by that time with victories in the fields of board game Go.
 
-### AlphaFold
+## AlphaFold
 
-#### Network architecture
+### Network architecture
 
 ![AlphaFold Detailed]({{'/assets/img/alphafold-network.png'|relative_url}})
 *AlphaFold 2 architecture. Source: AlphaFold 2 paper*

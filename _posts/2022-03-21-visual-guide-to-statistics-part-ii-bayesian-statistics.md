@@ -10,7 +10,7 @@ enable_d3: true
 
 > Part II introduces different approach to parameters estimation called Bayesian statistics.
 
-### Basic definitions
+## Basic definitions
 
 We noted in the previous part that it is extremely unlikely to get a uniformly best estimator. An alternative way to compare risk functions is to look at averaged values (weighting over parameters probabilities) or at maximum values for worst-case scenarios.
 
@@ -34,7 +34,7 @@ $$ Q^{X, \theta}(A) = \int_\Theta \int_\mathcal{X} 1_A(x,\vartheta) P_\vartheta 
 
 Before experiment we have $\pi = Q^\theta$, marginal distribution of $\theta$ under $Q^{X, \theta}$, assumed distribution of parameter $\vartheta$. After observation $X(\omega)=x$ the information about $\theta$ changes from $\pi$ to $Q^{\theta \mid X=x}$, which we will call a **posterior distribution**  of random variable $\theta$ under condition $X=x$.
 
-### Posterior risk
+## Posterior risk
 
 Recall that risk function is an expected value of a loss function $L$:
 
@@ -820,7 +820,7 @@ sampleButton
 ![](.)
 *Fig. 1. Bayesian inference for normal distribution.*
 
-### Minimax estimator
+## Minimax estimator
 
 For an estimator $g$
 
@@ -1480,7 +1480,7 @@ var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#34
 ![](.)
 *Fig. 2. Bayesian inference for binomial distribution. Note that when least favorable prior is chosen, Bayes and minimax estimators coincide regardless of the sample value.*
 
-### Least favorable sequence of priors
+## Least favorable sequence of priors
 
 Let 
 

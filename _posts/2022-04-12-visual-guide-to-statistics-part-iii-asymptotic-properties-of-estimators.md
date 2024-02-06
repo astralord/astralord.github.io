@@ -10,7 +10,7 @@ published: true
 
 > A minimal condition for a good estimator is that it is getting closer to estimated parameter with growing size of sample vector. In this post we will focus on asymptotic properties of estimators.
 
-### Consistency of estimators
+## Consistency of estimators
 
 Berore talking about estimators convergence, let's recall that there exist several different notions of convergence of random variables. Let $(X_n)$ be sequence of real-valued random variables, then we say
 
@@ -73,7 +73,7 @@ $$\hat{\gamma}(X) \xrightarrow[]{\text{a.s.}} \gamma(\vartheta).$$
 
 Hence, $\hat{\gamma}(X)$ is a strongly consistent estimator.
 
-### Central Limit Theorem
+## Central Limit Theorem
 
 Let $(X_n)$ be a sequence of $d$-dimensional random variables. [Lévy's continuity theorem](https://en.wikipedia.org/wiki/L%C3%A9vy%27s_continuity_theorem#:~:text=In%20probability%20theory%2C%20L%C3%A9vy's%20continuity,convergence%20of%20their%20characteristic%20functions.) states that
 
@@ -675,7 +675,7 @@ mclt();
 ![](.)
 *Fig. 1. Visualization of multidimensional CLT for two-dimensional case. On the left-hand side there is random vector of two uniformly distributed random variables: $X_1, X_2 \sim \mathcal{U}(-1, 1)$ with mean $\mu=(0, 0)^T$ and correlation $\rho$. On the right-hand side is $\sqrt{n} X^{(n)}$ which for large $n$ has approximately normal distribution with zero mean and the same covariance as $X$.*
 
-### Delta-method
+## Delta-method
 
 Let $(X_n)$ and $(Y_n)$ be sequences of $d$-dimensional random variables, such that
 
@@ -1277,7 +1277,7 @@ prsn_plt();
 ![](.)
 *Fig. 2. Visualization of asymptotic normality for Pearson correlation coefficient. Drag sample dots to observe how it affects $SQ$ coefficients and $\hat{\rho}_n$.*
 
-### Asympotic efficiency
+## Asympotic efficiency
 
 Let $g_n \subset \mathbb{R}^l$ be a sequence of estimators with 
 
@@ -1335,7 +1335,7 @@ $$\mathcal{I}^{-1}(f_n(\cdot, \vartheta)) = \begin{pmatrix}
 	
 and $g_n$ is not efficient, but asymptotically efficient.
 
-### Asymptotic properties of maximum-likelihood estimators
+## Asymptotic properties of maximum-likelihood estimators
 
 In [Part I](https://astralord.github.io/posts/visual-guide-to-statistics-part-i-basics-of-point-estimation/#common-estimation-methods) we briefly mentioned maximum-likelihood estimators as one of the most common estimation methods in statistic. It is worth knowing what their asymptotic properties are. Let's rewrite the definition here: let $X_1, \dots X_n$ be i.i.d. $\sim P_\vartheta$, $\vartheta \in \Theta$ with densities $f(\cdot, \vartheta)$. We call
 
@@ -1380,7 +1380,7 @@ $$ \vartheta = \arg \max L(\eta, \vartheta)\quad \text{and} \quad \hat{\theta}_n
 
 and condition 3. 
 
-### Asymptotic efficiency of maximum-likelihood estimators
+## Asymptotic efficiency of maximum-likelihood estimators
 
 If the following conditions are satisfied:
 

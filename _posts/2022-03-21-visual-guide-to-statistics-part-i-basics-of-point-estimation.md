@@ -11,8 +11,8 @@ math: true
 > 
 > This post in particular focuses on point estimators of distribution parameters and their characteristics.
 
+## Intro
 
-### Intro
 Imagine that you are a pharmaceutical company, which is about to introduce a new drug into production. Prior to launch you need to carry out experiments to assess its quality depending on the dosage. Say you give this medicine to an animal, after which the animal is examined and checked whether it has recovered or not by taking a dose of $X$. You can think of the result as random variable $Y$ following Bernoulli distribution:
 
 $$ Y \sim \operatorname{Bin}(1, p(X)), $$
@@ -298,7 +298,7 @@ and
 $$ \mathcal{X} = \{0, 1\}^n, \quad \Theta=\left[0, \infty\right), \quad \mathcal{P}=\{\otimes_{i=1}^nP_{\vartheta}^i \mid \vartheta>0 \}. $$
 
 
-### Uniformly best estimator
+## Uniformly best estimator
 
 Mandatory parameter estimation example which can be found in every statistics handbook is mean and variance estimation for Normal distribution. Let $X_1, \dots, X_n$ i.i.d. $\sim \mathcal{N}(\mu, \sigma^2) = P_{\mu, \sigma^2}$. The typical estimation for $\vartheta = (\mu, \sigma^2)$ would be
 
@@ -339,7 +339,7 @@ $$ \mathbb{E}[(\tilde{g}(X)-\mu)^2]=0 \quad \forall \mu \in \mathbb{R} $$
 has to hold, which basically means that $\tilde{g}(x) = \mu$ with probability $1$ for every $\mu \in \mathbb{R}$, which of course is impossible.
 
 
-### UMVU estimator
+## UMVU estimator
 
 In order to still get *optimal* estimators we have to choose other criteria than a uniformly smaller risk. What should be our objective properties of $g$?
 
@@ -365,7 +365,7 @@ $$ MSE_\vartheta(g) = R(\vartheta, g)=\mathbb{E}[(g(X)-\gamma(\vartheta))^2]=\op
 
 is called the **mean squared error**. Note that in some cases biased estimators have lower MSE because they have a smaller variance than does any unbiased estimator.
 
-### Chi-squared and t-distributions
+## Chi-squared and t-distributions
 
 Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estimators for mean and standard deviation of normally distributed random variable? Now we are ready to talk about their properties, but firstly we have to introduce two distributions:
 
@@ -1231,7 +1231,7 @@ biasedness();
 
 So far we figured the unbiasedness of $g(X) = \overline{X}_n$. But how can we tell if $\overline{X}_n$ is an UMVU estimator? Can we find an estimator of $\mu$ with variance lower than $\frac{\sigma^2}{n}$?
 
-### Efficient estimator
+## Efficient estimator
 
 Given a set of unbiased estimators, it is not an easy task to determine which one provides the smallest variance. Luckily, we have a theorem which gives us a lower bound for an estimator variance.
 
@@ -1303,7 +1303,7 @@ $$ \operatorname{Var}(g(X)) \geq \frac{1}{n} \big( \frac{\partial}{\partial \mu}
 Therefore, $g(x) = \overline{x}_n$ is an UMVU estimator.
 
 
-### Multidimensional Cramér–Rao inequality
+## Multidimensional Cramér–Rao inequality
 
 Define function 
 
@@ -1361,7 +1361,7 @@ $$ \operatorname{Cov}_\vartheta(\widetilde{g}(X)) =
 	 
 therefore $\widetilde{g}$ is not efficient. 
 
-### Exponential family
+## Exponential family
 
 In the previous examples, we consider without proof the fulfillment of all regularity conditions of the Cramér–Rao inequality. Next, we will discuss a family of distributions for which the Cramér–Rao inequality turns into an equality.
 
@@ -1456,7 +1456,7 @@ $$ T(X) = \Big( \frac{1}{n} \sum_{i=1}^n X_i, \frac{1}{n} \sum_{i=1}^n X_i^2  \B
 
 is efficient for $(\mu, \mu^2 + \sigma^2)^T$.
 
-### Common estimation methods
+## Common estimation methods
 
 If distribution doesn't belong to exponential family, then for such case there exist two classical estimation methods:
 
