@@ -378,7 +378,7 @@ var prior_curve = svg
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -394,7 +394,7 @@ var posterior_curve = svg
       .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -406,7 +406,7 @@ var posterior_curve = svg
 var avg_dash = svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .datum([{x: avg, y: avg_y}, {x: avg, y: 0}])
     .attr("d",  d3.line()
@@ -416,7 +416,7 @@ var avg_dash = svg.append("path")
 var mode_dash = svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .datum([{x: g, y: mode_y}, {x: g, y: 0}])
     .attr("d",  d3.line()
@@ -426,7 +426,7 @@ var mode_dash = svg.append("path")
 var mu_dash = svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .datum([{x: mu, y: mu_y}, {x: mu, y: 0}])
     .attr("d",  d3.line()
@@ -442,7 +442,7 @@ var mu_dot = svg.append('g')
     .attr("cy", function (d) { return y(d.y); } )
     .attr("r", 3)
     .style("fill", "#65AD69")
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1);
       
 var avg_dot = svg.append('g')
@@ -454,7 +454,7 @@ var avg_dot = svg.append('g')
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
       
 var mode_dot = svg.append('g')
@@ -466,7 +466,7 @@ var mode_dot = svg.append('g')
     .attr("cy", function (d) { return y(d.y); } )
     .attr("r", 3)
     .style("fill", "#348ABD")
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1);
 
 var labels_x = 550;
@@ -481,7 +481,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x, y: -7}, {x: labels_x + 25, y: -7}])
    .attr("d",  d3.line()
@@ -508,7 +508,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x, y: 13}, {x: labels_x + 25, y: 13}])
    .attr("d",  d3.line()
@@ -540,7 +540,7 @@ d3.select("#gauss_bayes_plt")
 svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .datum([{x: labels_x + 20, y: 30}, {x: labels_x + 20, y: 45}])
     .attr("d",  d3.line()
@@ -556,7 +556,7 @@ svg.append('g')
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#65AD69")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
       
 d3.select("#gauss_bayes_plt")
@@ -574,7 +574,7 @@ d3.select("#gauss_bayes_plt")
 svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .datum([{x: labels_x + 20, y: 60}, {x: labels_x + 20, y: 75}])
     .attr("d",  d3.line()
@@ -590,7 +590,7 @@ svg.append('g')
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
       
 svg
@@ -607,7 +607,7 @@ svg
 svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .datum([{x: labels_x + 20, y: 90}, {x: labels_x + 20, y: 105}])
     .attr("d",  d3.line()
@@ -623,7 +623,7 @@ svg.append('g')
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#348ABD")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
 
 var mu_x = d3.scaleLinear()
@@ -653,9 +653,9 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     
     var drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { 
-	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
-	          parameter_update(x.invert(d3.event.x));
+	        .on("start drag", function(event, d) { 
+	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
+	          parameter_update(x.invert(event.x));
 	          updateCurves(0);
 	         });
 	         
@@ -782,7 +782,7 @@ sampleButton
               .attr("cy", function (d) { return y(d.y); } )
               .attr("r", 3)
               .style("fill", "#65AD69")
-              .attr("stroke", "#000")
+              .attr("stroke", "currentColor")
               .attr("stroke-width", 1));
           
           smpl_dots[i].transition()
@@ -971,7 +971,7 @@ var prior_curve = prior_svg
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -1029,7 +1029,7 @@ var prior_curve = prior_svg
 	      .attr("width", smpl_x.bandwidth())
 	      .attr("border", 0)
 	      .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; })
-	      .attr("stroke", "#000")
+	      .attr("stroke", "currentColor")
 	      .attr("stroke-width", 1)
 	      .attr("stroke-linejoin", "round")
 	      .attr("height", function(d) { return height - smpl_y(d.y); })
@@ -1115,7 +1115,7 @@ var post_svg = smpl_svg
   post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1)
         .datum([{x: 210, y: 45}, {x: 210, y: 60}])
         .attr("d",  d3.line()
@@ -1131,7 +1131,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
     
   post_svg
@@ -1148,7 +1148,7 @@ var post_svg = smpl_svg
   post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1)
         .datum([{x: 210, y: 75}, {x: 210, y: 90}])
         .attr("d",  d3.line()
@@ -1164,7 +1164,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#348ABD")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
       
   post_svg
@@ -1181,7 +1181,7 @@ var post_svg = smpl_svg
   post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1)
         .datum([{x: 210, y: 105}, {x: 210, y: 120}])
         .attr("d",  d3.line()
@@ -1197,7 +1197,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#F5CC18")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
           
   var posterior_data = [];
@@ -1210,7 +1210,7 @@ var post_svg = smpl_svg
       .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -1225,7 +1225,7 @@ var post_svg = smpl_svg
   var umvu_dash = post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1)
         .datum([{x: umvu_x, y: umvu_y}, {x: umvu_x, y: 0}])
         .attr("d",  d3.line()
@@ -1241,7 +1241,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
       
   var bayes_x = (sample + 1) / (n + 2);
@@ -1250,7 +1250,7 @@ var post_svg = smpl_svg
   var bayes_dash = post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1)
         .datum([{x: bayes_x, y: bayes_y}, {x: bayes_x, y: 0}])
         .attr("d",  d3.line()
@@ -1266,7 +1266,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#348ABD")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
       
   var minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
@@ -1275,7 +1275,7 @@ var post_svg = smpl_svg
   var minimax_dash = post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1)
         .datum([{x: minimax_x, y: minimax_y}, {x: minimax_x, y: 0}])
         .attr("d",  d3.line()
@@ -1291,7 +1291,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#F5CC18")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1);
   
   

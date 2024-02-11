@@ -394,7 +394,7 @@ var err1_curve = svg
       .attr("fill", "#65AD69")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -410,7 +410,7 @@ var err2_curve = svg
       .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -492,7 +492,7 @@ svg.append('g')
      .attr("cy", function (d) { return d.y; } )
      .attr("r", 4)
      .style("fill", "#E86456")
-     .attr("stroke", "#000")
+     .attr("stroke", "currentColor")
      .attr("stroke-width", 1)
      .on("mouseover", function (d) {d3.select(this).style("cursor", "pointer");})
      .on("mouseout", function (d) {})
@@ -570,16 +570,16 @@ function updateErrCurves() {
 
 }
 
-function dragged_pa(d) {
+function dragged_pa(event, d) {
   d3.select(this).attr("cx", d.x = Math.min(x(0.9999), 
-                                   Math.max(d3.event.x, x(0.0001))));
+                                   Math.max(event.x, x(0.0001))));
   p_a = x.invert(d.x);
   updateErrCurves();
 }
 
-function dragged_c(d) {
+function dragged_c(event, d) {
   d3.select(this).attr("cx", d.x = Math.min(xBtm(0.9999), 
-                                   Math.max(d3.event.x, xBtm(0.0001))));
+                                   Math.max(event.x, xBtm(0.0001))));
   c = xBtm.invert(d.x);
   updatePhiLine();
   updateErrCurves();
@@ -599,7 +599,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x, y: labels_y - 2}, {x: labels_x + 25, y: labels_y - 2}])
    .attr("d",  d3.line()
@@ -627,7 +627,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x, y: labels_y + labels_v - 2}, {x: labels_x + 25, y: labels_y + labels_v - 2}])
    .attr("d",  d3.line()
@@ -654,7 +654,7 @@ svg.append('g')
      .attr("cy", function (d) { return d.y; } )
      .attr("r", 4)
      .style("fill", "#E86456")
-     .attr("stroke", "#000")
+     .attr("stroke", "currentColor")
      .attr("stroke-width", 1);
    
        
@@ -932,9 +932,9 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     
     var drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { 
-	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
-	          parameter_update(x.invert(d3.event.x));	         });
+	        .on("start drag", function(event, d) { 
+	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
+	          parameter_update(x.invert(event.x));	         });
 	         
     slider.append("line")
 	    .attr("class", "track")
@@ -1081,7 +1081,7 @@ var mu0_curve = svg
       .attr("fill", "#65AD69")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -1099,7 +1099,7 @@ var mu1_curve = svg
       .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -1116,7 +1116,7 @@ var quantile_curve0 = svg
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -1132,7 +1132,7 @@ var quantile_curve1 = svg
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".2")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -1175,8 +1175,8 @@ function updatePower() {
     .text('Power: ' + Math.round(rc * power) / rc);
 }
 
-function dragged_u(d) {
-  var u_x = Math.min(xRight(3.5), Math.max(d3.event.x, xRight(0)));
+function dragged_u(event, d) {
+  var u_x = Math.min(xRight(3.5), Math.max(event.x, xRight(0)));
   u_q = xRight.invert(u_x);
   alpha = 1 - Phi(u_q);
   var u_y = yRight(alpha);
@@ -1419,7 +1419,7 @@ function sampleGauss(mu, color) {
               .attr("cy", function (d) { return y(d.y); } )
               .attr("r", 3)
               .style("fill", color)
-              .attr("stroke", "#000")
+              .attr("stroke", "currentColor")
               .attr("stroke-width", 1));
           
           smpl_dots[i].transition()
@@ -1547,7 +1547,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x, y: labels_y - 2}, {x: labels_x + 25, y: labels_y - 2}])
    .attr("d",  d3.line()
@@ -1575,7 +1575,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x, y: labels_y + 13}, {x: labels_x + 25, y: labels_y + 13}])
    .attr("d",  d3.line()
@@ -1637,7 +1637,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x + fig_width, y: labels_y - 2}, {x: labels_x + fig_width + 25, y: labels_y - 2}])
    .attr("d",  d3.line()
@@ -2314,7 +2314,7 @@ function addCurve(mu, sigma) {
     curve_id = k;               
     var data = gauss_data(mus[k], sigmas[k], -10, 10);
     
-    var color = "#000";
+    var color = "currentColor";
     for (var i = 0; i < colors.length; i += 1) {
         if (booked_colors.indexOf(colors[i]) < 0) {
              color = colors[i];
@@ -2330,7 +2330,7 @@ function addCurve(mu, sigma) {
                        .attr("fill", color) 
                        .attr("border", 0)
                        .attr("opacity", (k == curve_id) ? ".8" : ".2")
-                       .attr("stroke", "#000")
+                       .attr("stroke", "currentColor")
                        .attr("stroke-width", 1)
                        .attr("stroke-linejoin", "round")
                        .attr("d",  d3.line()
@@ -2440,7 +2440,7 @@ d3.csv("../../../../assets/chi_sf.csv", function(error, data) {
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".8") 
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -2456,7 +2456,7 @@ d3.csv("../../../../assets/chi_sf.csv", function(error, data) {
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".2")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -2591,7 +2591,7 @@ function sample() {
                                 .attr("cy", function (d) { return y(d.y); } )
                                 .attr("r", 3)
                                 .style("fill", color)
-                                .attr("stroke", "#000")
+                                .attr("stroke", "currentColor")
                                 .attr("stroke-width", 1));
           
               smpl_dots[k][i]
@@ -2632,7 +2632,7 @@ function sample() {
         .attr("cy", function (d) { return yRight(d.y); } )
         .attr("r", 3)
         .style("fill", "#348ABD")
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1)
         .attr("opacity", 0);
      
@@ -2703,7 +2703,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "#000")
+   .attr("stroke", "currentColor")
    .attr("stroke-width", 1)
    .datum([{x: labels_x + fig_width, y: labels_y - 2}, {x: labels_x + fig_width + 25, y: labels_y - 2}])
    .attr("d",  d3.line()
@@ -2729,7 +2729,7 @@ svg.append('g')
        .attr("cy", function (d) { return d.y; } )
        .attr("r", 3)
         .style("fill", "#348ABD")
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1);
 
 d3.select("#asymptotic_test")
@@ -3134,8 +3134,8 @@ function updateTn() {
       .style("opacity", 0.8);
   };
   
-  var onclick = function(d) {
-    if (d3.event.ctrlKey || d3.event.metaKey) {
+  var onclick = function(event, d) {
+    if (event.ctrlKey || event.metaKey) {
       d['value'] = Math.max(d['value'] - 1, 0);
     }
     else {
@@ -3218,7 +3218,7 @@ var tn_dot = svg.append('g')
     .attr("cy", function (d) { return d.y; } )
     .attr("r", 3)
     .style("fill", "#348ABD")
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .attr("opacity", 1);    
  

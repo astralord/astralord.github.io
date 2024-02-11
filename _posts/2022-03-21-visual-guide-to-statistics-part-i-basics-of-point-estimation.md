@@ -405,7 +405,7 @@ function plt_label_path(svg, color, x, y) {
 	       .y(function(d) { return d.y; }));
 	       
 	svg.append("path")
-	   .attr("stroke", "#000")
+	   .attr("stroke", "currentColor")
 	   .attr("stroke-width", 1)
 	   .datum([{x: x, y: y}, {x: x + 25, y: y}])
 	   .attr("d",  d3.line()
@@ -522,7 +522,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
       .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -538,7 +538,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
       .attr("fill", "#348ABD")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -772,7 +772,7 @@ var gauss_curve = svg
     .attr("fill", "#65AD69")
     .attr("border", 0)
     .attr("opacity", ".8")
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .attr("stroke-linejoin", "round")
     .attr("d",  d3.line()
@@ -794,7 +794,7 @@ var xn_curve = svg
     .attr("fill", "#E86456")
     .attr("border", 0)
     .attr("opacity", ".8")
-    .attr("stroke", "#000")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .attr("stroke-linejoin", "round")
     .attr("d",  d3.line()
@@ -815,7 +815,7 @@ d3.csv("../../../../assets/chi-t.csv", function(error, chi_data) {
       .attr("fill", "#EDA137")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -878,7 +878,7 @@ var xn_avg_curve = svg
       .attr("fill", "none")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("stroke-dasharray", "3 3")
@@ -906,7 +906,7 @@ var sn_avg_curve = svg
       .attr("fill", "none")
       .attr("border", 0)
       .attr("opacity", ".8")
-      .attr("stroke", "#000")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("stroke-dasharray", "3 3")
@@ -949,7 +949,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 3)
         .style("fill", "#65AD69")
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1));
         
     smpl_copy_dots.push(svg.append('g')
@@ -961,7 +961,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 0)
         .style("fill", "#65AD69")
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1));
         
      smpl_dots[i].transition()
@@ -1005,7 +1005,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 0)
         .style("fill", "#E86456")
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1);
    
    xn_dot.transition().delay(2 * avg_dur).attr("r", 3);
@@ -1069,7 +1069,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 0)
         .style("fill", "#EDA137")
-        .attr("stroke", "#000")
+        .attr("stroke", "currentColor")
         .attr("stroke-width", 1);
    
    sn_dot.transition().delay(6 * avg_dur).attr("r", 3);

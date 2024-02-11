@@ -273,9 +273,9 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     
     var drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { 
-	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
-	          parameter_update(round_fun(x.invert(d3.event.x)));
+	        .on("start drag", function(event, d) { 
+	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
+	          parameter_update(round_fun(x.invert(event.x)));
 	         });
 	         
     slider.append("line")
@@ -1062,10 +1062,10 @@ function update_rho_n() {
      updateText();
 }
 
-function drag(d) {
+function drag(event, d) {
     d3.select(this)
-      .attr("cx", d.x = d3.event.x)
-      .attr("cy", d.y = d3.event.y);
+      .attr("cx", d.x = event.x)
+      .attr("cy", d.y = event.y);
     update_rho_n();
 }
 
