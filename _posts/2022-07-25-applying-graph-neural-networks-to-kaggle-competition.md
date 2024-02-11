@@ -202,7 +202,6 @@ svg.append('text')
   .attr('y', 155)
   .text("C")
   .style("font-size", "14px")
-  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -210,7 +209,6 @@ svg.append('text')
   .attr('y', 155)
   .text("W")
   .style("font-size", "14px")
-  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -218,7 +216,6 @@ svg.append('text')
   .attr('y', 155)
   .text("E")
   .style("font-size", "14px")
-  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -226,7 +223,6 @@ svg.append('text')
   .attr('y', 55)
   .text("N")
   .style("font-size", "14px")
-  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -234,7 +230,6 @@ svg.append('text')
   .attr('y', 255)
   .text("S")
   .style("font-size", "14px")
-  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -242,7 +237,6 @@ svg.append('text')
   .attr('y', 86)
   .text("T")
   .style("font-size", "14px")
-  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('line')
@@ -693,6 +687,7 @@ svg.append('text')
   .attr('y', 115)
   .text("||")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 			  
 for (var i = 0; i < 6; i += 1) {
@@ -936,7 +931,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 5 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', "currentColor")
+	  .attr('stroke', "black")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#348ABD');
@@ -973,6 +968,7 @@ svg.append('text')
   .attr('y', 137)
   .text("GraphNorm")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 
 svg.append('line')
@@ -1006,6 +1002,7 @@ svg.append('text')
   .attr('y', 220)
   .text("GELU")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 
 svg.append('line')
@@ -1050,7 +1047,7 @@ for (var i = 0; i < 3; i += 1) {
 	  .attr('y', 5 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', "currentColor")
+	  .attr('stroke', "black")
 	  .attr("rx", 3)
 	  .attr("opacity", (i == 2) ? 1.0 : 0.6)
 	  .attr('fill', '#E86456');
@@ -1087,6 +1084,7 @@ svg.append('text')
   .attr('y', 88)
   .text("σ")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 
 svg.append('line')
@@ -1139,7 +1137,7 @@ for (var i = 0; i < 2; i += 1) {
 	  .attr('y', 325 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', "currentColor")
+	  .attr('stroke', "black")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#A4D8D8');
@@ -1298,6 +1296,7 @@ svg.append('text')
   .attr('y', 20)
   .text("CE Loss")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('line')
@@ -1332,6 +1331,7 @@ svg.append('text')
   .attr('y', 185)
   .text("||")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('line')
@@ -1500,6 +1500,7 @@ svg.append('line')
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
   .attr('stroke', "currentColor");
+  
 svg.append('line')
   .attr('x1', 575)
   .attr('y1', 220)
@@ -1541,6 +1542,7 @@ svg.append('text')
   .attr('y', 170)
   .text("BCE Loss")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1548,6 +1550,7 @@ svg.append('text')
   .attr('y', 240)
   .text("BCE Loss")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1555,6 +1558,7 @@ svg.append('text')
   .attr('y', 130)
   .text("Expert spawn ships ratio")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1562,12 +1566,14 @@ svg.append('text')
   .attr('y', 275)
   .text("Expert launch ships ratio")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
   .attr('x', 340)
   .attr('y', 100)
   .text("Expert action")
+  .style("fill", "currentColor")
   .style("font-size", "12px")
   .attr("font-family", "Arvo");
 }
@@ -1863,6 +1869,7 @@ svg.append('text')
   .attr('y', 224)
   .text("MatMul")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append("path")
@@ -1894,6 +1901,7 @@ svg.append('text')
   .attr('y', 255)
   .text("Softmax")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 draw_triangle(svg, 195, 270, 180);
@@ -1953,6 +1961,7 @@ svg.append('text')
   .attr('y', 345)
   .text("Move probabilities")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append("path")
@@ -1987,6 +1996,7 @@ svg.append('text')
   .attr('x', 325)
   .attr('y', 285)
   .text("Expert move")
+  .style("fill", "currentColor")
   .style("font-size", "12px")
   .attr("font-family", "Arvo");
   
@@ -2015,6 +2025,7 @@ svg.append('text')
   .attr('y', 295)
   .text("CE Loss")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
   
@@ -2036,6 +2047,7 @@ svg.append('text')
   .attr('y', 12)
   .text("Space left")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 for (var i = 0; i < 5; i += 1) {
@@ -2055,6 +2067,7 @@ svg.append('text')
   .attr('x', 560)
   .attr('y', 12)
   .text("Space left")
+  .style("fill", "currentColor")
   .style("font-size", "12px")
   .attr("font-family", "Arvo");
 

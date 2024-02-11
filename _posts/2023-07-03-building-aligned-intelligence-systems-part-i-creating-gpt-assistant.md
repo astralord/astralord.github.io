@@ -84,7 +84,7 @@ $$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_N \mathbf{W_e}^T).$$
 
 <script>
 
-function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='black') {
+function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='currentColor') {
 	svg.append('line')
 	  .attr('x1', x1)
 	  .attr('y1', y1)
@@ -95,7 +95,7 @@ function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='black') {
 	  .attr('stroke', stroke);
 }
 
-function triangle(svg, x, y, rotate=0, opacity=1, stroke="black") {
+function triangle(svg, x, y, rotate=0, opacity=1, stroke="currentColor") {
 	const triangleSize = 25;
 	var triangle_symb = d3.symbol()
 	            .type(d3.symbolTriangle)
@@ -112,7 +112,7 @@ function triangle(svg, x, y, rotate=0, opacity=1, stroke="black") {
 
 function up_arrow(svg, x1, y1, y2, opacity=1) {
 	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke="black");
-	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke="black");
+	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke="currentColor");
 }
 
 function bckg_block(svg, x, y, height=280) {
@@ -121,7 +121,7 @@ function bckg_block(svg, x, y, height=280) {
 	  .attr('y', y)
 	  .attr('width', 198)
 	  .attr('height', height)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
@@ -134,7 +134,7 @@ function emb_block(svg, x, y) {
 	  .attr('y', y)
 	  .attr('width', 120)
 	  .attr('height', 30)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1)
@@ -154,7 +154,7 @@ function softmax_block(svg, x, y) {
 	  .attr('y', y)
 	  .attr('width', 120)
 	  .attr('height', 30)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
@@ -174,7 +174,7 @@ function linear_block(svg, x, y) {
 	  .attr('y', y)
 	  .attr('width', 120)
 	  .attr('height', 30)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
@@ -231,6 +231,7 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('y', 225)
 	  .text("N ✕")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -238,6 +239,7 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('y', 315)
 	  .text("Positional")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -245,6 +247,7 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('y', 330)
 	  .text("Encoding")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('line')
@@ -700,6 +703,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 405)
 	  .text("Positional")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -707,6 +711,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 420)
 	  .text("Encoding")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('line')
@@ -746,6 +751,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 100)
 	  .text("N ✕")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	up_arrow(svg, 350, 50, 80);
@@ -762,6 +768,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 400)
 	  .text("V")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -769,6 +776,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 400)
 	  .text("K")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -776,6 +784,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 400)
 	  .text("Q")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	mm_block(svg, 580, 50);
@@ -797,6 +806,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 325)
 	  .text("Q")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -804,6 +814,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 325)
 	  .text("K")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -811,6 +822,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('y', 325)
 	  .text("V")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -997,12 +1009,14 @@ function sft_learning() {
 	  .attr('y', 100)
 	  .text('A prompt is sampled')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
 	  .attr('x', 20)
 	  .attr('y', 120)
 	  .text('from prompt dataset')
+	  .style("fill", "currentColor")
 	  .style("font-size", "14px")
 	  .attr("font-family", "Arvo");
 	
@@ -1015,6 +1029,7 @@ function sft_learning() {
 	  .attr('y', 100)
 	  .text('A labeler demonstrates')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1022,6 +1037,7 @@ function sft_learning() {
 	  .attr('y', 120)
 	  .text('the desired output')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1029,6 +1045,7 @@ function sft_learning() {
 	  .attr('y', 140)
 	  .text('behaviour')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	   
 	net_block(svg, 450, 5, 'SFT');
@@ -1038,6 +1055,7 @@ function sft_learning() {
 	  .attr('y', 100)
 	  .text('This data is used to')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1045,6 +1063,7 @@ function sft_learning() {
 	  .attr('y', 120)
 	  .text('fine-tune GPT model with')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1052,6 +1071,7 @@ function sft_learning() {
 	  .attr('y', 140)
 	  .text('supervised learning')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1238,6 +1258,7 @@ function rm_learning() {
 	  .attr('y', 195)
 	  .text('A prompt and several')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1245,6 +1266,7 @@ function rm_learning() {
 	  .attr('y', 215)
 	  .text('model outputs are sampled')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	line(svg, 180, 100, 230, 100, 1, 1);
@@ -1257,6 +1279,7 @@ function rm_learning() {
 	  .attr('y', 195)
 	  .text('A labeler ranks outputs')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1264,6 +1287,7 @@ function rm_learning() {
 	  .attr('y', 215)
 	  .text('from best to worst')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	line(svg, 385, 100, 435, 100, 1, 1);
@@ -1276,6 +1300,7 @@ function rm_learning() {
 	  .attr('y', 195)
 	  .text('This data is used to')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1283,6 +1308,7 @@ function rm_learning() {
 	  .attr('y', 215)
 	  .text('train reward model')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1369,6 +1395,7 @@ function rlhf() {
 	  .attr('y', 150)
 	  .text('A new sample is')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1376,6 +1403,7 @@ function rlhf() {
 	  .attr('y', 170)
 	  .text('generated from')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1383,6 +1411,7 @@ function rlhf() {
 	  .attr('y', 190)
 	  .text('the dataset')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
   
   net_block(svg, 230, 55, 'PPO');
@@ -1394,6 +1423,7 @@ function rlhf() {
 	  .attr('y', 150)
 	  .text('The policy generates')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1401,6 +1431,7 @@ function rlhf() {
 	  .attr('y', 170)
 	  .text('an output')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
   
   net_block(svg, 455, 55, 'RM');
@@ -1429,6 +1460,7 @@ function rlhf() {
 	  .attr('y', 150)
 	  .text('The reward model calculates')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1436,6 +1468,7 @@ function rlhf() {
 	  .attr('y', 170)
 	  .text('a reward for the output')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1443,6 +1476,7 @@ function rlhf() {
 	  .attr('y', 190)
 	  .text('to update the policy')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1537,6 +1571,7 @@ svg.append('text')
   .attr('y', 75)
   .text('I think, therefore I')
   .style("font-size", "11px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 
 svg.append('text')
@@ -1552,6 +1587,7 @@ svg.append('text')
   .attr('y', 75)
   .text('I think, therefore I am')
   .style("font-size", "11px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 	      
 d3.select("#backup_diagram")

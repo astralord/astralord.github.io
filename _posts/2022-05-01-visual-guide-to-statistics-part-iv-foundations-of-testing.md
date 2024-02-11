@@ -3148,7 +3148,7 @@ function updateTn() {
     d3.select(this)
       .style("fill", function(d) { return color(d['value'])} );
       
-    mousemove(d);
+    mousemove(event, d);
   };
  
 var c = 21.026;

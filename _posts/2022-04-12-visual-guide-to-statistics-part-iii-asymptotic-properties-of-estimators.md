@@ -1278,7 +1278,7 @@ d3.select("#prsn_plt")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", fig_width + 110 + "px")
+  .style("left", fig_width + 112 + "px")
   .style("top", 125 + "px");
   
 }

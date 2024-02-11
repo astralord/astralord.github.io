@@ -71,7 +71,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 }
 
 .track-inset {
-  stroke: #ddd;
+  stroke: #bababa;
   stroke-width: 3px;
 }
 

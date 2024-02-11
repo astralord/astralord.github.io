@@ -151,12 +151,12 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 .track {
   stroke: #000;
   stroke-opacity: 0.8;
-  stroke-width: 7px;
+  stroke-width: 3px;
 }
 
 .track-inset {
-  stroke: #ddd;
-  stroke-width: 5px;
+  stroke: #bababa;
+  stroke-width: 3px;
 }
 
 .track-overlay {
@@ -406,7 +406,7 @@ var posterior_curve = svg
 var avg_dash = svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "currentColor")
+    .attr("stroke", "black")
     .attr("stroke-width", 1)
     .datum([{x: avg, y: avg_y}, {x: avg, y: 0}])
     .attr("d",  d3.line()
@@ -416,7 +416,7 @@ var avg_dash = svg.append("path")
 var mode_dash = svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "currentColor")
+    .attr("stroke", "black")
     .attr("stroke-width", 1)
     .datum([{x: g, y: mode_y}, {x: g, y: 0}])
     .attr("d",  d3.line()
@@ -426,7 +426,7 @@ var mode_dash = svg.append("path")
 var mu_dash = svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "currentColor")
+    .attr("stroke", "black")
     .attr("stroke-width", 1)
     .datum([{x: mu, y: mu_y}, {x: mu, y: 0}])
     .attr("d",  d3.line()
