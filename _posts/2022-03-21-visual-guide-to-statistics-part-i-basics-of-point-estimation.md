@@ -221,7 +221,6 @@ var y_itext = d3.select("#drug_exp")
   .append("div")
   .text("\\(Y_i \\)")
   .style("font-size", "13px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
@@ -593,9 +592,9 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     
     var drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { 
-	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
-	          parameter_update(round_fun(x.invert(d3.event.x)));
+	        .on("start drag", function(event, d) { 
+	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
+	          parameter_update(round_fun(x.invert(event.x)));
 	         });
 	         
     slider.append("line")
@@ -1173,9 +1172,9 @@ function createSlider(svg_, parameter_update, slider_x, loc_x, loc_y, letter, co
     
     var drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { 
-	          handle.attr("cx", slider_x(round_fun(slider_x.invert(d3.event.x))));  
-	          parameter_update(round_fun(slider_x.invert(d3.event.x)));
+	        .on("start drag", function(event, d) { 
+	          handle.attr("cx", slider_x(round_fun(slider_x.invert(event.x))));  
+	          parameter_update(round_fun(slider_x.invert(event.x)));
 	         });
 	         
     slider.append("line")
