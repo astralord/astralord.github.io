@@ -130,12 +130,12 @@ This statement is known as **Multidimensional Central Limit Theorem**.
 .track {
   stroke: #000;
   stroke-opacity: 0.8;
-  stroke-width: 7px;
+  stroke-width: 3px;
 }
 
 .track-inset {
   stroke: #ddd;
-  stroke-width: 5px;
+  stroke-width: 3px;
 }
 
 .track-overlay {
@@ -297,11 +297,12 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     .attr("x", x)
     .attr("text-anchor", "middle")
     .attr("font-family", "Arvo")
+    .style('fill', "currentColor")
     .text(function(d) { return d; });
 
    var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
-      .attr("r", 6).attr("cx", x(init_val));
+      .attr("r", 5).attr("cx", x(init_val));
       
 	svg_
 	  .append("text")
@@ -543,7 +544,7 @@ function sampleUniform() {
 	        .attr("cy", function (d) { return y(d.y); } )
 	        .attr("r", 0)
 	        .style("fill", "#65AD69")
-	        .attr("stroke", "currentColor")
+	        .attr("stroke", "black")
 	        .attr("stroke-width", 1));
 	        
         uni_dots[i]
@@ -1098,7 +1099,7 @@ function sampleGauss() {
 	        .attr("cy", function (d) { return d.y; } )
 	        .attr("r", 0)
 	        .style("fill", "#65AD69")
-	        .attr("stroke", "currentColor")
+	        .attr("stroke", "black")
 	        .attr("stroke-width", 1)
            .on("mouseover", function(d) { d3.select(this)
                                             .style("cursor", "pointer");})
@@ -1124,7 +1125,7 @@ function sampleGauss() {
 	        .attr("cy", function (d) { return yRho(d.y); } )
 	        .attr("r", 0)
 	        .style("fill", "#E86456")
-	        .attr("stroke", "currentColor")
+	        .attr("stroke", "black")
 	        .attr("stroke-width", 1);
 	        
 	rho_dot.transition().duration(avg_dur).attr("r", 3);
@@ -1277,7 +1278,7 @@ d3.select("#prsn_plt")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", fig_width + 105 + "px")
+  .style("left", fig_width + 110 + "px")
   .style("top", 125 + "px");
   
 }

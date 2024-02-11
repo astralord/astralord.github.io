@@ -67,12 +67,12 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 .track {
   stroke: #000;
   stroke-opacity: 0.8;
-  stroke-width: 7px;
+  stroke-width: 3px;
 }
 
 .track-inset {
   stroke: #ddd;
-  stroke-width: 5px;
+  stroke-width: 3px;
 }
 
 .track-overlay {
@@ -210,7 +210,6 @@ var xi_text = d3.select("#drug_exp")
   .append("div")
   .text("Dose \\(X_i \\)")
   .style("font-size", "13px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
@@ -446,7 +445,6 @@ var span_chi = d3.select("#chi_t_plt")
   .text("\\(f_{\\chi_n^2}(x)\\)")
   .style('color', '#EDA137')
   .style("font-size", "17px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 20)
@@ -462,7 +460,6 @@ var span_t = d3.select("#chi_t_plt")
   .text("\\(f_{t_n}(x) \\)")
   .style('color', '#348ABD')
   .style("font-size", "17px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .attr("font-size", 20)
@@ -616,11 +613,12 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     .attr("x", x)
     .attr("text-anchor", "middle")
     .attr("font-family", "Arvo")
+    .style('fill', "currentColor")
     .text(function(d) { return d; });
 
    var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
-      .attr("r", 6).attr("cx", x(init_val));
+      .attr("r", 5).attr("cx", x(init_val));
       
 	svg_
 	  .append("text")
@@ -635,7 +633,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	return handle;
 }
 
-createSlider(slider_svg, updateChart, n_x, 190, 0.1 * height, "n", "#696969", 5, roundN);
+createSlider(slider_svg, updateChart, n_x, 190, 0.1 * height, "n", "currentColor", 5, roundN);
 
 });
 }
@@ -1196,11 +1194,12 @@ function createSlider(svg_, parameter_update, slider_x, loc_x, loc_y, letter, co
     .attr("x", slider_x)
     .attr("text-anchor", "middle")
     .attr("font-family", "Arvo")
+    .style('fill', "currentColor")
     .text(function(d) { return d; });
 
    var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
-      .attr("r", 6).attr("cx", slider_x(init_val));
+      .attr("r", 5).attr("cx", slider_x(init_val));
       
 	svg_
 	  .append("text")
@@ -1215,7 +1214,7 @@ function createSlider(svg_, parameter_update, slider_x, loc_x, loc_y, letter, co
 	return handle;
 }
 
-createSlider(svg, updateNGauss, ng_x, 190, 350, "n", "#696969", 6, roundN);
+createSlider(svg, updateNGauss, ng_x, 190, 350, "n", "currentColor", 6, roundN);
 
 }
 

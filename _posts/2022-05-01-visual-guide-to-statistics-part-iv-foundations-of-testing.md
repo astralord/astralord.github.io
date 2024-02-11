@@ -84,12 +84,12 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
 .track {
   stroke: #000;
   stroke-opacity: 0.8;
-  stroke-width: 7px;
+  stroke-width: 3px;
 }
 
 .track-inset {
   stroke: #ddd;
-  stroke-width: 5px;
+  stroke-width: 3px;
 }
 
 .track-overlay {
@@ -122,9 +122,10 @@ $$ P(\text{accept } H \mid K \text{ is true}) \leq 1 - \Phi\bigg(\frac{\sqrt{n}(
 }
 
 #sample-button-h:hover {
-  background-color: #696969;
-  
-}#sample-button-k {
+  background-color: #696969;  
+}
+
+#sample-button-k {
   top: 15px;
   left: 15px;
   background: #EDA137;
@@ -492,7 +493,7 @@ svg.append('g')
      .attr("cy", function (d) { return d.y; } )
      .attr("r", 4)
      .style("fill", "#E86456")
-     .attr("stroke", "currentColor")
+     .attr("stroke", "black")
      .attr("stroke-width", 1)
      .on("mouseover", function (d) {d3.select(this).style("cursor", "pointer");})
      .on("mouseout", function (d) {})
@@ -654,7 +655,7 @@ svg.append('g')
      .attr("cy", function (d) { return d.y; } )
      .attr("r", 4)
      .style("fill", "#E86456")
-     .attr("stroke", "currentColor")
+     .attr("stroke", "black")
      .attr("stroke-width", 1);
    
        
@@ -955,11 +956,12 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     .attr("x", x)
     .attr("text-anchor", "middle")
     .attr("font-family", "Arvo")
+    .style('fill', "currentColor")
     .text(function(d) { return d; });
 
    var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
-      .attr("r", 6).attr("cx", x(init_val));
+      .attr("r", 5).attr("cx", x(init_val));
       
 	svg_
 	  .append("text")
@@ -1419,7 +1421,7 @@ function sampleGauss(mu, color) {
               .attr("cy", function (d) { return y(d.y); } )
               .attr("r", 3)
               .style("fill", color)
-              .attr("stroke", "currentColor")
+              .attr("stroke", "black")
               .attr("stroke-width", 1));
           
           smpl_dots[i].transition()
@@ -2591,7 +2593,7 @@ function sample() {
                                 .attr("cy", function (d) { return y(d.y); } )
                                 .attr("r", 3)
                                 .style("fill", color)
-                                .attr("stroke", "currentColor")
+                                .attr("stroke", "black")
                                 .attr("stroke-width", 1));
           
               smpl_dots[k][i]
@@ -2632,7 +2634,7 @@ function sample() {
         .attr("cy", function (d) { return yRight(d.y); } )
         .attr("r", 3)
         .style("fill", "#348ABD")
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1)
         .attr("opacity", 0);
      
@@ -2729,7 +2731,7 @@ svg.append('g')
        .attr("cy", function (d) { return d.y; } )
        .attr("r", 3)
         .style("fill", "#348ABD")
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1);
 
 d3.select("#asymptotic_test")
@@ -3218,7 +3220,7 @@ var tn_dot = svg.append('g')
     .attr("cy", function (d) { return d.y; } )
     .attr("r", 3)
     .style("fill", "#348ABD")
-    .attr("stroke", "currentColor")
+    .attr("stroke", "black")
     .attr("stroke-width", 1)
     .attr("opacity", 1);    
  

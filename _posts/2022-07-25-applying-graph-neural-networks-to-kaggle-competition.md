@@ -102,7 +102,6 @@ function draw_edge(x, y, type, opacity=0.95) {
 	  .style("stroke-dasharray", ("10, " + dash))
 	  .attr("opacity", opacity)
 	  .attr('stroke', '#E86456');
-
 }
 
 function draw_node(x, y, opacity=0.95) {
@@ -110,7 +109,7 @@ function draw_node(x, y, opacity=0.95) {
 	  .attr('cx', x - 50)
 	  .attr('cy', y)
 	  .attr('r', 10)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("opacity", opacity)
 	  .attr('fill', '#348ABD');
 }
@@ -166,6 +165,7 @@ svg.append('text')
   .attr('y', 130)
   .text("Node features")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('line')
@@ -175,7 +175,7 @@ svg.append('line')
   .attr('y2', 53)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', 'currentColor');
   
 for (var i = 0; i < 6; i += 1) {
 	svg.append('rect')
@@ -183,7 +183,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 85 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#348ABD');
@@ -194,6 +194,7 @@ svg.append('text')
   .attr('y', 260)
   .text("Edge features")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -201,6 +202,7 @@ svg.append('text')
   .attr('y', 155)
   .text("C")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -208,6 +210,7 @@ svg.append('text')
   .attr('y', 155)
   .text("W")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -215,6 +218,7 @@ svg.append('text')
   .attr('y', 155)
   .text("E")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -222,6 +226,7 @@ svg.append('text')
   .attr('y', 55)
   .text("N")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -229,6 +234,7 @@ svg.append('text')
   .attr('y', 255)
   .text("S")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -236,6 +242,7 @@ svg.append('text')
   .attr('y', 86)
   .text("T")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('line')
@@ -245,7 +252,7 @@ svg.append('line')
   .attr('y2', 155)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', 'currentColor');
   
 for (var i = 0; i < 3; i += 1) {
 	svg.append('rect')
@@ -253,7 +260,7 @@ for (var i = 0; i < 3; i += 1) {
 	  .attr('y', 225 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("opacity", (i == 2) ? 1.0 : 0.6)
 	  .attr('fill', '#E86456');
@@ -289,7 +296,7 @@ function draw_triangle(svg, x, y, rotate=0) {
 	
 	svg.append("path")
 	   .attr("d", triangle)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("fill", "gray")
 	   .attr("transform",
 	   		function(d) { return "translate(" + x + "," + y + ") rotate(" + rotate  + ")"; });
@@ -308,7 +315,7 @@ function draw_graph(x, y, node_color, edge_color) {
 	  .attr('cx', x)
 	  .attr('cy', y)
 	  .attr('r', 5)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr('stroke-width', 1.25)
 	  .attr("opacity", 0.95)
 	  .attr('fill', node_color);
@@ -317,7 +324,7 @@ function draw_graph(x, y, node_color, edge_color) {
 	  .attr('cx', x + 20)
 	  .attr('cy', y - 20)
 	  .attr('r', 5)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr('stroke-width', 1.25)
 	  .attr("opacity", 0.95)
 	  .attr('fill', node_color);
@@ -326,7 +333,7 @@ function draw_graph(x, y, node_color, edge_color) {
 	  .attr('cx', x + 40)
 	  .attr('cy', y)
 	  .attr('r', 5)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr('stroke-width', 1.25)
 	  .attr("opacity", 0.95)
 	  .attr('fill', node_color);
@@ -335,7 +342,7 @@ function draw_graph(x, y, node_color, edge_color) {
 	  .attr('cx', x + 20)
 	  .attr('cy', y + 20)
 	  .attr('r', 5)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr('stroke-width', 1.25)
 	  .attr("opacity", 0.95)
 	  .attr('fill', node_color);
@@ -385,7 +392,7 @@ svg.append('rect')
   .attr('y', 30)
   .attr('width', 120)
   .attr('height', 35)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -404,7 +411,7 @@ svg.append('line')
   .attr('y2', 50)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 375)
@@ -413,7 +420,7 @@ svg.append('line')
   .attr('y2', 50)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 340)
@@ -422,7 +429,7 @@ svg.append('line')
   .attr('y2', 50)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 195)
@@ -431,7 +438,7 @@ svg.append('line')
   .attr('y2', 10)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 195)
@@ -440,7 +447,7 @@ svg.append('line')
   .attr('y2', 10)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 365)
@@ -449,7 +456,7 @@ svg.append('line')
   .attr('y2', 40)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 draw_triangle(svg, 215, 50, 90);
 draw_triangle(svg, 435, 50, 90);
@@ -459,7 +466,7 @@ svg.append('rect')
   .attr('y', 1)
   .attr('width', 215)
   .attr('height', 75)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .style('stroke-dasharray', ('2,3'))
   .attr('fill', 'none');
@@ -469,13 +476,14 @@ svg.append('text')
   .attr('y', 92)
   .text("x4")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append("path")
     .attr("d", d3.symbol().type(d3.symbolCross).size(75))
     .attr("transform", "translate (365, 50)")
     .style("fill", "gray")
-    .style('stroke', 'black')
+    .style('stroke', "currentColor")
     .style('stroke-width', '0.7')
     .style('opacity', 1.0);
     
@@ -483,7 +491,7 @@ svg.append('circle')
   .attr('cx', 365)
   .attr('cy', 50)
   .attr('r', 10)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr('stroke-width', 1.25)
   .attr("opacity", 0.95)
   .attr('fill', "none");
@@ -516,7 +524,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 15 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#348ABD');
@@ -528,7 +536,7 @@ for (var i = 0; i < 3; i += 1) {
 	  .attr('y', 150 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 3)
 	  .attr("opacity", (i == 2) ? 1.0 : 0.6)
 	  .attr('fill', '#E86456');
@@ -541,10 +549,10 @@ svg.append('line')
   .attr('y2', 145)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
  
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 50, y: 110}, {x: 100, y: 110}, {x: 100, y: 25}, {x: 150, y: 25}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -553,7 +561,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
  
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 50, y: 110}, {x: 100, y: 110}, {x: 100, y: 60}, {x: 150, y: 60}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -562,7 +570,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
  
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 50, y: 110}, {x: 100, y: 110}, {x: 100, y: 175}, {x: 150, y: 175}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -575,7 +583,7 @@ svg.append('rect')
   .attr('y', 10)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -592,7 +600,7 @@ svg.append('rect')
   .attr('y', 45)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -609,7 +617,7 @@ svg.append('rect')
   .attr('y', 160)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -629,14 +637,14 @@ svg.append('line')
   .style("stroke-width", 2)
   .style('stroke-dasharray', ('2,10'))
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 draw_triangle(svg, 145, 25, 90);
 draw_triangle(svg, 145, 60, 90);
 draw_triangle(svg, 145, 175, 90);
 
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 270, y: 25}, {x: 320, y: 25}, {x: 320, y: 110}, {x: 345, y: 110}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -645,7 +653,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
  
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 270, y: 60}, {x: 320, y: 60}, {x: 320, y: 110}, {x: 345, y: 110}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -654,7 +662,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
  
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 270, y: 175}, {x: 320, y: 175}, {x: 320, y: 110}, {x: 345, y: 110}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -666,7 +674,7 @@ svg.append('circle')
   .attr('cx', 355)
   .attr('cy', 110)
   .attr('r', 10)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr('stroke-width', 1.25)
   .attr("opacity", 0.95)
   .attr('fill', "none");
@@ -678,7 +686,7 @@ svg.append('line')
   .attr('y2', 110)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('text')
   .attr('x', 352)
@@ -693,7 +701,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 15 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#A4D8D8');
@@ -706,7 +714,7 @@ svg.append('line')
   .attr('y2', 125)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 380)
@@ -715,7 +723,7 @@ svg.append('line')
   .attr('y2', 25)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 380)
@@ -724,7 +732,7 @@ svg.append('line')
   .attr('y2', 155)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 380)
@@ -733,7 +741,7 @@ svg.append('line')
   .attr('y2', 25)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 400)
@@ -742,7 +750,7 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 400)
@@ -751,7 +759,7 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 380)
@@ -760,7 +768,7 @@ svg.append('line')
   .attr('y2', 155)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 draw_triangle(svg, 570, 25, 90);
 draw_triangle(svg, 420, 125, 90);
@@ -771,7 +779,7 @@ svg.append('rect')
   .attr('y', 110)
   .attr('width', 80)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -788,7 +796,7 @@ svg.append('rect')
   .attr('y', 165)
   .attr('width', 80)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -807,7 +815,7 @@ svg.append('line')
   .attr('y2', 125)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 520)
@@ -816,7 +824,7 @@ svg.append('line')
   .attr('y2', 145)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 520)
@@ -825,7 +833,7 @@ svg.append('line')
   .attr('y2', 165)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 505)
@@ -834,13 +842,13 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
 
 svg.append('circle')
   .attr('cx', 520)
   .attr('cy', 155)
   .attr('r', 10)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr('stroke-width', 1.25)
   .attr("opacity", 0.95)
   .attr('fill', "none");
@@ -849,10 +857,10 @@ svg.append('circle')
   .attr('cx', 520)
   .attr('cy', 155)
   .attr('r', 1)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr('stroke-width', 1.25)
   .attr("opacity", 0.95)
-  .attr('fill', "black");
+  .attr('fill', "currentColor");
   
 svg.append('line')
   .attr('x1', 530)
@@ -861,13 +869,14 @@ svg.append('line')
   .attr('y2', 155)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', 'currentColor');
   
 svg.append('text')
   .attr('x', 535)
   .attr('y', 150)
   .text("tanh")
   .style("font-size", "12px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 for (var i = 0; i < 3; i += 1) {
@@ -876,7 +885,7 @@ for (var i = 0; i < 3; i += 1) {
 	  .attr('y', 150 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("opacity", (i == 2) ? 1.0 : 0.6)
 	  .attr('fill', '#B19CD9');
@@ -889,7 +898,7 @@ svg.append('line')
   .attr('y2', 145)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', 'currentColor');
 
 draw_triangle(svg, 570, 155, 90);
 
@@ -927,7 +936,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 5 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#348ABD');
@@ -940,14 +949,14 @@ svg.append('line')
   .attr('y2', 80)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('rect')
   .attr('x', 135)
   .attr('y', 80)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -973,14 +982,14 @@ svg.append('line')
   .attr('y2', 160)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('rect')
   .attr('x', 135)
   .attr('y', 160)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -1006,14 +1015,14 @@ svg.append('line')
   .attr('y2', 240)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('rect')
   .attr('x', 135)
   .attr('y', 240)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -1032,7 +1041,7 @@ svg.append('line')
   .attr('y2', 320)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 
 for (var i = 0; i < 3; i += 1) {
@@ -1041,7 +1050,7 @@ for (var i = 0; i < 3; i += 1) {
 	  .attr('y', 5 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 3)
 	  .attr("opacity", (i == 2) ? 1.0 : 0.6)
 	  .attr('fill', '#E86456');
@@ -1054,14 +1063,14 @@ svg.append('line')
   .attr('y2', 45)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('rect')
   .attr('x', 340)
   .attr('y', 45)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1087,7 +1096,7 @@ svg.append('line')
   .attr('y2', 255)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 400)
@@ -1096,7 +1105,7 @@ svg.append('line')
   .attr('y2', 95)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 400)
@@ -1105,7 +1114,7 @@ svg.append('line')
   .attr('y2', 175)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 400)
@@ -1114,7 +1123,7 @@ svg.append('line')
   .attr('y2', 255)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
 
 draw_triangle(svg, 195, 75, 180);
 draw_triangle(svg, 195, 155, 180);
@@ -1130,7 +1139,7 @@ for (var i = 0; i < 2; i += 1) {
 	  .attr('y', 325 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#A4D8D8');
@@ -1181,7 +1190,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 85 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#A4D8D8');
@@ -1194,14 +1203,14 @@ svg.append('line')
   .attr('y2', 95)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('rect')
   .attr('x', 105)
   .attr('y', 80)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1220,7 +1229,7 @@ svg.append('line')
   .attr('y2', 95)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 draw_triangle(svg, 250, 95, 90);
   
@@ -1230,7 +1239,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 60 + i * 12)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 2)
 	  .attr("opacity", 0.6)
 	  .attr('fill', i == 1 ? '#65AD69' : 'white');
@@ -1242,7 +1251,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 60 + i * 12)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 2)
 	  .attr("opacity", 0.6)
 	  .attr('fill', '#EDA137');
@@ -1255,7 +1264,7 @@ svg.append('line')
   .attr('y2', 40)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 325)
@@ -1264,7 +1273,7 @@ svg.append('line')
   .attr('y2', 40)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 325)
@@ -1273,7 +1282,7 @@ svg.append('line')
   .attr('y2', 40)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 300)
@@ -1282,7 +1291,7 @@ svg.append('line')
   .attr('y2', 30)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
 
 svg.append('text')
   .attr('x', 275)
@@ -1298,7 +1307,7 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 50)
@@ -1307,13 +1316,13 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('circle')
   .attr('cx', 325)
   .attr('cy', 180)
   .attr('r', 10)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr('stroke-width', 1.25)
   .attr("opacity", 0.95)
   .attr('fill', "none");
@@ -1332,7 +1341,7 @@ svg.append('line')
   .attr('y2', 170)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 335)
@@ -1341,14 +1350,14 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('rect')
   .attr('x', 365)
   .attr('y', 165)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1367,7 +1376,7 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 325)
@@ -1376,7 +1385,7 @@ svg.append('line')
   .attr('y2', 220)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 325)
@@ -1385,14 +1394,14 @@ svg.append('line')
   .attr('y2', 220)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('rect')
   .attr('x', 365)
   .attr('y', 205)
   .attr('width', 120)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1411,7 +1420,7 @@ svg.append('line')
   .attr('y2', 220)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 draw_triangle(svg, 525, 180, 90);
 draw_triangle(svg, 525, 220, 90);
@@ -1421,7 +1430,7 @@ svg.append('rect')
   .attr('y', 142)
   .attr('width', 12)
   .attr('height', 12)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 2)
   .attr("opacity", 0.6)
   .attr('fill', '#65AD69');
@@ -1431,7 +1440,7 @@ svg.append('rect')
   .attr('y', 173)
   .attr('width', 12)
   .attr('height', 12)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 2)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1441,7 +1450,7 @@ svg.append('rect')
   .attr('y', 213)
   .attr('width', 12)
   .attr('height', 12)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 2)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1451,7 +1460,7 @@ svg.append('rect')
   .attr('y', 246)
   .attr('width', 12)
   .attr('height', 12)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 2)
   .attr("opacity", 0.6)
   .attr('fill', 'white');
@@ -1463,7 +1472,7 @@ svg.append('line')
   .attr('y2', 180)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 575)
@@ -1472,7 +1481,7 @@ svg.append('line')
   .attr('y2', 148)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 575)
@@ -1481,7 +1490,7 @@ svg.append('line')
   .attr('y2', 148)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 575)
@@ -1490,7 +1499,7 @@ svg.append('line')
   .attr('y2', 164)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
 svg.append('line')
   .attr('x1', 575)
   .attr('y1', 220)
@@ -1498,7 +1507,7 @@ svg.append('line')
   .attr('y2', 220)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 575)
@@ -1507,7 +1516,7 @@ svg.append('line')
   .attr('y2', 252)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 575)
@@ -1516,7 +1525,7 @@ svg.append('line')
   .attr('y2', 252)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('line')
   .attr('x1', 575)
@@ -1525,7 +1534,7 @@ svg.append('line')
   .attr('y2', 236)
   .style("stroke-width", 1)
   .attr("opacity", 0.95)
-  .attr('stroke', 'black');
+  .attr('stroke', "currentColor");
   
 svg.append('text')
   .attr('x', 600)
@@ -1587,7 +1596,7 @@ function draw_node(x, y, opacity=0.95) {
 	  .attr('cx', x)
 	  .attr('cy', y)
 	  .attr('r', 10)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("opacity", opacity)
 	  .attr('fill', '#A4D8D8');
 }
@@ -1604,7 +1613,7 @@ for (var i = 0; i < 5; i += 1) {
 		  .attr('y', 32 + j * 3 + i * 30)
 		  .attr('width', 12)
 		  .attr('height', 12)
-		  .attr('stroke', 'black')
+		  .attr('stroke', "currentColor")
 		  .attr("rx", 3)
 		  .attr("opacity", 0.9)
 		  .attr('fill', '#A4D8D8');
@@ -1614,7 +1623,7 @@ for (var i = 0; i < 5; i += 1) {
 		  .attr('y', 32 + j * 3 + i * 30)
 		  .attr('width', 12)
 		  .attr('height', 12)
-		  .attr('stroke', 'black')
+		  .attr('stroke', "currentColor")
 		  .attr("rx", 3)
 		  .attr("opacity", 0.9)
 		  .attr('fill', '#AFB2D8');
@@ -1624,14 +1633,14 @@ for (var i = 0; i < 5; i += 1) {
 		  .attr('y', 32 + j * 3 + i * 30)
 		  .attr('width', 12)
 		  .attr('height', 12)
-		  .attr('stroke', 'black')
+		  .attr('stroke', "currentColor")
 		  .attr("rx", 3)
 		  .attr("opacity", 0.9)
 		  .attr('fill', '#AFB2D8');
 	}
 	 
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 120, y: 50 + i * 30}, {x: 170, y: 50 + i * 30}])
 	   .attr("fill", "none")
 	   .attr("d",  d3.line()
@@ -1640,7 +1649,7 @@ for (var i = 0; i < 5; i += 1) {
 	       .y(function(d) { return d.y; }));
 	 
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 500, y: 50 + i * 30}, {x: 550, y: 50 + i * 30}])
 	   .attr("fill", "none")
 	   .attr("d",  d3.line()
@@ -1649,7 +1658,7 @@ for (var i = 0; i < 5; i += 1) {
 	       .y(function(d) { return d.y; }));
 	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 220, y: 50 + i * 30}, {x: 270, y: 50 + i * 30}])
 	   .attr("fill", "none")
 	   .attr("d",  d3.line()
@@ -1666,7 +1675,7 @@ for (var i = 0; i < 5; i += 1) {
 	  .attr('y', 35 + i * 30)
 	  .attr('width', 40)
 	  .attr('height', 20)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 10)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#AFB2D8');
@@ -1679,7 +1688,7 @@ for (var i = 0; i < 5; i += 1) {
 	  .style("stroke-width", 2)
 	  .style('stroke-dasharray', ('2,10'))
 	  .attr("opacity", 0.95)
-	  .attr('stroke', 'black');
+	  .attr('stroke', "currentColor");
 	}
 
 svg.append('text')
@@ -1757,7 +1766,7 @@ svg.append('rect')
   .attr('y', 35)
   .attr('width', 50)
   .attr('height', 150)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#BA8CD7');
@@ -1774,7 +1783,7 @@ svg.append('rect')
   .attr('y', 151)
   .attr('width', 50)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .style('stroke-dasharray', ('2,3'))
   .attr('fill', 'none');
@@ -1784,7 +1793,7 @@ svg.append('rect')
   .attr('y', 25)
   .attr('width', 50)
   .attr('height', 160)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .style('stroke-dasharray', ('2,3'))
   .attr('fill', 'none');
@@ -1794,7 +1803,7 @@ svg.append('rect')
   .attr('y', 205)
   .attr('width', 50)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1807,7 +1816,7 @@ svg.append('text')
   .attr("font-family", "Arvo");
 		  
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 90, y: 180}, {x: 90, y: 205}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1815,7 +1824,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
        
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 305, y: 185}, {x: 305, y: 205}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1827,7 +1836,7 @@ svg.append('rect')
   .attr('y', 205)
   .attr('width', 50)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1844,7 +1853,7 @@ svg.append('rect')
   .attr('y', 205)
   .attr('width', 60)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .attr("opacity", 0.6)
   .attr('fill', 'none');
@@ -1857,7 +1866,7 @@ svg.append('text')
   .attr("font-family", "Arvo");
   
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 280, y: 220}, {x: 225, y: 220}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1865,7 +1874,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
   
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 165, y: 220}, {x: 115, y: 220}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1873,7 +1882,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
   
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 195, y: 235}, {x: 195, y: 270}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1894,7 +1903,7 @@ svg.append('rect')
   .attr('y', 300)
   .attr('width', 10)
   .attr('height', 30)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 1)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1904,7 +1913,7 @@ svg.append('rect')
   .attr('y', 280)
   .attr('width', 10)
   .attr('height', 50)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 1)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1914,7 +1923,7 @@ svg.append('rect')
   .attr('y', 310)
   .attr('width', 10)
   .attr('height', 20)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 1)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1924,7 +1933,7 @@ svg.append('rect')
   .attr('y', 325)
   .attr('width', 10)
   .attr('height', 5)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 1)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1934,7 +1943,7 @@ svg.append('rect')
   .attr('y', 305)
   .attr('width', 10)
   .attr('height', 25)
-  .attr('stroke', 'black')
+  .attr('stroke', "currentColor")
   .attr("rx", 1)
   .attr("opacity", 0.6)
   .attr('fill', '#EDA137');
@@ -1947,7 +1956,7 @@ svg.append('text')
   .attr("font-family", "Arvo");
   
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 330, y: 80}, {x: 380, y: 80}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1957,7 +1966,7 @@ svg.append("path")
 draw_triangle(svg, 380, 80, 90);
 
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 230, y: 310}, {x: 410, y: 310}, {x: 410, y: 265}, {x: 395, y: 265}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1965,7 +1974,7 @@ svg.append("path")
        .y(function(d) { return d.y; }));
 
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 360, y: 260}, {x: 360, y: 100}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -1987,14 +1996,14 @@ for (var i = 0; i < 5; i += 1) {
 	  .attr('y', 260)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 2)
 	  .attr("opacity", 0.6)
 	  .attr('fill', i == 1 ? '#65AD69' : 'white');
 }
 
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 410, y: 290}, {x: 430, y: 290}])
    .attr("fill", "none")
    .attr("d",  d3.line()
@@ -2015,7 +2024,7 @@ for (var i = 0; i < 5; i += 1) {
 	  .attr('y', 2)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 2)
 	  .attr("opacity", 0.6)
 	  .attr('fill', i == 4 ? '#65AD69' : 'white');
@@ -2035,7 +2044,7 @@ for (var i = 0; i < 5; i += 1) {
 	  .attr('y', 2)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', 'black')
+	  .attr('stroke', "currentColor")
 	  .attr("rx", 2)
 	  .attr("opacity", 0.6)
 	  .attr('fill', i == 3 ? '#65AD69' : 'white');

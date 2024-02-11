@@ -442,7 +442,7 @@ var mu_dot = svg.append('g')
     .attr("cy", function (d) { return y(d.y); } )
     .attr("r", 3)
     .style("fill", "#65AD69")
-    .attr("stroke", "currentColor")
+    .attr("stroke", "black")
     .attr("stroke-width", 1);
       
 var avg_dot = svg.append('g')
@@ -454,7 +454,7 @@ var avg_dot = svg.append('g')
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
       
 var mode_dot = svg.append('g')
@@ -466,7 +466,7 @@ var mode_dot = svg.append('g')
     .attr("cy", function (d) { return y(d.y); } )
     .attr("r", 3)
     .style("fill", "#348ABD")
-    .attr("stroke", "currentColor")
+    .attr("stroke", "black")
     .attr("stroke-width", 1);
 
 var labels_x = 550;
@@ -556,7 +556,7 @@ svg.append('g')
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#65AD69")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
       
 d3.select("#gauss_bayes_plt")
@@ -590,7 +590,7 @@ svg.append('g')
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
       
 svg
@@ -623,7 +623,7 @@ svg.append('g')
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#348ABD")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
 
 var mu_x = d3.scaleLinear()
@@ -667,7 +667,8 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	    .attr("class", "track-inset")
 	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
 	    .attr("class", "track-overlay")
-	    .call(drag);
+	    .call(drag)
+	    .attr('stroke-width', 1);
 
 	slider.insert("g", ".track-overlay")
     .attr("class", "ticks")
@@ -678,11 +679,13 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     .attr("x", x)
     .attr("text-anchor", "middle")
     .attr("font-family", "Arvo")
+    .style('fill', "currentColor")
     .text(function(d) { return d; });
 
    var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
-      .attr("r", 6).attr("cx", x(init_val));
+      .attr("r", 6)
+      .attr("cx", x(init_val));
       
 	svg_
 	  .append("text")
@@ -782,7 +785,7 @@ sampleButton
               .attr("cy", function (d) { return y(d.y); } )
               .attr("r", 3)
               .style("fill", "#65AD69")
-              .attr("stroke", "currentColor")
+              .attr("stroke", "black")
               .attr("stroke-width", 1));
           
           smpl_dots[i].transition()
@@ -1131,7 +1134,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
     
   post_svg
@@ -1164,7 +1167,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#348ABD")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
       
   post_svg
@@ -1197,7 +1200,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return d.y; } )
       .attr("r", 3)
       .style("fill", "#F5CC18")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
           
   var posterior_data = [];
@@ -1241,7 +1244,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#E86456")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
       
   var bayes_x = (sample + 1) / (n + 2);
@@ -1266,7 +1269,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#348ABD")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
       
   var minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
@@ -1291,7 +1294,7 @@ var post_svg = smpl_svg
       .attr("cy", function (d) { return y(d.y); } )
       .attr("r", 3)
       .style("fill", "#F5CC18")
-      .attr("stroke", "currentColor")
+      .attr("stroke", "black")
       .attr("stroke-width", 1);
   
   
