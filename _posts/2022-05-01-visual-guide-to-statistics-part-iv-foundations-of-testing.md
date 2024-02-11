@@ -2750,7 +2750,7 @@ svg
   .attr("font-family", "Arvo")
   .text("X distributions")
   .style("font-size", "14px")
-  .style("fill", "#696969");
+  .style("fill", "currentColor");
   
 d3.select("#asymptotic_test")
   .append("div")
@@ -3118,11 +3118,11 @@ function updateTn() {
       .style("opacity", 1);
   };
   
-  var mousemove = function(d) {
+  var mousemove = function(event, d) {
     tooltip
       .html(d.value)
-      .style("left", (d3.mouse(this)[0] + 70) + "px")
-      .style("top", (d3.mouse(this)[1]) + "px");
+      .style("left", (d3.pointer(event)[0] + 70) + "px")
+      .style("top", (d3.pointer(event)[1]) + "px");
   };
   
   var mouseleave = function(d) {

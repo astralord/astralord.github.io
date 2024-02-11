@@ -949,7 +949,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 3)
         .style("fill", "#65AD69")
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1));
         
     smpl_copy_dots.push(svg.append('g')
@@ -961,7 +961,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 0)
         .style("fill", "#65AD69")
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1));
         
      smpl_dots[i].transition()
@@ -1005,7 +1005,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 0)
         .style("fill", "#E86456")
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1);
    
    xn_dot.transition().delay(2 * avg_dur).attr("r", 3);
@@ -1020,7 +1020,7 @@ function sample() {
       .attr("fill", "none")
       .attr("border", 0)
       .attr("opacity", ".9")
-      .attr("stroke", "black")
+      .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
@@ -1069,7 +1069,7 @@ function sample() {
         .attr("cy", function (d) { return y(d.y); } )
         .attr("r", 0)
         .style("fill", "#EDA137")
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1);
    
    sn_dot.transition().delay(6 * avg_dur).attr("r", 3);
