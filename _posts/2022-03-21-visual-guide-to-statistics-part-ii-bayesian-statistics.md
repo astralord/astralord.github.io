@@ -133,7 +133,7 @@ For quadratic loss function $g_{\nu, \tau^2}(x)$ is a Bayes estimator. It can be
 
 Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <style>

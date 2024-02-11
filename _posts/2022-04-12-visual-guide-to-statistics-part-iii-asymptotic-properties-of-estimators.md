@@ -253,8 +253,8 @@ This statement is known as **Multidimensional Central Limit Theorem**.
    
 </style>
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="https://d3js.org/d3-contour.v1.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/d3-contour.v4.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <button id="sample-button">Sample</button>
@@ -628,18 +628,26 @@ function updateN(num) {
     reset();
 }
 
-createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 70, 0.95 * height, "n", "#696969", n, roundN);
+createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 70, 0.95 * height, "", "#696969", n, roundN);
 
 d3.select("#mclt")
   .append("div")
   .text("\\(\\rho \\)")
-  .style('color', '#696969')
   .style("font-size", "17px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", 95 + "px")
+  .style("top", 0.95 * height + 3 + "px");
+
+d3.select("#mclt")
+  .append("div")
+  .text("\\(n \\)")
+  .style("font-size", "17px")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", 490 + "px")
   .style("top", 0.95 * height + 3 + "px");
   
 d3.select("#mclt")
@@ -1182,18 +1190,26 @@ function updateN(num) {
     reset();
 }
 
-createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 70, 0.95 * height, "n", "#696969", n, roundN);
+createSlider(svg, updateN, n_x, 3 * fig_width / 2 + 70, 0.95 * height, "", "#696969", n, roundN);
 
 d3.select("#prsn_plt")
   .append("div")
   .text("\\(\\rho \\)")
-  .style('color', '#696969')
   .style("font-size", "17px")
-  .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
   .style("left", 95 + "px")
+  .style("top", 0.95 * height + 3 + "px");
+
+d3.select("#prsn_plt")
+  .append("div")
+  .text("\\(n \\)")
+  .style("font-size", "17px")
+  .attr("font-family", "Arvo")
+  .attr("font-weight", 700)
+  .style("position", "absolute")
+  .style("left", 490 + "px")
   .style("top", 0.95 * height + 3 + "px");
   
 d3.select("#prsn_plt")

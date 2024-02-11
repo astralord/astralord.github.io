@@ -150,7 +150,7 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
    
 </style>
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <button id="sample-button">Sample</button>
