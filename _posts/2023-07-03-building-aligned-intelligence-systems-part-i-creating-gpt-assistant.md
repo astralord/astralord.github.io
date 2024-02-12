@@ -84,7 +84,7 @@ $$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_N \mathbf{W_e}^T).$$
 
 <script>
 
-function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='currentColor') {
+function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='black') {
 	svg.append('line')
 	  .attr('x1', x1)
 	  .attr('y1', y1)
@@ -111,7 +111,7 @@ function triangle(svg, x, y, rotate=0, opacity=1, stroke="currentColor") {
 }
 
 function up_arrow(svg, x1, y1, y2, opacity=1) {
-	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke="black");
+	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke="currentColor");
 	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke="currentColor");
 }
 
@@ -121,7 +121,7 @@ function bckg_block(svg, x, y, height=280) {
 	  .attr('y', y)
 	  .attr('width', 198)
 	  .attr('height', height)
-	  .attr('stroke', 'currentColor')
+	  .attr('stroke', 'black')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
@@ -134,7 +134,7 @@ function emb_block(svg, x, y) {
 	  .attr('y', y)
 	  .attr('width', 120)
 	  .attr('height', 30)
-	  .attr('stroke', 'currentColor')
+	  .attr('stroke', 'black')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1)
@@ -154,7 +154,7 @@ function softmax_block(svg, x, y) {
 	  .attr('y', y)
 	  .attr('width', 120)
 	  .attr('height', 30)
-	  .attr('stroke', 'currentColor')
+	  .attr('stroke', 'black')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
@@ -174,7 +174,7 @@ function linear_block(svg, x, y) {
 	  .attr('y', y)
 	  .attr('width', 120)
 	  .attr('height', 30)
-	  .attr('stroke', 'currentColor')
+	  .attr('stroke', 'black')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
@@ -221,7 +221,7 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('y2', 240)
 	  .style("stroke-width", 2)
 	  .attr("stroke-dasharray", ("2, 10"))
-	  .attr('stroke', 'black');
+	  .attr('stroke', 'currentColor');
 	  
 	up_arrow(svg, 150, 240, 260);
 	transformer_block(svg, 50, 260);
@@ -256,7 +256,9 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('x2', 150)
 	  .attr('y2', 320)
 	  .style("stroke-width", 2)
+	  .style("fill", "currentColor")
 	  .attr('stroke', 'black');
+	  
 	up_arrow(svg, 150, 290, 340);
 	  
 	svg.append('circle').attr('cx', 150).attr('cy', 320).attr('r', 8)
@@ -269,6 +271,7 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('x2', 150)
 	  .attr('y2', 325)
 	  .style("stroke-width", 2)
+	  .style("fill", "currentColor")
 	  .attr('stroke', 'black');
   
 	svg.append('line')
@@ -277,6 +280,7 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('x2', 155)
 	  .attr('y2', 320)
 	  .style("stroke-width", 2)
+	  .style("fill", "currentColor")
 	  .attr('stroke', 'black');
 	
 	emb_block(svg, 90, 340);
@@ -720,7 +724,7 @@ var svg = d3.select("#gpt_arch")
 	  .attr('x2', 100)
 	  .attr('y2', 410)
 	  .style("stroke-width", 2)
-	  .attr('stroke', 'black');
+	  .attr('stroke', 'currentColor');
 	  
 	line(svg, 100, 415, 100, 430);
 	  
