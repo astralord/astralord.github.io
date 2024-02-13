@@ -53,8 +53,8 @@ function draw_triangle(svg, x, y, rotate=0) {
 	
 	svg.append("path")
 	   .attr("d", triangle)
-	   .attr("stroke", "black")
-	   .attr("fill", "gray")
+	   .attr("stroke", "currentColor")
+	   .attr("fill", "currentColor")
 	   .attr("transform",
 	   		function(d) { return "translate(" + x + "," + y + ") rotate(" + rotate  + ")"; });
 }

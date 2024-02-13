@@ -451,7 +451,6 @@ var span_chi = d3.select("#chi_t_plt")
   .style("position", "absolute")
   .style("left", fig_width * 0.98 + "px")
   .style("top", height * 0.18 + "px");
-  
 
 plt_label_path(t_svg, "#348ABD", fig_width * 0.72, height * 0.13);
 
@@ -466,14 +465,12 @@ var span_t = d3.select("#chi_t_plt")
   .style("position", "absolute")
   .style("left", fig_width * 2.145 + "px")
   .style("top", height * 0.18 + "px");
-    
-d3.csv("../../../../assets/chi-t.csv", function(error, data) {
-  if (error) throw error;
-
-  var chi_x = d3.scaleLinear()
-            .domain([-0, 40])
-            .range([0, fig_width]);
-            
+  
+var chi_x = d3.scaleLinear()
+        .domain([-0, 40])
+        .range([0, fig_width]);
+        
+        
   var xAxis = chi_svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(chi_x));
@@ -511,6 +508,8 @@ d3.csv("../../../../assets/chi-t.csv", function(error, data) {
       
   yAxis.selectAll(".tick text")
      .attr("font-family", "Arvo");
+        
+d3.csv("../../../../assets/chi-t.csv").then(data => {
 
   var chi_curve = chi_svg
     .append('g')
@@ -637,6 +636,7 @@ createSlider(slider_svg, updateChart, n_x, 190, 0.1 * height, "n", "currentColor
 
 });
 }
+
 
 chi_t_plts();
 
@@ -803,8 +803,7 @@ var xn_curve = svg
 
 var std_curve;
 
-d3.csv("../../../../assets/chi-t.csv", function(error, chi_data) {
-  if (error) throw error;
+d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
   
   std_curve = svg
     .append('g')

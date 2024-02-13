@@ -109,7 +109,7 @@ function draw_node(x, y, opacity=0.95) {
 	  .attr('cx', x - 50)
 	  .attr('cy', y)
 	  .attr('r', 10)
-	  .attr('stroke', 'currentColor')
+	  .attr('stroke', 'black')
 	  .attr("opacity", opacity)
 	  .attr('fill', '#348ABD');
 }
@@ -460,7 +460,7 @@ svg.append('rect')
   .attr('y', 1)
   .attr('width', 215)
   .attr('height', 75)
-  .attr('stroke', "black")
+  .attr('stroke', "currentColor")
   .attr("rx", 3)
   .style('stroke-dasharray', ('2,3'))
   .attr('fill', 'none');
@@ -518,7 +518,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('y', 15 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', "currentColor")
+	  .attr('stroke', "black")
 	  .attr("rx", 3)
 	  .attr("opacity", 0.9)
 	  .attr('fill', '#348ABD');
@@ -530,7 +530,7 @@ for (var i = 0; i < 3; i += 1) {
 	  .attr('y', 150 + i * 3)
 	  .attr('width', 12)
 	  .attr('height', 12)
-	  .attr('stroke', "currentColor")
+	  .attr('stroke', "black")
 	  .attr("rx", 3)
 	  .attr("opacity", (i == 2) ? 1.0 : 0.6)
 	  .attr('fill', '#E86456');
