@@ -207,7 +207,7 @@ var svg = d3.select("#gpt_arch_simple")
 			  .attr("height", 375);
 	
 	softmax_block(svg, 90, 20);
-	line(svg, 150, 50, 150, 60, "currentColor");
+	line(svg, 150, 50, 150, 60, 1, 2, "currentColor");
 	linear_block(svg, 90, 60);
 	up_arrow(svg, 150, 90, 110);
 	transformer_block(svg, 50, 110);
@@ -253,7 +253,7 @@ var svg = d3.select("#gpt_arch_simple")
 	svg.append('line')
 	  .attr('x1', 220)
 	  .attr('y1', 320)
-	  .attr('x2', 150)
+	  .attr('x2', 158)
 	  .attr('y2', 320)
 	  .style("stroke-width", 2)
 	  .attr('stroke', 'currentColor');
@@ -651,7 +651,7 @@ var svg = d3.select("#gpt_arch")
 	       .y(function(d) { return d.y; }));
 	
 	softmax_block(svg, 40, 20);
-	line(svg, 100, 50, 100, 60, "currentColor");
+	line(svg, 100, 50, 100, 60, 1, 2, "currentColor");
 	linear_block(svg, 40, 60);
 	up_arrow(svg, 100, 90, 120);
 	
@@ -676,7 +676,7 @@ var svg = d3.select("#gpt_arch")
 	addnorm_block(svg, 40, 230);
 	line(svg, 100, 260, 100, 270);
 	mha_block(svg, 40, 270);
-	up_arrow(svg, 100, 340, 410);
+	up_arrow(svg, 100, 340, 402);
 	
 	svg.append("path")
 	   .attr("stroke", "black")
@@ -688,12 +688,19 @@ var svg = d3.select("#gpt_arch")
 	       .curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
+	       
  	triangle(svg, 65, 345, 0);
  	triangle(svg, 135, 345, 0);
  	
 	svg.append("path")
 	   .attr("stroke", "black")
-	   .datum([{x: 100, y: 375}, {x: 35, y: 375}, {x: 10, y: 375}, {x: 10, y: 345}, {x: 10, y: 275}, {x: 10, y: 245}, {x: 35, y: 245}])
+	   .datum([{x: 100, y: 375}, 
+	   {x: 35, y: 375}, 
+	   {x: 10, y: 375}, 
+	   {x: 10, y: 345}, 
+	   {x: 10, y: 275},
+	   {x: 10, y: 245}, 
+	   {x: 35, y: 245}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 2)
 	   .attr("d",  d3.line()
@@ -721,18 +728,18 @@ var svg = d3.select("#gpt_arch")
 	svg.append('line')
 	  .attr('x1', 150)
 	  .attr('y1', 410)
-	  .attr('x2', 100)
+	  .attr('x2', 108)
 	  .attr('y2', 410)
 	  .style("stroke-width", 2)
 	  .attr('stroke', 'currentColor');
 	  
-	line(svg, 100, 415, 100, 430);
+	line(svg, 100, 415, 100, 430, 1, 2, "currentColor");
 	  
 	svg.append('circle')
 	.attr('cx', 100)
 	.attr('cy', 410)
 	.attr('r', 8)
-	.attr('stroke', 'black')
+	.attr('stroke', 'currentColor')
 	.attr('fill', 'none');
   
 	svg.append('line')

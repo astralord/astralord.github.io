@@ -377,7 +377,7 @@ var prior_curve = svg
       .datum(prior_data)
       .attr("fill", "#348ABD")
       .attr("border", 0)
-      .attr("opacity", ".8")
+      .attr("opacity", ".9")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -393,7 +393,7 @@ var posterior_curve = svg
       .datum(posterior_data)
       .attr("fill", "#EDA137")
       .attr("border", 0)
-      .attr("opacity", ".8")
+      .attr("opacity", ".9")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -474,7 +474,7 @@ var labels_x = 550;
 svg.append("path")
    .attr("stroke", "#348ABD")
    .attr("stroke-width", 4)
-   .attr("opacity", ".8")
+   .attr("opacity", ".9")
    .datum([{x: labels_x, y: -5}, {x: labels_x + 25, y: -5}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
@@ -501,7 +501,7 @@ svg
 svg.append("path")
    .attr("stroke", "#EDA137")
    .attr("stroke-width", 4)
-   .attr("opacity", ".8")
+   .attr("opacity", ".9")
    .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
    .attr("d",  d3.line()
        .x(function(d) { return d.x; })
@@ -925,8 +925,7 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 
 <script>
 
-d3.json("../../../../assets/beta.json", function(error, data) {
-  if (error) throw error;
+d3.csv("../../../../assets/beta.json").then(data => {
   var sample = 1;
   var n = 8;
   var a = 1, b = 1;
@@ -973,7 +972,7 @@ var prior_curve = prior_svg
       .datum(prior_data)
       .attr("fill", "#348ABD")
       .attr("border", 0)
-      .attr("opacity", ".8")
+      .attr("opacity", ".9")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -1212,7 +1211,7 @@ var post_svg = smpl_svg
       .datum(posterior_data)
       .attr("fill", "#EDA137")
       .attr("border", 0)
-      .attr("opacity", ".8")
+      .attr("opacity", ".9")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")

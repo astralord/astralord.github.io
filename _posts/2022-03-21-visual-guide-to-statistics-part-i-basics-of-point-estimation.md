@@ -517,7 +517,6 @@ d3.csv("../../../../assets/chi-t.csv").then(data => {
       .datum(data)
       .attr("fill", "#EDA137")
       .attr("border", 0)
-      .attr("opacity", ".8")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -533,7 +532,6 @@ d3.csv("../../../../assets/chi-t.csv").then(data => {
       .datum(data)
       .attr("fill", "#348ABD")
       .attr("border", 0)
-      .attr("opacity", ".8")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -769,7 +767,6 @@ var gauss_curve = svg
     .datum(gauss_data)
     .attr("fill", "#65AD69")
     .attr("border", 0)
-    .attr("opacity", ".8")
     .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .attr("stroke-linejoin", "round")
@@ -791,7 +788,6 @@ var xn_curve = svg
     .datum(xn_data)
     .attr("fill", "#E86456")
     .attr("border", 0)
-    .attr("opacity", ".8")
     .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
     .attr("stroke-linejoin", "round")
@@ -811,7 +807,6 @@ d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
       .datum(chi_data)
       .attr("fill", "#EDA137")
       .attr("border", 0)
-      .attr("opacity", ".8")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -874,7 +869,6 @@ var xn_avg_curve = svg
       .datum([{x: 0, y: 0}, {x: 0, y: -2}, {x: -0.5, y: -2}])
       .attr("fill", "none")
       .attr("border", 0)
-      .attr("opacity", ".8")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -902,7 +896,6 @@ var sn_avg_curve = svg
       .datum([{x: 1 - 1/n, y: -4}, {x: 1 - 1 / n, y: -6}, {x: 1.5 - 1/n, y: -6}])
       .attr("fill", "none")
       .attr("border", 0)
-      .attr("opacity", ".8")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -1016,7 +1009,6 @@ function sample() {
       .datum(sq_data)
       .attr("fill", "none")
       .attr("border", 0)
-      .attr("opacity", ".9")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
@@ -1099,10 +1091,8 @@ function updateNGauss(new_n) {
           .x(function(d) { return x(d.x); })
           .y(function(d) { return y(-d.y - 0.5); })
    );
-
-   d3.csv("../../../../assets/chi-t.csv", function(error, chi_data) {
-     if (error) throw error;
-  
+   
+   d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
      std_curve
         .datum(chi_data)
         .transition()
