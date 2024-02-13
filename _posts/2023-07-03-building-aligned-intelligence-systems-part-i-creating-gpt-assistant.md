@@ -258,13 +258,13 @@ var svg = d3.select("#gpt_arch_simple")
 	  .style("stroke-width", 2)
 	  .attr('stroke', 'currentColor');
 	  
-	up_arrow(svg, 150, 312, 340);
+	up_arrow(svg, 150, 290, 328);
 	  
 	svg.append('line')
 	  .attr('x1', 150)
-	  .attr('y1', 290)
+	  .attr('y1', 312)
 	  .attr('x2', 150)
-	  .attr('y2', 328)
+	  .attr('y2', 340)
 	  .style("stroke-width", 2)
 	  .attr('stroke', 'currentColor');
 	  

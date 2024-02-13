@@ -925,7 +925,7 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 
 <script>
 
-d3.csv("../../../../assets/beta.json").then(data => {
+d3.json("../../../../assets/beta.json").then(data => {
   var sample = 1;
   var n = 8;
   var a = 1, b = 1;
@@ -1300,7 +1300,7 @@ var post_svg = smpl_svg
   function updatePriorData() {
     prior_data = [];
     prior_data.push({x: 0, y: 0});
-    prior_data.push({x: 0, y: (a == 1 ? 1 : 0) / data["0"][a_key][b_key][0] });
+    prior_data.push({x: 0, y: (a == 1 ? 1 : 0) / data[0][a_key][b_key][0] });
     
     for (var i = 0.002; i < 1; i += 0.002) {
   	   prior_data.push({x: i, y: Math.pow(i, a-1) * Math.pow(1-i, b-1) / data[0][a_key][b_key][0] });
