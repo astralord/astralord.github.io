@@ -1300,7 +1300,7 @@ var post_svg = smpl_svg
   function updatePriorData() {
     prior_data = [];
     prior_data.push({x: 0, y: 0});
-    prior_data.push({x: 0, y: (a == 1 ? 1 : 0) / data[0][a_key][b_key][0] });
+    prior_data.push({x: 0, y: (a == 1 ? 1 : 0) / data["0"][a_key][b_key][0] });
     
     for (var i = 0.002; i < 1; i += 0.002) {
   	   prior_data.push({x: i, y: Math.pow(i, a-1) * Math.pow(1-i, b-1) / data[0][a_key][b_key][0] });

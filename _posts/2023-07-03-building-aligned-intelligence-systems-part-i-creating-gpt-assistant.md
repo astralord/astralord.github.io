@@ -258,7 +258,15 @@ var svg = d3.select("#gpt_arch_simple")
 	  .style("stroke-width", 2)
 	  .attr('stroke', 'currentColor');
 	  
-	up_arrow(svg, 150, 290, 340);
+	up_arrow(svg, 150, 312, 340);
+	  
+	svg.append('line')
+	  .attr('x1', 150)
+	  .attr('y1', 290)
+	  .attr('x2', 150)
+	  .attr('y2', 328)
+	  .style("stroke-width", 2)
+	  .attr('stroke', 'currentColor');
 	  
 	svg.append('circle')
 	.attr('cx', 150)
@@ -733,7 +741,7 @@ var svg = d3.select("#gpt_arch")
 	  .style("stroke-width", 2)
 	  .attr('stroke', 'currentColor');
 	  
-	line(svg, 100, 415, 100, 430, 1, 2, "currentColor");
+	line(svg, 100, 418, 100, 430, 1, 2, "currentColor");
 	  
 	svg.append('circle')
 	.attr('cx', 100)
