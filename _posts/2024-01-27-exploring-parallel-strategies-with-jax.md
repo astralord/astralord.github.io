@@ -318,7 +318,7 @@ function aggregate(svg, x, y, h) {
 	           {x: x, y: y + h}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -393,7 +393,7 @@ function mini_cdot(svg, x, y) {
 	  .attr('y', y)
 	  .text("⋅")
 	  .style("font-size", "16px")
-    .style("fill", "currentColor")
+    .style("fill", "black")
 	  .attr("font-family", "Arvo");
 }
 
@@ -517,7 +517,7 @@ function legend() {
 	  .attr('y2', 90)
 	  .style("stroke-width", 3)
 	  .attr("opacity", 0.7)
-	  .attr('stroke', 'black');
+	  .attr('stroke', 'currentColor');
 	
 	shrd_tensor(svg, 127, 40, 4, 2, 4, 1);
 	rplc_tensor(svg, 370, 40, 4, 2, 4, 1);
@@ -1028,7 +1028,7 @@ function tensor_parallel() {
 	  .attr('y', 1)
 	  .attr('width', 210)
 	  .attr('height', 72)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr('fill', 'none');
 	     
@@ -1261,7 +1261,7 @@ function pipeline_arrow(svg, x, y, y_shift) {
 	           {x: x + 20, y: y + y_shift}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 0.8)
-	   .attr("stroke", 'black')
+	   .attr("stroke", 'currentColor')
 	   .attr("d",  d3.line()
 			.curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
@@ -1273,7 +1273,7 @@ function pipeline_arrow(svg, x, y, y_shift) {
 	           {x: x + 18, y: y + y_shift + 1}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 0.8)
-	   .attr("stroke", 'black')
+	   .attr("stroke", 'currentColor')
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -1290,7 +1290,7 @@ function pipeline_arrow_grad(svg, x, y, y_shift) {
 	           {x: x + 20, y: y}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 0.8)
-	   .attr("stroke", 'black')
+	   .attr("stroke", 'currentColor')
 	   .attr("d",  d3.line()
 			.curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
@@ -1302,7 +1302,7 @@ function pipeline_arrow_grad(svg, x, y, y_shift) {
 	           {x: x + 18, y: y + 1}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 0.8)
-	   .attr("stroke", 'black')
+	   .attr("stroke", 'currentColor')
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -1387,7 +1387,7 @@ function pipeline_parallel() {
 			           {x: x_start + (k - i) * x_shift + 245, y: y_start + 41 + i * y_shift}])
 			   .attr("fill", "none")
 			   .attr("stroke-width", 1)
-			   .attr("stroke", "black")
+			   .attr("stroke", "currentColor")
 			   .attr("d",  d3.line()
 			       .x(function(d) { return d.x; })
 			       .y(function(d) { return d.y; }));
@@ -1916,7 +1916,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh - 15)
 	  .attr('width', 530)
 	  .attr('height', 145)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr('fill', 'none');
 	  
@@ -2218,7 +2218,7 @@ function expert_parallel_dispatch() {
 	           {x: x_start + 500, y: y_start + 370}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -2229,7 +2229,7 @@ function expert_parallel_dispatch() {
 	           {x: x_start + 497, y: y_start + 371}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
