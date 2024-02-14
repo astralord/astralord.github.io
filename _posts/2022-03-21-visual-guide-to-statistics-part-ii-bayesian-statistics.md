@@ -1048,11 +1048,13 @@ var prior_curve = prior_svg
 	      })
 	      .on('click', function(d, i) {
 	        sample = i;
+	        
 	        d3.selectAll("rect")
 	          .transition()
-		       .attr("x", function(d) { return smpl_x(d.x); })
-		       .attr("y", function(d) { return smpl_y(d.y); })
+		       .attr("x", function(d2) { return smpl_x(d2.x); })
+		       .attr("y", function(d2) { return smpl_y(d2.y); })
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
+	          
 	        updatePosteriorCurve();
 	    });
     
@@ -1227,7 +1229,7 @@ var post_svg = smpl_svg
   var umvu_dash = post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1)
         .datum([{x: umvu_x, y: umvu_y}, {x: umvu_x, y: 0}])
         .attr("d",  d3.line()
@@ -1252,7 +1254,7 @@ var post_svg = smpl_svg
   var bayes_dash = post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1)
         .datum([{x: bayes_x, y: bayes_y}, {x: bayes_x, y: 0}])
         .attr("d",  d3.line()
@@ -1277,7 +1279,7 @@ var post_svg = smpl_svg
   var minimax_dash = post_svg.append("path")
         .attr("class", "line")
         .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "currentColor")
+        .attr("stroke", "black")
         .attr("stroke-width", 1)
         .datum([{x: minimax_x, y: minimax_y}, {x: minimax_x, y: 0}])
         .attr("d",  d3.line()
