@@ -1053,7 +1053,7 @@ var prior_curve = prior_svg
 	          .transition()
 		       .attr("x", function(d2) { return smpl_x(d2.x); })
 		       .attr("y", function(d2) { return smpl_y(d2.y); })
-	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
+	          .attr("opacity", function(d2) { return d2.x == sample ? ".8" : "0"; });
 	          
 	        updatePosteriorCurve();
 	    });
