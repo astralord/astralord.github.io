@@ -116,6 +116,9 @@ We will follow the similar way for visualization
 colors = ['#C7E9E3', '#ECECEC', '#FFF6B7', '#FDBFB9',
           '#D9EFB5', '#FFFFDA', '#E6F5E2', '#FEDAB1'];
           
+colors = ['#8ED3C7', '#D9D9D9', '#FDBFB9', '#FFF6B7',
+          '#D9EFB5', '#FFFFDA', '#E6F5E2', '#FDB462'];
+          
 function min(a, b) {
   return a < b ? a : b;
 }
@@ -230,7 +233,7 @@ function dotted_tensor(svg, x, y, w, h, color, mark=1) {	for (var i = 0; i < w; 
 }
 
 function rplc_tensor(svg, x, y, w, h) {
-   tensor(svg, x, y, w, h, 'lightgrey');
+   tensor(svg, x, y, w, h, '#adadad');
 }
 
 function shrd_tensor(svg, x, y, w, h, xsh, ysh) {
@@ -1117,7 +1120,7 @@ function tensor_parallel() {
 	   cdots(svg, x_start + 295, y_start + 42 + i * y_shift);	}
 		
 	aggregate(svg, x_start + 318, y_start - 2, 382);
-	cell(svg, x_start + 345, y_start + 182, 'lightgrey');
+	cell(svg, x_start + 345, y_start + 182, '#adadad');
 	grad_right_arrow(svg, x_start + 366, y_start + 191);
 	
 	split(svg, x_start + 389, y_start - 2, 382);
@@ -1946,7 +1949,7 @@ function expert_parallel_dispatch() {
     .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
-	tensor(svg, x_sh + 20, y_sh + 10, 2, 5, 'lightgray');
+	tensor(svg, x_sh + 20, y_sh + 10, 2, 5, '#adadad');
 	cdot(svg, x_sh + 52, y_sh + 56);
 	tensor(svg, x_sh + 64, y_sh + 35, 4, 2, colors[4]);
 	softmax(svg, x_sh + 145, y_sh + 50);
