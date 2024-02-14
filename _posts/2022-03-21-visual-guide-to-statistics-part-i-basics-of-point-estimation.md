@@ -415,7 +415,7 @@ function plt_label_path(svg, color, x, y) {
 
 function chi_t_plts() {
 
-var margin = {top: 20, right: 0, bottom: 30, left: 50},
+var margin = {top: 20, right: 0, bottom: 30, left: 45},
     width = 700 - margin.left - margin.right,
     height = 200 - margin.top - margin.bottom,
     fig_width = 300;
