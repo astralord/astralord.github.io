@@ -657,6 +657,7 @@ function data_parallel() {
 	  .attr('y', 23)
 	  .text("ℓ")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
