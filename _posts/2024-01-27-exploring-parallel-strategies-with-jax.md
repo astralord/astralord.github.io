@@ -352,6 +352,7 @@ function right_arrow(svg, x, y) {
 	  .attr('y', y)
 	  .text("⟶")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
