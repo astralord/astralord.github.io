@@ -268,7 +268,7 @@ function relu(svg, x, y) {
 		  .attr('cx', x)
 		  .attr('cy', y)
 		  .attr('r', 10)
-		  .attr('stroke', 'black')
+		  .attr('stroke', 'currentColor')
 		  .attr('stroke-width', 1)
 		  .attr('fill', 'none');
 	
@@ -278,7 +278,7 @@ function relu(svg, x, y) {
 	           {x: x + 7, y: y - 6}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
         .curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
@@ -290,7 +290,7 @@ function softmax(svg, x, y) {
 		  .attr('cx', x)
 		  .attr('cy', y)
 		  .attr('r', 10)
-		  .attr('stroke', 'black')
+		  .attr('stroke', 'currentColor')
 		  .attr('stroke-width', 1)
 		  .attr('fill', 'none');
 	
@@ -302,7 +302,7 @@ function softmax(svg, x, y) {
 	           {x: x + 9, y: y + 1}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
         .curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
@@ -311,7 +311,7 @@ function softmax(svg, x, y) {
 
 function aggregate(svg, x, y, h) {
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: x, y: y},
 				 {x: x + 5, y: y},
 	           {x: x + 5, y: y + h}, 
@@ -328,19 +328,19 @@ function aggregate(svg, x, y, h) {
 	  .attr('y', y + h / 2 + 2)
 	  .text("⟶")
 	  .style("font-size", "12px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
 function split(svg, x, y, h) {
 	svg.append("path")
-	   .attr("stroke", "black")
 	   .datum([{x: x + 5, y: y},
 				 {x: x, y: y},
 	           {x: x, y: y + h}, 
 	           {x: x + 5, y: y + h}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -361,6 +361,7 @@ function circle_arrow(svg, x, y) {
 	  .attr('y', y)
 	  .text("↻")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -370,7 +371,9 @@ function grad_right_arrow(svg, x, y) {
 	  .attr('y', y - 8)
 	  .text("∇")
 	  .style("font-size", "9px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
+  
 	right_arrow(svg, x, y);
 }
 
@@ -380,6 +383,7 @@ function cdot(svg, x, y) {
 	  .attr('y', y)
 	  .text("⋅")
 	  .style("font-size", "21px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -389,6 +393,7 @@ function mini_cdot(svg, x, y) {
 	  .attr('y', y)
 	  .text("⋅")
 	  .style("font-size", "16px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -398,6 +403,7 @@ function cdots(svg, x, y) {
 	  .attr('y', y)
 	  .text("⋅⋅⋅")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -407,6 +413,7 @@ function sync(svg, x, y) {
 	  .attr('y', y)
 	  .text("⇅")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -417,7 +424,7 @@ function long_right_arrow(svg, x_sh, y_sh, length=50) {
 	           {x: x_sh + length, y: y_sh}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -428,7 +435,7 @@ function long_right_arrow(svg, x_sh, y_sh, length=50) {
 	           {x: x_sh + length - 3, y: y_sh + 1}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -440,7 +447,7 @@ function long_down_arrow(svg, x_sh, y_sh, length=50) {
 	           {x: x_sh, y: y_sh + length}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -451,7 +458,7 @@ function long_down_arrow(svg, x_sh, y_sh, length=50) {
 	           {x: x_sh + 1, y: y_sh + length - 3}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -463,7 +470,7 @@ function upright_arrow(svg, x_sh, y_sh) {
 	           {x: x_sh + 10, y: y_sh - 10}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -474,7 +481,7 @@ function upright_arrow(svg, x_sh, y_sh) {
 	           {x: x_sh + 8, y: y_sh - 7}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -492,6 +499,7 @@ function legend() {
 	  .attr('y', 20)
 	  .text("Sharded")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -499,6 +507,7 @@ function legend() {
 	  .attr('y', 20)
 	  .text("Replicated")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('line')
@@ -519,7 +528,7 @@ function legend() {
 	  .attr('y', 35)
 	  .attr('width', 170)
 	  .attr('height', 40)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .style('stroke-dasharray', ('2,3'))
 	  .attr('fill', 'none');
@@ -623,6 +632,7 @@ function data_parallel() {
 	  .attr('y', 20)
 	  .text("x")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	 	     
 	svg.append('text')
@@ -630,6 +640,7 @@ function data_parallel() {
 	  .attr('y', 43)
 	  .text("W₁")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -637,6 +648,7 @@ function data_parallel() {
 	  .attr('y', 23)
 	  .text("W₂")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -651,6 +663,7 @@ function data_parallel() {
 	  .attr('y', 23)
 	  .text("∂ℓ/∂W₂")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -658,6 +671,7 @@ function data_parallel() {
 	  .attr('y', 43)
 	  .text("∂ℓ/∂W₁")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 		  
 	shrd_tensor(svg, x_start, 30, 2, 5 * k, 1, k);
@@ -669,6 +683,7 @@ function data_parallel() {
 		  .attr('y', 74 + i * y_shift)
 		  .text("GPU  " + i)
 		  .style("font-size", "13px")
+      .style("fill", "currentColor")
 		  .attr("font-family", "Arvo");
 		  
 		cdot(svg, x_start + 36, 75 + i * y_shift);
@@ -681,7 +696,7 @@ function data_parallel() {
 	  .attr('y', 50)
 	  .attr('width', 72)
 	  .attr('height', 85 * k)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .style('stroke-dasharray', ('2,3'))
 	  .attr('fill', 'none');
@@ -700,7 +715,7 @@ function data_parallel() {
 	  .attr('y', 30)
 	  .attr('width', 40)
 	  .attr('height', 95 * k)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .style('stroke-dasharray', ('2,3'))
 	  .attr('fill', 'none');
@@ -732,17 +747,18 @@ function data_parallel() {
 	           {x: x_start + 650, y: 430}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
-	       .y(function(d) { return d.y; }));	       
+	       .y(function(d) { return d.y; }));	 
+  
 	svg.append("path")
 	   .datum([{x: x_start + 647, y: 429},
 	           {x: x_start + 650, y: 430},
 	           {x: x_start + 647, y: 431}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -752,6 +768,7 @@ function data_parallel() {
 	  .attr('y', 450)
 	  .text("Forward")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -759,6 +776,7 @@ function data_parallel() {
 	  .attr('y', 450)
 	  .text("Backward")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -959,6 +977,7 @@ function tensor_parallel() {
 	  .attr('y', y_start - 20)
 	  .text("x")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	 	     
 	svg.append('text')
@@ -966,6 +985,7 @@ function tensor_parallel() {
 	  .attr('y', 40)
 	  .text("W₁")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	 	     
 	svg.append('text')
@@ -973,6 +993,7 @@ function tensor_parallel() {
 	  .attr('y', 40)
 	  .text("=")
 	  .style("font-size", "15px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -980,6 +1001,7 @@ function tensor_parallel() {
 	  .attr('y', 40)
 	  .text("W₂")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -987,6 +1009,7 @@ function tensor_parallel() {
 	  .attr('y', 40)
 	  .text("=")
 	  .style("font-size", "15px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 		
 	shrd_tensor(svg, x_start + 250, 20, 4, 2, 4, 1);
@@ -997,6 +1020,7 @@ function tensor_parallel() {
 	  .attr('y', 40)
 	  .text("Sharded weights:")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 		  
 	svg.append('rect')
@@ -1013,6 +1037,7 @@ function tensor_parallel() {
 	  .attr('y', y_start + 5)
 	  .text("W₁")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -1020,6 +1045,7 @@ function tensor_parallel() {
 	  .attr('y', y_start + 5)
 	  .text("W₂")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -1027,6 +1053,7 @@ function tensor_parallel() {
 	  .attr('y', y_start + 5)
 	  .text("∂ℓ/∂W₁")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1034,6 +1061,7 @@ function tensor_parallel() {
 	  .attr('y', y_start + 5)
 	  .text("∂ℓ/∂W₂")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -1041,6 +1069,7 @@ function tensor_parallel() {
 	  .attr('y', y_start + 175)
 	  .text("ℓ")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	for (var i = 0; i < k; i += 1) {
@@ -1049,6 +1078,7 @@ function tensor_parallel() {
 		  .attr('y', x_start + 103 + i * y_shift)
 		  .text("GPU  " + i)
 		  .style("font-size", "13px")
+      .style("fill", "currentColor")
 		  .attr("font-family", "Arvo");
 		  
 		rplc_tensor(svg, x_start, y_start + i * y_shift, 2, 5);
@@ -1062,7 +1092,7 @@ function tensor_parallel() {
 	  .attr('y', y_start - 10)
 	  .attr('width', 40)
 	  .attr('height', 100 * k)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .style('stroke-dasharray', ('2,3'))
 	  .attr('fill', 'none');
@@ -1103,6 +1133,7 @@ function tensor_parallel() {
 	  .attr('y', y_start - 15)
 	  .text("d")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	long_right_arrow(svg, x_start + 240, y_start - 10, length=20);
 	
@@ -1111,6 +1142,7 @@ function tensor_parallel() {
 	  .attr('y', y_start + 43)
 	  .text("S")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	long_down_arrow(svg, x_start + 275, y_start + 15, length=50);
 	
@@ -1119,7 +1151,7 @@ function tensor_parallel() {
 	           {x: x_start + 550, y: 515}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -1130,7 +1162,7 @@ function tensor_parallel() {
 	           {x: x_start + 547, y: 516}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -1140,6 +1172,7 @@ function tensor_parallel() {
 	  .attr('y', 540)
 	  .text("Forward")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -1147,6 +1180,7 @@ function tensor_parallel() {
 	  .attr('y', 540)
 	  .text("Backward")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1278,6 +1312,7 @@ function pipeline_arrow_grad(svg, x, y, y_shift) {
 	  .attr('y', y + y_shift / 2)
 	  .text("∇")
 	  .style("font-size", "9px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1319,6 +1354,7 @@ function pipeline_parallel() {
 			.attr('y', y_start + 43 + i * y_shift)
 			.text("GPU  " + i)
 			.style("font-size", "13px")
+      .style("fill", "currentColor")
 			.attr("font-family", "Arvo");
 		
 		stage(svg, 
@@ -1339,7 +1375,7 @@ function pipeline_parallel() {
 			           {x: x_start + (k - i) * x_shift + 245, y: y_start + 40 + i * y_shift}])
 			   .attr("fill", "none")
 			   .attr("stroke-width", 1)
-			   .attr("stroke", "black")
+			   .attr("stroke", "currentColor")
 			   .style('stroke-dasharray', ('2,3'))
 			   .attr("d",  d3.line()
 			       .x(function(d) { return d.x; })
@@ -1387,6 +1423,7 @@ function pipeline_parallel() {
 	  .attr('y', y_start + 27 + (k - 1) * y_shift)
 	  .text("ℓ")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append("path")
@@ -1394,7 +1431,7 @@ function pipeline_parallel() {
 	           {x: x_start + 640, y: 335}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -1405,7 +1442,7 @@ function pipeline_parallel() {
 	           {x: x_start + 637, y: 336}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -1415,6 +1452,7 @@ function pipeline_parallel() {
 	  .attr('y', 355)
 	  .text("Forward")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 	svg.append('text')
@@ -1422,6 +1460,7 @@ function pipeline_parallel() {
 	  .attr('y', 355)
 	  .text("Backward")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1466,6 +1505,7 @@ function pipeline_parallel_as_tensor() {
 				  .attr('y', y_start + 43 + i * y_shift)
 				  .text("GPU  " + i)
 				  .style("font-size", "13px")
+          .style("fill", "currentColor")
 				  .attr("font-family", "Arvo");
 			}
 			
@@ -1493,17 +1533,18 @@ function pipeline_parallel_as_tensor() {
 	           {x: x_start + 630, y: 410}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
-	       .y(function(d) { return d.y; }));	       
+	       .y(function(d) { return d.y; }));	  
+  
 	svg.append("path")
 	   .datum([{x: x_start + 627, y: 409},
 	           {x: x_start + 630, y: 410},
 	           {x: x_start + 627, y: 411}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 1)
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -1513,6 +1554,7 @@ function pipeline_parallel_as_tensor() {
 	  .attr('y', 435)
 	  .text("Forward")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	     
 }
@@ -1866,6 +1908,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 50)
 	  .text("Gating:")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('rect')
@@ -1882,6 +1925,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 5)
 	  .text("x")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 		     
 	svg.append('text')
@@ -1889,6 +1933,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 25)
 	  .text("W")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1896,6 +1941,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 27)
 	  .text("G")
 	  .style("font-size", "7px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	tensor(svg, x_sh + 20, y_sh + 10, 2, 5, 'lightgray');
@@ -1913,6 +1959,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 45)
 	  .text("Argmax")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1920,6 +1967,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 62)
 	  .text("CumSum")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 
 	dispatch_tensor(svg, x_sh + 308, y_sh + 10, false);
@@ -1931,6 +1979,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 45)
 	  .text("Truncate")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1938,6 +1987,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 62)
 	  .text("One-hot")
 	  .style("font-size", "11px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	tensor(svg, x_sh + 449, y_sh + 7, 4, 5, 'white');
@@ -1953,6 +2003,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh)
 	  .text("E")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	long_right_arrow(svg, x_sh + 455, y_sh + 3);
 	
@@ -1961,6 +2012,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 55)
 	  .text("S")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	long_down_arrow(svg, x_sh + 520, y_sh + 25);
 	
@@ -1969,6 +2021,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 103)
 	  .text("C")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	upright_arrow(svg, x_sh + 507, y_sh + 97);
 	  
@@ -1977,6 +2030,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 117)
 	  .text("Combine weights")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -1984,6 +2038,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_sh + 117)
 	  .text("Dispatch mask")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -1991,6 +2046,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_start - 35)
 	  .text("x")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1998,6 +2054,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_start - 35)
 	  .text("x")
 	  .style("font-size", "13px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	shrd_tensor(svg, x_start, y_start - 25, 2, 5 * k, 1, k);
@@ -2012,6 +2069,7 @@ function expert_parallel_dispatch() {
 		  .attr('y', y_start + 19 + i * y_shift)
 		  .text("GPU  " + i)
 		  .style("font-size", "13px")
+    .style("fill", "currentColor")
 		  .attr("font-family", "Arvo");
 			
 		right_arrow(svg, x_start + 40, y_start + i * y_shift + 16);
@@ -2022,6 +2080,7 @@ function expert_parallel_dispatch() {
 		  .attr('y', y_start + i * y_shift + 10)
 		  .text("T")
 		  .style("font-size", "8px")
+      .style("fill", "currentColor")
 		  .attr("font-family", "Arvo");
 		  
 		right_arrow(svg, x_start + 130, y_start + i * y_shift + 16);
@@ -2035,6 +2094,7 @@ function expert_parallel_dispatch() {
 			  .attr('y', y_sh - 10)
 			  .text("S")
 			  .style("font-size", "13px")
+        .style("fill", "currentColor")
 			  .attr("font-family", "Arvo");
 			long_right_arrow(svg, x_sh + 10, y_sh - 5, 60);
 		}
@@ -2057,7 +2117,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_start - 6)
 	  .attr('width', 66)
 	  .attr('height', 340)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .style('stroke-dasharray', ('2,3'))
 	  .attr('fill', 'none');
@@ -2129,6 +2189,7 @@ function expert_parallel_dispatch() {
 			  .attr('y', y_sh - 10)
 			  .text("d")
 			  .style("font-size", "13px")
+        .style("fill", "currentColor")
 			  .attr("font-family", "Arvo");
 			long_right_arrow(svg, x_sh, y_sh - 5, 25);
 			
@@ -2137,6 +2198,7 @@ function expert_parallel_dispatch() {
 			  .attr('y', y_sh + 35)
 			  .text("G")
 			  .style("font-size", "13px")
+        .style("fill", "currentColor")
 			  .attr("font-family", "Arvo");
 			long_down_arrow(svg, x_sh + 40, y_sh + 8, 45);
 			
@@ -2145,6 +2207,7 @@ function expert_parallel_dispatch() {
 			  .attr('y', y_sh + 78)
 			  .text("C")
 			  .style("font-size", "13px")
+        .style("fill", "currentColor")
 			  .attr("font-family", "Arvo");
 			upright_arrow(svg, x_sh + 27, y_sh + 72);
 		}
@@ -2176,6 +2239,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_start + 395)
 	  .text("Dispatch")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -2183,6 +2247,7 @@ function expert_parallel_dispatch() {
 	  .attr('y', y_start + 395)
 	  .text("All-to-all reshard")
 	  .style("font-size", "14px")
+    .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 }
