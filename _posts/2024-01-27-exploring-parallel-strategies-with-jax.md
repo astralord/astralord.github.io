@@ -116,8 +116,8 @@ We will follow the similar way for visualization
 colors = ['#C7E9E3', '#ECECEC', '#FFF6B7', '#FDBFB9',
           '#D9EFB5', '#FFFFDA', '#E6F5E2', '#FEDAB1'];
           
-colors = ['#8ED3C7', '#D9D9D9', '#FDBFB9', '#FFF6B7',
-          '#D9EFB5', '#FFFFDA', '#E6F5E2', '#FDB462'];
+colors = ['#8ED3C7', '#FDBFB9', '#FFF6B7', '#FDB462',
+          '#D9EFB5', '#FFFFDA', '#E6F5E2', '#D9D9D9'];
           
 function min(a, b) {
   return a < b ? a : b;
@@ -950,17 +950,17 @@ With the advent of large neural networks that do not fit on one device, the need
 
 The idea of sharding, the way it was applied to data tensors, can be used in a similar way with respect to the model weights. We can divide each tensor $\mathbf{W}$ into chunks distributed across multiple devices, so instead of having the whole tensor reside on a single device, each shard of the tensor resides on its own accelerator. Each part gets processed separately in parallel on different devices and after processing the results are synced at the end of the step. 
 
-Such strategy is called **Tensor Parallel (TP)** or horizontal parallelism, as the splitting happens on horizontal level (we will get to the vertical/pipeline parallelism later). A simple and efficient way to parallelize FFN calculations was proposed in [Megatron-LM](https://arxiv.org/pdf/1909.08053.pdf) paper. Let's represent matrices $\mathbf{W}_1$ and $\mathbf{W}_2$ as concatenation of $G$ sub-tensors along rows and columns respectively:
+Such strategy is called **Tensor Parallel (TP)*Tensor Parallel (TP)* or horizontal parallelism, as the splitting happens on horizontal level (we will get to the vertical/pipeline parallelism later). A simple and efficient way to parallelize FFN calculations was proposed in [Megatron-LM](https://arxiv.org/pdf/1909.08053.pdf) paper. Let's represent matrices $\mathbf{W}_1$ and $\mathbf{W}_2$ as concatenation of $G$ sub-tensors along rows and columns respectively:
 
-$$\mathbf{W}_1 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_1^1} & \color{#D9D9D9}{\mathbf{W}_1^2} & \cdots & \color{#FDBFB9}{\mathbf{W}_1^G} \end{pmatrix}, \quad \mathbf{W}_2 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_2^1} \\ \color{#D9D9D9}{\mathbf{W}_2^2} \\ \vdots \\ \color{#FDBFB9}{\mathbf{W}_2^G} \end{pmatrix}$$
+$$\mathbf{W}_1 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_1^1} & \color{#D9D9D9}{\mathbf{W}_1^2} & \cdots & \color{#FDB462}{\mathbf{W}_1^G} \end{pmatrix}, \quad \mathbf{W}_2 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_2^1} \\ \color{#D9D9D9}{\mathbf{W}_2^2} \\ \vdots \\ \color{#FDB462}{\mathbf{W}_2^G} \end{pmatrix}$$
 
 with $\mathbf{W}_1^k \in \mathbb{R}^{d \times \frac{h}{G}}$, $\mathbf{W}_2^k \in \mathbb{R}^{\frac{h}{G}\times d}$ for $k = 1, \dots, G$. Then with $x$ replicated over devices we can perform sub-tensors multiplications in parallel:
 
-$$x\mathbf{W}_1=\begin{pmatrix} x\color{#8ED3C7}{\mathbf{W}_1^1} & x\color{#D9D9D9}{\mathbf{W}_1^2} &\cdots & x\color{#FDBFB9}{\mathbf{W}_1^G} \end{pmatrix}$$
+$$x\mathbf{W}_1=\begin{pmatrix} x\color{#8ED3C7}{\mathbf{W}_1^1} & x\color{#D9D9D9}{\mathbf{W}_1^2} &\cdots & x\color{#FDB462}{\mathbf{W}_1^G} \end{pmatrix}$$
 
 and for $z = \max(x\mathbf{W}_1, 0)$ we have
 
-$$z\mathbf{W}_2=z {\color{#8ED3C7}{\mathbf{W}_2^1}} + z {\color{#D9D9D9}{\mathbf{W}_2^2}} + \cdots + z {\color{#FDBFB9}{\mathbf{W}_2^G}}.$$
+$$z\mathbf{W}_2=z {\color{#8ED3C7}{\mathbf{W}_2^1}} + z {\color{#D9D9D9}{\mathbf{W}_2^2}} + \cdots + z {\color{#FDB462}{\mathbf{W}_2^G}}.$$
 
 The model weights on different devices do not overlap, and the only communication between devices occurs at the end of the FFN layer when we need to sum all the outputs. We can already see the advantage of TP over DP here: computational costs for each device decreases drastically with growing number of devices. On the other hand, the deficiency of TP is that the input data is replicated, so that the batch size per device is now equal to the total batch size. Hence if we are restricted by GPU memory we have to reduce our $B$. Otherwise, we can increase our $S$ by a factor of $G$ to keep up with the same batch size $B=S \times G$ as in DP strategy.
 
