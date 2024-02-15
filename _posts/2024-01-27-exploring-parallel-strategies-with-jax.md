@@ -114,9 +114,9 @@ We will follow the similar way for visualization
 <script>
 
 colors = ['#C7E9E3', '#ECECEC', '#FFF6B7', '#FDBFB9',
-          '#D9EFB5', '#FFFFDA', '#E6F5E2', '#FEDAB1'];
+          '#D9EFB5', '#FFFFDA', '#E6F5E2', '#FDB462'];
           
-colors = ['#8ED3C7', '#FDBFB9', '#FFF6B7', '#FDB462',
+colors = ['#8ED3C7', '#FDBFB9', '#FFF6B7', '#FEDAB1',
           '#D9EFB5', '#FFFFDA', '#E6F5E2', '#D9D9D9'];
           
 function min(a, b) {
