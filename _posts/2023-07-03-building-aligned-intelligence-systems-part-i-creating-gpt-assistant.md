@@ -84,7 +84,7 @@ $$\pi_\phi(\cdot \mid x) = \operatorname{softmax}(h_N \mathbf{W_e}^T).$$
 
 <script>
 
-function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='black') {
+function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='currentColor') {
 	svg.append('line')
 	  .attr('x1', x1)
 	  .attr('y1', y1)
@@ -104,7 +104,7 @@ function triangle(svg, x, y, rotate=0, opacity=1, stroke="currentColor") {
 	svg.append("path")
 	   .attr("d", triangle_symb)
 	   .attr("stroke", stroke)
-	   .attr("fill", "#404040")
+	   .attr("fill", stroke)
 	   .attr("opacity", opacity)
 	   .attr("transform",
 	   		function(d) { return "translate(" + x + "," + y + ") rotate(" + rotate  + ")"; });

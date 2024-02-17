@@ -565,25 +565,22 @@ svg.append('circle')
   .attr('cx', 130)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
-  .attr('fill', 'black');
+  .attr('stroke', 'currentColor')
+  .attr('fill', 'currentColor');
   
 svg.append('circle')
   .attr('cx', 150)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
-  .attr('fill', 'black');
+  .attr('stroke', 'currentColor')
+  .attr('fill', 'currentColor');
   
 svg.append('circle')
   .attr('cx', 170)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
-  .attr('fill', 'black');
+  .attr('stroke', 'currentColor')
+  .attr('fill', 'currentColor');
 
 draw_uroboros(svg, 200);
 

@@ -1049,11 +1049,11 @@ var prior_curve = prior_svg
 	      .on('click', function(d, i) {
 	        sample = i;
 	        
-	        d3.selectAll("rect")
+	        d3.select(this)
 	          .transition()
-		       .attr("x", function(d2) { return smpl_x(d.x); })
-		       .attr("y", function(d2) { return smpl_y(d.y); })
-	          .attr("opacity", function(d2) { return d.x == sample ? ".8" : "0"; });
+		       .attr("x", function(d) { return smpl_x(d.x); })
+		       .attr("y", function(d) { return smpl_y(d.y); })
+	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
 	          
 	        updatePosteriorCurve();
 	    });

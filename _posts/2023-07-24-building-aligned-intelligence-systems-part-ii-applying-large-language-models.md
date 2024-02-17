@@ -21,7 +21,7 @@ function line(svg, x1, y1, x2, y2, opacity=1.0, width=2) {
 	  .attr('y2', y2)
 	  .style("stroke-width", width)
 	  .attr("opacity", opacity)
-	  .attr('stroke', 'black');
+	  .attr('stroke', 'currentColor');
 }
 
 function triangle(svg, x, y, rotate=0) {
@@ -32,8 +32,8 @@ function triangle(svg, x, y, rotate=0) {
 	
 	svg.append("path")
 	   .attr("d", triangle_symb)
-	   .attr("stroke", "black")
-	   .attr("fill", "gray")
+	   .attr("stroke", "currentColor")
+	   .attr("fill", "currentColor")
 	   .attr("transform",
 	   		function(d) { return "translate(" + x + "," + y + ") rotate(" + rotate  + ")"; });
 }
@@ -352,7 +352,7 @@ function prompt_block(svg, x, y) {
 	  .attr('y', y)
 	  .attr('width', 80)
 	  .attr('height', 30)
-	  .attr('stroke', 'black')
+	  .attr('stroke', 'currentColor')
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
@@ -363,6 +363,7 @@ function prompt_block(svg, x, y) {
 	  .attr('y', y + 20)
 	  .text("Prompt")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -414,7 +415,7 @@ function right_dash(svg, x1, x2, y1) {
 	  .attr('y2', y1)
 	  .style("stroke-width", 2)
 	  .attr("stroke-dasharray", ("2, 10"))
-	  .attr('stroke', 'black');
+	  .attr('stroke', 'currentColor');
 }
 
 function tot() {
@@ -432,6 +433,7 @@ function tot() {
 	  .attr('y', 15)
 	  .text("Standard")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
   prompt_block(svg, x_start, fs_level);
@@ -439,7 +441,7 @@ function tot() {
   output_block(svg, x_end, fs_level, '#92C37D');
 	  
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 0, y: fs_level + 50}, {x: 670, y: fs_level + 50}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 4)
@@ -455,6 +457,7 @@ function tot() {
 	  .attr('y', fs_level + 75)
 	  .text("CoT")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
   cot_level = 100;
@@ -470,7 +473,7 @@ function tot() {
   
 	  
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 0, y: cot_level + 50}, {x: 670, y: cot_level + 50}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 4)
@@ -485,11 +488,14 @@ function tot() {
 	  .attr('y', cot_level + 75)
 	  .text("Self-consistency")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
+	  
 	svg.append('text')
 	  .attr('x', 5)
 	  .attr('y', cot_level + 95)
 	  .text("with CoT")
+	  .style("fill", "currentColor")
 	  .style("font-size", "14px")
 	  .attr("font-family", "Arvo");
 	  
@@ -520,9 +526,8 @@ function tot() {
   triangle(svg, x_end - 5, sc_level + 20, 50);
   output_block(svg, x_end, sc_level, '#92C37D');
   
-	  
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 0, y: sc_level + 100}, {x: 670, y: sc_level + 100}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 4)
@@ -537,6 +542,7 @@ function tot() {
 	  .attr('y', sc_level + 125)
 	  .text("ToT")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	 
   tot_level = 440; 
@@ -697,7 +703,7 @@ function emb_prefix_block(svg, x, y) {
 
 function concat_path(svg, x, y) {
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: x, y: y}, 
 	           {x: x, y: y - 30},
 	           {x: x + 125, y: y - 30},
@@ -717,12 +723,11 @@ function prompt_tuning() {
 			  .attr("height", 400);
 	  
 	svg.append("path")
-	   .attr("stroke", "black")
 	   .datum([{x: 275, y: 400}, {x: 275, y: 5}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 4)
 	   .attr("opacity", 0.2)
-	   .attr("stroke", "gray")
+	   .attr("stroke", "currentColor")
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
@@ -782,7 +787,7 @@ function prompt_tuning() {
 	  .attr('y2', 20)
 	  .style("stroke-width", 2)
 	  .attr("stroke-dasharray", ("2, 5"))
-	  .attr('stroke', 'black');
+	  .attr('stroke', 'currentColor');
 	  
   up_arrow(svg, 480, 20, 190);
 }
@@ -818,7 +823,7 @@ function adapter_block(svg, x, y) {
 	  .attr("rx", 3)
 	  .attr("stroke-width", 2)
 	  .attr("opacity", 1.0)
-	  .attr('fill', '#e6d1e4');
+	  .attr('fill', '#E6D1E4');
 	  
 	svg.append('text')
 	  .attr('x', x + 31)
@@ -924,7 +929,7 @@ function lora() {
   up_arrow(svg, 120, 10, 55);
   
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 120, y: 240}, {x: 230, y: 240}, {x: 270, y: 240}, {x: 270, y:200}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 2)
@@ -934,7 +939,7 @@ function lora() {
 	       .y(function(d) { return d.y; }));
 	       
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 270, y: 110}, {x: 270, y: 70}, {x: 230, y: 70}, {x: 160, y: 70}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 2)
@@ -951,6 +956,7 @@ function lora() {
 	  .attr('y', 130)
 	  .text("Pretrained")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -958,6 +964,7 @@ function lora() {
 	  .attr('y', 150)
 	  .text("weights")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -965,6 +972,7 @@ function lora() {
 	  .attr('y', 130)
 	  .text("LoRA")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -972,6 +980,7 @@ function lora() {
 	  .attr('y', 150)
 	  .text("weights")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1019,7 +1028,7 @@ function adapter() {
 			  .attr("height", 400);
 			  
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 200, y: 250}, {x: 370, y: 250}, {x: 370, y: 40}, 
 	           {x: 200, y: 40}, {x: 200, y: 75}, {x: 170, y: 95},
 	           {x: 200, y: 115}, {x: 200, y: 250}])
@@ -1040,7 +1049,7 @@ function adapter() {
 	up_arrow(svg, 100, 150, 190);
 	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 175}, {x: 35, y: 175}, {x: 10, y: 175}, 
 	           {x: 10, y: 145}, {x: 10, y: 85}, {x: 10, y: 55},
 	           {x: 35, y: 55}])
@@ -1060,7 +1069,7 @@ function adapter() {
 	up_arrow(svg, 100, 340, 400);
 	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 65, y: 340}, {x: 65, y: 360}, 
 	           {x: 135, y: 360}, {x: 135, y: 340}])
 	   .attr("fill", "none")
@@ -1073,7 +1082,7 @@ function adapter() {
  	triangle(svg, 135, 345, 0);
  	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 375}, {x: 35, y: 375}, {x: 10, y: 375}, {x: 10, y: 345}, {x: 10, y: 235}, {x: 10, y: 205}, {x: 35, y: 205}])
 	   .attr("fill", "none")
 	   .attr("stroke-width", 2)
@@ -1092,11 +1101,12 @@ function adapter() {
 	  .attr('y', 160)
 	  .text("ReLU")
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
   up_arrow(svg, 270, 205, 270);
   
   svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 270, y: 235}, {x: 315, y: 235}, {x: 345, y: 235}, 
 	           {x: 345, y: 205}, {x: 345, y: 100}, {x: 345, y: 70},
 	           {x: 315, y: 70}])
@@ -1113,6 +1123,7 @@ function adapter() {
 	  .attr('y', 280)
 	  .text("Series")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
   svg.append('text')
@@ -1120,6 +1131,7 @@ function adapter() {
 	  .attr('y', 300)
 	  .text("adapter")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1162,7 +1174,7 @@ function prl_adapter() {
 	up_arrow(svg, 100, 110, 150);
 	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 135}, {x: 35, y: 135}, {x: 10, y: 135}, 
 	           {x: 10, y: 105}, {x: 10, y: 85}, {x: 10, y: 55},
 	           {x: 35, y: 55}])
@@ -1175,7 +1187,7 @@ function prl_adapter() {
  	triangle(svg, 35, 55, 90);
  	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 135}, {x: 225, y: 135}, {x: 250, y: 135}, 
 	           {x: 250, y: 110}, {x: 250, y: 85}, {x: 250, y: 85},
 	           {x: 250, y: 55}, {x: 225, y: 55}, {x: 165, y: 55}])
@@ -1195,7 +1207,7 @@ function prl_adapter() {
 	up_arrow(svg, 100, 260, 330);
 	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 65, y: 260}, {x: 65, y: 280}, 
 	           {x: 135, y: 280}, {x: 135, y: 260}])
 	   .attr("fill", "none")
@@ -1208,7 +1220,7 @@ function prl_adapter() {
  	triangle(svg, 135, 265, 0);
  	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 295}, {x: 35, y: 295},
 	           {x: 10, y: 295}, {x: 10, y: 265},
 	           {x: 10, y: 195}, {x: 10, y: 165},
@@ -1222,7 +1234,7 @@ function prl_adapter() {
  	triangle(svg, 35, 165, 90);
  	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 295}, {x: 225, y: 295},
 	           {x: 250, y: 295}, {x: 250, y: 270},
 	           {x: 250, y: 205}, {x: 250, y: 165},
@@ -1242,6 +1254,7 @@ function prl_adapter() {
 	  .attr('y', 150)
 	  .text("Parallel")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	
 	svg.append('text')
@@ -1249,6 +1262,7 @@ function prl_adapter() {
 	  .attr('y', 170)
 	  .text("adapters")
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1382,7 +1396,7 @@ function talm() {
   tool_block(svg, tool_shift_2, fs_level, "Tool result", 10);
   
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: tool_shift + 45, y: fs_level + 30},
 	           {x: tool_shift + 45, y: fs_level + 70},
 	           {x: tool_shift + 45, y: fs_level + 100},
@@ -1398,7 +1412,7 @@ function talm() {
   triangle(svg, tool_shift + 85, fs_level + 100, 90);
   
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: tool_shift_2, y: fs_level + 100},
 	           {x: tool_shift_2 + 15, y: fs_level + 100},
 	           {x: tool_shift_2 + 45, y: fs_level + 100},
@@ -1418,6 +1432,7 @@ function talm() {
 	  .attr('y', fs_level + 105)
 	  .text('Tool')
 	  .style("font-size", "17px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1425,6 +1440,7 @@ function talm() {
 	  .attr('y', fs_level + 70)
 	  .text('Call external tool')
 	  .style("font-size", "11px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1432,6 +1448,7 @@ function talm() {
 	  .attr('y', fs_level + 70)
 	  .text('Append tool result')
 	  .style("font-size", "11px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	       
   output_block(svg, x_end, fs_level, '#92C37D');
