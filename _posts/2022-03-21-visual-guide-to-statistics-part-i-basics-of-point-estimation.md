@@ -397,7 +397,6 @@ function plt_label_path(svg, color, x, y) {
 	svg.append("path")
 	   .attr("stroke", color)
 	   .attr("stroke-width", 4)
-	   .attr("opacity", ".8")
 	   .datum([{x: x, y: y + 2}, {x: x + 25, y: y + 2}])
 	   .attr("d",  d3.line()
 	       .x(function(d) { return d.x; })
@@ -700,222 +699,226 @@ $$ \mathbb{E}[\hat{s}_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
 d3.select("#biased_viz")
   .style("position", "relative");
-  
-function biasedness() {
-
-var mu = 0,
-    sigma = 1,
-    n = 6,
-    xn_dots = [],
-    sn_dots = [];
-
-var avg_dur = 1200;
-
+	
 function randn_bm() {
     var u = 0, v = 0;
     while(u === 0) u = Math.random();
     while(v === 0) v = Math.random();
-    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    var u_a = Math.sqrt(-2.0 * Math.log(u));
+    var u_b = Math.cos(2.0 * Math.PI * v);
+    return u_a * u_b;
 }
+  
+function biasedness() {
+	var mu = 0,
+	    sigma = 1,
+	    n = 6,
+	    xn_dots = [],
+	    sn_dots = [];
+	
+	var avg_dur = 1200;
 
-var margin = {top: 20, right: 0, bottom: 5, left: 70},
-    width = 750 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom,
-    fig_height = 250 - margin.top - margin.bottom,
-    fig_width = 500,
-    cfs = 100;
-    
-var svg = d3.select("#biased_viz")
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+	var margin = {top: 20, right: 0, bottom: 5, left: 70},
+	    width = 750 - margin.left - margin.right,
+	    height = 400 - margin.top - margin.bottom,
+	    fig_height = 250 - margin.top - margin.bottom,
+	    fig_width = 500,
+	    cfs = 100;
+	    
+	var svg = d3.select("#biased_viz")
+	  .append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	    .attr("transform",
+	          "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleLinear()
-          .domain([-4, 4])
-          .range([cfs, fig_width + cfs]);
+	var x = d3.scaleLinear()
+	          .domain([-4, 4])
+	          .range([cfs, fig_width + cfs]);
             
-var xAxis = svg.append("g")
-   .attr("transform", "translate(0," + fig_height + ")")
-   .call(d3.axisBottom(x));
-  
-xAxis.selectAll(".tick text")
-   .attr("font-family", "Arvo");
-
-var y = d3.scaleLinear()
-          .range([fig_height, 0])
-          .domain([0, 5]);
+	var xAxis = svg.append("g")
+	   .attr("transform", "translate(0," + fig_height + ")")
+	   .call(d3.axisBottom(x));
+	  
+	xAxis.selectAll(".tick text")
+	   .attr("font-family", "Arvo");
+	
+	var y = d3.scaleLinear()
+	          .range([fig_height, 0])
+	          .domain([0, 5]);
             
-var yAxis = svg.append("g")
-   .attr("transform", "translate(" + cfs + ",0)")
-   .call(d3.axisLeft(y).ticks(5));
-  
-yAxis.selectAll(".tick text")
-    .attr("font-family", "Arvo");
-  
-var gauss_data = [{x: -4, y: 0}];
-for (var i = -4; i < 4; i += 0.01) {
-  gauss_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) });
-}
-gauss_data.push({x: 4, y: 0});
-  
-var gauss_curve = svg
-  .append('g')
-  .append("path")
-    .datum(gauss_data)
-    .attr("fill", "#65AD69")
-    .attr("border", 0)
-    .attr("stroke", "currentColor")
-    .attr("stroke-width", 1)
-    .attr("stroke-linejoin", "round")
-    .attr("d",  d3.line()
-      .curve(d3.curveBasis)
-        .x(function(d) { return x(d.x); })
-        .y(function(d) { return y(d.y); })
-);
-    
-var xn_data = [{x: -3, y: 0}];
-for (var i = -3; i < 3; i += 0.01) {
-    xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
-}
-xn_data.push({x: 3, y: 0});
-  
-var xn_curve = svg
-  .append('g')
-  .append("path")
-    .datum(xn_data)
-    .attr("fill", "#E86456")
-    .attr("border", 0)
-    .attr("stroke", "currentColor")
-    .attr("stroke-width", 1)
-    .attr("stroke-linejoin", "round")
-    .attr("d",  d3.line()
-      .curve(d3.curveBasis)
-        .x(function(d) { return x(d.x); })
-        .y(function(d) { return y(-d.y - 0.5); })
-);
+	var yAxis = svg.append("g")
+	   .attr("transform", "translate(" + cfs + ",0)")
+	   .call(d3.axisLeft(y).ticks(5));
+	  
+	yAxis.selectAll(".tick text")
+	    .attr("font-family", "Arvo");
+	  
+	var gauss_data = [{x: -4, y: 0}];
+	for (var i = -4; i < 4; i += 0.01) {
+	  gauss_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) });
+	}
+	gauss_data.push({x: 4, y: 0});
+	  
+	var gauss_curve = svg
+	  .append('g')
+	  .append("path")
+	    .datum(gauss_data)
+	    .attr("fill", "#65AD69")
+	    .attr("border", 0)
+	    .attr("stroke", "currentColor")
+	    .attr("stroke-width", 1)
+	    .attr("stroke-linejoin", "round")
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	        .x(function(d) { return x(d.x); })
+	        .y(function(d) { return y(d.y); })
+	);
+	    
+	var xn_data = [{x: -3, y: 0}];
+	for (var i = -3; i < 3; i += 0.01) {
+	    xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
+	}
+	xn_data.push({x: 3, y: 0});
+		  
+	var xn_curve = svg
+	  .append('g')
+	  .append("path")
+	    .datum(xn_data)
+	    .attr("fill", "#E86456")
+	    .attr("border", 0)
+	    .attr("stroke", "currentColor")
+	    .attr("stroke-width", 1)
+	    .attr("stroke-linejoin", "round")
+	    .attr("d",  d3.line()
+	      .curve(d3.curveBasis)
+	        .x(function(d) { return x(d.x); })
+	        .y(function(d) { return y(-d.y - 0.5); })
+	);
 
-var std_curve;
-
-d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
-  
-  std_curve = svg
-    .append('g')
-    .append("path")
-      .datum(chi_data)
-      .attr("fill", "#EDA137")
-      .attr("border", 0)
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(-(n - 1) * d["chi_" + (n-1)] - 4.5); })
-          .y(function(d) { return y(Math.min(4, d.chi_x / n)); })
-   );
-}
-
-);
-
-var labels_x = 500;
-
-plt_label_path(svg, "#65AD69", labels_x, 0);
-
-var span_sample = d3.select("#biased_viz")
-  .append("span")
-  .text("\\(f_X(x) \\sim \\mathcal{N}(0, 1)\\)")
-  .style('color', '#65AD69')
-  .style("font-size", "13px")
-  .style("font-weight", "700")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .style("position", "absolute")
-  .style("left", labels_x + 100 + "px")
-  .style("top", 10 + "px");
-
-plt_label_path(svg, "#E86456", labels_x, 25);
-       
-var span_mean = d3.select("#biased_viz")
-  .append("span")
-  .text("\\( f_{\\overline{X}_n}(x) \\sim \\mathcal{N}(0, \\frac{1}{n}) \\)")
-  .style('color', '#E86456')
-  .style("font-size", "13px")
-  .style("font-weight", "700")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .style("position", "absolute")
-  .style("left", labels_x + 100 + "px")
-  .style("top", 35 + "px");
-  
-plt_label_path(svg, "#EDA137", labels_x, 50);
-  
-var span_std = d3.select("#biased_viz")
-  .append("span")
-  .text("\\( f_{\\hat{s}_n^2(X)}(x) \\sim \\frac{1}{n} \\chi_{n-1}^2 \\)")
-  .style('color', '#EDA137')
-  .style("font-size", "13px")
-  .style("font-weight", "700")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .style("position", "absolute")
-  .style("left", labels_x + 100 + "px")
-  .style("top", 60 + "px");
-  
-var xn_avg_curve = svg
-    .append('g')
-    .append("path")
-      .datum([{x: 0, y: 0}, {x: 0, y: -2}, {x: -0.5, y: -2}])
-      .attr("fill", "none")
-      .attr("border", 0)
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-dasharray", "3 3")
-      .attr("d",  d3.line()
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-   );
-
-var span_mean_avg = d3.select("#biased_viz")
-  .append("span")
-  .text("\\( \\mathbb{E}[\\overline{X}_n] \\)")
-  .style('color', '#696969')
-  .style("font-size", "13px")
-  .style("font-weight", "700")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .style("position", "absolute")
-  .style("left", x(-0.05) + "px")
-  .style("top", y(-2.15) + "px");
-   
-var sn_avg_curve = svg
-    .append('g')
-    .append("path")
-      .datum([{x: 1 - 1/n, y: -4}, {x: 1 - 1 / n, y: -6}, {x: 1.5 - 1/n, y: -6}])
-      .attr("fill", "none")
-      .attr("border", 0)
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-dasharray", "3 3")
-      .attr("d",  d3.line()
-          .x(function(d) { return x(d.y); })
-          .y(function(d) { return y(d.x); })
-   );
-
-var span_mean_std = d3.select("#biased_viz")
-  .append("span")
-  .text("\\( \\mathbb{E}[\\hat{s}_n^2(X)] \\)")
-  .style('color', '#696969')
-  .style("font-size", "13px")
-  .style("font-weight", "700")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .style("position", "absolute")
-  .style("left", x(-5.3) + "px")
-  .style("top", y(1.6 - 1 / n) + "px");
+	var std_curve;
+	
+	d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
+	  std_curve = svg
+	    .append('g')
+	    .append("path")
+	      .datum(chi_data)
+	      .attr("fill", "#EDA137")
+	      .attr("border", 0)
+	      .attr("stroke", "currentColor")
+	      .attr("stroke-width", 1)
+	      .attr("stroke-linejoin", "round")
+	      .attr("d",  d3.line()
+	        .curve(d3.curveBasis)
+	          .x(function(d) { 
+	          	return x(-(n - 1) * d["chi_" + (n-1)] - 4.5);
+	          })
+	          .y(function(d) { 
+	          	return y(Math.min(4, d.chi_x / n)); 
+	          })
+	   	  );
+	   	  
+	  sn_avg_curve = svg
+	    .append('g')
+	    .append("path")
+	      .datum([{x: 1 - 1/n, y: -4}, {x: 1 - 1 / n, y: -6}, {x: 1.5 - 1/n, y: -6}])
+	      .attr("fill", "none")
+	      .attr("border", 0)
+	      .attr("stroke", "currentColor")
+	      .attr("stroke-width", 1)
+	      .attr("stroke-linejoin", "round")
+	      .attr("stroke-dasharray", "3 3")
+	      .attr("d",  d3.line()
+		      .x(function(d) { return x(d.y); })
+		      .y(function(d) { return y(d.x); })
+	   	  );
+	   	  
+		}
+	);
+	
+	var labels_x = 500;
+	
+	plt_label_path(svg, "#65AD69", labels_x, 0);
+	
+	var span_sample = d3.select("#biased_viz")
+	  .append("span")
+	  .text("\\(f_X(x) \\sim \\mathcal{N}(0, 1)\\)")
+	  .style('color', '#65AD69')
+	  .style("font-size", "13px")
+	  .attr("font-family", "Arvo")
+	  .attr("font-weight", 700)
+	  .style("position", "absolute")
+	  .style("left", labels_x + 100 + "px")
+	  .style("top", 10 + "px");
+	
+	plt_label_path(svg, "#E86456", labels_x, 25);
+	       
+	var span_mean = d3.select("#biased_viz")
+	  .append("span")
+	  .text("\\( f_{\\overline{X}_n}(x) \\sim \\mathcal{N}(0, \\frac{1}{n}) \\)")
+	  .style('color', '#E86456')
+	  .style("font-size", "13px")
+	  .style("font-weight", "700")
+	  .attr("font-family", "Arvo")
+	  .attr("font-weight", 700)
+	  .style("position", "absolute")
+	  .style("left", labels_x + 100 + "px")
+	  .style("top", 35 + "px");
+	  
+	plt_label_path(svg, "#EDA137", labels_x, 50);
+	  
+	var span_std = d3.select("#biased_viz")
+	  .append("span")
+	  .text("\\( f_{\\hat{s}_n^2(X)}(x) \\sim \\frac{1}{n} \\chi_{n-1}^2 \\)")
+	  .style('color', '#EDA137')
+	  .style("font-size", "13px")
+	  .style("font-weight", "700")
+	  .attr("font-family", "Arvo")
+	  .attr("font-weight", 700)
+	  .style("position", "absolute")
+	  .style("left", labels_x + 100 + "px")
+	  .style("top", 60 + "px");
+	  
+	var xn_avg_curve = svg
+	    .append('g')
+	    .append("path")
+	      .datum([{x: 0, y: 0}, {x: 0, y: -2}, {x: -0.5, y: -2}])
+	      .attr("fill", "none")
+	      .attr("border", 0)
+	      .attr("stroke", "currentColor")
+	      .attr("stroke-width", 1)
+	      .attr("stroke-linejoin", "round")
+	      .attr("stroke-dasharray", "3 3")
+	      .attr("d",  d3.line()
+	          .x(function(d) { return x(d.x); })
+	          .y(function(d) { return y(d.y); })
+	   );
+	
+	var span_mean_avg = d3.select("#biased_viz")
+	  .append("span")
+	  .text("\\( \\mathbb{E}[\\overline{X}_n] \\)")
+	  .style('color', '#696969')
+	  .style("font-size", "13px")
+	  .style("font-weight", "700")
+	  .attr("font-family", "Arvo")
+	  .attr("font-weight", 700)
+	  .style("position", "absolute")
+	  .style("left", x(-0.05) + "px")
+	  .style("top", y(-2.15) + "px");
+	   
+	var sn_avg_curve;
+	
+	var span_mean_std = d3.select("#biased_viz")
+	  .append("span")
+	  .text("\\( \\mathbb{E}[\\hat{s}_n^2(X)] \\)")
+	  .style('color', '#696969')
+	  .style("font-size", "13px")
+	  .attr("font-family", "Arvo")
+	  .attr("font-weight", 700)
+	  .style("position", "absolute")
+	  .style("left", x(-5.3) + "px")
+	  .style("top", y(1.6 - 1 / n) + "px");
   
 function sample() {
   random_samples = [];
@@ -1102,18 +1105,17 @@ function updateNGauss(new_n) {
             .x(function(d) { return x(-(n - 1) * d["chi_" + (n-1)] - 4.5); })
             .y(function(d) { return y(Math.min(4, d.chi_x / n)); })
          );
-   });
    
-   sn_avg_curve
-     .datum([{x: 1 - 1/n, y: -4}, {x: 1-1/n, y: -6}, {x: 1.5-1/n, y: -6}])
-     .transition()
-     .duration(1000)
-     .attr("d",  d3.line()
-        .x(function(d) { return x(d.y); })
-        .y(function(d) { return y(d.x); })
-   );
-
-     
+     sn_avg_curve
+        .datum([{x: 1 - 1/n, y: -4}, {x: 1-1/n, y: -6}, {x: 1.5-1/n, y: -6}])
+        .transition()
+        .duration(1000)
+        .attr("d",  d3.line()
+            .x(function(d) { return x(d.y); })
+            .y(function(d) { return y(d.x); })
+            );
+   });
+    
     span_mean_std
       .transition()
       .duration(1000)

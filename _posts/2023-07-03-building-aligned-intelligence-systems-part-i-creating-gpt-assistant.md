@@ -224,6 +224,7 @@ var svg = d3.select("#gpt_arch_simple")
 	  .attr('stroke', 'currentColor');
 	  
 	up_arrow(svg, 150, 240, 260);
+	
 	transformer_block(svg, 50, 260);
 	
 	svg.append('text')
@@ -258,11 +259,11 @@ var svg = d3.select("#gpt_arch_simple")
 	  .style("stroke-width", 2)
 	  .attr('stroke', 'currentColor');
 	  
-	up_arrow(svg, 150, 290, 328);
+	up_arrow(svg, 150, 290, 312);
 	  
 	svg.append('line')
 	  .attr('x1', 150)
-	  .attr('y1', 312)
+	  .attr('y1', 328)
 	  .attr('x2', 150)
 	  .attr('y2', 340)
 	  .style("stroke-width", 2)
@@ -633,7 +634,6 @@ var svg = d3.select("#gpt_arch")
 	bckg_block(svg, 1, 110);
 	  
 	svg.append("path")
-	   .attr("stroke", "black")
 	   .datum([{x: 220, y: 360}, {x: 500, y: 360}, {x: 500, y: 70}, 
 	           {x: 220, y: 70}, {x: 220, y: 270}, {x: 170, y: 300},
 	           {x: 220, y: 330}, {x: 220, y: 360}])
@@ -646,7 +646,6 @@ var svg = d3.select("#gpt_arch")
 	       .y(function(d) { return d.y; }));
 	       
 	svg.append("path")
-	   .attr("stroke", "black")
 	   .datum([{x: 520, y: 340}, {x: 720, y: 340}, {x: 720, y: 30}, 
 	           {x: 520, y: 30}, {x: 520, y: 190}, {x: 490, y: 220},
 	           {x: 520, y: 250}, {x: 520, y: 340}])
@@ -669,7 +668,7 @@ var svg = d3.select("#gpt_arch")
 	up_arrow(svg, 100, 190, 230);
 	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 215}, {x: 35, y: 215}, {x: 10, y: 215}, 
 	           {x: 10, y: 185}, {x: 10, y: 165}, {x: 10, y: 135},
 	           {x: 35, y: 135}])
@@ -687,7 +686,7 @@ var svg = d3.select("#gpt_arch")
 	up_arrow(svg, 100, 340, 402);
 	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 65, y: 340}, {x: 65, y: 360}, 
 	           {x: 135, y: 360}, {x: 135, y: 340}])
 	   .attr("fill", "none")
@@ -701,7 +700,7 @@ var svg = d3.select("#gpt_arch")
  	triangle(svg, 135, 345, 0);
  	
 	svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 100, y: 375}, 
 	   {x: 35, y: 375}, 
 	   {x: 10, y: 375}, 
@@ -981,18 +980,18 @@ function graph_net(svg, x, y, r=3.5) {
 	svg.append('circle').attr('cx', x + 60).attr('cy', y + 5).attr('r', r);
 	svg.append('circle').attr('cx', x + 60).attr('cy', y + 25).attr('r', r);
 	
-	line(svg, x, y + 5, x + 30, y, 1, 1);
-	line(svg, x, y + 25, x + 30, y, 1, 1);
-	line(svg, x, y + 5, x + 30, y + 15, 1, 1);
-	line(svg, x, y + 25, x + 30, y + 15, 1, 1);
-	line(svg, x, y + 5, x + 30, y + 30, 1, 1);
-	line(svg, x, y + 25, x + 30, y + 30, 1, 1);
-	line(svg, x + 30, y, x + 60, y + 5, 1, 1);
-	line(svg, x + 30, y + 15, x + 60, y + 5, 1, 1);
-	line(svg, x + 30, y + 30, x + 60, y + 5, 1, 1);
-	line(svg, x + 30, y, x + 60, y + 25, 1, 1);
-	line(svg, x + 30, y + 15, x + 60, y + 25, 1, 1);
-	line(svg, x + 30, y + 30, x + 60, y + 25, 1, 1);
+	line(svg, x, y + 5, x + 30, y, 1, 1, stroke='black');
+	line(svg, x, y + 25, x + 30, y, 1, 1, stroke='black');
+	line(svg, x, y + 5, x + 30, y + 15, 1, 1, stroke='black');
+	line(svg, x, y + 25, x + 30, y + 15, 1, 1, stroke='black');
+	line(svg, x, y + 5, x + 30, y + 30, 1, 1, stroke='black');
+	line(svg, x, y + 25, x + 30, y + 30, 1, 1, stroke='black');
+	line(svg, x + 30, y, x + 60, y + 5, 1, 1, stroke='black');
+	line(svg, x + 30, y + 15, x + 60, y + 5, 1, 1, stroke='black');
+	line(svg, x + 30, y + 30, x + 60, y + 5, 1, 1, stroke='black');
+	line(svg, x + 30, y, x + 60, y + 25, 1, 1, stroke='black');
+	line(svg, x + 30, y + 15, x + 60, y + 25, 1, 1, stroke='black');
+	line(svg, x + 30, y + 30, x + 60, y + 25, 1, 1, stroke='black');
 }
 
 function net_block(svg, x, y, text) {
@@ -1023,6 +1022,7 @@ function sft_learning() {
 			  .attr("width", 620)
 			  .attr("height", 145);
 	moon_sample(svg, 20, 5);
+	
 	line(svg, 160, 40, 220, 40, 1, 1);
 	triangle(svg, 220, 40, 90);
 	  

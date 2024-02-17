@@ -2430,9 +2430,8 @@ d3.select("#asymptotic_test")
   .style("position", "absolute")
   .style("left", margin.left + "px")
   .style("top", 1.9 * fig_height + 15 + "px");
-
-d3.csv("../../../../assets/chi_sf.csv", function(error, data) {
-  if (error) throw error;
+  
+d3.csv("../../../../assets/chi_sf.csv").then(data => {
   const quantiles = [3.84, 5.99, 7.81, 9.49];
   
   var chi_curve0 = svg

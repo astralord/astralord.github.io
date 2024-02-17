@@ -505,10 +505,9 @@ $$\Sigma_\theta(\mathbf{x}_t, t) = \sigma_t^2 \mathbf{I}.$$
 
 function draw_uroboros(svg, x, y=35) {
  svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: x + 33, y: y}, {x: x + 20, y: y - 15}, {x: x, y: y - 20}, {x: x - 20, y: y - 15}, {x: x - 33, y: y}])
    .attr("fill", "none")
-   .attr("opacity", "0.8")
 	.style("stroke-dasharray", ("4, 4"))
    .attr("d",  d3.line()
        .curve(d3.curveBasis)
@@ -518,7 +517,7 @@ function draw_uroboros(svg, x, y=35) {
 draw_triangle(svg, x - 31, y - 2, 220);
        
 svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: x + 33, y: y + 30}, {x: x + 20, y: y + 45}, {x: x, y: y + 50}, {x: x - 20, y: y + 45}, {x: x - 33, y: y + 30}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
@@ -625,6 +624,7 @@ svg.append('text')
   .attr('y', 10)
   .text("p")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -632,6 +632,7 @@ svg.append('text')
   .attr('y', 15)
   .text("θ")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -639,6 +640,7 @@ svg.append('text')
   .attr('y', 10)
   .text("(x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -646,6 +648,7 @@ svg.append('text')
   .attr('y', 15)
   .text("t-1")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -653,6 +656,7 @@ svg.append('text')
   .attr('y', 10)
   .text("| x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -660,6 +664,7 @@ svg.append('text')
   .attr('y', 15)
   .text("t")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -667,6 +672,7 @@ svg.append('text')
   .attr('y', 10)
   .text(")")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -674,6 +680,7 @@ svg.append('text')
   .attr('y', 97)
   .text("q(x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -681,6 +688,7 @@ svg.append('text')
   .attr('y', 102)
   .text("t")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -688,6 +696,7 @@ svg.append('text')
   .attr('y', 97)
   .text("| x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -695,6 +704,7 @@ svg.append('text')
   .attr('y', 102)
   .text("t-1")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -702,6 +712,7 @@ svg.append('text')
   .attr('y', 97)
   .text(")")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -724,7 +735,7 @@ svg.append('circle')
   .attr('cx', 430)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
+  .attr('stroke', 'currentColor')
   .attr("opacity", 1)
   .attr('fill', 'black');
   
@@ -732,7 +743,7 @@ svg.append('circle')
   .attr('cx', 450)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
+  .attr('stroke', 'currentColor')
   .attr("opacity", 1)
   .attr('fill', 'black');
   
@@ -740,7 +751,7 @@ svg.append('circle')
   .attr('cx', 470)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
+  .attr('stroke', 'currentColor')
   .attr("opacity", 1)
   .attr('fill', 'black');
 
@@ -773,6 +784,7 @@ svg.append('text')
   .attr('y', 15)
   .text("Data")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -780,6 +792,7 @@ svg.append('text')
   .attr('y', 15)
   .text("Prior")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 }
@@ -1025,7 +1038,7 @@ svg.append('text')
   .attr("font-family", "Arvo");
 
  svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 200, y: 55}, {x: 187, y: 40}, {x: 134, y: 20}, {x: 80, y: 40}, {x: 67, y: 55}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
@@ -1038,7 +1051,7 @@ svg.append('text')
 draw_triangle(svg, 69, 52, 230);
 
  svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 200, y: 85}, {x: 187, y: 100}, {x: 134, y: 120}, {x: 80, y: 100}, {x: 67, y: 85}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
@@ -1054,6 +1067,7 @@ svg.append('text')
   .attr('y', 130)
   .text("q(x ")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1061,6 +1075,7 @@ svg.append('text')
   .attr('y', 130)
   .text("| x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1068,6 +1083,7 @@ svg.append('text')
   .attr('y', 133)
   .text("1")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1075,6 +1091,7 @@ svg.append('text')
   .attr('y', 133)
   .text("0")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1082,6 +1099,7 @@ svg.append('text')
   .attr('y', 130)
   .text(")")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('circle')
@@ -1107,7 +1125,7 @@ svg.append('text')
   .attr("font-family", "Arvo");
 
  svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 536, y: 55}, {x: 520, y: 40}, {x: 385, y: 25}, {x: 250, y: 40}, {x: 233, y: 55}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
@@ -1119,9 +1137,8 @@ svg.append('text')
        
 draw_triangle(svg, 236, 52, 240);
 
-
  svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 217, y: 140}, {x: 50, y: 140}, {x: 50, y: 90}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
@@ -1130,7 +1147,7 @@ draw_triangle(svg, 236, 52, 240);
        .y(function(d) { return d.y; }));
        
  svg.append("path")
-   .attr("stroke", "black")
+   .attr("stroke", "currentColor")
    .datum([{x: 550, y: 90}, {x: 550, y: 140}, {x: 217, y: 140}, {x: 217, y: 90}])
    .attr("fill", "none")
    .attr("opacity", "0.8")
@@ -1145,6 +1162,7 @@ svg.append('text')
   .attr('y', 155)
   .text("q(x ")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1152,6 +1170,7 @@ svg.append('text')
   .attr('y', 155)
   .text("| x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1159,6 +1178,7 @@ svg.append('text')
   .attr('y', 158)
   .text("3")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1166,6 +1186,7 @@ svg.append('text')
   .attr('y', 158)
   .text("1")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1173,6 +1194,7 @@ svg.append('text')
   .attr('y', 155)
   .text(", x   )")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1180,6 +1202,7 @@ svg.append('text')
   .attr('y', 158)
   .text("0")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 
 svg.append('circle')
@@ -1233,6 +1256,7 @@ svg.append('text')
   .attr('y', 15)
   .text("p")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1240,6 +1264,7 @@ svg.append('text')
   .attr('y', 20)
   .text("θ")
   .style("font-size", "11px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1247,6 +1272,7 @@ svg.append('text')
   .attr('y', 15)
   .text("(x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1254,6 +1280,7 @@ svg.append('text')
   .attr('y', 20)
   .text("0")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1261,6 +1288,7 @@ svg.append('text')
   .attr('y', 15)
   .text("| x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1268,6 +1296,7 @@ svg.append('text')
   .attr('y', 20)
   .text("1")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1275,6 +1304,7 @@ svg.append('text')
   .attr('y', 15)
   .text(")")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1282,6 +1312,7 @@ svg.append('text')
   .attr('y', 15)
   .text("p")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1289,6 +1320,7 @@ svg.append('text')
   .attr('y', 20)
   .text("θ")
   .style("font-size", "11px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1296,6 +1328,7 @@ svg.append('text')
   .attr('y', 15)
   .text("(x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1303,6 +1336,7 @@ svg.append('text')
   .attr('y', 20)
   .text("1")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1310,6 +1344,7 @@ svg.append('text')
   .attr('y', 15)
   .text("| x")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1317,6 +1352,7 @@ svg.append('text')
   .attr('y', 20)
   .text("2")
   .style("font-size", "8px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1324,6 +1360,7 @@ svg.append('text')
   .attr('y', 15)
   .text(")")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 }
@@ -1441,7 +1478,7 @@ svg.append('line')
   .attr('x2', 530)
   .attr('y2', 40)
   .style("stroke-width", 1)
-  .attr('stroke', 'black');
+  .attr('stroke', 'currentColor');
   
 svg.append('line')
   .attr('x1', 70)
@@ -1449,7 +1486,7 @@ svg.append('line')
   .attr('x2', 530)
   .attr('y2', 60)
   .style("stroke-width", 1)
-  .attr('stroke', 'black');
+  .attr('stroke', 'currentColor');
   
 draw_triangle(svg, 525, 60, 90);
 draw_triangle(svg, 75, 40, 270);
@@ -1501,6 +1538,7 @@ svg.append('text')
   .attr('y', 15)
   .text("Data")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1508,6 +1546,7 @@ svg.append('text')
   .attr('y', 15)
   .text("Prior")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 }
@@ -1910,6 +1949,7 @@ svg.append('text')
   .attr('y', 112)
   .text("Decoder")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('text')
@@ -1917,6 +1957,7 @@ svg.append('text')
   .attr('y', 196)
   .text("Encoder")
   .style("font-size", "14px")
+  .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
 svg.append('circle')
@@ -1971,25 +2012,22 @@ svg.append('circle')
   .attr('cx', 330)
   .attr('cy', 150)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
-  .attr('fill', 'black');
+  .attr('stroke', 'currentColor')
+  .attr('fill', 'currentColor');
   
 svg.append('circle')
   .attr('cx', 350)
   .attr('cy', 150)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
-  .attr('fill', 'black');
+  .attr('stroke', 'currentColor')
+  .attr('fill', 'currentColor');
   
 svg.append('circle')
   .attr('cx', 370)
   .attr('cy', 150)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
-  .attr('fill', 'black');
+  .attr('stroke', 'currentColor')
+  .attr('fill', 'currentColor');
   
 draw_uroboros(svg, 400, 135);
        
@@ -2020,7 +2058,7 @@ svg.append('circle')
   .attr('cy', 50)
   .attr('r', 20)
   .attr('stroke', 'black')
-  .attr("opacity", 0.5)
+  .attr("opacity", 0.75)
   .attr('fill', '#65AD69');
    
 svg.append('text')
@@ -2136,7 +2174,7 @@ svg.append("path")
    .attr("stroke", "black")
    .datum([{x: 530, y: 50}, {x: 420, y: 50}, {x: 401, y: 50}, {x: 401, y: 79}])
    .attr("fill", "none")
-   .attr("opacity", "0.8")
+   .attr('stroke', 'currentColor')
    .attr("d",  d3.line()
        .curve(d3.curveBasis)
        .x(function(d) { return d.x; })
@@ -2146,7 +2184,7 @@ svg.append("path")
    .attr("stroke", "black")
    .datum([{x: 420, y: 50}, {x: 380, y: 50}])
    .attr("fill", "none")
-   .attr("opacity", "0.8")
+   .attr('stroke', 'currentColor')
    .attr("d",  d3.line()
        .curve(d3.curveBasis)
        .x(function(d) { return d.x; })
@@ -2156,31 +2194,28 @@ svg.append('circle')
   .attr('cx', 330)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
+  .attr('stroke', 'currentColor')
   .attr('fill', 'black');
   
 svg.append('circle')
   .attr('cx', 350)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
+  .attr('stroke', 'currentColor')
   .attr('fill', 'black');
   
 svg.append('circle')
   .attr('cx', 370)
   .attr('cy', 50)
   .attr('r', 1)
-  .attr('stroke', 'black')
-  .attr("opacity", 1)
+  .attr('stroke', 'currentColor')
   .attr('fill', 'black');
   
 svg.append("path")
    .attr("stroke", "black")
    .datum([{x: 320, y: 50}, {x: 301, y: 50}, {x: 301, y: 79}])
    .attr("fill", "none")
-   .attr("opacity", "0.8")
+   .attr('stroke', 'currentColor')
    .attr("d",  d3.line()
        .curve(d3.curveBasis)
        .x(function(d) { return d.x; })
@@ -2190,7 +2225,7 @@ svg.append("path")
    .attr("stroke", "black")
    .datum([{x: 320, y: 50}, {x: 220, y: 50}, {x: 201, y: 50}, {x: 201, y: 79}])
    .attr("fill", "none")
-   .attr("opacity", "0.8")
+   .attr('stroke', 'currentColor')
    .attr("d",  d3.line()
        .curve(d3.curveBasis)
        .x(function(d) { return d.x; })

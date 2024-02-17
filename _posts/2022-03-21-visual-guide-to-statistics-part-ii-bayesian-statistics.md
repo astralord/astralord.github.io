@@ -1051,9 +1051,9 @@ var prior_curve = prior_svg
 	        
 	        d3.selectAll("rect")
 	          .transition()
-		       .attr("x", function(d2) { return smpl_x(d2.x); })
-		       .attr("y", function(d2) { return smpl_y(d2.y); })
-	          .attr("opacity", function(d2) { return d2.x == sample ? ".8" : "0"; });
+		       .attr("x", function(d2) { return smpl_x(d.x); })
+		       .attr("y", function(d2) { return smpl_y(d.y); })
+	          .attr("opacity", function(d2) { return d.x == sample ? ".8" : "0"; });
 	          
 	        updatePosteriorCurve();
 	    });
