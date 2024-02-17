@@ -1012,7 +1012,6 @@ var prior_curve = prior_svg
     
     
   function updateRectSample() {
-    const rectIndex = d3.local();
     var rect_data = [];
     for (var i = 0; i <= n; i++) {
        rect_data.push({x: i, y: 1});
@@ -1048,7 +1047,7 @@ var prior_curve = prior_svg
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
 	      })
 	      .on('click', function(event, d) {
-	        sample = rectIndex.get(this);
+	        sample = d.x;
 	        
 	        d3.selectAll("rect")
 	          .transition()
