@@ -1036,17 +1036,17 @@ var prior_curve = prior_svg
 	      .attr("stroke-linejoin", "round")
 	      .attr("height", function(d) { return height - smpl_y(d.y); })
 	      .attr("fill", "#65AD69")
-	      .on('mouseover', function(d, i) {
+	      .on('mouseover', function(event, d) {
 	        d3.select(this)
 	          .transition()
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : ".4"; });
 	      })
-	      .on('mouseout', function(d, i) {
+	      .on('mouseout', function(event, d) {
 	        d3.select(this)
 	          .transition()
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
 	      })
-	      .on('click', function(e, d, i) {
+	      .on('click', function(event, d) {
 	        sample = i;
 	        
 	        d3.selectAll("rect")

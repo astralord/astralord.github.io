@@ -685,10 +685,12 @@ var svg = d3.select("#gpt_arch")
 	addnorm_block(svg, 40, 230);
 	line(svg, 100, 260, 100, 270, 1, 2, "black");
 	mha_block(svg, 40, 270);
-	up_arrow(svg, 100, 340, 402, 1, "black");
+	
+	up_arrow(svg, 100, 340, 390, 1, "black");
+	line(svg, 100, 390, 100, 402);
 	
 	svg.append("path")
-	   .attr("stroke", "blacke")
+	   .attr("stroke", "black")
 	   .datum([{x: 65, y: 340}, {x: 65, y: 360}, 
 	           {x: 135, y: 360}, {x: 135, y: 340}])
 	   .attr("fill", "none")
