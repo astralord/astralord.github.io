@@ -1047,9 +1047,9 @@ var prior_curve = prior_svg
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
 	      })
 	      .on('click', function(event, d) {
-	        sample = 0;
+	        sample = 5;
 	        
-	        d3.select(this)
+	        d3.selectAll("rect")
 	          .transition()
 		       .attr("x", function(d2) { return smpl_x(d2.x); })
 		       .attr("y", function(d2) { return smpl_y(d2.y); })
