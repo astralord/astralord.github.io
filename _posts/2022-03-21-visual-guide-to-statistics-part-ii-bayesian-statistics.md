@@ -1047,13 +1047,13 @@ var prior_curve = prior_svg
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
 	      })
 	      .on('click', function(event, d) {
-	        sample = i;
+	        sample = 0;
 	        
-	        d3.selectAll("rect")
+	        d3.select(this)
 	          .transition()
-		       .attr("x", function(d) { return smpl_x(d.x); })
-		       .attr("y", function(d) { return smpl_y(d.y); })
-	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
+		       .attr("x", function(d2) { return smpl_x(d2.x); })
+		       .attr("y", function(d2) { return smpl_y(d2.y); })
+	          .attr("opacity", function(d2) { return d2.x == sample ? ".8" : "0"; });
 	          
 	        updatePosteriorCurve();
 	    });
