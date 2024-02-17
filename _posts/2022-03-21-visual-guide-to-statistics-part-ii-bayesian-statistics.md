@@ -1011,7 +1011,8 @@ var prior_curve = prior_svg
 	 var smpl_y_axis = smpl_svg.append("g").call(d3.axisLeft(smpl_y).ticks(0)); 
     
     
-  function updateRectSample() { 
+  function updateRectSample() {
+    const rectIndex = d3.local();
     var rect_data = [];
     for (var i = 0; i <= n; i++) {
        rect_data.push({x: i, y: 1});
@@ -1022,7 +1023,7 @@ var prior_curve = prior_svg
 	 smpl_x_axis.selectAll(".tick text").attr("font-family", "Arvo");
 	
 	 var rect_sample = smpl_svg.selectAll("rect").data(rect_data);
-	  
+
     rect_sample.enter()
 	    .append("rect")
 	      .merge(rect_sample)
@@ -1047,7 +1048,7 @@ var prior_curve = prior_svg
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
 	      })
 	      .on('click', function(event, d) {
-	        sample = 5;
+	        sample = rectIndex.get(this);
 	        
 	        d3.selectAll("rect")
 	          .transition()
