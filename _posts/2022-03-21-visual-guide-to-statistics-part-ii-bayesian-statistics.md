@@ -1046,10 +1046,10 @@ var prior_curve = prior_svg
 	          .transition()
 	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
 	      })
-	      .on('click', function(d, i) {
+	      .on('click', function(e, d, i) {
 	        sample = i;
 	        
-	        d3.select(this)
+	        d3.selectAll("rect")
 	          .transition()
 		       .attr("x", function(d) { return smpl_x(d.x); })
 		       .attr("y", function(d) { return smpl_y(d.y); })

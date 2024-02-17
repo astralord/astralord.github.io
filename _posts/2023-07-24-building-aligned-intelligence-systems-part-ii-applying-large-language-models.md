@@ -580,7 +580,6 @@ function tot() {
   line(svg, thought_shift_2 + 80, tot_level + 65, thought_shift_2 + 100, tot_level + 65);
   line(svg, thought_shift_2 + 80, tot_level + 115, thought_shift_2 + 100, tot_level + 115);
   
-  
 	svg.append('line')
 	  .attr('x1', thought_shift_2 + 120)
 	  .attr('y1', tot_level - 20)
@@ -588,7 +587,7 @@ function tot() {
 	  .attr('y2', tot_level + 60)
 	  .style("stroke-width", 2)
 	  .attr("stroke-dasharray", ("2, 10"))
-	  .attr('stroke', 'black');
+	  .attr('stroke', 'currentColor');
 	  
   right_arrow(svg, x_end - 25, x_end - 5, tot_level + 15);
   output_block(svg, x_end, tot_level, '#92C37D');

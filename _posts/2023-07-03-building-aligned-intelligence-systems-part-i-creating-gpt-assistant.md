@@ -110,9 +110,9 @@ function triangle(svg, x, y, rotate=0, opacity=1, stroke="currentColor") {
 	   		function(d) { return "translate(" + x + "," + y + ") rotate(" + rotate  + ")"; });
 }
 
-function up_arrow(svg, x1, y1, y2, opacity=1) {
-	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke="currentColor");
-	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke="currentColor");
+function up_arrow(svg, x1, y1, y2, opacity=1, stroke="currentColor") {
+	line(svg, x1, y1 + 7, x1, y2, opacity=opacity, width=2, stroke=stroke);
+	triangle(svg, x1, y1 + 5, 0, opacity=opacity, stroke=stroke);
 }
 
 function bckg_block(svg, x, y, height=280) {
@@ -658,17 +658,19 @@ var svg = d3.select("#gpt_arch")
 	       .y(function(d) { return d.y; }));
 	
 	softmax_block(svg, 40, 20);
-	line(svg, 100, 50, 100, 60, 1, 2, "currentColor");
+	line(svg, 100, 50, 100, 60);
+	
 	linear_block(svg, 40, 60);
-	up_arrow(svg, 100, 90, 120);
+	up_arrow(svg, 100, 90, 110);
+	line(svg, 100, 120, 100, 110, 1, 2, "black");
 	
 	addnorm_block(svg, 40, 120);
-	line(svg, 100, 150, 100, 160);
+	line(svg, 100, 150, 100, 160, 1, 2, "black");
 	ff_block(svg, 40, 160);
-	up_arrow(svg, 100, 190, 230);
+	up_arrow(svg, 100, 190, 230, 1, "black");
 	
 	svg.append("path")
-	   .attr("stroke", "currentColor")
+	   .attr("stroke", "black")
 	   .datum([{x: 100, y: 215}, {x: 35, y: 215}, {x: 10, y: 215}, 
 	           {x: 10, y: 185}, {x: 10, y: 165}, {x: 10, y: 135},
 	           {x: 35, y: 135}])
@@ -678,15 +680,15 @@ var svg = d3.select("#gpt_arch")
 	       .curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
- 	triangle(svg, 35, 135, 90);
+ 	triangle(svg, 35, 135, 90, 1, "black");
 	
 	addnorm_block(svg, 40, 230);
-	line(svg, 100, 260, 100, 270);
+	line(svg, 100, 260, 100, 270, 1, 2, "black");
 	mha_block(svg, 40, 270);
-	up_arrow(svg, 100, 340, 402);
+	up_arrow(svg, 100, 340, 402, 1, "black");
 	
 	svg.append("path")
-	   .attr("stroke", "currentColor")
+	   .attr("stroke", "blacke")
 	   .datum([{x: 65, y: 340}, {x: 65, y: 360}, 
 	           {x: 135, y: 360}, {x: 135, y: 340}])
 	   .attr("fill", "none")
@@ -696,11 +698,11 @@ var svg = d3.select("#gpt_arch")
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
 	       
- 	triangle(svg, 65, 345, 0);
- 	triangle(svg, 135, 345, 0);
+ 	triangle(svg, 65, 345, 0, 1, "black");
+ 	triangle(svg, 135, 345, 0, 1, "black");
  	
 	svg.append("path")
-	   .attr("stroke", "currentColor")
+	   .attr("stroke", "black")
 	   .datum([{x: 100, y: 375}, 
 	   {x: 35, y: 375}, 
 	   {x: 10, y: 375}, 
@@ -714,7 +716,7 @@ var svg = d3.select("#gpt_arch")
 	       .curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
- 	triangle(svg, 35, 245, 90);
+ 	triangle(svg, 35, 245, 90, 1, "black");
  	
 	svg.append('text')
 	  .attr('x', 160)
@@ -1215,6 +1217,7 @@ function rank_block(svg, x, y) {
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('circle').attr('cx', x + 115).attr('cy', y + 45).attr('r', 8).attr('opacity', 0.8);
+	
 	svg.append('text')
 	  .attr('x', x + 110)
 	  .attr('y', y + 50)
@@ -1459,7 +1462,7 @@ function rlhf() {
   net_block(svg, 455, 55, 'RM');
   
   svg.append("path")
-	   .attr("stroke", "black")
+	   .attr("stroke", "currentColor")
 	   .datum([{x: 520, y: 40}, {x: 520, y: 5}, {x: 485, y: 5},
 	           {x: 330, y: 5}, {x: 295, y: 5}, {x: 295, y: 40}])
 	   .attr("fill", "none")
@@ -1468,6 +1471,7 @@ function rlhf() {
 	   .curve(d3.curveBasis)
 	       .x(function(d) { return d.x; })
 	       .y(function(d) { return d.y; }));
+	       
   triangle(svg, 295, 40, 180);
   
 	svg.append('text')
@@ -1475,6 +1479,7 @@ function rlhf() {
 	  .attr('y', 20)
 	  .text('r')
 	  .style("font-size", "14px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
 	svg.append('text')
@@ -1566,7 +1571,7 @@ function action_circle(svg, x, y) {
    .attr('cy', y)
    .attr('r', 5)
    .attr('stroke', 'black')
-   .attr('fill', '#000000');
+   .attr('fill', 'currentColor');
 }
 
 function backup_diagram() {
