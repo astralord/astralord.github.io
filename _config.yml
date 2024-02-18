@@ -45,6 +45,10 @@ social:
     # - https://www.facebook.com/username
     - https://www.linkedin.com/in/aleksandr-samarin-b8a35496/
 
+author:
+  name: Aleksandr Samarin
+  url: https://astralord.github.io/
+
 google_site_verification: google_meta_tag_verification # change to your verification string
 
 # ↑ --------------------------

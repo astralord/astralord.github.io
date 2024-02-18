@@ -832,7 +832,7 @@ params = jax.tree_map(lambda p: jnp.tile(p, (G, 1, 1)), params)
 visualize(jax.pmap(ffn, axis_name='G')(x, params))
 ```
 
-Here’s how `pmap` works: `ffn()` takes data tensors of shape `[B, ...]` and computes the output of FFN layer on that batch. We want to spread the batch dimension across all available devices. To do that, we add a new axis. The arguments to the wrapped `ffn()` thus need to have shape `[G, B/G, ...]`. So, to call `ffn()`, we’ll need to reshape data batches so that what used to be batch is reshaped to `[G, B/G, ...]`. That’s what `split()` does below. 
+Here’s how `pmap` works: `ffn()` takes data tensors of shape `[B, ...]` and computes the output of FFN layer on that batch. We want to spread the batch dimension across all available devices. To do that, we add a new axis. The arguments to the wrapped `ffn()` thus need to have shape `[G, B/G, ...]`. So, to call `ffn()`, we’ll need to reshape data batches so that what used to be batch is reshaped to `[G, B/G, ...]`. That’s what `split()` does below:
 
 ```python
 def split(arr: jnp.ndarray, num_sections: int=None, axis: int=0):
@@ -912,7 +912,7 @@ train_with_data_parallel(dataset, params, num_epochs)
 
 And we can observe the process of our model being trained:
 
-```python
+```
 Dataset size: (500, 2, 20, 2)
 Step   5, loss: 0.233
 Step  10, loss: 0.184
@@ -936,7 +936,7 @@ There is an example: imagine that we use data parallelism for LLM pretraining an
 
 $$ t = \frac{64 \cdot 12 \cdot 4 \cdot 12 \cdot 1024^2}{400 \cdot 1024^3} = 90\mbox{ms}$$
 
-just to transfer FFN gradients. As there are 96 FFN layers in GPT-3, it'll take about 9 seconds for this part of gradient synchronization. And this is just to send data from one node to another, while there might be dozens, hundreds or even thousands nodes with all-to-all communication cost growing quadratically. Easily we can see that data parallelism does not scale with size of the cluster and cannot be used in isolation for large models.
+just to transfer FFN gradients. Since there are 96 FFN layers in GPT-3, it'll take about 9 seconds for this part of gradient synchronization. And this is just to send data from one node to another, while there might be dozens, hundreds or even thousands nodes with all-to-all communication cost growing quadratically. Easily we can see that data parallelism does not scale with size of the cluster and cannot be used in isolation for large models.
 
 The described strategy above is also called **Distributed Data Parallel (DDP)** and it is different from [HuggingFace definition of data paralelism](https://huggingface.co/docs/transformers/perf_train_gpu_many#data-parallelism). HuggingFace version of DP helps to overcome slow intra-node connectivity by minimizing the amount of synchronized data and delegating a lot of data/gradient processing to one leading GPU. This, in turn, results in under-utilization of other devices. 
 
@@ -1243,7 +1243,6 @@ def train_with_hybrid_parallel(dataset, params, num_epochs, DP, TP):
             print(f"Step {epoch + 1:3d}, loss: {avg_loss / dataset.shape[0]:.3f}")
     return hybrid_params
 ```
-
 
 ### Pipeline Parallelism
 
@@ -1688,7 +1687,7 @@ def sparse_gating(x: jnp.ndarray,
     return jax.nn.softmax(h)
 ```
     
-To help load-balancing and to avoid collapse to using a small number of experts an auxiliary importance loss was proposed. Let's define an importance of an expert $i$ relative to the batch $\mathcal{B}$ as batchwise sum of the gate values for that expert: $\sum_{x \in \mathcal{B}} \mathcal{G}(x)_i$. Importance loss minimizes the squared [coefficient of variation](https://en.wikipedia.org/wiki/Coefficient_of_variation) of importance over experts:
+To help load-balancing and to avoid collapse to using a small number of experts an auxiliary importance loss was proposed. Let's define an **importance** of an expert $i$ relative to the batch $\mathcal{B}$ as batchwise sum of the gate values for that expert: $\sum_{x \in \mathcal{B}} \mathcal{G}(x)_i$. Importance loss minimizes the squared [coefficient of variation](https://en.wikipedia.org/wiki/Coefficient_of_variation) of importance over experts:
 
 $$\ell_{\text{aux}}(\mathcal{B}) = \operatorname{CV} \big( \sum_{x \in \mathcal{B}} \mathcal{G}(x) \big)^2.$$
 
@@ -1778,7 +1777,7 @@ combine_tensor = (expert_gate[..., None, None] *
 combine_tensor = combine_tensor[..., 1:] # cut 0-dimension which is always 0s
 dispatch_mask = combine_tensor.astype(bool)
 ```
-- This mask is then used to do a gather via Einstein summation with the partitioned input tensor $x$ of size $[G, S, d]$, resulting in the final tensor of shape $[E, G, C, d]$, which is sharded across second dimension. Because each device has its own expert, we do an all-to-all communication of size $[E, C, d]$ to now shard the $E$ dimension instead of the $G$-dimension.
+- This mask is then used to do a gather via Einstein summation with the partitioned input tensor $x$ of size $[G, S, d]$, resulting in the final tensor of shape $[E, G, C, d]$, which is sharded across second dimension. Because each device has its own expert, we do an all-to-all communication of size $[E, C, d]$ to now shard the $E$-dimension instead of the $G$-dimension.
 
 ```python
 # Matmul with large boolean tensor to assign tokens to the correct expert.
@@ -2302,7 +2301,7 @@ Recently an open-source language model called Mixtral 8x7B was introduced in [Mi
 
 $$\mathcal{G}(x) = \operatorname{softmax}(\operatorname{topk} (x\mathbf{W}_{\text{G}}, 2)).$$
 
-Another key point is that the SwiGLU layer is chosen as the expert function. It was introduced by Noam Shazeer in [GLU Variants Improve Transformers](https://arxiv.org/pdf/2002.05202v1.pdf) and has two main differences from standard FFN layer. The first one is Swish (also called SiLU) activation function instead of ReLU:
+Another key point is that the SwiGLU layer is chosen as the expert function. It was introduced by Noam Shazeer in [GLU Variants Improve Transformers](https://arxiv.org/pdf/2002.05202v1.pdf) and has two main differences from standard FFN layer. The first one is **Swish** (also called **SiLU**) activation function instead of ReLU:
 
 $$\operatorname{Swish}(x) = x \sigma (x) = \frac{x}{1+e^{-x}}.$$
 
