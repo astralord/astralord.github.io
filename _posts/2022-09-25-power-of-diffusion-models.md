@@ -462,7 +462,7 @@ graph_chain();
 </script>
 
 ![](.)
-*Forward diffusion process. Given a data point sampled from a real data distribution $\mathbf{x}_0 \sim q(x_0)$, we produce noisy latents $\mathbf{x}_1 \rightarrow \cdots \rightarrow \mathbf{x}_T$ by adding small amount of Gaussian noise at each timestep $t$. The latent $\mathbf{x}_t$ gradually loses its recognizable features as the step $t$ becomes larger and eventually with $T \rightarrow \infty$, $\mathbf{x}_T$ is nearly an isotropic Gaussian distribution.*
+*Forward diffusion process. Given a data point sampled from a real data distribution $\mathbf{x}_0 \sim q(x_0)$, we produce noisy latents $\mathbf{x}_1 \rightarrow \cdots \rightarrow \mathbf{x}_T$ by adding small amount of Gaussian noise at each timestep $t$. The latent $\mathbf{x}_t$ gradually loses its recognizable features as the step $t$ becomes larger and eventually with $T \rightarrow \infty$, $q(\mathbf{x}_T)$ is nearly an isotropic Gaussian distribution.*
 
 The step sizes are controlled by a variance schedule $\beta_t \in (0, 1)$:
 
@@ -799,7 +799,7 @@ graph_reverse_chain();
 </script>
 
 ![](.)
-*Forward and reverse diffusion processes. Going backwards, we start from isotropic Gaussian noise $p(\mathbf{x}_T) \sim \mathcal{N}(0, \mathbf{I})$ and gradually sample from $p_\theta(\mathbf{x}_{t-1} \vert  \mathbf{x}_t)$ for $t=T, \dots, 1$ until we get a data point from approximated distribution.*
+*Forward and reverse diffusion processes. Going backwards, we start from isotropic Gaussian noise $\mathbf{x}_T \sim \mathcal{N}(0, \mathbf{I})$ and gradually sample from $p_\theta(\mathbf{x}_{t-1} \vert  \mathbf{x}_t)$ for $t=T, \dots, 1$ until we get a data point from approximated distribution.*
 
 Note that reverse conditional probability is tractable when conditioned on $\mathbf{x}_0$:
 
