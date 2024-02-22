@@ -604,7 +604,7 @@ params = init_ffn_weights(d, h, weight_key)
 y_pred = ffn(x, params)
 ```
 
-Here `x` is stored on one single device and so does `y_pred`. Recall that `x` is basically a stack of `B` features with size `d`. It means that we can split this stack along batch dimension and send each part to its own device and process them in parallel. And we already know how to accomplish that:
+Here `x` is stored on one single device and so is `y_pred`. Recall that `x` is basically a stack of `B` features with size `d`. It means that we can split this stack along batch dimension and send each part to its own device and process everything in parallel. And we already know how to implement that:
 
 ```python
 sharded_x = jax.device_put(x, sharding.reshape(G, 1))
@@ -934,7 +934,7 @@ seconds to send the gradients for FFN layer from one node to another (plus an ad
 
 There is an example: imagine that we use data parallelism for LLM pretraining and we need to give a rough estimation of the time required for backward calculations. In GPT-3 the embedding size $d$ is 12⋅1024 with hidden size $h=4d$. [Microsoft built a supercomputer exclusively for OpenAI](https://news.microsoft.com/source/features/innovation/openai-azure-supercomputer/) with 10,000 GPUs and 400 GBit/s of network connectivity between nodes. Plugging in these numbers we get
 
-$$ t = \frac{64 \cdot 12 \cdot 4 \cdot 12 \cdot 1024^2}{400 \cdot 1024^3} = 90\mbox{ms}$$
+$$ t = \frac{64 \cdot 4 \cdot 12^2 \cdot 1024^2}{400 \cdot 1024^3} = 90\mbox{ms}$$
 
 just to transfer FFN gradients. Since there are 96 FFN layers in GPT-3, it'll take about 9 seconds for this part of gradient synchronization. And this is just to send data from one node to another, while there might be dozens, hundreds or even thousands nodes with all-to-all communication cost growing quadratically. Easily we can see that data parallelism does not scale with size of the cluster and cannot be used in isolation for large models.
 
@@ -951,16 +951,16 @@ With the advent of large neural networks that do not fit on one device, the need
 The idea of sharding, the way it was applied to data tensors, can be used in a similar way with respect to the model weights. We can divide each tensor $\mathbf{W}$ into chunks distributed across multiple devices, so instead of having the whole tensor reside on a single device, each shard of the tensor resides on its own accelerator. Each part gets processed separately in parallel on different devices and after processing the results are synced at the end of the step. 
 
 Such strategy is called **Tensor Parallel (TP)** or horizontal parallelism, as the splitting happens on horizontal level (we will get to the vertical/pipeline parallelism later). A simple and efficient way to parallelize FFN calculations was proposed in [Megatron-LM](https://arxiv.org/pdf/1909.08053.pdf) paper. Let's represent matrices $\mathbf{W}_1$ and $\mathbf{W}_2$ as concatenation of $G$ sub-tensors along rows and columns respectively:
-
-$$\mathbf{W}_1 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_1^1} & \color{#D9D9D9}{\mathbf{W}_1^2} & \cdots & \color{#FDB462}{\mathbf{W}_1^G} \end{pmatrix}, \quad \mathbf{W}_2 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_2^1} \\ \color{#D9D9D9}{\mathbf{W}_2^2} \\ \vdots \\ \color{#FDB462}{\mathbf{W}_2^G} \end{pmatrix}$$
+          
+$$\mathbf{W}_1 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_1^1} & \color{#FDBFB9}{\mathbf{W}_1^2} & \cdots & \color{#FDB462}{\mathbf{W}_1^G} \end{pmatrix}, \quad \mathbf{W}_2 = \begin{pmatrix} \color{#8ED3C7}{\mathbf{W}_2^1} \\ \color{#FDBFB9}{\mathbf{W}_2^2} \\ \vdots \\ \color{#FDB462}{\mathbf{W}_2^G} \end{pmatrix}$$
 
 with $\mathbf{W}_1^k \in \mathbb{R}^{d \times \frac{h}{G}}$, $\mathbf{W}_2^k \in \mathbb{R}^{\frac{h}{G}\times d}$ for $k = 1, \dots, G$. Then with $x$ replicated over devices we can perform sub-tensors multiplications in parallel:
 
-$$x\mathbf{W}_1=\begin{pmatrix} x\color{#8ED3C7}{\mathbf{W}_1^1} & x\color{#D9D9D9}{\mathbf{W}_1^2} &\cdots & x\color{#FDB462}{\mathbf{W}_1^G} \end{pmatrix}$$
+$$x\mathbf{W}_1=\begin{pmatrix} x\color{#8ED3C7}{\mathbf{W}_1^1} & x\color{#FDBFB9}{\mathbf{W}_1^2} &\cdots & x\color{#FDB462}{\mathbf{W}_1^G} \end{pmatrix}$$
 
 and for $z = \max(x\mathbf{W}_1, 0)$ we have
 
-$$z\mathbf{W}_2=z {\color{#8ED3C7}{\mathbf{W}_2^1}} + z {\color{#D9D9D9}{\mathbf{W}_2^2}} + \cdots + z {\color{#FDB462}{\mathbf{W}_2^G}}.$$
+$$z\mathbf{W}_2=z {\color{#8ED3C7}{\mathbf{W}_2^1}} + z {\color{#FDBFB9}{\mathbf{W}_2^2}} + \cdots + z {\color{#FDB462}{\mathbf{W}_2^G}}.$$
 
 The model weights on different devices do not overlap, and the only communication between devices occurs at the end of the FFN layer when we need to sum all the outputs. We can already see the advantage of TP over DP here: computational costs for each device decreases drastically with growing number of devices. On the other hand, the deficiency of TP is that the input data is replicated, so that the batch size per device is now equal to the total batch size. Hence if we are restricted by GPU memory we have to reduce our $B$. Otherwise, we can increase our $S$ by a factor of $G$ to keep up with the same batch size $B=S \times G$ as in DP strategy.
 
