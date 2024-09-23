@@ -469,7 +469,6 @@ var chi_x = d3.scaleLinear()
         .domain([-0, 40])
         .range([0, fig_width]);
         
-        
   var xAxis = chi_svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(chi_x));

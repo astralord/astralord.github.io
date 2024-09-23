@@ -2,8 +2,8 @@
 layout: post
 title: 'Exploring Parallel Strategies with Jax'
 date: 2024-01-27 11:00 +0800
-categories: [ML Engineering]
-tags: [jax, data-parallel, model-parallel, pipeline-paralell, tensor-parallel, mixture-of-experts]
+categories: [Large Language Models, Engineering]
+tags: [jax, data parallel, model parallel, pipeline paralell, tensor parallel, mixture-of-experts]
 math: true
 enable_d3: true
 published: true
@@ -40,13 +40,13 @@ Let's create a small empty tensor `x` and observe its physical location:
 ```python
 batch_size, embed_dim = 16, 8
 x = jnp.zeros((batch_size, embed_dim))
-print(x.device()) # will output default device, e.g. TFRT_CPU_0
+print(x.devices()) # will output default device, e.g. {CpuDevice(id=0)}
 ```
 
 To put tensor `x` on specific device one can simply use `device_put` function:
 
 ```python
-jax.device_put(x, jax.devices()[1]).device() # TFRT_CPU_1
+jax.device_put(x, jax.devices()[1]).device() # {CpuDevice(id=1)}
 ```
 
 What if we want to place different parts of our tensor on different devices? There is a technique called **tensor sharding**: we split `x` by multiple sub-tensors and place each on its own device. But before we do that, we need to create a `sharding` object, which is basically a device placement configuration:
@@ -794,33 +794,38 @@ Let's build and example of a regression training loop with data parallelism. Fir
 
 ```python
 @jit
-def model(x: jnp.array, params: Params):
+def model(x: ArrayLike, params: Params) -> Array:
     for p in params:
         x += ffn(x, p)
     return x
             
 @jit 
-def criterion(y_pred: jnp.ndarray, y_true: jnp.ndarray):
+def criterion(y_pred: ArrayLike, y_true: ArrayLike) -> float:
     return jnp.mean((y_pred - y_true) ** 2)
 
 @jit
-def loss_fn(params: Params, x: jnp.ndarray, y: jnp.ndarray):
+def loss_fn(params: Params, x: ArrayLike, y: ArrayLike) -> float:
     y_pred = model(x, params)
     return criterion(y_pred, y)
     
-def create_dataset(num_samples: int, batch_size: int, embed_dim: int):
+def create_dataset(num_samples: int, batch_size: int, embed_dim: int) -> Array:
+    '''
+        Create an array of samples (`x`, `y`)
+    '''
     return jnp.array([
         sample_data(batch_size, embed_dim, random.PRNGKey(i)) 
         for i in range(num_samples)
     ])
 
-def init_weights(embed_dim: int, hidden_dim: int, layer_num: int, rng: ArrayLike):
+def init_weights(embed_dim: int, hidden_dim: int, layer_num: int, rng: ArrayLike) -> list[Params]:
     '''
         Create weights for a stack of `layer_num` FFN layers
     '''
     layer_keys = random.split(rng, layer_num)
-    return [init_ffn_weights(embed_dim, hidden_dim, layer_keys[l]) 
-            for l in range(layer_num)]
+    return [
+        init_ffn_weights(embed_dim, hidden_dim, layer_keys[l]) 
+        for l in range(layer_num)
+    ]
 ```
 
 We've seen how to perform simple parallel operations manually, e.g. batching a simple FFN forward pass across several devices. JAX also supports automatic device parallelism: we can use `jax.pmap` to transform a function written for one device into a function that runs in parallel on multiple devices. 
@@ -835,7 +840,7 @@ visualize(jax.pmap(ffn, axis_name='G')(x, params))
 Here’s how `pmap` works: `ffn()` takes data tensors of shape `[B, ...]` and computes the output of FFN layer on that batch. We want to spread the batch dimension across all available devices. To do that, we add a new axis. The arguments to the wrapped `ffn()` thus need to have shape `[G, B/G, ...]`. So, to call `ffn()`, we’ll need to reshape data batches so that what used to be batch is reshaped to `[G, B/G, ...]`. That’s what `split()` does below:
 
 ```python
-def split(arr: jnp.ndarray, num_sections: int=None, axis: int=0):
+def split(arr: ArrayLike, num_sections: int=None, axis: int=0) -> Array:
     return jnp.array(jnp.split(arr, num_sections, axis=axis))
 ```
 
@@ -850,7 +855,7 @@ import functools
 # to later tell 'jax.lax.pmean' which axis to reduce over. Here, we call it
 # 'G', but could have used anything, so long as 'pmean' used the same.
 @functools.partial(jax.pmap, axis_name='G')
-def update(params: Params, x: jnp.ndarray, y: jnp.ndarray):
+def update(params: Params, x: ArrayLike, y: ArrayLike) -> Any:
     # Compute the gradients on the given minibatch (individually on each device)
     loss, grads = jax.value_and_grad(loss_fn)(params, x, y)
 
@@ -926,13 +931,13 @@ Step  45, loss: 0.098
 Step  50, loss: 0.097
 ```
 
-The main problem with DP approach is that during the backward pass all the gradients must be transferred to the all other devices. For example, with $\mathbf{W}_1 \in \mathbb{R}^{d \times h}$ weight matrix in float32 the number of $32 \cdot d \cdot h$ bits have to be sent between each pair of devices. The same amount is needed for $\mathbf{W}_2$. If we work in a multi-node setup with $v$ GBit/s of network card bandwidth, we'll need 
+The main problem with DP approach is that during the backward pass all the gradients must be transferred to the all other devices. For example, with $\mathbf{W}_1 \in \mathbb{R}^{d \times h}$ weight matrix in float32 $32 \cdot d \cdot h$ bits need to be sent between each pair of devices. The same amount is needed for $\mathbf{W}_2$. If we work in a multi-node setup with $v$ GBit/s of network card bandwidth, we'll need 
 
 $$t = \frac{64 \cdot d \cdot h}{v \cdot 1024^3}$$
 
 seconds to send the gradients for FFN layer from one node to another (plus an additional overhead $\delta t$ that is neglected here). Given the substantial amount of data communication required in DP, a fast connection (interconnect) between computing devices is necessary. While DP may work for TPU device networks scaling up to pod levels, modern GPUs predominantly have fast interconnectivity only within a group of 8 devices hosted on the same system. Inter-GPU communication is considerably slower across separate hosts.
 
-There is an example: imagine that we use data parallelism for LLM pretraining and we need to give a rough estimation of the time required for backward calculations. In GPT-3 the embedding size $d$ is 12⋅1024 with hidden size $h=4d$. [Microsoft built a supercomputer exclusively for OpenAI](https://news.microsoft.com/source/features/innovation/openai-azure-supercomputer/) with 10,000 GPUs and 400 GBit/s of network connectivity between nodes. Plugging in these numbers we get
+There is an example: imagine that we use data parallelism for LLM pretraining and we need to give a rough estimation of the time required for backward calculations. In GPT-3 the embedding size $d$ is $12 \cdot 1024$ with hidden size $h=4d$. [Microsoft built a supercomputer exclusively for OpenAI](https://news.microsoft.com/source/features/innovation/openai-azure-supercomputer/) with 10,000 GPUs and 400 GBit/s of network connectivity between nodes. Plugging in these numbers we get
 
 $$ t = \frac{64 \cdot 4 \cdot 12^2 \cdot 1024^2}{400 \cdot 1024^3} = 90\mbox{ms}$$
 
@@ -1571,12 +1576,13 @@ pipeline_parallel_as_tensor();
 The extra iterations are equivalent to the bubbles that describe the idle time due to data dependency, although the waiting devices compute on padded data instead of being idle. One can notice that if we split our batch into multiple micro-batches and enable each stage worker to process one micro-batch simultaneously, idle bubbles become much smaller, compared to naive PP. 
 
 ```python
-def stack_stage_weights(params: list):
+def stack_stage_weights(params: list[Params]) -> list[Params]:
     '''
         Stack G stages, each containing L/G FFN layers
     '''
     L = len(params)
     G = jax.local_device_count()
+    assert L % G == 0, f"Number of layers {L} must be divisible by number of stages {G}"
     stage_layers = L // G
     out_params = []
     for l in range(stage_layers):
@@ -1585,7 +1591,7 @@ def stack_stage_weights(params: list):
         out_params.append(Params(w1, w2))
     return out_params
 
-def pipeline_inference(params: list[Params], x: jnp.ndarray, M: int):
+def pipeline_inference(params: list[Params], x: ArrayLike, M: int) -> Array:
     '''
         Split input batch to M micro-batches and run PP forward pass
     '''
@@ -1627,7 +1633,7 @@ The simple choice of gating function is to create trainable weight matrix $\math
 $$\mathcal{G}(x)=\operatorname{softmax}(x\mathbf{W}_{\text{G}}).$$
 
 ```python    
-def dense_gating(x: jnp.ndarray, gate_params: jnp.ndarray):
+def dense_gating(x: ArrayLike, gate_params: ArrayLike) -> Array:
     return jax.nn.softmax(x @ gate_params)
 ```
 
@@ -1652,7 +1658,7 @@ $$\operatorname{topk}(v, k)_i = \begin{cases}
     \end{cases}$$
     
 ```python
-def scatter(input: jnp.ndarray, dim: int, index: jnp.ndarray, src: int):
+def scatter(input: ArrayLike, dim: int, index: ArrayLike, src: int) -> Array:
     '''
         Scatter function analogous to PyTorch `scatter_`
     '''
@@ -1662,7 +1668,7 @@ def scatter(input: jnp.ndarray, dim: int, index: jnp.ndarray, src: int):
     idx[dim] = index
     return input.at[tuple(idx)].set(src)
 
-def index_to_mask(index: jnp.ndarray, input_shape: tuple):
+def index_to_mask(index: ArrayLike, input_shape: tuple) -> Array:
     '''
         Transform given indices to mask of input shape,
         where mask[index] = True and False otherwise
@@ -1670,10 +1676,10 @@ def index_to_mask(index: jnp.ndarray, input_shape: tuple):
     zeros = jnp.zeros(input_shape, dtype=bool)
     return scatter(zeros, 1, index, True)
 
-def sparse_gating(x: jnp.ndarray, 
-                  gate_params: jnp.ndarray,  
+def sparse_gating(x: ArrayLike, 
+                  gate_params: ArrayLike,  
                   topk: int, 
-                  noise_weights: jnp.ndarray=None,
+                  noise_weights: ArrayLike=None,
                   rng: ArrayLike=None):
     h = x @ gate_params 
     if noise_weights is not None:
@@ -2318,7 +2324,7 @@ class SwiGLUParams(NamedTuple):
     v:  jnp.ndarray
 
 @jit
-def swiglu(x: jnp.ndarray, params: SwiGLUParams):
+def swiglu(x: ArrayLike, params: SwiGLUParams) -> Array:
     y = x @ params.v
     z = jax.nn.swish(x @ params.w1)
     return (z * y) @ params.w2

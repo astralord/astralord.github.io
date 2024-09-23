@@ -2,7 +2,7 @@
 layout: post
 title: 'Building Aligned Intelligence System. Part II. Improving Large Language Models'
 date: 2023-07-24 00:00 +0800
-categories: [Generative AI, Large Language Models]
+categories: [Large Language Models, Building Aligned Intelligence System]
 tags: [prompt engineering, chain-of-thought, tree of thoughts, peft, prompt-tuning, prefix-tuning, lora, ia3, talm, toolformer]
 math: true
 enable_d3: true

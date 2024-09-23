@@ -684,7 +684,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 
    var handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
-      .attr("r", 6)
+      .attr("r", 5)
       .attr("cx", x(init_val));
       
 	svg_

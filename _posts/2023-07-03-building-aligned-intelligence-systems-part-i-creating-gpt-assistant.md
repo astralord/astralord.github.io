@@ -2,7 +2,7 @@
 layout: post
 title: 'Building Aligned Intelligence System. Part I: Creating GPT Assistant'
 date: 2023-07-03 11:00 +0800
-categories: [Generative AI, Large Language Models]
+categories: [Large Language Models, Building Aligned Intelligence System]
 tags: [transformer, llm, gpt, chatgpt, rlhf]
 math: true
 enable_d3: true
@@ -316,7 +316,7 @@ $$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=[\operatorname{he
 
 where
 
-$$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_i^W, \mathbf{VW}_i^V), \quad i = 1, \dots, k.$$
+$$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_i^K, \mathbf{VW}_i^V), \quad i = 1, \dots, k.$$
 
 We'll refer to this as **multi-head attention layer** with the learnable parameters $\mathbf{W}^Q_{1 \dots k}, \mathbf{W}^K_{1 \dots k}, \mathbf{W}^V_{1 \dots k}$ and $\mathbf{W}^O$ (also called **multi-head self-attention** for $\mathbf{Q} = \mathbf{K} = \mathbf{V}$). Such mechanism allows the model to jointly attend to information from different representation subspaces at different positions. The output of multi-head attention is added to the original input using a residual connection, and we apply a consecutive layer normalization on the sum.
 

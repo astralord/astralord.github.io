@@ -749,7 +749,7 @@ which is the probability to decide for $H$. In particular,
 * $\vartheta \in \Theta_H$: $1 - \beta_\varphi(\vartheta)$ is the probability of an error of the 1st kind,
 * $\vartheta \in \Theta_K$: $\beta_\varphi(\vartheta)$ is the probability of an error of the 2nd kind.
 
-The function $1 - \beta_\varphi(\vartheta)$ for $\vartheta \in \Theta_K$, which is the probability of correctly rejecting hypothesis $H$, when alterntative $K$ is true, is called **power of a test** $\varphi$. The same intuition holds for randomized tests. Test $\varphi$ is called a test with **significance level** $\alpha \in [0, 1]$ if 
+The function $1 - \beta_\varphi(\vartheta)$ for $\vartheta \in \Theta_K$, which is the probability of correctly rejecting hypothesis $H$, when alternative $K$ is true, is called **power of a test** $\varphi$. The same intuition holds for randomized tests. Test $\varphi$ is called a test with **significance level** $\alpha \in [0, 1]$ if 
 
 $$1 - \beta_\varphi(\vartheta) \leq \alpha \quad \forall \vartheta \in \Theta_H.$$
 
