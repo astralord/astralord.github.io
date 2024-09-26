@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Transformers Inference Optimization Toolset'
-date: 2024-04-30 11:00 +0800
+date: 2024-10-01 11:00 +0800
 categories: [ML Engineering]
 tags: [jax, kv-cache, linear attention, cuda kernels, online softmax, flash attention]
 math: true
@@ -17,8 +17,6 @@ The idea of this post is not just to discuss transformer-specific optimizations,
 
 A lot of optimization techniques will be left out, e.g. quantization methods, which are relatively diverse and deserve a separate post. Also we mostly discuss transformer inference and won't mention some training tricks, such as mixed-precision training, gradient checkpointing or sequence packing. But even so a lot of optimizations from this post could be applied to training as well.
 
-TODO: Flash attention is definitely about training!! (well only recomputation....)
-
 ## GPU architecture overview
 
 To tackle language model speedup problem, first we need to understand the concept of the hardware we work on. While Google's TPUs and Apple silicon chips are rising up, NVIDIA's **GPUs** stil dominate the market, so they'll be the subject of our in-depth look. 
@@ -26,6 +24,8 @@ To tackle language model speedup problem, first we need to understand the concep
 Graphic processor unit performs all of the computations by multiple **streaming multiprocessors (SM)** (these are similar to the cores in the CPU). SM is basic GPU building block: it has its own instruction schedulers and various instruction execution pipelines. Modern GPUs are also equipped with special off-chip memory called **high bandwidth memory (HBM)**, where data is initially stored and ultimately written back. Unlike to the system **dynamic random access memory (DRAM)**, which is controlled by CPU and typically optimized for low latency access, HBM is physically bonded to the GPUs in stacked layers with thousands of pins and provides massively parallel data throughput by design. 
 
 Streaming multiprocessors access data and code from HBM via the **L2 cache**. It acts as an intermediate level between off-chip and on-chip memory and caches data that be shared among multiple SMs. It also situated in the path of data moving between devices. And finally, each SM has its own **L1 cache** and **shared memory (SRAM)**, a low-latency on-chip memory caches: they are order of magnitude faster than HBM but many orders of magnitude smaller in size. L1 cache is managed by the GPU hardware, while SRAM can be explicitly managed by the programmer through NVIDIA tools. 
+
+TODO: define [**thread block**](https://en.wikipedia.org/wiki/Thread_block_(CUDA_programming))
 
 SRAM is shared among threads within a thread block and is used for efficient data sharing and communication.
 
@@ -402,7 +402,7 @@ gpu_timeline();
 </script>
 
 ![](.)
-*Memory bandwidth vs compute performance rapid growth. Note that both axes are log-scale.*
+*Memory bandwidth vs compute performance rapid growth. Note that both axes are log-scale.[^GTL]*
 
 Time required for memory accesses can vary depending on the devices, their modifications and infrastructure setups. But the main point to remember is that if we compare throughput numbers, we will see that some of them differ by orders of magnitude:
 
@@ -489,7 +489,7 @@ const matrix_colors = ['#C7E9E3', '#FDBFB9', '#FFF6B7', '#FEDAB1',
 function trivialRound(x) { return x; }
 function roundN(x) { return Math.round(x); }
 
-function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun, x_ticks) {
+function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun, x_ticks, shift_text=23, text_size=14) {
     var slider = svg_.append("g")
       .attr("class", "slider")
       .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
@@ -530,9 +530,9 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 	  .append("text")
 	  .attr("text-anchor", "middle")
 	  .attr("y", loc_y + 3)
-	  .attr("x", loc_x - 23)
+	  .attr("x", loc_x - shift_text)
 	  .attr("font-family", "Arvo")
-	  .attr("font-size", 14)
+	  .attr("font-size", text_size)
 	  .text(letter)
 	  .style("fill", color);
 	  	  
@@ -1258,7 +1258,7 @@ function prefill_with_chunking() {
 	    .range([0, 320])
 	    .clamp(true);
 
-	createSlider(svg, draw_attn_cells_w_chunking, l_x, x_start + 120, 270, "Step", "currentColor", init_seq_len, roundN, 2);
+	createSlider(svg, draw_attn_cells_w_chunking, l_x, x_start + 120, 270, "Chunk", "currentColor", init_seq_len, roundN, 2, 30, 12);
 }
 
 prefill_with_chunking();
@@ -1531,17 +1531,35 @@ $$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{m
 
 ## Low-level hardware optimizations
 
-### Fused CUDA kernels
+### CUDA kernel fusion
 
-Exploit the fact that we are memory-bound
+We've noticed before that bandwidth cost (moving data from one place in memory to another) is usually the most substantial factor when we talk about performance. Let's step back a bit and take another detailed look at the GPU hardware to understand why this is the case.
 
-`–xla_gpu_enable_triton_softmax_fusion`
+GPU is designed to perform thousands of simple operations in parallel, called **threads**. Threads which run on the same SM can be grouped into **thread blocks** to be executed at the same time (the number of maximum threads in a block is limited by the architecture, usually it's 1024). Streaming multiprocessor can handle multiple (up to 32 in A100) thread blocks. Each thread has its own (the fastest on GPU) memory, called **register**, and threads in the same block can communicate with each other via shared memory (SRAM).
+
+When SM is given one or more thread blocks to execute, it partitions them into **warps**. A warp is a set of 32 threads each, such that all the threads in a warp execute the same instruction. Finally, multiple thread blocks are combined to form a **grid**. All the blocks in the same grid contain the same number of threads. Since the number of threads in a block is limited, grids can be used for computations that require a large number of thread blocks to operate in parallel.
+
+The computations are defined in **kernels**, small C++ functions, which supposed to be executed multiple times in parallel by different threads (as opposed to only once like regular C++ functions). A kernel is launched as a grid and different kernels can have different grid and block configurations.
+
+Let's take A100 as an example again. It has 108 SMs, each can run up to 2048 threads. Shared memory capacity for each SM is up to 192KB. This means that we can take large matrices (up to few MBs), split them up in smaller chunks that fit into A100 registers and SRAM and then do matrix multiplication at the speed of 18 TB/s, SRAM bandwidth. This in total makes GPU much more efficient than CPU for matrix multiplications.
+
+But we have a lot of non-matmul operations in deep learning, such as normalization layers, activation functions or dropouts. Even though they only account for a small fraction of the total FLOPs, GPUs run them much slower. Fistly, because they have specialized units for matrix multiply, called Tensor Cores. That's why we can have matmul throughput can be up to 16× higher than non-matmul throughput, e.g. 312 TFLOPs vs 19.5 TFLOPs on A100.[^TC] And secondly, they can be extremely memory-bound. 
+
+Let's take $\mathbf{P}=\operatorname{softmax}(\mathbf{S}) \in \mathbb{R}^{L \times L}$ from attention. For a large sequence length $L$, tensor $\mathbf{S}$ has to reside on HBM, since it would be too large to fit on SRAM. The simplest implementation of softmax requires us to
+
+- Read $L^2$ floats of $\mathbf{S}$, compute $\exp(\mathbf{S})$, write $L^2$ floats back to HBM.
+- Get sum of $\exp(\mathbf{S})$ along row axis: read $L^2$, write $L$.
+- Divide $\exp(\mathbf{S})$ by denominator: read $L^2+L$, write $L^2$.
+
+In total we need to move back and forth $5L^2+L$ floats. It would be much faster if we could just read $L^2$ floats of $\mathbf{S}$ and write $L^2$ floats of $\mathbf{P}$, making this operation more than 2.5 times faster.
+
+That's where **kernel fusion** comes into play: instead of writing computation output $y=f(x)$ to low-bandwidth global memory only to read it again to get $z=g(y)$, we can implement kernel which performs multiple computations at once $z=(g \circ f)(x)$ without extra memory accesses. XLA compiler in Jax can perform simple fusions with `jit` and for the rest one can check out [Triton](https://triton-lang.org/main/index.html) to write custom CUDA kernels ([example with fused softmax](https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html)). 
 
 ### Memory-efficient attention
 
 #### Online softmax
 
-Recall that function $\mathbf{y} = \operatorname{softmax}(\mathbf{x})$ is defined as
+Function $\mathbf{y} = \operatorname{softmax}(\mathbf{x})$ is defined as
 
 $$\mathbf{y}_i = \frac{e^{\mathbf{x}_i}}{\sum_j e^{\mathbf{x}_j}}.$$
 
@@ -1707,40 +1725,284 @@ To resolve this problem, authors introduce an additional scalar $m$ as in online
 - $\mathbf{v}_j \leftarrow \mathbf{v}_{j-1} e^{m_{j-1}-m_j} + \mathbf{V}_j e^{\mathbf{S}_{ij} - m_j}$,
 - $\ell_j \leftarrow \ell_{j-1} + e^{m_{j-1}-m_j}.$
 
-Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm, calling it **query chunk attention**.
+Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm, calling it **query chunk attention**. Notice that they use `jax.checkpoint` decorator in `summarize_chunk` function. The reason is that during forward pass this algorihtm saves memory by summarizing parts of the attention matrix sequentially, allowing it to forget the parts of the attention matrix it has summarized already. A naive application of differentiation would have to store all those intermediate results and algorithm would loose its memory advantage entirely. So authors propose to apply gradient checkpointing to the function that summarizes the individual chunks. The intermediate results can thus be forgotten during the forward pass and recomputed during backpropagation.
+
+Applying checkpointing to the standard attention algorithm would not achieve these results. The standard attention algorithm with checkpointing would forget the attention matrix after it is formed; query chunk attention algorithm never forms the full attention matrix at all.
 
 ### FlashAttention
 
-FlashAttention might be the most popular implementation of attention mechanism nowadays. While it actually does more FLOPs than standard attention, it also runs 7.6 times faster (for GPT-2) just by making attention algorithm IO-aware — accounting for reads and writes between levels of GPU memory. Remember, how we discussed GPU architecture in the first section of this post and that moving tensors from SRAM can be 10 times faster on modern GPU than moving them from HBM.
+FlashAttention might be the most popular implementation of attention mechanism nowadays. While it actually does more FLOPs than standard attention, it runs up to 3× faster just by making attention algorithm IO-aware — accounting for reads and writes between levels of GPU memory. Remember, how we discussed GPU architecture in the first section of this post and that moving tensors from SRAM can be 10 times faster on modern GPU than moving them from HBM.
 
-Standard attention implementation:
+Standard attention forward pass looks like that:
 
-1. Load $\mathbf{Q}$, $\mathbf{K}$ by blocks from HBM, compute $\mathbf{S}=\mathbf{QK^T}$, write $\mathbf{S}$ to HBM.
-2. Read $\mathbf{S}$ from HBM, compute $\mathbf{P} = \operatorname{softmax}(\mathbf{S})$, write $\mathbf{P}$ to HBM.
-3. Load $\mathbf{P}$ and $\mathbf{V}$ by blocks from HBM, compute $\mathbf{O} = \mathbf{PV}$, write $\mathbf{O}$ to HBM.
-4. Return $\mathbf{O}$
+- Load $\mathbf{Q}$, $\mathbf{K}$ by blocks from HBM, compute $\mathbf{S}=\mathbf{QK^T}$, write $\mathbf{S}$ to HBM.
+- Read $\mathbf{S}$ from HBM, compute $\mathbf{P} = \operatorname{softmax}(\mathbf{S})$, write $\mathbf{P}$ to HBM.
+- Load $\mathbf{P}$ and $\mathbf{V}$ by blocks from HBM, compute $\mathbf{O} = \mathbf{PV}$, write $\mathbf{O}$ to HBM.
+- Return $\mathbf{O}$
 
-[Dao et al. (2022)](https://arxiv.org/pdf/2205.14135) applied two techniques: **tiling** and **recomputation** to reduce the amount of HBM accesses to sub-quadratic in $L$. The main idea is to split the inputs $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ into blocks, load them from slow HBM to fast SRAM, then compute the attention output with respect to those blocks. Then the output of each block is scaled by the right normalization factor before adding them up.
+[Dao et al. (2022)](https://arxiv.org/pdf/2205.14135) modified it with two techniques to reduce the amount of HBM accesses to sub-quadratic in $L$:
 
-**Tiling**: inputs $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ are divided into blocks to fit to SRAM, then online softmax is computed to get attention scores for each block and the results are combined all together. With tiling the whole algorithm can be implemented in one CUDA kernel:
+1. **Tiling**: inputs $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ are divided into blocks to fit to SRAM, then online softmax is computed to get attention scores for each block and the results are combined all together. With tiling the whole attention mechanism can be implemented in one CUDA kernel:
+	
+	- Load inputs from HBM
+	- Perform all attention computation steps: $\mathbf{QK}^T$ matrix multiply, softmax, optionally masking and dropout, $\mathbf{PV}$ matrix multiply
+	- And only then write the result back to HBM
 
-- Load inputs from HBM
-- Perform all attention computation steps: matrix multiply, softmax, optionally masking and dropout, matrix multiply
-- And only then write the result back to HBM
+2. **Recomputation**:
 
-**Recomputation**:
+	Training requires to store intermediate outputs, such as $\mathbf{S}, \mathbf{P} \in \mathbb{R}^{L \times L}$, to compute gradients with respect to $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ during backward pass. The standard mechanism to reduce memory footprint during training is to use gradient checkpointing: forgetting these outputs in forward pass and recalculating them in backward pass. However, this implementation has to trade speed for memory. 
+	
+	Authors propose to use selective gradient checkpointing and to store only the output $\mathbf{O}$ and the softmax normalization statistics $(m, \ell)$ to recompute the attention matrices $\mathbf{S}$ and $\mathbf{P}$ easily in the backward pass from blocks of $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ in SRAM.
 
-Let $\mathbf{\nabla O} \in \mathbb{R}^{L \times d}$ be the gradient of $\mathbf{O}$ with respect to some loss function. Then by the chain rule (aka backpropagation):
+**FlashAttention** forward pass:
 
-#### FlashAttention for long sequences
+- Set block sizes $B_c = \lceil \frac{M}{4d} \rceil$, $B_r = \min \big( \lceil \frac{M}{4d} \rceil, d \big)$, where $M$ is an on-chip SRAM size.
+- Initialize $\color{#E86456}{\mathbf{O} \in \mathbb{R}^{L \times d}}$, $\color{#E86456}{\ell \in \mathbb{R}^{L}}$ both $0$-valued and $\color{#E86456}{m \in \mathbb{R}^L}$ with values set to $\mathbf{-\infty}$, all stored in HBM.
+- Split $\color{#E86456}{\mathbf{Q}}$ into $T_r = \lceil \frac{L}{B_r} \rceil$ blocks and split $\color{#E86456}{\mathbf{K}, \mathbf{V}}$ into $T_c = \lceil \frac{L}{B_c} \rceil$ blocks along sequence axis.
+- Split $\color{#E86456}{\mathbf{O}, \ell, m}$ into $T_r$ blocks along sequence axis.
+- For $j = 1, \dots, T_c$:
+	- Load $\color{#65AD69}{\mathbf{K}_j, \mathbf{V}_j}$ from HBM to SRAM
+	- For $i = 1, \dots, T_r$:
+		- Load $\color{#65AD69}{\mathbf{Q}_i, \mathbf{O}_i, \ell_i, m_i}$ from HBM to SRAM.
+		- Compute unnormalized attention scores $\color{#65AD69}{\mathbf{S}_{ij} = \mathbf{Q}_i \mathbf{K}^T_j \in \mathbb{R}^{B_r \times B_c}}$.
+		- Compute
+		 $$
+		 \color{#65AD69}{
+		 \begin{aligned}
+		 \tilde{m}_{ij} & = \operatorname{rowmax}(\mathbf{S}_{ij}) \in \mathbb{R}^{B_r}, \\
+		 \tilde{\mathbf{P}}_{ij} & = \exp ( \mathbf{S}_{ij} - \tilde{m}_{ij}) \in \mathbb{R}^{B_r \times B_c}, \\
+		 \tilde{\ell}_{ij} & = \operatorname{rowsum}(\tilde{\mathbf{P}}_{ij}) \in \mathbb{R}^{B_r}
+		 \end{aligned}}
+		 $$
+		- Renew statistics
+		 $$
+		 \color{#65AD69}{
+		 \begin{aligned}
+		 m_i^{\text{new}} & = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_r}, \\
+		 \ell_{i}^{\text{new}} & = e^{m_i-m_i^{\text{new}}} \ell_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}}\tilde{\ell}_{ij}  \in \mathbb{R}^{B_r}
+		 \end{aligned}}
+		 $$
+		- Write 
+		$$
+		\color{#E86456}{\mathbf{O}_i} \color{#EDA137}{ \leftarrow } \color{#65AD69}{\operatorname{diag}(\ell_i^{\text{new}})^{-1} \big( \operatorname{diag}(\ell_i) e^{m_i-m_i^{\text{new}}} \mathbf{O}_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}} \tilde{\mathbf{P}}_{ij} \mathbf{V}_j \big) }
+		$$
+		to HBM.
+		- Write $\color{#E86456}{\ell_i} \color{#EDA137}{ \leftarrow } \color{#65AD69}{ \ell_{i}^{\text{new}}}$, $\color{#E86456}{m_i} \color{#EDA137}{ \leftarrow } \color{#65AD69}{m_{i}^{\text{new}}}$ to HBM.
+- Return $\color{#E86456}{\mathbf{O}}$.
 
-https://hazyresearch.stanford.edu/blog/2023-01-12-flashattention-long-sequences
+In the end FlashAttention alogithm returns $\mathbf{O} = \operatorname{softmax}(\mathbf{QK}^T)\mathbf{V}$ with $\mathcal{O}(L^2 d)$ FLOPs and requires $\mathcal{O}(L)$ additional memory beyond inputs and output. In terms of memory accesses, it requires $\mathcal{O}(L^2d^2M^{-1})$ HBM accesses, where $d \leq M \leq Ld$, compared to $\mathcal{O}(Ld + L^2)$ for standard attention.
 
-[COPIED]
-FlashAttention is an algorithm that reorders the attention computation and leverages classical techniques (tiling, recomputation) to significantly speed it up and reduce memory usage from quadratic to linear in sequence length. This works great for most cases, but it was not optimized for the case of super long sequences (where batch sizes and numbers of heads are small) due to insufficient parallelism. If one trains large Transformers on long sequences with modern parallelism techniques (data parallel, pipeline parallel, tensor parallel) to split the data and model among many GPUs, the batch size can get very small (e.g. batch size of 1 with pipeline parallelism, and number of heads around 8-12 with tensor parallelism). This is the case we would like to optimize for.
+</style>
+<div id="flash_attn" class="svg-container" align="center"></div> 
 
-### FlashAttention 2
-https://hazyresearch.stanford.edu/blog/2023-07-17-flash2
+<script>
+
+function text_id_(svg, text, x, y, opacity=1, size=14, text_id="fattn") {
+	svg.append('text')
+	  .attr("id", text_id)
+	  .attr('x', x)
+	  .attr('y', y)
+	  .text(text)
+	  .style("font-size", size + "px")
+	  .attr('opacity', opacity)
+	  .attr("font-family", "Arvo");
+}
+
+function draw_fa_stage1_text(svg, x_start, y_start, rct_sz, shift, opacity) {
+	text_id_(svg, "/", x_start + 25.2 * rct_sz, y_start + 3.3 * shift, opacity);
+	text_id_(svg, "ℓ", x_start + 25.6 * rct_sz, y_start + 3.3 * shift, opacity);	
+	text_id_(svg, "1", x_start + 25.6 * rct_sz + 7, y_start + 3.3 * shift + 3, opacity, size=8);
+	
+	text_id_(svg, "K", x_start + 4 * rct_sz, y_start - shift, opacity);
+	text_id_(svg, "1", x_start + 4 * rct_sz + 11, y_start - shift + 3, opacity, size=8);
+	text_id_(svg, "T", x_start + 4 * rct_sz + 10, y_start - shift - 8, opacity, size=8);
+	
+	text_id_(svg, "S", x_start + 4 * rct_sz, y_start + 7.5 * shift, opacity);
+	text_id_(svg, "11", x_start + 4 * rct_sz + 9, y_start + 7.5 * shift + 3, opacity, size=8);
+	
+	text_id_(svg, "V", x_start + 19 * shift + 7, y_start + shift, opacity);
+	text_id_(svg, "1", x_start + 19 * shift + 18, y_start + shift + 3, opacity, size=8);
+	
+	text_id_(svg, "P̃", x_start + 13.2 * rct_sz, y_start + 7.5 * shift, opacity);	
+	text_id_(svg, "11", x_start + 13.2 * rct_sz + 9, y_start + 7.5 * shift + 3, opacity, size=8);
+}
+
+function draw_fa_stage2_text(svg, x_start, y_start, rct_sz, shift, opacity) {
+	text_id_(svg, "/", x_start + 25.2 * rct_sz, y_start + 6.3 * shift, opacity);
+	text_id_(svg, "ℓ", x_start + 25.6 * rct_sz, y_start + 6.3 * shift, opacity);	
+	text_id_(svg, "2", x_start + 25.6 * rct_sz + 7, y_start + 6.3 * shift + 3, opacity, size=8);
+	
+	text_id_(svg, "⋅", x_start + 31.7 * rct_sz, y_start + 4.8 * shift, opacity);
+	text_id_(svg, "ℓ", x_start + 32.5 * rct_sz, y_start + 4 * shift, opacity);	
+	text_id_(svg, "1", x_start + 32.5 * rct_sz + 7, y_start + 4 * shift + 3, opacity, size=8);
+	text_id_(svg, "ℓ", x_start + 32.5 * rct_sz, y_start + 5.7 * shift, opacity);	
+	text_id_(svg, "2", x_start + 32.5 * rct_sz + 7, y_start + 5.7 * shift + 3, opacity, size=8);
+	text_id_(svg, "_", x_start + 32.5 * rct_sz, y_start + 4.4 * shift, opacity, size=18);
+	text_id_(svg, "+", x_start + 33.7 * rct_sz, y_start + 4.8 * shift, opacity);
+	
+	text_id_(svg, "K", x_start + 7.5 * rct_sz, y_start - shift, opacity);
+	text_id_(svg, "2", x_start + 7.5 * rct_sz + 11, y_start - shift + 3, opacity, size=8);
+	text_id_(svg, "T", x_start + 7.5 * rct_sz + 10, y_start - shift - 8, opacity, size=8);
+	
+	text_id_(svg, "S", x_start + 7.5 * rct_sz, y_start + 7.5 * shift, opacity);
+	text_id_(svg, "12", x_start + 7.5 * rct_sz + 9, y_start + 7.5 * shift + 3, opacity, size=8);
+	
+	text_id_(svg, "P̃", x_start + 16.7 * rct_sz, y_start + 7.5 * shift, opacity);	
+	text_id_(svg, "12", x_start + 16.7 * rct_sz + 9, y_start + 7.5 * shift + 3, opacity, size=8);
+	
+	text_id_(svg, "V", x_start + 19 * shift + 7, y_start + 8.6 * shift, opacity);
+	text_id_(svg, "2", x_start + 19 * shift + 18, y_start + 8.6 * shift + 3, opacity, size=8);
+}
+
+function draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift) {
+	text_(svg, "SRAM", x_start + 363, y_start - 32, size=11);
+	text_(svg, "HBM", x_start + 416, y_start - 32, size=11);
+
+	text_(svg, "Q", x_start + 7, y_start + 2 * shift);
+	text_(svg, "1", x_start + 18, y_start + 2 * shift + 3, size=8);
+	
+	text_(svg, "O", x_start + 27.5 * shift + 8, y_start + 2 * shift);
+	text_(svg, "1", x_start + 27.5 * shift + 19, y_start + 2 * shift + 3, size=8);
+	
+	text_(svg, "→", x_start + 10.5 * rct_sz, y_start + 4.8 * shift);
+	
+	text_(svg, "⋅", x_start + 19.8 * rct_sz, y_start + 4.8 * shift + 3, size=30);
+	text_(svg, "=", x_start + 27 * rct_sz, y_start + 4.8 * shift, size=18);
+}
+
+function flash_attn() {
+	var svg = d3.select("#flash_attn")
+				  .append("svg")
+				  .attr("width", 600)
+				  .attr("height", 205);
+	const x_start = 90, y_start = 50;
+	const shift = 14, rct_sz = 12;
+	const dim = 2;
+	const b_r = 3, b_c = 2;
+	const t_r = 1, t_c = 2;
+	const shade = 0.08;
+	
+	function draw_flash_attn_cells(stage) {
+	   svg.selectAll('rect').remove();
+
+	   rect(svg, x_start + 410, y_start - 45, 40, 20, colors[2], opacity=0.3);
+	   rect(svg, x_start + 360, y_start - 45, 40, 20, colors[0], opacity=0.3);
+	   
+	   rect(svg, x_start - 5, y_start + 3 * shift - 5, dim * shift + 8, t_r * (b_r + 1) * shift - 5, colors[2], opacity=0.3);
+	   
+	   for (var i = 0; i < t_r; i += 1) {
+			vector_rect(svg, x_start, y_start + (3 + i * (b_r + 1)) * shift, dim, b_r, shift, rct_sz, matrix_colors[0]);
+		}
+		
+	   rect(svg, x_start + 3 * shift - 5, y_start - 5, t_c * (b_c + 1) * shift - 5, dim * shift + 8, colors[2], opacity=0.3);
+	   
+		for (var i = 0; i < t_c; i += 1) {
+		   var opacity = (i == stage - 1) ? 1 : shade;
+			vector_rect(svg, x_start + (3 + i * (b_c + 1)) * shift, y_start, b_c, dim, shift, rct_sz, matrix_colors[1], opacity);
+		}
+		
+	   rect(svg, x_start + 3 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], opacity=0.3);
+	   
+	   for (var i = 0; i < t_c; i += 1) {
+		   var opacity = (i == stage - 1) ? 1 : shade;
+			for (var j = 0; j < t_r; j += 1) {
+				vector_rect(svg, x_start + (3 + i * (b_c + 1)) * shift, y_start + (3 + j * (b_r + 1)) * shift, b_c, b_r, shift, rct_sz, matrix_colors[2], opacity);
+			}
+		}
+		
+	   rect(svg, x_start + 11 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], opacity=0.3);
+	   
+	   for (var i = 0; i < t_c; i += 1) {
+		   var opacity = (i == stage - 1) ? 1 : shade;
+		   for (var j = 0; j < t_r; j += 1) {
+				vector_rect(svg, x_start + (11 + i * (b_c + 1)) * shift, y_start + (3 + j * (b_r + 1)) * shift, b_c, b_r, shift, rct_sz, matrix_colors[2], opacity);
+			}
+		}
+	   
+	   rect(svg, x_start + 19 * shift - 5, y_start + 2 * shift - 5, dim * shift + 8, t_c * (b_c + 1) * shift - 5, colors[2], opacity=0.3);
+		
+		for (var i = 0; i < t_c; i += 1) {
+		   var opacity = (i == stage - 1) ? 1 : shade;
+			vector_rect(svg, x_start + 19 * shift, y_start + (2 + i * (b_c + 1)) * shift, b_c, dim, shift, rct_sz, matrix_colors[3], opacity);
+		}
+	  	   
+	   rect(svg, x_start + 25 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 2) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[2], opacity=0.3);
+	   
+	   for (var i = 0; i < t_c; i += 1) {
+		   var opacity = (i <= stage - 1) ? 1 : shade;
+		   for (var j = 0; j < t_r; j += 1) {
+				vector_rect(svg, x_start + (25 + i * (b_c + 3)) * shift, y_start + (3 + j * (b_r + 1)) * shift, dim, b_r, shift, rct_sz, matrix_colors[4], opacity);
+			}
+		}
+		
+		d3.selectAll("#fattn").remove();
+		
+		var opacity = (stage == 1) ? 1 : shade;
+		draw_fa_stage1_text(svg, x_start, y_start, rct_sz, shift, opacity);
+		
+		opacity = (stage == 2) ? 1 : shade;
+		draw_fa_stage2_text(svg, x_start, y_start, rct_sz, shift, opacity);
+	}
+
+	var l_x = d3.scaleLinear()
+	    .domain([1, 2])
+	    .range([0, 320])
+	    .clamp(true);
+	    
+	createSlider(svg, draw_flash_attn_cells, l_x, x_start + 50, 185, "i", "currentColor", 1, roundN, 1);
+	
+	draw_flash_attn_cells(1);
+	draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift);
+}
+
+flash_attn();
+</script>
+
+![](.)
+*Schematic diagram of how FlashAttention forward pass is performed, when $\mathbf{Q}$ is partitioned into $T_r=1$ block of size $B_r \times d$ with $B_r=3$ and $\mathbf{K}/\mathbf{V}$ are partitioned into $T_c = 2$ blocks of size $B_c \times d$ with $B_c=2$ each. Here $\ell_1=\sum e^{\mathbf{S}_{11}}$, $\ell_2=\ell_1 + \sum e^{\mathbf{S}_{12}}$. The step with subtracting $m$ in softmax is omitted for simplification.*
+
+Authors of FlashAttention also compared it to query chunk attention algorithm, stating three major differences:
+
+1. Query-chunk attention focuses on memory footprint, while FlashAttention focuses on reducing HBM accesses.
+2. Query-chunk attention summarizes each block with its temporary output along with the softmax normalization statistics. FlashAttention instead incrementally updates the output after processing each block, so only one copy of the output is needed.
+3. Query-chunk attention uses gradient checkpointing to recompute the attention matrix and the temporary output of each block. FlashAttention
+only recomputes the attention matrix and does not recompute the temporary output of each block. 
+
+"FlashAttention" is an amazingly written paper and it's definitely worth reading to anyone who's training large language models. There are more details in the paper about FlashAttention backward pass, theoretical proofs and comparisons to other optimization algorithms.
+
+#### FlashAttention + Parallelism
+
+FlashAttention significantly speeds up attention computation also reduces memory usage from quadratic to linear in sequence length. While it works for most cases, it's not optimized for the case of long sequences with small batch size and/or small number of attention heads, due to insufficient parallelism.
+
+The first version of FlashAttention kernel uses one thread block per one attention head leading to overall $Bh$ thread blocks ($B$ is batch size, $h$ is number of attention heads). Each thread block is scheduled to run on a SM, and such scheduling is only efficient when $Bh$ is as large as number of SMs (e.g. 108 SMs for A100 GPU) for all of the compute resources to be used effectively. If one trains LLM with [modern parallelism techniques](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/) batch size is reduced by a factor of DP and number of heads is reduced by a factor of TP.
+
+Tri Dao, author of the original FlashAttention, [applied](https://hazyresearch.stanford.edu/blog/2023-01-12-flashattention-long-sequences) additional parallelization along sequence axis to make better use of the multiprocessors on the GPU. In such regime in forward pass one attention head is now processed by multiple thread blocks and each block takes care of its own segment of rows of the attention matrix. As the rows of the attention matrix don’t depend on each other, we don’t need to communicate between the blocks.
+
+In the backward pass each thread block now takes care of a segment of columns of the attention matrix. Parallelizing by columns is faster than parallelizing by rows due to the reduced communication between the workers (parallelizing by columns requires aggregating the gradient of the query, while parallelizing by rows requires aggregating the gradient of the key and value).
+
+#### FlashAttention-2
+
+A new version of FlashAttention ([Tri Dao, 2023](https://arxiv.org/pdf/2307.08691)) included parallelization across different thread blocks to increase occupancy for long-sequences. Besides that two numbers were reduced:
+
+- the number of non-matmul FLOPs,
+- the number of communication through SRAM.
+
+The first tweak is to rewrite the online softmax trick to reduce the number of rescaling operations as well as bound-checking and causal masking, without changing the output (remember that matmul throughput can be few orders higher than non-matmul throughput).
+
+The second tweak is an optimal work partitioning between warps, a group of threads working together. In the first FlashAttention $\mathbf{K}$ and $\mathbf{V}$ were divided across 4 or 8 warps per thread block. Each warp multiplies to get a slice of $\mathbf{QK}^T$, then they need to multiply with a slice of $\mathbf{V}$ and communicate to add up the result. However, this is inefficient since all warps need to write their intermediate results out to shared memory, synchronize, then add up the intermediate results.
+
+In FlashAttention-2, $\mathbf{Q}$ is divided instead across 4 warps while keeping $\mathbf{K}$ and $\mathbf{V}$ accessible by all warps. After each warp performs matrix multiply to get a slice of $\mathbf{QK}^T$, they just need to multiply with their shared slice of $\mathbf{V}$ to get their corresponding slice of the output. There is no need for communication between warps. The reduction in SRAM reads/writes yields speedup
+
+The second version also introduced support for larger head dimensions ($d = 128 \rightarrow 256$) and support for MQA and GQA.
+
+#### FlashAttention-3
+
+The most recent version, [FlashAttention-3 (2024)](https://tridao.me/publications/flash3/flash3.pdf) focused on optimizations specific to H100 GPU, as previous versions only achieved up to 35% utilization with Hopper architecture. Authors exploited a new feature: **tensor memory accelerator (TMA)** - a new chunk of hardware that can do asynchronous address generation and fetch memory. The main techniques which were used for speed up:
+
+1. Overlap overall computation and data movement 
+2. Interleave block-wise matmul and softmax operations 
+3. Block quantization and incoherent processing that leverages hardware
+support for FP8 low-precision
 
 ### Ring attention
 
@@ -1761,12 +2023,12 @@ Sequence parallel
 ![](.)
 *A sample of specifications for modern NVIDIA architectures. Numbers can vary depending on device modifications*
 
-
 $$\frac{\partial}{\partial z_k} \operatorname{softmax}(z)_i = \operatorname{softmax}(z)_k \cdot (\mathbf{1}_{\lbrace i=k \rbrace }  -\operatorname{softmax}(z)_i)$$
 
 If $p=\operatorname{softmax}(s)$, then for output gradient $dp$ we have $ds = (\operatorname{diag}(p) - pp^T)dp$
 
 ---
+[^GTL]: Full names given to GPU architectures are: **T**uring, **V**olta, **A**mpere, **H**opper, **B**lackwell.
 
 [^MMM]: In general, the number of flops for a matrix-matrix multiplication $\mathbf{AB}$ with $\mathbf{A} \in \mathbb{R}^{n \times m}$ and $\mathbf{B} \in \mathbb{R}^{m \times k}$ is near $2mnk$: we perform $m$ matrix-vector multiplications, each of which can be represented as $n$ inner products, and each inner product requires $k-1$ additions and $k$ multiplications.
 
@@ -1775,3 +2037,5 @@ If $p=\operatorname{softmax}(s)$, then for output gradient $dp$ we have $ds = (\
 [^AIL]: A reasonable question might be: "What is the best way to utilize GPU to generate small sequences, e.g. $L \ll d$?" A possible solution is to enlarge batch processing, since one can compute that for $x \in \mathbb{R}^{B \times d}$ the arithmetic intensity is $$\frac{BL^2d + BLd^2}{BL^2h + BLd + d^2} \xrightarrow[d \gg L]{} BL $$
 
 [^HP]: While it is clear that *hedgehog* comes from attention "spikyness" modelling, I still wonder what *porcupine* in the title refers to.
+
+[^TC]: This isn't unique to GPUs - in fact, TPUs are even less general than GPUs.

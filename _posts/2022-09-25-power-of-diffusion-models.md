@@ -6,8 +6,6 @@ categories: [Diffusion Models]
 tags: [jax, clip, ddim, score-based model, guided diffusion, dall·e 2, imagen, stable diffusion, latent diffusion model]
 math: true
 enable_d3: true
-path: /assets/img/space-opera.png
-alt: space opera
 ---
 
 > In 2022, insanely beautiful and original images created with generative neural networks are taking the internet by storm. This post focuses on the theory behind diffusion models that underpin the core ideas of the latest generative AI. Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
