@@ -25,14 +25,6 @@ Graphic processor unit performs all of the computations by multiple **streaming 
 
 Streaming multiprocessors access data and code from HBM via the **L2 cache**. It acts as an intermediate level between off-chip and on-chip memory and caches data that be shared among multiple SMs. It also situated in the path of data moving between devices. And finally, each SM has its own **L1 cache** and **shared memory (SRAM)**, a low-latency on-chip memory caches: they are order of magnitude faster than HBM but many orders of magnitude smaller in size. L1 cache is managed by the GPU hardware, while SRAM can be explicitly managed by the programmer through NVIDIA tools. 
 
-TODO: define [**thread block**](https://en.wikipedia.org/wiki/Thread_block_(CUDA_programming))
-
-SRAM is shared among threads within a thread block and is used for efficient data sharing and communication.
-
-Threads within a thread block can load data from global memory into Shared Memory, perform computations, and write results back to global memory.
-
-http://thebeardsage.com/cuda-memory-hierarchy/
-
 The GPUs can communicate to each other with a high bandwidth interconnect called **NVLink**, and they can talk to the outside world with a **PCIe bus** (a high-speed bus standard, common on motherboards to transfer data) or a special ethernet alternative called **Infiniband**. Usually, 8 GPUs are packed into a single node. Feel free to check out my post on [parallelization strategies](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/) to learn more on multi-device training.
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -1535,7 +1527,7 @@ $$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{m
 
 We've noticed before that bandwidth cost (moving data from one place in memory to another) is usually the most substantial factor when we talk about performance. Let's step back a bit and take another detailed look at the GPU hardware to understand why this is the case.
 
-GPU is designed to perform thousands of simple operations in parallel, called **threads**. Threads which run on the same SM can be grouped into **thread blocks** to be executed at the same time (the number of maximum threads in a block is limited by the architecture, usually it's 1024). Streaming multiprocessor can handle multiple (up to 32 in A100) thread blocks. Each thread has its own (the fastest on GPU) memory, called **register**, and threads in the same block can communicate with each other via shared memory (SRAM).
+GPU is designed to perform thousands of simple operations in parallel, called **threads**. Each thread has its own (the fastest on GPU) memory, called **register**. Threads which run on the same SM can be grouped into **thread blocks** to be executed at the same time (the number of maximum threads in a block is limited by the architecture, usually it's 1024). Threads within a thread block can load data from global memory (HBM) into shared memory (SRAM), which is used for communication between threads, perform computations, and write results back to global memory.
 
 When SM is given one or more thread blocks to execute, it partitions them into **warps**. A warp is a set of 32 threads each, such that all the threads in a warp execute the same instruction. Finally, multiple thread blocks are combined to form a **grid**. All the blocks in the same grid contain the same number of threads. Since the number of threads in a block is limited, grids can be used for computations that require a large number of thread blocks to operate in parallel.
 
