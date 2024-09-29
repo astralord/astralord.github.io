@@ -294,7 +294,7 @@ function updateCurves(delay) {
               d3.max(posterior_data, function(d) { return d.y }) ]);
     yAxis
         .transition()
-        .delay(delay) 
+        .delay(delay)
         .duration(avg_dur)
         .call(d3.axisLeft(y).ticks(3))
         .selectAll(".tick text")

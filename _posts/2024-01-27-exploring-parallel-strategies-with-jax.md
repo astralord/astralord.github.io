@@ -1219,7 +1219,7 @@ def train_with_tensor_parallel(dataset, params, num_epochs):
     return sharded_params
 ```
 
-Since in TP the size of synchronized weights equals to the batch size $B$ multiplied by embedding size $d$, when we operate with float32, each device sends $32 \cdot d \cdot B$ bits to each other device. Thus, the amount of memory transfer between each pair of devices is $O(dh)$ for DP versus $O(dB)$ for TP. We can conclude, that DP is a preferable strategy for small networks (e.g. model can fit onto one device), while TP works better with larger models and smaller batches.
+Since in TP the size of synchronized weights equals to the batch size $B$ multiplied by embedding size $d$, when we operate with float32, each device sends $32 \cdot d \cdot B$ bits to each other device. Thus, the amount of memory transfer between each pair of devices is $\mathcal{O}(dh)$ for DP versus $\mathcal{O}(dB)$ for TP. We can conclude, that DP is a preferable strategy for small networks (e.g. model can fit onto one device), while TP works better with larger models and smaller batches.
 
 ### Hybrid data and model tensor parallelism
 
@@ -1614,7 +1614,7 @@ def pipeline_inference(params: list[Params], x: ArrayLike, M: int) -> Array:
 
 This is the main idea in [GPipe (Huang et al. 2019)](https://arxiv.org/pdf/1811.06965.pdf) paper. During training stage, backward calculations are scheduled in reverse order. Gradients from multiple micro-batches are aggregated and applied synchronously at the end, which guarantees learning consistency and efficiency. Given $M$ evenly split micro-batches, the idle time is $O \big( \frac{G - 1}{M + G - 1} \big)$ amortized over the number of micro-steps.
 
-To reduce memory footprint **gradient checkpointing** can be applied, meaning that during forward computation, each device only stores output activations at the stage boundaries. During the backward pass on $k$-th device the $k$-th stage forward pass re-computes the rest of activations. While it doubles time, required for forward calculations, it helps to reduce peak activation memory requirement to $O \big(B + \frac{L}{G} \times \frac{B}{M}\big)$. In comparison, memory requirement without PP and gradient checkpointing would be $O(B \times L)$, since computing the gradients requires both the next layer gradients and the cached activations.
+To reduce memory footprint **gradient checkpointing** can be applied, meaning that during forward computation, each device only stores output activations at the stage boundaries. During the backward pass on $k$-th device the $k$-th stage forward pass re-computes the rest of activations. While it doubles time, required for forward calculations, it helps to reduce peak activation memory requirement to $O \big(B + \frac{L}{G} \times \frac{B}{M}\big)$. In comparison, memory requirement without PP and gradient checkpointing would be $\mathcal{O}(B \times L)$, since computing the gradients requires both the next layer gradients and the cached activations.
 
 ## Expert Parallelism
 

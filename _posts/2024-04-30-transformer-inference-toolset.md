@@ -304,13 +304,6 @@ gpu_arch();
 ![](.)
 *Schematic example of memory architecture with 2 GPU devices.*
 
-[THE REST IS COPIED FROM FERRARI VS TRUCKS]
-
-What this means, in the end, is that you can store a lot of data in your L1 caches and register files on GPUs to reuse convolutional and matrix multiplication tiles. For example the best matrix multiplication algorithms use 2 tiles of 64x32 to 96x64 numbers for 2 matrices in L1 cache, and a 16x16 to 32x32 number register tile for the outputs sums per thread block (1 thread block = up to 1024 threads; you have 8 thread blocks per stream processor, there are 60 stream processors in total for the entire GPU). If you have a 100MB matrix, you can split it up in smaller matrices that fit into your cache and registers, and then do matrix multiplication with three matrix tiles at speeds of 10-80TB/s — that is fast! This is the third reason why GPUs are so much faster than CPUs, and why they are so well suited for deep learning.
-
-Keep in mind that the slower memory always dominates performance bottlenecks. If 95% of your memory movements take place in registers (80TB/s), and 5% in your main memory (0.75TB/s), then you still spend most of the time on memory access of main memory (about six times as much).
-Thus in order of importance: (1) High bandwidth main memory, (2) hiding memory access latency under thread parallelism, and (3) large and fast register and L1 memory which is easily programmable are the components which make GPUs so well suited for deep learning.
-
 Now, when it comes to GPU capability, we must look at three things:
 
 * Compute performance measured by the number of **trillion float operations per second (TFLOPS)**.
@@ -398,13 +391,13 @@ gpu_timeline();
 
 Time required for memory accesses can vary depending on the devices, their modifications and infrastructure setups. But the main point to remember is that if we compare throughput numbers, we will see that some of them differ by orders of magnitude:
 
-- To read data from L1 cache / Shared memory: `x` ns.
+- To read data from L1 cache / SRAM: `x` ns.
 - To read data from L2 cache: `2-3x` ns.
 - To read data from HBM memory: `10x` ns.
 - To share data between GPUs with NVLink (both ways): `50-60x` ns.
 - To load data from CPU to GPU DRAM through PCIe bus: `~300x` ns.
 
-These numbers show us that while the number of operations per second matters, the operand placement can be even more important when we optimizing for inference speed. 
+These numbers show us that while the number of operations per second matters, the operand placement can be even more important when we optimizing for inference speed. *Keep in mind that the slower memory always dominates performance bottlenecks.* 
 
 ### Arithmetic intensity vs `ops:byte`
 
@@ -434,15 +427,9 @@ Recall that arithmetic intensity is equal to $\frac{\# \operatorname{flops}}{\# 
 
 $$\frac{T_{\operatorname{compute}}}{T_{\operatorname{memory}}} \approx \frac{B}{200}.$$
 
-This means that until our batch size is smaller than $200$ our system performance is memory-bound. Enlarging input batch to a value greater than $200$ will increase the computation time, while keeping the memory time constant, which brings us to the compute-bound scenario.
+This means that until our batch size is smaller than $200$ our system performance is memory-bound. Enlarging input batch to a value greater than $200$ increases the computation time, while keeping the memory transfer time constant, which brings us to the compute-bound scenario. 
 
-But surely it's not always possible to solve memory-bound bottleneck by enlarging our batch size - we can end up with out-of-memory error
-
-
-[NVIDIA SITE]
-The `ops:byte` ratio analysis assumes that a workload is sufficiently large to saturate a given processor’s math and memory pipelines. However, if the workload is not large enough, or does not have sufficient parallelism, the processor will be under-utilized and performance will be limited by latency. For example, consider the launch of a single thread that will access 16 bytes and perform 16000 math operations. While the arithmetic intensity is 1000 FLOPS/B and the execution should be math-limited on a V100 GPU, creating only a single thread grossly under-utilizes the GPU, leaving nearly all of its math pipelines and execution resources idle. Furthermore, the arithmetic intensity calculation assumes that inputs and outputs are accessed from memory exactly once. It is not unusual for algorithm implementations to read input elements multiple times, which would effectively reduce arithmetic intensity. Thus, the arithmetic intensity is a first-order approximation; profiler information should be used if more accurate analysis is needed.
-
-NVIDIA GeForce RTX 3090 Ti specs: 40 TFLOPs / 1.01 TB/s bandwidth -> batch need to be ~40
+The `ops:byte` ratio analysis is useful, but keep in mind, that it assumes that a GPU workload is sufficiently large to saturate compute and memory pipelines. If the workload is not large enough, or does not have sufficient parallelism, the processor will be under-utilized and performance will be limited by latency. 
 
 ## High-level algorithmic optimizations
 
@@ -625,8 +612,8 @@ text_generation();
 @jit
 def dot_product_attention(query, key, value, mask=None):
     d = query.shape[-1]
-    # attn_logits shape is [batch..., num_heads, q_length, kv_length]
-    attn_logits = jnp.einsum('...qhd,...khd->...hqk', query, key)
+    # attn_logits shape is [batch..., num_heads, q_seq_len, kv_seq_len]
+    attn_logits = jnp.einsum('...lhd,...mhd->...hlm', query, key)
     attn_logits = attn_logits / jnp.sqrt(d) # normalize logits
     if mask is not None:
         big_neg = jnp.finfo(attn_logits.dtype).min
@@ -634,11 +621,8 @@ def dot_product_attention(query, key, value, mask=None):
     # logits -> weights
     attention = nn.softmax(attn_logits, axis=-1)
     # return weighted sum over values for each query position
-    return jnp.einsum('...hqk,...khd->...qhd', attention, value), attention
-        
-@jit
-def multihead_self_attention(kv_cache=None):
-    pass
+    output = jnp.einsum('...hlm,...mhv->...lhv', attention, value)
+    return output, attention
 ```
 
 Let's check whether MHA inference is compute- or memory-bound.
@@ -1105,53 +1089,22 @@ groupquery_attention();
 
 ```python
 @jit
-def dot_product_attention(query, key, value, mask=None):
-    """
-        Computes general dot-product attention given query Q, key K and value V.
-        The number of Q heads must be divisible by a number of K/V heads.
-        Note: Q, K, V needn't have any batch dimensions.
-    Args:
-        query: [batch..., q_length, num_heads, qk_dim_per_head]
-        key: [batch..., kv_length, num_kv_heads, qk_dim_per_head]
-        value: [batch..., kv_length, num_kv_heads, v_dim_per_head]
-        mask: array broadcastable to [batch..., num_heads, q_seq_len, kv_seq_len]
-    Returns:
-        Output of shape [batch..., length, num_heads, v_dim_per_head]
-        and attention weights: [batch..., num_heads, q_seq_len, kv_seq_len]
-    """
-    heads_dim, embed_dim = -2, -1
-    num_heads, num_kv_heads = query.shape[heads_dim], key.shape[heads_dim]
-    
+def gqa_dot_product_attention(query, key, value, mask=None):
+    num_heads, num_kv_heads = query.shape[-2], key.shape[-2]
     # broadcast K/V heads to match number of Q heads
     num_heads_per_kv = num_heads // num_kv_heads
-    key = jnp.repeat(key, num_heads_per_kv, axis=heads_dim)
-    value = jnp.repeat(value, num_heads_per_kv, axis=heads_dim)
-    
-    d = query.shape[embed_dim]
-    # attn_logits shape is [batch..., num_heads, q_seq_len, kv_seq_len]
-    attn_logits = jnp.einsum('...lhd,...mhd->...hlm', query, key)
-    attn_logits = attn_logits / jnp.sqrt(d) # normalize logits
-    if mask is not None:
-        big_neg = jnp.finfo(attn_logits.dtype).min
-        attn_logits = jnp.where(mask, big_neg, attn_logits)
-    # logits -> weights
-    attention = nn.softmax(attn_logits, axis=-1)
-    # return weighted sum over values for each query position
-    output = jnp.einsum('...hlm,...mhv->...lhv', attention, value)
-    return output, attention
-
-@jit
-def groupquery_self_attention():
-    pass
+    key = jnp.repeat(key, num_heads_per_kv, axis=-2)
+    value = jnp.repeat(value, num_heads_per_kv, axis=-2)
+    return dot_product_attention(query, key, value, mask)
 ```
 
 Below is a comparison table with batched decoding/inference algorithms complexities for input $x \in \mathbb{R}^{B \times d \times L}$ and large context size $L$. Note, that the computation complexity is the same for all algorithms in the table! However, the real effectiveness can vary greatly depending on the setting.
 
 |    | Vanilla Attention | Attention with KV Cache | GQA with KV Cache |
 | -------- | ------- | ------- | ------- |
-| FLOPs  | $\mathcal{O}(BLd^2 + BL^2d)$   | $\mathcal{O}(BLd^2 + BL^2d)$ | $\mathcal{O}(BLd^2 + BL^2d)$
-| Memory | $\mathcal{O}(BLd + BL^2h + d^2)$ | $\mathcal{O}(BL^2d + BL^2h + d^2)$ | $\mathcal{O}(BL^2d/g + BL^2h + d^2)$
-| Arithmetic intensity limit for large $L$ | $\mathcal{O}\big(\frac{d}{h}\big)$  | $\mathcal{O}\big(\frac{d}{d + h}\big)$ | $\mathcal{O}\big(\frac{dg}{d+hg} \big)$
+| Compute performance  | $\mathcal{O}(BLd^2 + BL^2d)$   | $\mathcal{O}(BLd^2 + BL^2d)$ | $\mathcal{O}(BLd^2 + BL^2d)$
+| Memory bandwidth | $\mathcal{O}(BLd + BL^2h + d^2)$ | $\mathcal{O}(BL^2d + BL^2h + d^2)$ | $\mathcal{O}(BL^2d/g + BL^2h + d^2)$
+| Arithmetic intensity for large $L$ | $\mathcal{O}\big(\frac{d}{h}\big)$  | $\mathcal{O}\big(\frac{d}{d + h}\big)$ | $\mathcal{O}\big(\frac{dg}{d+hg} \big)$
 
 ### Prefill with chunking
 
@@ -1535,7 +1488,7 @@ The computations are defined in **kernels**, small C++ functions, which supposed
 
 Let's take A100 as an example again. It has 108 SMs, each can run up to 2048 threads. Shared memory capacity for each SM is up to 192KB. This means that we can take large matrices (up to few MBs), split them up in smaller chunks that fit into A100 registers and SRAM and then do matrix multiplication at the speed of 18 TB/s, SRAM bandwidth. This in total makes GPU much more efficient than CPU for matrix multiplications.
 
-But we have a lot of non-matmul operations in deep learning, such as normalization layers, activation functions or dropouts. Even though they only account for a small fraction of the total FLOPs, GPUs run them much slower. Fistly, because they have specialized units for matrix multiply, called Tensor Cores. That's why we can have matmul throughput can be up to 16× higher than non-matmul throughput, e.g. 312 TFLOPs vs 19.5 TFLOPs on A100.[^TC] And secondly, they can be extremely memory-bound. 
+But we have a lot of non-matmul operations in deep learning, such as normalization layers, activation functions or dropouts. Even though they only account for a small fraction of the total FLOPs, GPUs run them much slower. Fistly, because they have specialized units for matrix multiply, called Tensor Cores. That's why matmul throughput can be up to 16× higher than non-matmul throughput, e.g. 312 TFLOPs vs 19.5 TFLOPs on A100.[^TC] And secondly, they can be extremely memory-bound. 
 
 Let's take $\mathbf{P}=\operatorname{softmax}(\mathbf{S}) \in \mathbb{R}^{L \times L}$ from attention. For a large sequence length $L$, tensor $\mathbf{S}$ has to reside on HBM, since it would be too large to fit on SRAM. The simplest implementation of softmax requires us to
 
@@ -1543,9 +1496,9 @@ Let's take $\mathbf{P}=\operatorname{softmax}(\mathbf{S}) \in \mathbb{R}^{L \tim
 - Get sum of $\exp(\mathbf{S})$ along row axis: read $L^2$, write $L$.
 - Divide $\exp(\mathbf{S})$ by denominator: read $L^2+L$, write $L^2$.
 
-In total we need to move back and forth $5L^2+L$ floats. It would be much faster if we could just read $L^2$ floats of $\mathbf{S}$ and write $L^2$ floats of $\mathbf{P}$, making this operation more than 2.5 times faster.
+In total we need to move back and forth $5L^2+L$ floats. It would be much faster if we could just read $L^2$ floats of $\mathbf{S}$ and write $L^2$ floats of $\mathbf{P}$, making this operation more than 2.5× faster.
 
-That's where **kernel fusion** comes into play: instead of writing computation output $y=f(x)$ to low-bandwidth global memory only to read it again to get $z=g(y)$, we can implement kernel which performs multiple computations at once $z=(g \circ f)(x)$ without extra memory accesses. XLA compiler in Jax can perform simple fusions with `jit` and for the rest one can check out [Triton](https://triton-lang.org/main/index.html) to write custom CUDA kernels ([example with fused softmax](https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html)). 
+That's where **kernel fusion** comes into play: instead of writing computation output $y=f(x)$ to low-bandwidth global memory only to read it again to get $z=g(y)$, we can implement kernel which performs multiple computations at once $z=(g \circ f)(x)$ without extra memory accesses. XLA compiler in Jax can perform simple fusions, but a programmer can also write custom CUDA kernels, e.g. with [Triton](https://triton-lang.org/main/index.html) or [Pallas](https://jax.readthedocs.io/en/latest/pallas/design.html).
 
 ### Memory-efficient attention
 
@@ -1717,13 +1670,13 @@ To resolve this problem, authors introduce an additional scalar $m$ as in online
 - $\mathbf{v}_j \leftarrow \mathbf{v}_{j-1} e^{m_{j-1}-m_j} + \mathbf{V}_j e^{\mathbf{S}_{ij} - m_j}$,
 - $\ell_j \leftarrow \ell_{j-1} + e^{m_{j-1}-m_j}.$
 
-Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm, calling it **query chunk attention**. Notice that they use `jax.checkpoint` decorator in `summarize_chunk` function. The reason is that during forward pass this algorihtm saves memory by summarizing parts of the attention matrix sequentially, allowing it to forget the parts of the attention matrix it has summarized already. A naive application of differentiation would have to store all those intermediate results and algorithm would loose its memory advantage entirely. So authors propose to apply gradient checkpointing to the function that summarizes the individual chunks. The intermediate results can thus be forgotten during the forward pass and recomputed during backpropagation.
+Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm. Notice that they use `jax.checkpoint` decorator in `summarize_chunk` function. The reason is that during forward pass this algorihtm saves memory by summarizing parts of the attention matrix sequentially, allowing it to forget the parts of the attention matrix it has summarized already. A naive application of differentiation would have to store all those intermediate results and algorithm would loose its memory advantage entirely. So authors propose to apply gradient checkpointing to the function that summarizes the individual chunks. The intermediate results can thus be forgotten during the forward pass and recomputed during backpropagation.
 
 Applying checkpointing to the standard attention algorithm would not achieve these results. The standard attention algorithm with checkpointing would forget the attention matrix after it is formed; query chunk attention algorithm never forms the full attention matrix at all.
 
 ### FlashAttention
 
-FlashAttention might be the most popular implementation of attention mechanism nowadays. While it actually does more FLOPs than standard attention, it runs up to 3× faster just by making attention algorithm IO-aware — accounting for reads and writes between levels of GPU memory. Remember, how we discussed GPU architecture in the first section of this post and that moving tensors from SRAM can be 10 times faster on modern GPU than moving them from HBM.
+FlashAttention might be the most popular implementation of attention mechanism nowadays. While it actually does more FLOPs than standard attention, it runs up to 3× faster just by making attention algorithm IO-aware — accounting for reads and writes between levels of GPU memory. Remember, how we discussed GPU architecture in the first section of this post and that moving tensors from SRAM can be 10× faster on modern GPU than moving them from HBM.
 
 Standard attention forward pass looks like that:
 
@@ -1748,30 +1701,30 @@ Standard attention forward pass looks like that:
 
 **FlashAttention** forward pass:
 
-- Set block sizes $B_c = \lceil \frac{M}{4d} \rceil$, $B_r = \min \big( \lceil \frac{M}{4d} \rceil, d \big)$, where $M$ is an on-chip SRAM size.
+- Set block sizes $B_{\mathbf{KV}} = \lceil \frac{M}{4d} \rceil$, $B_{\mathbf{Q}} = \min \big( \lceil \frac{M}{4d} \rceil, d \big)$, where $M$ is an on-chip SRAM size.
 - Initialize $\color{#E86456}{\mathbf{O} \in \mathbb{R}^{L \times d}}$, $\color{#E86456}{\ell \in \mathbb{R}^{L}}$ both $0$-valued and $\color{#E86456}{m \in \mathbb{R}^L}$ with values set to $\mathbf{-\infty}$, all stored in HBM.
-- Split $\color{#E86456}{\mathbf{Q}}$ into $T_r = \lceil \frac{L}{B_r} \rceil$ blocks and split $\color{#E86456}{\mathbf{K}, \mathbf{V}}$ into $T_c = \lceil \frac{L}{B_c} \rceil$ blocks along sequence axis.
-- Split $\color{#E86456}{\mathbf{O}, \ell, m}$ into $T_r$ blocks along sequence axis.
-- For $j = 1, \dots, T_c$:
+- Split $\color{#E86456}{\mathbf{Q}}$ into $T_{\mathbf{Q}} = \lceil \frac{L}{B_{\mathbf{Q}}} \rceil$ blocks and split $\color{#E86456}{\mathbf{K}, \mathbf{V}}$ into $T_{\mathbf{KV}} = \lceil \frac{L}{B_{\mathbf{KV}}} \rceil$ blocks along sequence axis.
+- Split $\color{#E86456}{\mathbf{O}, \ell, m}$ into $T_{\mathbf{Q}}$ blocks along sequence axis.
+- For $j = 1, \dots, T_{\mathbf{KV}}$:
 	- Load $\color{#65AD69}{\mathbf{K}_j, \mathbf{V}_j}$ from HBM to SRAM
-	- For $i = 1, \dots, T_r$:
+	- For $i = 1, \dots, T_{\mathbf{Q}}$:
 		- Load $\color{#65AD69}{\mathbf{Q}_i, \mathbf{O}_i, \ell_i, m_i}$ from HBM to SRAM.
-		- Compute unnormalized attention scores $\color{#65AD69}{\mathbf{S}_{ij} = \mathbf{Q}_i \mathbf{K}^T_j \in \mathbb{R}^{B_r \times B_c}}$.
+		- Compute unnormalized attention scores $\color{#65AD69}{\mathbf{S}_{ij} = \mathbf{Q}_i \mathbf{K}^T_j \in \mathbb{R}^{B_{\mathbf{Q}} \times B_{\mathbf{KV}}}}$.
 		- Compute
 		 $$
 		 \color{#65AD69}{
 		 \begin{aligned}
-		 \tilde{m}_{ij} & = \operatorname{rowmax}(\mathbf{S}_{ij}) \in \mathbb{R}^{B_r}, \\
-		 \tilde{\mathbf{P}}_{ij} & = \exp ( \mathbf{S}_{ij} - \tilde{m}_{ij}) \in \mathbb{R}^{B_r \times B_c}, \\
-		 \tilde{\ell}_{ij} & = \operatorname{rowsum}(\tilde{\mathbf{P}}_{ij}) \in \mathbb{R}^{B_r}
+		 \tilde{m}_{ij} & = \operatorname{rowmax}(\mathbf{S}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}}}, \\
+		 \tilde{\mathbf{P}}_{ij} & = \exp ( \mathbf{S}_{ij} - \tilde{m}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}} \times B_{\mathbf{KV}}}, \\
+		 \tilde{\ell}_{ij} & = \operatorname{rowsum}(\tilde{\mathbf{P}}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}}}
 		 \end{aligned}}
 		 $$
 		- Renew statistics
 		 $$
 		 \color{#65AD69}{
 		 \begin{aligned}
-		 m_i^{\text{new}} & = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_r}, \\
-		 \ell_{i}^{\text{new}} & = e^{m_i-m_i^{\text{new}}} \ell_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}}\tilde{\ell}_{ij}  \in \mathbb{R}^{B_r}
+		 m_i^{\text{new}} & = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}}}, \\
+		 \ell_{i}^{\text{new}} & = e^{m_i-m_i^{\text{new}}} \ell_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}}\tilde{\ell}_{ij}  \in \mathbb{R}^{B_{\mathbf{Q}}}
 		 \end{aligned}}
 		 $$
 		- Write 
@@ -1858,7 +1811,7 @@ function draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift) {
 	
 	text_(svg, "→", x_start + 10.5 * rct_sz, y_start + 4.8 * shift);
 	
-	text_(svg, "⋅", x_start + 19.8 * rct_sz, y_start + 4.8 * shift + 3, size=30);
+	text_(svg, "⋅", x_start + 19.8 * rct_sz, y_start + 4.9 * shift + 3, size=30);
 	text_(svg, "=", x_start + 27 * rct_sz, y_start + 4.8 * shift, size=18);
 }
 
@@ -1951,13 +1904,13 @@ flash_attn();
 </script>
 
 ![](.)
-*Schematic diagram of how FlashAttention forward pass is performed, when $\mathbf{Q}$ is partitioned into $T_r=1$ block of size $B_r \times d$ with $B_r=3$ and $\mathbf{K}/\mathbf{V}$ are partitioned into $T_c = 2$ blocks of size $B_c \times d$ with $B_c=2$ each. Here $\ell_1=\sum e^{\mathbf{S}_{11}}$, $\ell_2=\ell_1 + \sum e^{\mathbf{S}_{12}}$. The step with subtracting $m$ in softmax is omitted for simplification.*
+*Schematic diagram of how FlashAttention forward pass is performed, when $\mathbf{Q}$ is partitioned into $T_{\mathbf{Q}}=1$ block of size $B_{\mathbf{Q}} \times d$ with $B_{\mathbf{Q}}=3$ and $\mathbf{K}/\mathbf{V}$ are partitioned into $T_{\mathbf{KV}} = 2$ blocks of size $B_{\mathbf{KV}} \times d$ with $B_{\mathbf{KV}}=2$ each. Here $\ell_1=\sum e^{\mathbf{S}_{11}}$, $\ell_2=\ell_1 + \sum e^{\mathbf{S}_{12}}$. The step with subtracting $m$ in softmax is omitted for simplification.*
 
 Authors of FlashAttention also compared it to query chunk attention algorithm, stating three major differences:
 
-1. Query-chunk attention focuses on memory footprint, while FlashAttention focuses on reducing HBM accesses.
-2. Query-chunk attention summarizes each block with its temporary output along with the softmax normalization statistics. FlashAttention instead incrementally updates the output after processing each block, so only one copy of the output is needed.
-3. Query-chunk attention uses gradient checkpointing to recompute the attention matrix and the temporary output of each block. FlashAttention
+1. Memory-efficient attention focuses on memory footprint, while FlashAttention focuses on reducing HBM accesses.
+2. Memory-efficient attention summarizes each block with its temporary output along with the softmax normalization statistics. FlashAttention instead incrementally updates the output after processing each block, so only one copy of the output is needed.
+3. Memory-efficient attention uses gradient checkpointing to recompute the attention matrix and the temporary output of each block. FlashAttention
 only recomputes the attention matrix and does not recompute the temporary output of each block. 
 
 "FlashAttention" is an amazingly written paper and it's definitely worth reading to anyone who's training large language models. There are more details in the paper about FlashAttention backward pass, theoretical proofs and comparisons to other optimization algorithms.
@@ -1996,12 +1949,244 @@ The most recent version, [FlashAttention-3 (2024)](https://tridao.me/publication
 3. Block quantization and incoherent processing that leverages hardware
 support for FP8 low-precision
 
-### Ring attention
+### Ring Attention
 
-Sequence parallel
+Even with Flash Attention, the memory complexity is linear in $L$ so scaling the sequence length is limited by the memory capacity. We could scale context with number of devices $N$, split inputs into $N$ parts, perform computations in parallel, then gather the results. However, attention requires for $\mathbf{Q}$ to access all elements of $\mathbf{K}, \mathbf{V}$ matrices.[^OISWA] Sending large matrices between devices can add a huge communication overhead (e.g. A100 throughput is 600GB/s with NVLink and only 64GB/s with PCIe).
 
-#### Stripe attention
+**Ring Attention** ([Lie et al. (2023)](https://arxiv.org/pdf/2310.01889)) addresses this problem and explores the idea of hiding communication overhead behind computations in an extremely large context scenario. The algorithm is the following:
 
+- Split input sequence into $N$ blocks along sequence axis, such that each device stores one input block of size $C = \lceil \frac{L}{N} \rceil$. Compute $\mathbf{Q}_i$, $\mathbf{K}_i$, $\mathbf{V}_i$ for its input block on each $i$-th device.
+- For $\text{iter} = 0, \dots, N - 1$:
+	- For each $i$-th device in parallel:
+		- Let $j = (\text{iter} + i) \bmod N$.
+		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. Simultaneously, send $\mathbf{K}_{j}$ and $\mathbf{V}_{j}$ blocks to the next device and receive new blocks $\mathbf{K}_{(j-1) \bmod N}, \mathbf{V}_{(j-1) \bmod N}$ from the previous device.
+
+
+</style>
+<div id="ring_attn" class="svg-container" align="center"></div> 
+
+<script>
+
+function text_id_2_(svg, text, x, y, size=14, text_id="fattn") {
+	svg.append('text')
+	  .attr("id", text_id)
+	  .attr('x', x)
+	  .attr('y', y)
+	  .attr('orig_x', x)
+	  .attr('orig_y', y)
+	  .text(text)
+	  .style("font-size", size + "px")
+	  .attr("font-family", "Arvo");
+}
+
+function draw_ring_attn_text_device(svg, x_start, y_start, device) {
+	text_(svg, "Q", x_start, y_start);
+	text_(svg, device, x_start + 11, y_start + 3, size=8);
+	text_id_2_(svg, "K", x_start + 52, y_start - 45, size=14, text_id="kv" + (device - 1));
+	text_id_2_(svg, device, x_start + 63, y_start - 42, size=8, text_id="kv" + (device - 1));
+	text_id_2_(svg, "V", x_start + 104, y_start, size=14, text_id="kv" + (device - 1));
+	text_id_2_(svg, device, x_start + 115, y_start + 3, size=8, text_id="kv" + (device - 1));
+	text_(svg, "⋅", x_start + 74, y_start, size=18);
+	text_(svg, "GPU " + device, x_start + 40, y_start + 37);
+}
+
+function draw_ring_attn_text(svg, x_start, y_start) {
+	draw_ring_attn_text_device(svg, x_start + 190, y_start + 43, 1);
+	draw_ring_attn_text_device(svg, x_start + 380, y_start + 143, 2);
+	draw_ring_attn_text_device(svg, x_start + 190, y_start + 243, 3);
+	draw_ring_attn_text_device(svg, x_start, y_start + 143, 4);
+}
+
+function labeled_rect(svg, x, y, w, h, color, label="kv") {
+	svg.append('rect')
+	  .attr("id", label)
+	  .attr('x', x)
+	  .attr('y', y)
+	  .attr("orig_x", x)
+	  .attr("orig_y", y)
+	  .attr('width', w)
+	  .attr('height', h)
+	  .attr('stroke', 'black')
+	  .attr('stroke-width', 1)
+	  .attr("rx", Math.min(3, Math.min(w, h) / 3))
+	  .attr('fill', color);
+}
+
+function labeled_vector_rect(svg, x, y, w, h, shift, rct_sz, color, label="kv") {
+	for (var i = 0; i < w; i += 1) {
+		for (var j = 0; j < h; j += 1) {
+			labeled_rect(
+				svg,
+				x + i * shift, 
+				y + j * shift, 
+				rct_sz, 
+				rct_sz, 
+				color,
+				label);
+		}
+	}
+}
+
+function get_positions(iter, x_start, y_start) {
+	if (iter == 0) {
+		return [x_start + 215, y_start + 25];
+	}
+	if (iter == 1) {
+		return [x_start + 405, y_start + 125];
+	}
+	if (iter == 2) {
+		return [x_start + 215, y_start + 225];
+	}
+	return [x_start + 25, y_start + 125];
+}
+
+function ring_attn() {
+	var svg = d3.select("#ring_attn")
+				  .append("svg")
+				  .attr("width", 600)
+				  .attr("height", 350);
+	const x_start = 50, y_start = 25;
+	const shift = 14, rct_sz = 12;
+	const dim = 1;
+	
+	function draw_ring_attn_init_cells(x_st, y_st, label) {
+		labeled_vector_rect(svg, x_st, y_st, dim, 2, shift, rct_sz, matrix_colors[0], "q");
+		labeled_vector_rect(svg, x_st + 20, y_st - 20, 2, dim, shift, rct_sz, matrix_colors[1], label);
+		labeled_vector_rect(svg, x_st + 20, y_st, 2, 2, shift, rct_sz, matrix_colors[2], "s");
+		labeled_vector_rect(svg, x_st + 60, y_st, dim, 2, shift, rct_sz, matrix_colors[3], label);
+		
+		svg.append('rect')
+		  .attr('x', x_st - 30)
+		  .attr('y', y_st - 40)
+		  .attr('width', 130)
+		  .attr('height', 70)
+		  .attr('stroke', 'currentColor')
+		  .attr('stroke-width', 1)
+		  .attr("rx", 3)
+		  .attr('fill', 'none');
+		  
+	}
+	
+	var xAxis = d3.scaleLinear()
+	    .domain([0, 1000])
+	    .range([0, 1000])
+	    .clamp(true);
+
+	function drag_ring_attn_cells(iter) {
+		for (var i = 0; i < 4; i += 1) {
+			var [x_st_new, y_st_new] = get_positions((iter + i) % 4, x_start, y_start);
+			var [x_st, y_st] = get_positions(i, x_start, y_start);
+			var x_shift = x_st_new - x_st;
+			var y_shift = y_st_new - y_st;
+			
+			d3.selectAll("#kv" + i).transition()
+	        .delay(0)
+	        .duration(1500)
+	        .attr("x", function(d, i) {
+	        		return x_shift + xAxis(d3.select(this).attr("orig_x"));
+	         })
+	        .attr("y", function(d, i) {
+	        		return y_shift + xAxis(d3.select(this).attr("orig_y"));
+	         });
+	    }
+   }
+
+	var l_x = d3.scaleLinear()
+	    .domain([0, 3])
+	    .range([0, 415])
+	    .clamp(true);
+	    
+	createSlider(svg, drag_ring_attn_cells, l_x, x_start + 50, 330, "iter", "currentColor", 0, roundN, 4);
+	
+	var x_st = 0, y_st = 0;
+	for (var i = 0; i < 4; i += 1) {
+		[x_st, y_st] = get_positions(i, x_start, y_start);
+		draw_ring_attn_init_cells(x_st, y_st, "kv" + i);
+		rect(svg, x_st - 30, y_st - 40, 130, 70, colors[i], 0.08);
+	}
+	draw_ring_attn_text(svg, x_start, y_start);
+}
+
+ring_attn();
+</script>
+
+![](.)
+*GPUs are arranged in a ring, each holding a portion of $\mathbf{Q}$. During the Ring Attention process, the GPUs pass along blocks of $\mathbf{K}, \mathbf{V}$ to each other.*
+
+Local attention compute at each iteration requires $\mathcal{O}(C^2d)$ operations, while each device needs to send $\mathbf{K}_j, \mathbf{V}_j \in \mathbb{R}^{C \times d}$ tensors or $\mathcal{O(Cd)}$ bytes. Thus the lower bound of chunk to effectively hide communication overhead will be
+
+$$ C = \big  \lceil \frac{L}{N} \big \rceil \geq \frac{\operatorname{compute performance}}{\operatorname{communication bandwidth}}.$$
+
+Authors also shared implementation [code in JAX](https://github.com/forhaoliu/ringattention/tree/main).
+
+#### Stripe Attention
+
+[Brandon et al. 2023](https://arxiv.org/pdf/2311.09431) studied Ring Attention performance for causal transformer and found out that it leads to highly imbalanced workload due to triangular structure of causal attention computations. They propose a simple extension called **Stripe Attention** to fix this and achieved near 1.5× speedup.
+
+The problem of Ring Attention is that on all but the first iteration, the workload of some devices is entirely necessary (unmasked), while the workload of others is entirely unnecessary (masked) for the final output (and thus there is no need for them to be computed). The total latency is determined by the maximum latency of any participating device per iteration. As a result, regardless of per device optimizations, the latency per iteration would be the same as the time taken to compute a fully unmasked workload. As a result, Ring Attention will run as fast as a workload with no attention masking, despite in principle needing to compute only half the operations.
+ 
+</style>
+<div id="stripe_attn" class="svg-container" align="center"></div> 
+
+<script>
+
+function stripe_attn() {
+	var svg = d3.select("#stripe_attn")
+				  .append("svg")
+				  .attr("width", 600)
+				  .attr("height", 300);
+	const x_start = 10, y_start = 25;
+	const shift = 14, rct_sz = 12;
+	
+	text_(svg, "Attention scores (Ring)", x_start + 40, y_start - 12);
+	text_(svg, "Attention scores (Stripe)", x_start + 385, y_start - 12);
+	
+	function ring_causal(iter, x_st, y_st) {
+		causal_mask(svg, x_st, y_st, 16, 16, shift, rct_sz, matrix_colors[7], 16, 0, 1);
+		
+		for (var i = 0; i < 4; i += 1) {
+			var k = (i + iter) % 4;
+			vector_rect(svg, x_st + 4 * shift * k, y_st + 4 * shift * i, 4, 4, shift, rct_sz, colors[i], 0.3);
+		}	
+	}
+	
+	function stripe_causal(iter, x_st, y_st) {
+		causal_mask(svg, x_st, y_st, 16, 16, shift, rct_sz, matrix_colors[7], 16, 0, 1);
+		
+		for (var j = 0; j < 4; j += 1) {
+			for (var i = 0; i < 16; i += 1) {
+				var k = (i + 4 * j + iter) % 16;
+				rect(svg, x_st + shift * k, y_st + shift * i, rct_sz, rct_sz, colors[i % 4], 0.3);
+			}
+		}
+	}
+	
+	function stripe_attn(iter) {	
+	   svg.selectAll('rect').remove();
+		ring_causal((4 - iter) % 4, x_start, y_start);
+		stripe_causal((4 - iter) % 4, x_start + 350, y_start);
+	}
+	
+	stripe_attn(0);
+	
+	var l_x = d3.scaleLinear()
+	    .domain([0, 3])
+	    .range([0, 415])
+	    .clamp(true);
+	    
+	    
+	createSlider(svg, stripe_attn, l_x, x_start + 85, 280, "iter", "currentColor", 0, roundN, 4);
+}
+
+stripe_attn();
+</script>
+
+![](.)
+*Workload distribution of Ring Attention (left) and Stripe Attention. The square matrices represent the set of all possible pairwise query/key interactions; row indices correspond to queries, and column indices correspond to keys. All cells above the diagonal are masked out by the causal mask and can be skipped. The colors indicate which devices are responsible for which parts of the computation. We can see that some devices in Ring Attention are responsible for workloads which are entirely masked out, whereas Striped Attention maintains a balanced workload across all devices*
+
+Rather than partitioning the tokens into contiguous blocks like in Ring Attention, Stripe Attention partitions them into sets of evenly spaced **stripes** based on their residues modulo $N$, so that $i$-th token would reside on $i \bmod N$ device. In practice, we can achieve this partitioning scheme by permuting the input tokens before the model’s first embedding layer, and then partitioning the permuted sequence into contiguous blocks as in Ring Attention. After partitioning, Stripe and Ring Attention algorithms proceeds almost identically.
+
+Another recent improvement, called **Tree Attention** ([Shyam et al. 2024](https://arxiv.org/pdf/2408.04093)), leveraged tree-reduction topology to reduce communication costs for decoding across multiple GPUs and achieved *asymptotically* 8× speedup compared to Ring Attention.
 
 ### vLLM
 
@@ -2015,10 +2200,6 @@ Sequence parallel
 ![](.)
 *A sample of specifications for modern NVIDIA architectures. Numbers can vary depending on device modifications*
 
-$$\frac{\partial}{\partial z_k} \operatorname{softmax}(z)_i = \operatorname{softmax}(z)_k \cdot (\mathbf{1}_{\lbrace i=k \rbrace }  -\operatorname{softmax}(z)_i)$$
-
-If $p=\operatorname{softmax}(s)$, then for output gradient $dp$ we have $ds = (\operatorname{diag}(p) - pp^T)dp$
-
 ---
 [^GTL]: Full names given to GPU architectures are: **T**uring, **V**olta, **A**mpere, **H**opper, **B**lackwell.
 
@@ -2031,3 +2212,5 @@ If $p=\operatorname{softmax}(s)$, then for output gradient $dp$ we have $ds = (\
 [^HP]: While it is clear that *hedgehog* comes from attention "spikyness" modelling, I still wonder what *porcupine* in the title refers to.
 
 [^TC]: This isn't unique to GPUs - in fact, TPUs are even less general than GPUs.
+
+[^OISWA]: If we don't use SWA.
