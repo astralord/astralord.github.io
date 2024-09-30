@@ -93,6 +93,7 @@ function text_(svg, text, x, y, size=14) {
 	  .attr('y', y)
 	  .text(text)
 	  .style("font-size", size + "px")
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -413,7 +414,7 @@ The balance between first two is commonly measured by the **arithmetic intensity
 * make 1 comparison
 * write 2 bytes
 
-for each element of the tensor. Regardless of the size of $x$, arithmetic intensity for ReLU is equal to $\frac{\# \operatorname{flops}}{\# \operatorname{bytes}}=\frac{1}{4}$. Again, this means that for each operation we need to make 4 memory accesses.
+for each element of the tensor. Regardless of the size of $x$, arithmetic intensity for ReLU is equal to $\frac{\\# \operatorname{flops}}{\\# \operatorname{bytes}}=\frac{1}{4}$. Again, this means that for each operation we need to make 4 memory accesses.
 
 Arithmetic intensity is commonly compared to a hardware specific `ops:byte` ratio to find if we are in compute- or memory-bound scenario. To explain how it works, let's take for example a linear layer forward pass on A100 GPU. Given an input batch $x \in \mathbb{R}^{B \times d}$ and weight matrix $\mathbf{W} \in \mathbb{R}^{d \times d}$ (here $B$ is a batch size and $d$ is an embedding dimension) linear layer basically represents a matrix multiplication $x\mathbf{W}$. We can calculate that linear layer computation requires $2Bd^2$ flops.[^MMM] Hence the compute-time for A100 will be
 
@@ -423,7 +424,7 @@ At the same time we need to read $2d^2$ bytes from memory to load weight matrix 
 
 $$T_{\operatorname{memory}} = \frac{\# \operatorname{bytes}}{\operatorname{memory bandwidth}} = \frac{2d^2}{1.55 \cdot 10^{12}} s.$$
 
-Recall that arithmetic intensity is equal to $\frac{\# \operatorname{flops}}{\# \operatorname{bytes}}$, while `ops:byte` is given by $\frac{\operatorname{compute performance}}{\operatorname{memory bandwidth}}$. To find the bottleneck for our model we look at the ratio of these two terms, which is
+Recall that arithmetic intensity is equal to $\frac{\\# \operatorname{flops}}{\\# \operatorname{bytes}}$, while `ops:byte` is given by $\frac{\operatorname{compute performance}}{\operatorname{memory bandwidth}}$. To find the bottleneck for our model we look at the ratio of these two terms, which is
 
 $$\frac{T_{\operatorname{compute}}}{T_{\operatorname{memory}}} \approx \frac{B}{200}.$$
 
@@ -437,7 +438,7 @@ Now we are ready to delve into the specifics of transformer optimization. We've 
 
 $$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d}}  \Big) \cdot \mathbf{V}, $$
 
-where $d$ is a hidden dimensionality for queries and keys. When we work with GPT-based models, we use **masked attention** where $\operatorname{softmax}$ input is multiplied with $\text{mask}$ tensor, setting masked attention values to $-\infty$ if we don't want to attend to corresponding tokens. Input tensors are $\mathbf{Q} \in \mathbb{R}^{B \times L \times d}$ and $\mathbf{K}, \mathbf{V} \in \mathbb{R}^{B \times M \times d}$, where $B$ is batch size and $L$/$M$ are sequence lengths[^VD].
+where $d$ is a hidden dimensionality for queries and keys. When we work with GPT-based models, we use **masked attention** where $\operatorname{softmax}$ input is multiplied with $\text{mask}$ tensor, setting masked attention values to $-\infty$ if we don't want to attend to corresponding tokens. Input tensors are $\mathbf{Q} \in \mathbb{R}^{L \times d}$ and $\mathbf{K}, \mathbf{V} \in \mathbb{R}^{M \times d}$, where $L$ and $M$ are sequence lengths[^VD].
 
 Also let's recap **multi-head attention layer (MHA)** definition:
  
@@ -463,7 +464,7 @@ When we work with models like GPT, text generation occurs in two stages:
 <script>
 
 const matrix_colors = ['#C7E9E3', '#FDBFB9', '#FFF6B7', '#FEDAB1', 
-                       '#D9EFB5', '#FFFFDA', '#E6F5E2', '#D9D9D9'];
+                       '#D9EFB5', '#FFFFDA', '#E6F5E2', '#B3B3B3'];
 
 function trivialRound(x) { return x; }
 function roundN(x) { return Math.round(x); }
@@ -1447,7 +1448,9 @@ $$
 \end{aligned}
 $$
 
-assuming $\mathbf{U}_{0} = 0$ and $\mathbf{Z}_{0}=0$. This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
+assuming $\mathbf{U}_{0} = 0$ and $\mathbf{Z}_{0}=0$. 
+
+This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
 
 #### The Hedgehog & the Porcupine
 
@@ -1548,10 +1551,17 @@ Based on this property [Milakov and Gimelshein (2018)](https://arxiv.org/pdf/180
 - $m_{i} \leftarrow \max(m_{i-1}, \mathbf{x}_i),$
 - $\ell_{i} \leftarrow \ell_{i-1} e^{m_{i-1}-m_i} + e^{\mathbf{x}_i - m_i}.$
 
-This algorithm keeps the maximum value $m_{i} = m([\mathbf{x}_{1}, \dots, \mathbf{x}_{i}])$ and the normalization term $\ell_{i}=\ell([\mathbf{x}_{1}, \dots, \mathbf{x}_{i}])$ as it iterates over elements of the input array. At each iteration it needs to adjust the normalizer to the new maximum $m_{i}$ and only then add new value to $
-\ell_{i}$.
+This algorithm keeps the maximum value 
 
-They also proposed a parallel version to fully utilize devices:
+$$m_{i} = m([\mathbf{x}_{1}, \dots, \mathbf{x}_{i}])$$
+
+and the normalization term 
+
+$$\ell_{i}=\ell([\mathbf{x}_{1}, \dots, \mathbf{x}_{i}])$$
+
+as it iterates over elements of the input array. At each iteration it needs to adjust the normalizer to the new maximum $m_{i}$ and only then add new value to $\ell_{i}$.
+
+There also exists a parallel version to fully utilize devices:
 
 $$
 \begin{bmatrix}
@@ -1651,13 +1661,13 @@ The straight-forward implementation would be
 
 $$\mathbf{S}_{ij} = \mathbf{Q}_i^T\mathbf{K}_j, \quad \mathbf{P}_{ij}= \frac{e^{\mathbf{S}_{ij}}}{\sum_{l=1}^L e^{\mathbf{S}_{il}}},\quad \mathbf{O}_{i}= \sum_{l=1}^L \mathbf{P}_{il} \mathbf{V}_l  \quad \forall i, j = 1, \dots, L$$
 
-The problem with implementation above is that it requires us to first compute and remember $\mathbf{S}_{ij}$ for all $j$, leading to a $\mathcal{O}(L)$ time and memory complexity for each query, leading to the overall time and space complexity $\mathcal{O}(L^2)$. [Rabe and Staats (2022)](https://arxiv.org/pdf/2112.05682.pdf) suggested to move the division by normalization term $\sum_{l=1}^L e^{\mathbf{S}_{il}}$ to the very end of the attention operation using the distributive law:
+The problem with implementation above is that it requires us to first compute and remember $\mathbf{S}_{ij}$ for all $j$, leading to linear time and memory complexity for each query, leading to the overall time and space complexity $\mathcal{O}(L^2)$. [Rabe and Staats (2022)](https://arxiv.org/pdf/2112.05682.pdf) suggested to move the division by normalization term to the very end of the attention operation using the distributive law:
 
 $$\mathbf{O}_{i}= \frac{ \sum_{l=1}^L \mathbf{V}_l e^{\mathbf{S}_{il}} } {\sum_{l=1}^L e^{\mathbf{S}_{il}}} \quad \forall i = 1, \dots, L.$$
 
-This implementation, called **lazy softmax**, can be computed with constant memory for each query: we start from vector $\mathbf{v}_0 \in \mathbb{R}^d$ and scalar $\ell_0$, both initialized with $0$, and when we process key/value pairs sequentially for $j=1, \dots, L$, we only update 
+This implementation, called **lazy softmax**, can be computed with constant memory for each query: we start from vector $v_0 \in \mathbb{R}^d$ and scalar $\ell_0$, both initialized with $0$, and when we process key/value pairs sequentially for $j=1, \dots, L$, we only update 
 
-- $\mathbf{v}_j \leftarrow \mathbf{v}_{j-1} + \mathbf{V}_j e^{\mathbf{S}_{ij}}$,
+- $v_j \leftarrow v_{j-1} + \mathbf{V}_j e^{\mathbf{S}_{ij}}$,
 - $\ell_j \leftarrow \ell_{j-1} + e^{\mathbf{S}_{ij}}.$
 
 After processing all keys and values, we divide $\frac{v_L}{\ell_L}$ to get the final result.
@@ -1667,7 +1677,7 @@ One can notice that such algorithm has the same numerical problem as the naive i
 To resolve this problem, authors introduce an additional scalar $m$ as in online softmax, which keeps track of the maximum score that the incremental algorithm has seen so far, and they renormalize the sums of exponentiated values as needed: 
 
 - $m_j \leftarrow \max(m, \mathbf{S}_{ij})$,
-- $\mathbf{v}_j \leftarrow \mathbf{v}_{j-1} e^{m_{j-1}-m_j} + \mathbf{V}_j e^{\mathbf{S}_{ij} - m_j}$,
+- $v_j \leftarrow v_{j-1} e^{m_{j-1}-m_j} + \mathbf{V}_j e^{\mathbf{S}_{ij} - m_j}$,
 - $\ell_j \leftarrow \ell_{j-1} + e^{m_{j-1}-m_j}.$
 
 Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm. Notice that they use `jax.checkpoint` decorator in `summarize_chunk` function. The reason is that during forward pass this algorihtm saves memory by summarizing parts of the attention matrix sequentially, allowing it to forget the parts of the attention matrix it has summarized already. A naive application of differentiation would have to store all those intermediate results and algorithm would loose its memory advantage entirely. So authors propose to apply gradient checkpointing to the function that summarizes the individual chunks. The intermediate results can thus be forgotten during the forward pass and recomputed during backpropagation.
@@ -1709,8 +1719,12 @@ Standard attention forward pass looks like that:
 	- Load $\color{#65AD69}{\mathbf{K}_j, \mathbf{V}_j}$ from HBM to SRAM
 	- For $i = 1, \dots, T_{\mathbf{Q}}$:
 		- Load $\color{#65AD69}{\mathbf{Q}_i, \mathbf{O}_i, \ell_i, m_i}$ from HBM to SRAM.
-		- Compute unnormalized attention scores $\color{#65AD69}{\mathbf{S}_{ij} = \mathbf{Q}_i \mathbf{K}^T_j \in \mathbb{R}^{B_{\mathbf{Q}} \times B_{\mathbf{KV}}}}$.
+		- Compute unnormalized attention scores 
+		
+		  $$\color{#65AD69}{\mathbf{S}_{ij} = \mathbf{Q}_i \mathbf{K}^T_j \in \mathbb{R}^{B_{\mathbf{Q}} \times B_{\mathbf{KV}}}}.$$
+		  
 		- Compute
+		
 		 $$
 		 \color{#65AD69}{
 		 \begin{aligned}
@@ -1719,7 +1733,9 @@ Standard attention forward pass looks like that:
 		 \tilde{\ell}_{ij} & = \operatorname{rowsum}(\tilde{\mathbf{P}}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}}}
 		 \end{aligned}}
 		 $$
+		 
 		- Renew statistics
+		
 		 $$
 		 \color{#65AD69}{
 		 \begin{aligned}
@@ -1727,6 +1743,7 @@ Standard attention forward pass looks like that:
 		 \ell_{i}^{\text{new}} & = e^{m_i-m_i^{\text{new}}} \ell_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}}\tilde{\ell}_{ij}  \in \mathbb{R}^{B_{\mathbf{Q}}}
 		 \end{aligned}}
 		 $$
+		 
 		- Write 
 		$$
 		\color{#E86456}{\mathbf{O}_i} \color{#EDA137}{ \leftarrow } \color{#65AD69}{\operatorname{diag}(\ell_i^{\text{new}})^{-1} \big( \operatorname{diag}(\ell_i) e^{m_i-m_i^{\text{new}}} \mathbf{O}_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}} \tilde{\mathbf{P}}_{ij} \mathbf{V}_j \big) }
@@ -1750,6 +1767,7 @@ function text_id_(svg, text, x, y, opacity=1, size=14, text_id="fattn") {
 	  .text(text)
 	  .style("font-size", size + "px")
 	  .attr('opacity', opacity)
+	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 }
 
@@ -1959,8 +1977,8 @@ Even with Flash Attention, the memory complexity is linear in $L$ so scaling the
 - For $\text{iter} = 0, \dots, N - 1$:
 	- For each $i$-th device in parallel:
 		- Let $j = (\text{iter} + i) \bmod N$.
-		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. Simultaneously, send $\mathbf{K}_{j}$ and $\mathbf{V}_{j}$ blocks to the next device and receive new blocks $\mathbf{K}_{(j-1) \bmod N}, \mathbf{V}_{(j-1) \bmod N}$ from the previous device.
-
+		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. 
+		- *Simultaneously*, send $\mathbf{K}_{j}$ and $\mathbf{V}_{j}$ blocks to the next device and receive new blocks $\mathbf{K}_{(j-1) \bmod N}, \mathbf{V}_{(j-1) \bmod N}$ from the previous device.
 
 </style>
 <div id="ring_attn" class="svg-container" align="center"></div> 
