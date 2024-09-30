@@ -1448,7 +1448,7 @@ $$
 \end{aligned}
 $$
 
-assuming $\mathbf{U}_{0} = 0$ and $\mathbf{Z}_{0}=0$. 
+assuming $\mathbf{U}_{0}$ and $\mathbf{Z}_{0}$ are both 0-valued. 
 
 This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
 
@@ -1665,20 +1665,27 @@ The problem with implementation above is that it requires us to first compute an
 
 $$\mathbf{O}_{i}= \frac{ \sum_{l=1}^L \mathbf{V}_l e^{\mathbf{S}_{il}} } {\sum_{l=1}^L e^{\mathbf{S}_{il}}} \quad \forall i = 1, \dots, L.$$
 
-This implementation, called **lazy softmax**, can be computed with constant memory for each query: we start from vector $v_0 \in \mathbb{R}^d$ and scalar $\ell_0$, both initialized with $0$, and when we process key/value pairs sequentially for $j=1, \dots, L$, we only update 
+This implementation, called **lazy softmax**, can be computed with constant memory for each query: we start from vector $\mathbf{v}_0 \in \mathbb{R}^d$ and scalar $\ell_0$, both initialized with $0$, and when we process key/value pairs sequentially for $j=1, \dots, L$, we only update 
 
-- $v_j \leftarrow v_{j-1} + \mathbf{V}_j e^{\mathbf{S}_{ij}}$,
-- $\ell_j \leftarrow \ell_{j-1} + e^{\mathbf{S}_{ij}}.$
+$$
+\begin{aligned}
+\mathbf{v}_j &\leftarrow \mathbf{v}_{j-1} + \mathbf{V}_j e^{\mathbf{S}_{ij}}, \\ \ell_j &\leftarrow \ell_{j-1} + e^{\mathbf{S}_{ij}}.
+\end{aligned}
+$$
 
-After processing all keys and values, we divide $\frac{v_L}{\ell_L}$ to get the final result.
+After processing all keys and values, we divide $\frac{\mathbf{v}_L}{\ell_L}$ to get the final result.
 
 One can notice that such algorithm has the same numerical problem as the naive implementation of softmax: incremental computation of the sum of exponentiated scores (and values). The standard safe-softmax trick cannot be applied here as the maximum may depend on the last score in the sequence. The subtraction cannot be delayed either, since the scores must be exponentiated before they can be added to the cumulative sum.
 
 To resolve this problem, authors introduce an additional scalar $m$ as in online softmax, which keeps track of the maximum score that the incremental algorithm has seen so far, and they renormalize the sums of exponentiated values as needed: 
 
-- $m_j \leftarrow \max(m, \mathbf{S}_{ij})$,
-- $v_j \leftarrow v_{j-1} e^{m_{j-1}-m_j} + \mathbf{V}_j e^{\mathbf{S}_{ij} - m_j}$,
-- $\ell_j \leftarrow \ell_{j-1} + e^{m_{j-1}-m_j}.$
+$$
+\begin{aligned}
+m_j &\leftarrow \max(m, \mathbf{S}_{ij}), \\ 
+\mathbf{v}_j &\leftarrow \mathbf{v}_{j-1} e^{m_{j-1}-m_j} + \mathbf{V}_j e^{\mathbf{S}_{ij} - m_j}, \\
+\ell_j &\leftarrow \ell_{j-1} + e^{m_{j-1}-m_j}.
+\end{aligned}
+$$
 
 Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm. Notice that they use `jax.checkpoint` decorator in `summarize_chunk` function. The reason is that during forward pass this algorihtm saves memory by summarizing parts of the attention matrix sequentially, allowing it to forget the parts of the attention matrix it has summarized already. A naive application of differentiation would have to store all those intermediate results and algorithm would loose its memory advantage entirely. So authors propose to apply gradient checkpointing to the function that summarizes the individual chunks. The intermediate results can thus be forgotten during the forward pass and recomputed during backpropagation.
 
@@ -1754,7 +1761,6 @@ Standard attention forward pass looks like that:
 
 In the end FlashAttention alogithm returns $\mathbf{O} = \operatorname{softmax}(\mathbf{QK}^T)\mathbf{V}$ with $\mathcal{O}(L^2 d)$ FLOPs and requires $\mathcal{O}(L)$ additional memory beyond inputs and output. In terms of memory accesses, it requires $\mathcal{O}(L^2d^2M^{-1})$ HBM accesses, where $d \leq M \leq Ld$, compared to $\mathcal{O}(Ld + L^2)$ for standard attention.
 
-</style>
 <div id="flash_attn" class="svg-container" align="center"></div> 
 
 <script>
@@ -1980,7 +1986,6 @@ Even with Flash Attention, the memory complexity is linear in $L$ so scaling the
 		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. 
 		- *Simultaneously*, send $\mathbf{K}_{j}$ and $\mathbf{V}_{j}$ blocks to the next device and receive new blocks $\mathbf{K}_{(j-1) \bmod N}, \mathbf{V}_{(j-1) \bmod N}$ from the previous device.
 
-</style>
 <div id="ring_attn" class="svg-container" align="center"></div> 
 
 <script>
@@ -1993,6 +1998,7 @@ function text_id_2_(svg, text, x, y, size=14, text_id="fattn") {
 	  .attr('orig_x', x)
 	  .attr('orig_y', y)
 	  .text(text)
+	  .style("fill", "currentColor")
 	  .style("font-size", size + "px")
 	  .attr("font-family", "Arvo");
 }
@@ -2143,7 +2149,6 @@ Authors also shared implementation [code in JAX](https://github.com/forhaoliu/ri
 
 The problem of Ring Attention is that on all but the first iteration, the workload of some devices is entirely necessary (unmasked), while the workload of others is entirely unnecessary (masked) for the final output (and thus there is no need for them to be computed). The total latency is determined by the maximum latency of any participating device per iteration. As a result, regardless of per device optimizations, the latency per iteration would be the same as the time taken to compute a fully unmasked workload. As a result, Ring Attention will run as fast as a workload with no attention masking, despite in principle needing to compute only half the operations.
  
-</style>
 <div id="stripe_attn" class="svg-container" align="center"></div> 
 
 <script>
@@ -2216,7 +2221,6 @@ To address the above limitations, [Kwon et al., 2023](https://arxiv.org/pdf/2309
 
 The key idea is to represent KV cache as a series of *logical KV blocks*, filled from left to right as new tokens are generated, that can be divided into non-contiguous *physical KV blocks* in GPU memory, allocated by a *block engine*. The KV *block manager* maintains *block tables* — the mapping between logical and physical KV blocks of each request. Separating logical and physical KV blocks allows vLLM to dynamically grow the KV cache memory without reserving it for all positions in advance.
 
-</style>
 <div id="paged_attn" class="svg-container" align="center"></div> 
 
 <script>
