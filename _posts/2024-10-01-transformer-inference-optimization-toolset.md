@@ -27,7 +27,7 @@ Streaming multiprocessors access data and code from HBM via the **L2 cache**. It
 
 The GPUs can communicate to each other with a high bandwidth interconnect called **NVLink**, and they can talk to the outside world with a **PCIe bus** (a high-speed bus standard, common on motherboards to transfer data) or a special ethernet alternative called **Infiniband**. Usually, 8 GPUs are packed into a single node. Feel free to check out my post on [parallelization strategies](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/) to learn more on multi-device training.
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Arvo" rel="stylesheet">
 
 <style>
@@ -87,13 +87,13 @@ function rect(svg, x, y, w, h, color, opacity=1.0) {
 	  .attr('opacity', opacity);
 }
 
-function text_(svg, text, x, y, size=14) {
+function text_(svg, text, x, y, size=14, color="currentColor") {
 	svg.append('text')
 	  .attr('x', x)
 	  .attr('y', y)
 	  .text(text)
 	  .style("font-size", size + "px")
-	  .style("fill", "currentColor")
+	  .style("fill", color)
 	  .attr("font-family", "Arvo");
 }
 
@@ -168,25 +168,25 @@ function long_up_arrow(svg, x, y, length=50) {
 
 function system_dram_rect(svg, x, y) {
 	rect(svg, x, y, 120, 160, colors[3]);
-	text_(svg, "System", x + 36, y + 75);
-	text_(svg, "DRAM", x + 38, y + 95);
+	text_(svg, "System", x + 36, y + 75, 14, "black");
+	text_(svg, "DRAM", x + 38, y + 95, 14, "black");
 }
 
 function dram_rect(svg, x, y) {
 	rect(svg, x, y, 60, 50, colors[2]);
-	text_(svg, "Device", x + 8, y + 20);
-	text_(svg, "DRAM", x + 8, y + 40);
+	text_(svg, "Device", x + 8, y + 20, 14, "black");
+	text_(svg, "DRAM", x + 8, y + 40, 14, "black");
 }
 
 function l2_rect(svg, x, y) {
 	rect(svg, x, y, 35, 35, colors[1]);
-	text_(svg, "L2", x + 10, y + 22);
+	text_(svg, "L2", x + 10, y + 22, 14, "black");
 }
 
 function l1_rect(svg, x, y) {
 	rect(svg, x, y, 120, 30, 'none');
 	rect(svg, x + 10, y + 5, 70, 20, colors[0]);
-	text_(svg, "L1/SRAM", x + 13, y + 20);
+	text_(svg, "L1/SRAM", x + 13, y + 20, 14, "black");
 	text_(svg, "SM", x + 88, y + 20);
 }
 
@@ -1984,7 +1984,7 @@ Even with Flash Attention, the memory complexity is linear in $L$ so scaling the
 	- For each $i$-th device in parallel:
 		- Let $j = (\text{iter} + i) \bmod N$.
 		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. 
-		- *Simultaneously*, send $\mathbf{K}_{j}$ and $\mathbf{V}_{j}$ blocks to the next device and receive new blocks $\mathbf{K}_{(j-1) \bmod N}, \mathbf{V}_{(j-1) \bmod N}$ from the previous device.
+		- *Simultaneously*, send $\mathbf{K}_{j}, \mathbf{V}_{j}$ blocks to the next device and receive new $\mathbf{K}_{(j-1) \bmod N}, \mathbf{V}_{(j-1) \bmod N}$ blocks from the previous device.
 
 <div id="ring_attn" class="svg-container" align="center"></div> 
 
