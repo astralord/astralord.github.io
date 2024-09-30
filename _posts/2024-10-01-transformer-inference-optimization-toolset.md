@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Transformers Inference Optimization Toolset'
-date: 2024-10-01 00:00 +0800
+date: 2024-10-01 10:00 +0800
 categories: [Large Language Models, Engineering]
 tags: [jax, gpu, kv-cache, linear attention, cuda kernels, online softmax, flash attention, ring attention]
 math: true
@@ -15,7 +15,7 @@ published: true
 
 The idea of this post is not just to discuss transformer-specific optimizations, since there are plenty of resources, where one can examine every inch of transformer to make it faster (my favourite one is the ["Let's reproduce GPT-2" by Andrej Karpathy](https://www.youtube.com/watch?v=l8pRSuU81PU)). The main goal is to lower the entry barrier for those curious researchers who are currently unable to piece together the huge number of articles and papers into one picture.
 
-A lot of optimization techniques will be left out, e.g. quantization methods, which are relatively diverse and deserve a separate post. Also we mostly discuss transformer inference and won't mention some training tricks, such as mixed-precision training, gradient checkpointing or sequence packing. But even so a lot of optimizations from this post could be applied to training as well.
+A lot of optimization techniques will be left out, like for example quantization methods, which are relatively diverse and deserve a separate post. Also we'll mostly discuss transformer inference and won't mention some training tricks, such as mixed-precision training, gradient checkpointing or sequence packing. But even so a lot of optimizations from this post could be applied to training as well.
 
 ## GPU architecture overview
 
@@ -1448,7 +1448,7 @@ $$
 \end{aligned}
 $$
 
-assuming $\mathbf{U}_{0}$ and $\mathbf{Z}_{0}$ are both 0-valued. 
+assuming $\mathbf{U}_0, \mathbf{Z}_0$ are both 0-valued. 
 
 This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
 
@@ -1984,7 +1984,7 @@ Even with Flash Attention, the memory complexity is linear in $L$ so scaling the
 	- For each $i$-th device in parallel:
 		- Let $j = (\text{iter} + i) \bmod N$.
 		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. 
-		- *Simultaneously*, send $\mathbf{K}_{j}, \mathbf{V}_{j}$ blocks to the next device and receive new $\mathbf{K}_{(j-1) \bmod N}, \mathbf{V}_{(j-1) \bmod N}$ blocks from the previous device.
+		- *Simultaneously*, send $\mathbf{K}_{j}, \mathbf{V}_{j}$ blocks to the next device and receive new blocks from the previous device.
 
 <div id="ring_attn" class="svg-container" align="center"></div> 
 
