@@ -1,12 +1,12 @@
 ---
 layout: post
 title: 'Transformers Inference Optimization Toolset'
-date: 2024-10-01 11:00 +0800
-categories: [ML Engineering]
-tags: [jax, kv-cache, linear attention, cuda kernels, online softmax, flash attention]
+date: 2024-10-01 00:00 +0800
+categories: [Large Language Models, Engineering]
+tags: [jax, gpu, kv-cache, linear attention, cuda kernels, online softmax, flash attention, ring attention]
 math: true
 enable_d3: true
-published: false
+published: true
 ---
 
 > Large Language Models are pushing the boundaries of artificial intelligence, but their immense size poses significant computational challenges. As these models grow, so does the need for smart optimization techniques to keep them running efficiently on modern hardware.
@@ -877,7 +877,7 @@ which is definitely smaller than `ops:byte` ratio and we end up memory-bound. Al
 
 And that brings us to another drawback - the need to store KV cache requires a lot of HBM capacity, e.g. when we launch a decoding on a transformer with $n$ layers, we need to store $\mathcal{O}(Lnd)$ bytes of KV cache. Thus we either need to make sure that we have enough of memory to accommodate it or to load it from CPU DRAM, which is one or two orders of magnitude slower compared to reading from HBM.
 
-A real world example: remember we said earlier that A100 GPU has $80$ GB of HBM. Say, we work with GPT-3 model (I believe it can be considered *large* yet these days) with $n=96$ and $d=12,288$ and try to fit in the context of length $L=4096$. Then the space we need additionally is
+A real world example: take A100 GPU with $80$ GB of HBM. Say, we work with GPT-3 model (I believe it can be considered *large* yet these days) with $n=96$ and $d=12,288$ and try to fit in the context of length $L=4096$. Then the space we need additionally is
 
 $$\underset{\mathbf{K/V}}{2} \cdot \underset{\text{float16}}{2} \cdot \underset{\text{sequence length}}{4096} \cdot \underset{\text{number of layers}}{96} \cdot \underset{\text{embedding dimension}}{12,288} = \underset{\text{bytes}}{19,327,352,832}.$$
 
@@ -1463,7 +1463,7 @@ Authors of the original linear attention used $\phi(x) = \operatorname{ELU}(x)+1
 
 * **Dot-product monotonicity**: attention weights increase as the dot products of their corresponding queries and keys increase. Otherwise, the lack of this monotonicity can produce unstable gradients during training.
 
-They noticed that 2nd-degree Taylor approximation of exponential function $\phi_{\text{taylor}}(\mathbf{x}) = \big[1, x_1, \dots, x_d\big] \cup \big[x_i \cdot x_j \vert i, j \in [d] \big]$ for $d$-dimensional vector $\mathbf{x}$ retains both the spikiness and monotonic properties and this corresponds to (near)-matching softmax attention performance. Unfortunately, $\phi_{\text{taylor}}(\mathbf{x})$ maps to $\mathbb{R}^{1 + d + d^2}$ space, resulting in $\mathcal{O}(L d^3)$ attention complexity, which becomes costly with growing embedding dimension.
+They observed that 2nd-degree Taylor approximation of exponential function $\phi_{\text{taylor}}(\mathbf{x}) = \big[1, x_1, \dots, x_d\big] \cup \big[x_i \cdot x_j \vert i, j \in [d] \big]$ for $d$-dimensional vector $\mathbf{x}$ retains both the spikiness and monotonic properties and this corresponds to (near)-matching softmax attention performance. Unfortunately, $\phi_{\text{taylor}}(\mathbf{x})$ maps to $\mathbb{R}^{1 + d + d^2}$ space, resulting in $\mathcal{O}(L d^3)$ attention complexity, which becomes costly with growing embedding dimension.
 
 To solve this problem they propose **Hedgehog**[^HP], learnable linear layer with exponential activation function, trained to capture these properties and mimic softmax attention weights:
 
@@ -1478,11 +1478,11 @@ $$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{m
 
 ### CUDA kernel fusion
 
-We've noticed before that bandwidth cost (moving data from one place in memory to another) is usually the most substantial factor when we talk about performance. Let's step back a bit and take another detailed look at the GPU hardware to understand why this is the case.
+We've observed before that bandwidth cost (moving data from one place in memory to another) is usually the most substantial factor when we talk about performance. Let's step back a bit and take another detailed look at the GPU hardware to understand why this is the case.
 
 GPU is designed to perform thousands of simple operations in parallel, called **threads**. Each thread has its own (the fastest on GPU) memory, called **register**. Threads which run on the same SM can be grouped into **thread blocks** to be executed at the same time (the number of maximum threads in a block is limited by the architecture, usually it's 1024). Threads within a thread block can load data from global memory (HBM) into shared memory (SRAM), which is used for communication between threads, perform computations, and write results back to global memory.
 
-When SM is given one or more thread blocks to execute, it partitions them into **warps**. A warp is a set of 32 threads each, such that all the threads in a warp execute the same instruction. Finally, multiple thread blocks are combined to form a **grid**. All the blocks in the same grid contain the same number of threads. Since the number of threads in a block is limited, grids can be used for computations that require a large number of thread blocks to operate in parallel.
+When SM is given one or more thread blocks to execute, it partitions them into **warps**. A warp is a set of 32 threads, such that all the threads in a warp execute the same instruction. Finally, multiple thread blocks are combined to form a **grid**. All the blocks in the same grid contain the same number of threads. Since the number of threads in a block is limited, grids can be used for computations that require a large number of thread blocks to operate in parallel.
 
 The computations are defined in **kernels**, small C++ functions, which supposed to be executed multiple times in parallel by different threads (as opposed to only once like regular C++ functions). A kernel is launched as a grid and different kernels can have different grid and block configurations.
 
@@ -1498,7 +1498,7 @@ Let's take $\mathbf{P}=\operatorname{softmax}(\mathbf{S}) \in \mathbb{R}^{L \tim
 
 In total we need to move back and forth $5L^2+L$ floats. It would be much faster if we could just read $L^2$ floats of $\mathbf{S}$ and write $L^2$ floats of $\mathbf{P}$, making this operation more than 2.5× faster.
 
-That's where **kernel fusion** comes into play: instead of writing computation output $y=f(x)$ to low-bandwidth global memory only to read it again to get $z=g(y)$, we can implement kernel which performs multiple computations at once $z=(g \circ f)(x)$ without extra memory accesses. XLA compiler in Jax can perform simple fusions, but a programmer can also write custom CUDA kernels, e.g. with [Triton](https://triton-lang.org/main/index.html) or [Pallas](https://jax.readthedocs.io/en/latest/pallas/design.html).
+That's where **kernel fusion** comes into play: instead of writing computation output $y=f(x)$ to low-bandwidth global memory only to read it again to get $z=g(y)$, we can implement kernel which performs multiple computations at once $z=(g \circ f)(x)$ without extra memory accesses. XLA compiler in Jax can perform simple fusions, but a programmer can also write custom CUDA kernels with [Triton](https://triton-lang.org/main/index.html) or [Pallas](https://jax.readthedocs.io/en/latest/pallas/design.html).
 
 ### Memory-efficient attention
 
@@ -2138,15 +2138,15 @@ function stripe_attn() {
 	const x_start = 10, y_start = 25;
 	const shift = 14, rct_sz = 12;
 	
-	text_(svg, "Attention scores (Ring)", x_start + 40, y_start - 12);
-	text_(svg, "Attention scores (Stripe)", x_start + 385, y_start - 12);
+	text_(svg, "Ring Attention scores", x_start + 55, y_start - 12, 11);
+	text_(svg, "Stripe Attention scores", x_start + 400, y_start - 12, 11);
 	
 	function ring_causal(iter, x_st, y_st) {
 		causal_mask(svg, x_st, y_st, 16, 16, shift, rct_sz, matrix_colors[7], 16, 0, 1);
 		
 		for (var i = 0; i < 4; i += 1) {
 			var k = (i + iter) % 4;
-			vector_rect(svg, x_st + 4 * shift * k, y_st + 4 * shift * i, 4, 4, shift, rct_sz, colors[i], 0.3);
+			vector_rect(svg, x_st + 4 * shift * k, y_st + 4 * shift * i, 4, 4, shift, rct_sz, colors[i], 0.5);
 		}	
 	}
 	
@@ -2156,7 +2156,7 @@ function stripe_attn() {
 		for (var j = 0; j < 4; j += 1) {
 			for (var i = 0; i < 16; i += 1) {
 				var k = (i + 4 * j + iter) % 16;
-				rect(svg, x_st + shift * k, y_st + shift * i, rct_sz, rct_sz, colors[i % 4], 0.3);
+				rect(svg, x_st + shift * k, y_st + shift * i, rct_sz, rct_sz, colors[i % 4], 0.5);
 			}
 		}
 	}
@@ -2188,17 +2188,185 @@ Rather than partitioning the tokens into contiguous blocks like in Ring Attentio
 
 Another recent improvement, called **Tree Attention** ([Shyam et al. 2024](https://arxiv.org/pdf/2408.04093)), leveraged tree-reduction topology to reduce communication costs for decoding across multiple GPUs and achieved *asymptotically* 8× speedup compared to Ring Attention.
 
-### vLLM
+### PagedAttention / vLLM
 
-| |  Architecture <br> GPU  | Turing <br> T4 | Volta <br> V100 | Ampere  <br> A100 | Hopper <br> H100 | Blackwell <br> B100
-| -------- | -------- | ------- | ------- | ------- | ------- | ------- |
-| | Compute Performance (FP16/BF16) | 65 TFLOPs | 125 TFLOPs | 312 TFLOPs | 1 PFLOPs | 1.8 PFLOPs
-| L1 Cache | Size per SM <br> Number of SM units  <br> Bandwidth | 64KB <br> 40| 128KB <br> 80 <br> | 192KB <br> 108 <br> 18TB/s | 256KB <br> 132 <br> 33TB/s | . <br> 160 <br> .| 
-| L2 Cache | Size <br> Bandwidth | 4MB <br> 1.3TB/s | 6MB <br> 2.1TB/s | 40MB <br> 7TB/s  |  50MB <br> 12TB/s (5TB/s??)  | TBD <br> TBD
-| HBM | Size <br> Bandwidth | 16GB <br> 300GB/s | 32GB <br> 900GB/s | 80GB <br> 1.6TB/s | 80GB <br> 3TB/s| 192GB <br> 8TB/s
-| Communication | PCIe <br> NVLink | 32GB/s <br> - | 32GB/s <br> 300GB/s | 64GB/s <br> 600GB/s | 128GB/s <br> 900GB/s | - <br> 1.8TB/s
+KV cache takes up a significant amount of memory. In a straightforward implementation we can store the KV cache of a request in contiguous memory space like all the other tensors. However, unlike the tensors in the traditional deep learning workloads, KV cache dynamically grows and shrinks over time as the model generates new tokens, and its lifetime and length are not known a priori.
+
+To store the KV cache of a request in contiguous space, we have to pre-allocate a contiguous chunk of memory with the request's maximum length, while the request's actual length can be much shorter. Another memory inefficiency can be observed when we use advanced decoding techniques such as beam search or parallel sampling to generate multiple outputs per request. In these scenarios, the request consists of multiple sequences that can partially share their KV cache. However, memory sharing is not possible when KV cache is stored in separate contiguous spaces.
+
+To address the above limitations, [Kwon et al., 2023](https://arxiv.org/pdf/2309.06180) propose **PagedAttention**, an algorithm inspired by the OS solution to memory fragmentation and sharing: *virtual memory with paging*. PagedAttention divides the request's KV cache into blocks, each of which can contain the attention keys and values of a fixed number of tokens. In PagedAttention, the blocks for the KV cache are not necessarily stored in contiguous space and we can manage the KV cache in a more flexible way. 
+
+The key idea is to represent KV cache as a series of *logical KV blocks*, filled from left to right as new tokens are generated, that can be divided into non-contiguous *physical KV blocks* in GPU memory, allocated by a *block engine*. The KV *block manager* maintains *block tables* — the mapping between logical and physical KV blocks of each request. Separating logical and physical KV blocks allows vLLM to dynamically grow the KV cache memory without reserving it for all positions in advance.
+
+</style>
+<div id="paged_attn" class="svg-container" align="center"></div> 
+
+<script>
+
+function block(svg, x, y, w, h, color, opacity=1.0) {
+	svg.append('rect')
+	  .attr('x', x)
+	  .attr('y', y)
+	  .attr('width', w)
+	  .attr('height', h)
+	  .attr('stroke', 'black')
+	  .attr('stroke-width', 1)
+	  .attr("rx", 0)
+	  .attr('fill', color)
+	  .attr('opacity', opacity);
+}
+
+function vector_block(svg, x, y, w, h, shift_w, shift_h, rct_sz_w, rct_sz_h, color, opacity=1.0) {
+	for (var i = 0; i < w; i += 1) {
+		for (var j = 0; j < h; j += 1) {
+			block(svg,
+				x + i * shift_w, 
+				y + j * shift_h, 
+				rct_sz_w, 
+				rct_sz_h, 
+				color,
+				opacity);
+		}
+	}
+}
+
+function paged_attn() {
+	var svg = d3.select("#paged_attn")
+				  .append("svg")
+				  .attr("width", 525)
+				  .attr("height", 300);
+	const x_start = 0, y_start = 25;
+	const shift_w = 45, shift_h = 24;
+	const rct_sz_w = 43, rct_sz_h = 22;
+	
+	const a_text = ["Four", "score", "and", "seven", 
+	                "years", "ago", "our", "fathers",
+	                "brought"];
+	const b_text = ["It", "was", "the", "best", "of", "times"];
+	
+	function block_text() {
+		text_(svg, "Logical KV blocks", x_start + 95, y_start - 15, 11);
+		for (var i = 0; i < 3; i += 1) {
+			text_(svg, "Block " + i, x_start, y_start + 15 + i * shift_h, 11);
+		}
+		text_(svg, "Request A", x_start + 115, y_start + 4 * shift_h - 10, 10);
+		
+		for (var i = 0; i < 3; i += 1) {
+			text_(svg, "Block " + i, x_start, y_start + 15 + (i + 5) * shift_h, 11);
+		}
+		text_(svg, "Request B", x_start + 115, y_start + 9 * shift_h - 10, 10);
+		text_(svg, "Physical KV blocks", x_start + 365, y_start - 15, 11);
+		for (var i = 0; i < 9; i += 1) {
+			text_(svg, "Block " + i, x_start + 275, y_start + 15 + i * shift_h, 11);
+		}
+	}
+	
+	block_text();
+	
+	function generate(token) {
+		svg.selectAll('rect').remove();
+		d3.selectAll("#vllm").remove();
+		
+		var x_ph = x_start + 50;
+		vector_block(svg, x_ph, y_start, 4, 3, shift_w, shift_h, rct_sz_w, rct_sz_h, 'none', 0.5);	
+		
+		vector_block(svg, x_ph, y_start + 5 * shift_h, 4, 3, shift_w, shift_h, rct_sz_w, rct_sz_h, 'none', 0.5);	
+		x_ph = x_start + 325;
+		vector_block(svg, x_ph, y_start, 4, 9, shift_w, shift_h, rct_sz_w, rct_sz_h, 'none', 0.5);	
+		
+		if (token < 4) {
+			vector_block(svg, x_ph, y_start + 7 * shift_h, token, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+			vector_block(svg, x_ph - 275, y_start, token, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+			for (var i = 0; i < token; i += 1) {
+				text_id_(svg, a_text[i], x_ph - 273 + i * shift_w, y_start + 15, 1, 10, "vllm");
+				text_id_(svg, a_text[i], x_ph + 2 + i * shift_w, y_start + 7 * shift_h + 15, 1, 10, "vllm");
+			}
+		}
+		else {
+			vector_block(svg, x_ph, y_start + 7 * shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+			vector_block(svg, x_ph - 275, y_start, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+			for (var i = 0; i < 4; i += 1) {
+				text_id_(svg, a_text[i], x_ph - 273 + i * shift_w, y_start + 15, 1, 10, "vllm");
+				text_id_(svg, a_text[i], x_ph + 2 + i * shift_w, y_start + 7 * shift_h + 15, 1, 10, "vllm");
+			}
+			if (token <= 8) {
+				vector_block(svg, x_ph, y_start + shift_h, token - 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+				vector_block(svg, x_ph - 275, y_start + shift_h, token - 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+				for (var i = 4; i < token; i += 1) {
+					text_id_(svg, a_text[i], x_ph - 273 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
+					text_id_(svg, a_text[i], x_ph + 2 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
+				}
+			}
+			else {
+				vector_block(svg, x_ph, y_start + shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+				vector_block(svg, x_ph - 275, y_start + shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+				for (var i = 4; i < 8; i += 1) {
+					text_id_(svg, a_text[i], x_ph - 273 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
+					text_id_(svg, a_text[i], x_ph + 2 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
+				}
+				vector_block(svg, x_ph - 275, y_start + 2 * shift_h, token - 8, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+				vector_block(svg, x_ph, y_start + 3 * shift_h, token - 8, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
+				text_id_(svg, a_text[i], x_ph + 2, y_start + 3 * shift_h + 15, 1, 10, "vllm");
+				text_id_(svg, a_text[i], x_ph - 273, y_start + 2 * shift_h + 15, 1, 10, "vllm");
+			}
+		}
+		
+		if (token > 3) {
+			if (token < 7) {
+				vector_block(svg, x_ph - 275, y_start + 5 * shift_h, token - 3, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
+				vector_block(svg, x_ph, y_start + 5 * shift_h, token - 3, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
+				for (var i = 0; i < token - 3; i += 1) {
+					text_id_(svg, b_text[i], x_ph - 273 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
+					text_id_(svg, b_text[i], x_ph + 2 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
+				}
+			}
+			else {
+				vector_block(svg, x_ph - 275, y_start + 5 * shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
+				vector_block(svg, x_ph, y_start + 5 * shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
+				for (var i = 0; i < 4; i += 1) {
+					text_id_(svg, b_text[i], x_ph - 273 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
+					text_id_(svg, b_text[i], x_ph + 2 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
+				}
+				
+				vector_block(svg, x_ph - 275, y_start + 6 * shift_h, token - 7, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
+				vector_block(svg, x_ph, y_start + 2 * shift_h, token - 7, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
+				for (var i = 4; i < token - 3; i += 1) {
+					text_id_(svg, b_text[i], x_ph - 273 + (i - 4) * shift_w, y_start + 6 * shift_h + 15, 1, 10, "vllm");
+					text_id_(svg, b_text[i], x_ph + 2 + (i - 4) * shift_w, y_start + 2 * shift_h + 15, 1, 10, "vllm");
+				}
+			}
+		}
+	}
+	
+	generate(1);
+	
+	var l_x = d3.scaleLinear()
+	    .domain([1, 9])
+	    .range([0, 415])
+	    .clamp(true);
+	    
+	createSlider(svg, generate, l_x, x_start + 85, 280, "Tokens", "currentColor", 0, roundN, 9, 30, text_size=11);
+}
+
+paged_attn();
+</script>
+
 ![](.)
-*A sample of specifications for modern NVIDIA architectures. Numbers can vary depending on device modifications*
+*Storing the KV cache of two requests with PagedAttention. The logical blocks of the two sequences are mapped to different physical blocks within the space reserved by the block engine in GPU workers. Block manager maps the first three logical blocks to 7, 1 and 3 physical blocks for request A and first two blocks to 5 and 2 for request B.*
+
+In parallel sampling multiple responses share the same input prompt, allowing the KV cache of the prompt to be shared as well. Thus the logical blocks for the prompts of all sequences are mapped to the same physical block, which stores a *reference count*. At the generation phase the first physical block which contains the response is replicated with reduced reference count and sampling continues with separate blocks. By sharing physical KV blocks across multiple samples, memory usage can be greatly reduced, especially for long input prompts.
+
+Beam search decoding with PagedAttention is more advanced, since also blocks across diferent candidates can be shared and the sharing pattern changes dynamically as the decoding process progresses. As candidates no longer among top, their logical blocks are freed and the reference counts of corresponding physical blocks are reduced.
+
+Additionaly to the algorithm authors released [**vLLM**](https://github.com/vllm-project/vllm), a high-throughput distributed LLM serving engine on top of PagedAttention. Their evaluations on various models and workloads show that vLLM improves the LLM serving throughput by 2-4× compared to the other existing serving systems, without affecting the model accuracy.
+
+## Conclusion
+
+This essay has covered a wide range of transformer inference optimization techniques, from high-level algorithmic improvements like KV caching and MQA/GQA, to low-level hardware optimizations such as CUDA kernel fusion and vLLM. The key takeaway is clear: LLMs are resource-intensive beasts, and taming them requires a diverse toolkit.
+
+We've seen that successful ML engineering isn't just about understanding algorithms or hardware - it's about grasping how they work together. An algorithmic breakthrough might fall flat without the right hardware implementation, while a deep dive into GPU architecture could unlock unexpected performance gains.
+
+For ML engineers, the message is simple: stay curious and be ready to learn across the entire stack. The most effective optimizations often come from connecting the dots between different areas of expertise. As LLMs continue to grow and evolve, so too will the tricks we use to run them efficiently.
 
 ---
 [^GTL]: Full names given to GPU architectures are: **T**uring, **V**olta, **A**mpere, **H**opper, **B**lackwell.
