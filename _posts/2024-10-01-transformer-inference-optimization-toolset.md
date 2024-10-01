@@ -1824,8 +1824,8 @@ function draw_fa_stage2_text(svg, x_start, y_start, rct_sz, shift, opacity) {
 }
 
 function draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift) {
-	text_(svg, "SRAM", x_start + 363, y_start - 32, size=11, "black");
-	text_(svg, "HBM", x_start + 416, y_start - 32, size=11, "black");
+	text_(svg, "SRAM", x_start + 363, y_start - 32, size=11);
+	text_(svg, "HBM", x_start + 416, y_start - 32, size=11);
 
 	text_(svg, "Q", x_start + 7, y_start + 2 * shift);
 	text_(svg, "1", x_start + 18, y_start + 2 * shift + 3, size=8);
@@ -1911,6 +1911,8 @@ function flash_attn() {
 		
 		opacity = (stage == 2) ? 1 : shade;
 		draw_fa_stage2_text(svg, x_start, y_start, rct_sz, shift, opacity);
+		
+		draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift);
 	}
 
 	var l_x = d3.scaleLinear()
@@ -1921,7 +1923,6 @@ function flash_attn() {
 	createSlider(svg, draw_flash_attn_cells, l_x, x_start + 50, 185, "i", "currentColor", 1, roundN, 1);
 	
 	draw_flash_attn_cells(1);
-	draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift);
 }
 
 flash_attn();
@@ -1984,7 +1985,9 @@ Even with Flash Attention, the memory complexity is linear in $L$ so scaling the
 	- For each $i$-th device in parallel:
 		- Let $j = (\text{iter} + i) \bmod N$.
 		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. 
-		- *Simultaneously*, send $\mathbf{K}_{j}, \mathbf{V}_{j}$ blocks to the next device and receive new blocks from the previous device.
+		- *Simultaneously*, send $\mathbf{K}_j, \mathbf{V}_j$ blocks to the next device and receive new blocks from the previous device.
+
+		
 
 <div id="ring_attn" class="svg-container" align="center"></div> 
 
