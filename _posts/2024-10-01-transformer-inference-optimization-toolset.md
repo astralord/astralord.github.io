@@ -743,7 +743,7 @@ arithmetic_intensity();
 
 We've noticed already that modern GPU hardware has the computational capacity orders of magnitude higher than the memory bandwidth. As the graph shows, for sufficiently large sequence length the arithmetic intensity is always larger than embedding dimension per attention head $\frac{d}{h}$, which is usually one or few hundreds.[^AIL] Hence, the arithmetic intensity is equal if not greater than `ops:byte` ratio.
 
-Generally, this would imply high algorithm efficiency, but the situation is different for the second phase, text generation. First thing to notice here is that in generation scenario there is no need to compute attention outputs for each token in the input sequence $x$, we only need the output of the last one $\mathbf{O}_L$ to decode the next token $x_{L+1}$. 
+Generally, this would imply high algorithm efficiency, but the situation is different for the second phase, text generation. First thing to notice here is that in generation scenario there is no need to compute the attention outputs for each token in the input sequence $x$, only for the last one to decode the next token $x_{L+1}$. Thus there is no need to send the whole query $\mathbf{Q}$ vector into attention mechanism.
 
 The second important thing is that we can reuse previously computed activations, namely we can cache $\mathbf{K}$ and $\mathbf{V}$ values during generation process, hence the naming. We store the **KV cache** to improve efficiency and reduce redundant computational requirements, especially for long sequences.
 
