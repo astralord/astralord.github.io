@@ -1911,8 +1911,6 @@ function flash_attn() {
 		
 		opacity = (stage == 2) ? 1 : shade;
 		draw_fa_stage2_text(svg, x_start, y_start, rct_sz, shift, opacity);
-		
-		draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift);
 	}
 
 	var l_x = d3.scaleLinear()
@@ -1923,6 +1921,7 @@ function flash_attn() {
 	createSlider(svg, draw_flash_attn_cells, l_x, x_start + 50, 185, "i", "currentColor", 1, roundN, 1);
 	
 	draw_flash_attn_cells(1);
+	draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift);
 }
 
 flash_attn();
