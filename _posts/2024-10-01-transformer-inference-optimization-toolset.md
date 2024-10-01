@@ -1824,8 +1824,8 @@ function draw_fa_stage2_text(svg, x_start, y_start, rct_sz, shift, opacity) {
 }
 
 function draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift) {
-	text_(svg, "SRAM", x_start + 363, y_start - 32, size=11);
-	text_(svg, "HBM", x_start + 416, y_start - 32, size=11);
+	text_(svg, "SRAM", x_start + 363, y_start - 32, size=11, "black");
+	text_(svg, "HBM", x_start + 416, y_start - 32, size=11, "black");
 
 	text_(svg, "Q", x_start + 7, y_start + 2 * shift);
 	text_(svg, "1", x_start + 18, y_start + 2 * shift + 3, size=8);
