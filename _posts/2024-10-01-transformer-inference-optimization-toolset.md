@@ -438,7 +438,7 @@ Now we are ready to delve into the specifics of transformer optimization. We've 
 
 $$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d}}  \Big) \cdot \mathbf{V}, $$
 
-where $d$ is a hidden dimensionality for queries and keys. When we work with GPT-based models, we use **masked attention** where $\operatorname{softmax}$ input is multiplied with $\text{mask}$ tensor, setting masked attention values to $-\infty$ if we don't want to attend to corresponding tokens. Input tensors are $\mathbf{Q} \in \mathbb{R}^{L \times d}$ and $\mathbf{K}, \mathbf{V} \in \mathbb{R}^{M \times d}$, where $L$ and $M$ are sequence lengths[^VD].
+where $d$ is a hidden dimensionality for queries and keys. When we work with GPT-based models, we use **masked attention** where $\operatorname{softmax}$ input is modified with $\text{mask}$ tensor, setting masked attention values to $-\infty$ if we don't want to attend to corresponding tokens. Input tensors are $\mathbf{Q} \in \mathbb{R}^{L \times d}$ and $\mathbf{K}, \mathbf{V} \in \mathbb{R}^{M \times d}$, where $L$ and $M$ are sequence lengths[^VD].
 
 Also let's recap **multi-head attention layer (MHA)** definition:
  
@@ -1438,7 +1438,7 @@ linear_attention();
 </script>
 
 ![](.)
-*Neither prefill nor decoding phase with linear attention do not require $\mathcal{O}(L^2)$ space anymore. Scalar denominator $\phi(\mathbf{Q}_L)^T \cdot \mathbf{Z}_L$ is omitted here.*
+*Neither prefill nor decoding phase with linear attention require $\mathcal{O}(L^2)$ space anymore. Scalar denominator $\phi(\mathbf{Q}_L)^T \cdot \mathbf{Z}_L$ is omitted here.*
 
 Another interesting property emerges with introduction of feature maps: linear attention computation can be expressed recurrently. Note that we have
 
