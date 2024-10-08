@@ -19,7 +19,7 @@ A lot of optimization techniques will be left out, like for example quantization
 
 ## GPU architecture overview
 
-To tackle language model speedup problem, first we need to understand the concept of the hardware we work on. While Google's TPUs and Apple silicon chips are rising up, NVIDIA's **GPUs** stil dominate the market, so they'll be the subject of our in-depth look. 
+To tackle language model speedup problem, first we need to understand the concept of the hardware we work on. While Google's TPUs and Apple silicon chips are rising up, NVIDIA's **GPUs** still dominate the market, so they'll be the subject of our in-depth look. 
 
 Graphic processor unit performs all of the computations by multiple **streaming multiprocessors (SM)** (these are similar to the cores in the CPU). SM is basic GPU building block: it has its own instruction schedulers and various instruction execution pipelines. Modern GPUs are also equipped with special off-chip memory called **high bandwidth memory (HBM)**, where data is initially stored and ultimately written back. Unlike to the system **dynamic random access memory (DRAM)**, which is controlled by CPU and typically optimized for low latency access, HBM is physically bonded to the GPUs in stacked layers with thousands of pins and provides massively parallel data throughput by design. 
 
@@ -1099,7 +1099,7 @@ def gqa_dot_product_attention(query, key, value, mask=None):
     return dot_product_attention(query, key, value, mask)
 ```
 
-Below is a comparison table with batched decoding/inference algorithms complexities for input $x \in \mathbb{R}^{B \times d \times L}$ and large context size $L$. Note, that the computation complexity is the same for all algorithms in the table! However, the real effectiveness can vary greatly depending on the setting.
+Below is a comparison table with batched decoding/inference algorithms complexities for input $x \in \mathbb{R}^{B \times L \times d}$ and large context size $L$. Note, that the computation complexity is the same for all algorithms in the table! However, the real effectiveness can vary greatly depending on the setting.
 
 |    | Vanilla Attention | Attention with KV Cache | GQA with KV Cache |
 | -------- | ------- | ------- | ------- |
@@ -1941,7 +1941,7 @@ only recomputes the attention matrix and does not recompute the temporary output
 
 #### FlashAttention + Parallelism
 
-FlashAttention significantly speeds up attention computation also reduces memory usage from quadratic to linear in sequence length. While it works for most cases, it's not optimized for the case of long sequences with small batch size and/or small number of attention heads, due to insufficient parallelism.
+FlashAttention significantly speeds up attention computation and reduces memory usage from quadratic to linear in sequence length. While it works for most cases, it's not optimized for the case of long sequences with small batch size and/or small number of attention heads, due to insufficient parallelism.
 
 The first version of FlashAttention kernel uses one thread block per one attention head leading to overall $Bh$ thread blocks ($B$ is batch size, $h$ is number of attention heads). Each thread block is scheduled to run on a SM, and such scheduling is only efficient when $Bh$ is as large as number of SMs (e.g. 108 SMs for A100 GPU) for all of the compute resources to be used effectively. If one trains LLM with [modern parallelism techniques](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/) batch size is reduced by a factor of DP and number of heads is reduced by a factor of TP.
 
@@ -1951,7 +1951,7 @@ In the backward pass each thread block now takes care of a segment of columns of
 
 #### FlashAttention-2
 
-A new version of FlashAttention ([Tri Dao, 2023](https://arxiv.org/pdf/2307.08691)) included parallelization across different thread blocks to increase occupancy for long-sequences. Besides that two numbers were reduced:
+A new version of FlashAttention ([Tri Dao, 2023](https://arxiv.org/pdf/2307.08691)) included parallelization across different thread blocks to increase occupancy for long sequences. Besides that two numbers were reduced:
 
 - the number of non-matmul FLOPs,
 - the number of communication through SRAM.
