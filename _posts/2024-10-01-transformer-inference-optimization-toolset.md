@@ -554,8 +554,19 @@ function draw_sampling_text(svg, x_start, y_start, rct_sz, shift) {
 	text_(svg, "T", x_start + 9 * rct_sz + 10, 12, size=8);
 	text_(svg, "S", x_start + 9 * rct_sz, 230);
 	text_(svg, "mask", x_start + 23 * rct_sz, 60);
+		
+   	svg.append('g')
+   		.selectAll("dot")
+   		.data([{x: x_start + shift * 14.25, y: y_start + shift * 7.85}])
+   		.enter()
+   		.append("circle")
+   			.attr("cx", function (d) { return d.x; } )
+   			.attr("cy", function (d) { return d.y; } )
+   			.attr("r", 3)
+   			.style("fill", "none")
+   			.attr("stroke", "black")
+   			.attr("stroke-width", 1);
 	
-	text_(svg, "○", x_start + shift * 13.8, y_start + shift * 8.5, size=16);
 	text_(svg, "V", x_start + 30 * shift + 8, y_start + 2 * shift);
 	text_(svg, "O", x_start + 35 * shift + 8, y_start + 2 * shift);
 	text_(svg, "(", x_start - 15, y_start + 8.5 * shift, size=30);
