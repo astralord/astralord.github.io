@@ -557,7 +557,7 @@ function draw_sampling_text(svg, x_start, y_start, rct_sz, shift) {
 		
    	svg.append('g')
    		.selectAll("dot")
-   		.data([{x: x_start + shift * 14.25, y: y_start + shift * 7.85}])
+   		.data([{x: x_start + shift * 14.4, y: y_start + shift * 7.85}])
    		.enter()
    		.append("circle")
    			.attr("cx", function (d) { return d.x; } )
