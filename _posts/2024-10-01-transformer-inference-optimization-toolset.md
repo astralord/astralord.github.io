@@ -555,7 +555,7 @@ function draw_sampling_text(svg, x_start, y_start, rct_sz, shift) {
 	text_(svg, "S", x_start + 9 * rct_sz, 230);
 	text_(svg, "mask", x_start + 23 * rct_sz, 60);
 	
-	text_(svg, "∘", x_start + shift * 13.9, y_start + shift * 8.25, size=40);
+	text_(svg, "∘", x_start + shift * 13.9, y_start + shift * 8.5, size=30);
 	text_(svg, "V", x_start + 30 * shift + 8, y_start + 2 * shift);
 	text_(svg, "O", x_start + 35 * shift + 8, y_start + 2 * shift);
 	text_(svg, "(", x_start - 15, y_start + 8.5 * shift, size=30);
