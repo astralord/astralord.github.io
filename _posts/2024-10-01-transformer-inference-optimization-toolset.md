@@ -450,7 +450,7 @@ $$\operatorname{head}_i = \operatorname{Attention}(\mathbf{QW}_i^Q, \mathbf{KW}_
 
 with learnable parameters $\mathbf{W}^Q_{1 \dots h}, \mathbf{W}^K_{1 \dots h}, \mathbf{W}^V_{1 \dots h}$ and $\mathbf{W}^O$. If MHA receives $\mathbf{Q} = \mathbf{K}$ (and normally $ = \mathbf{V}$), we call it **multi-head self-attention**, otherwise it is called **multi-head cross-attention**. We'll focus on self-attention mechanism as it's widely used in generative LLMs.
 
-We'll focus on the core attention mechanism. Let's introduce new tensor names to simplify the notation: let's call dot product $\mathbf{S} := \mathbf{QK}^T \in \mathbb{R}^{L \times L}$, normalized attention weights $\mathbf{P} := \operatorname{softmax}(\mathbf{S} \otimes \text{mask}) \in \mathbb{R}^{L \times L}$ ($\text{mask}$ is broadcastable to $\mathbf{S}$) and output $\mathbf{O} := \mathbf{PV} \in \mathbb{R}^{L \times d}$.
+Let's introduce new tensor names to simplify the notation: we'll call dot product $\mathbf{S} := \mathbf{QK}^T \in \mathbb{R}^{L \times L}$, normalized attention weights $\mathbf{P} := \operatorname{softmax}(\mathbf{S} \circ \text{mask}) \in \mathbb{R}^{L \times L}$ ($\text{mask}$ is broadcastable to $\mathbf{S}$) and output $\mathbf{O} := \mathbf{PV} \in \mathbb{R}^{L \times d}$.
 
 ### KV Cache
 
@@ -555,7 +555,7 @@ function draw_sampling_text(svg, x_start, y_start, rct_sz, shift) {
 	text_(svg, "S", x_start + 9 * rct_sz, 230);
 	text_(svg, "mask", x_start + 23 * rct_sz, 60);
 	
-	text_(svg, "⊗", x_start + shift * 14, y_start + shift * 8.25, size=18);
+	text_(svg, "∘", x_start + shift * 13.9, y_start + shift * 8.25, size=40);
 	text_(svg, "V", x_start + 30 * shift + 8, y_start + 2 * shift);
 	text_(svg, "O", x_start + 35 * shift + 8, y_start + 2 * shift);
 	text_(svg, "(", x_start - 15, y_start + 8.5 * shift, size=30);
@@ -1212,7 +1212,7 @@ prefill_with_chunking();
 </script>
 
 ![](.)
-*Prefill with chunking with $C = 4$ and $L = 10$.*
+*Prefill with chunking with $C = 4$ and prompt length $10$.*
 
 With chunking the maximum size of $\mathbf{S}$ depends linearly on $L$ multiplied by controllable constant coefficient $C$. 
 
@@ -1336,7 +1336,7 @@ text_generation_w_rolling_kv_cache();
 </script>
 
 ![](.)
-*Decoding with sliding window attention, $L_w=4$, $L=10$.*
+*Decoding with sliding window attention with $L_w=4$.*
 
 Another advantage of sliding window attention is that combining it with chunking during prefill phase does not only keep maximum size of attention matrix constant ($\mathbf{S} \in \mathbb{R}^{C \times L_w}$), but also reduces the number of dot-products to compute it.
 
@@ -1353,7 +1353,7 @@ $$\mathcal{K}(q, k) = \phi(q)^T \phi(k).$$
 
 If we find such feature map, it would allow us to implicitly compute similarities between queries and keys without explicitly computing the full attention matrix $\mathbf{QK^T}$.
 
-In attention mechanism unnormalized similarity between query embedding $\mathbf{q}$ and key embedding $\mathbf{k}$ is measured as $\mathcal{K}(\mathbf{q}, \mathbf{k}) = \exp \big( \frac{\mathbf{q}^T\mathbf{k}}{\sqrt{d}} \big)$. Each element of softmax masked attention matrix $\mathbf{P} = \operatorname{softmax}(\operatorname{mask} \otimes \mathbf{S})$, the normalized similarity between query row $\mathbf{Q}_i$ and key row $\mathbf{K}_j$ ($j \leq i$), can be represented as
+In attention mechanism unnormalized similarity between query embedding $\mathbf{q}$ and key embedding $\mathbf{k}$ is measured as $\mathcal{K}(\mathbf{q}, \mathbf{k}) = \exp \big( \frac{\mathbf{q}^T\mathbf{k}}{\sqrt{d}} \big)$. Each element of softmax masked attention matrix $\mathbf{P} = \operatorname{softmax}(\mathbf{S} \circ \operatorname{mask})$, the normalized similarity between query row $\mathbf{Q}_i$ and key row $\mathbf{K}_j$ ($j \leq i$), can be represented as
 
 $$\mathbf{P}_{ij}=\frac{\mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)}{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)}.$$
 
@@ -1474,7 +1474,7 @@ $$\phi_\text{mlp}(\mathbf{x}) = \exp (\mathbf{xW}).$$
 
 To learn a softmax approximation, they train $\phi_\text{mlp}(\mathbf{x})$ to minimize the cross-entropy loss between the computed linear attention weights and those that would have been computed via softmax masked attention $\mathbf{P}$:
 
-$$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_j)}{\sum_{j \leq i} \phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_j)}.$$
+$$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_j)}{\sum_{k \leq i} \phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_k)}.$$
 
 
 ## Low-level hardware optimizations
