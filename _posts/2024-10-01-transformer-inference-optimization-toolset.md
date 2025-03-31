@@ -564,7 +564,7 @@ function draw_sampling_text(svg, x_start, y_start, rct_sz, shift) {
    			.attr("cy", function (d) { return d.y; } )
    			.attr("r", 3)
    			.style("fill", "none")
-   			.attr("stroke", "black")
+   			.attr("stroke", "currentColor")
    			.attr("stroke-width", 1);
 	
 	text_(svg, "V", x_start + 30 * shift + 8, y_start + 2 * shift);
@@ -750,7 +750,7 @@ arithmetic_intensity();
 </script>
 
 ![](.)
-*Arithmetric intensity vs sequence length $L$ for multi-head self-attention with embedding dimension $d=12,288$ and number of heads $h=96$ (GPT-3 scale).*
+*Arithmetic intensity vs sequence length $L$ for multi-head self-attention with embedding dimension $d=12,288$ and number of heads $h=96$ (GPT-3 scale).*
 
 We've noticed already that modern GPU hardware has the computational capacity orders of magnitude higher than the memory bandwidth. As the graph shows, for sufficiently large sequence length the arithmetic intensity is always larger than embedding dimension per attention head $\frac{d}{h}$, which is usually one or few hundreds.[^AIL] Hence, the arithmetic intensity is equal if not greater than `ops:byte` ratio.
 
@@ -1114,9 +1114,9 @@ Below is a comparison table with batched decoding/inference algorithms complexit
 
 |    | Vanilla Attention | Attention with KV Cache | GQA with KV Cache |
 | -------- | ------- | ------- | ------- |
-| Compute performance  | $\mathcal{O}(BLd^2 + BL^2d)$   | $\mathcal{O}(BLd^2 + BL^2d)$ | $\mathcal{O}(BLd^2 + BL^2d)$
-| Memory bandwidth | $\mathcal{O}(BLd + BL^2h + d^2)$ | $\mathcal{O}(BL^2d + BL^2h + d^2)$ | $\mathcal{O}(BL^2d/g + BL^2h + d^2)$
-| Arithmetic intensity for large $L$ | $\mathcal{O}\big(\frac{d}{h}\big)$  | $\mathcal{O}\big(\frac{d}{d + h}\big)$ | $\mathcal{O}\big(\frac{dg}{d+hg} \big)$
+| Compute performance  | $BLd(d + L)$ | $BLd(d + L)$ | $BLd(d + L)$
+| Memory bandwidth | $BL (d + hL) + d^2$ | $BL^2(d + h) + d^2$ | $BL^2\big(\frac{d}{g} + h \big) + d^2$
+| Arithmetic intensity for sufficiently large $L$ | $\frac{d}{h}$  | $\frac{d}{d + h}$ | $\frac{dg}{d+hg}$
 
 ### Prefill with chunking
 
@@ -1502,7 +1502,7 @@ The computations are defined in **kernels**, small C++ functions, which supposed
 
 Let's take A100 as an example again. It has 108 SMs, each can run up to 2048 threads. Shared memory capacity for each SM is up to 192KB. This means that we can take large matrices (up to few MBs), split them up in smaller chunks that fit into A100 registers and SRAM and then do matrix multiplication at the speed of 18 TB/s, SRAM bandwidth. This in total makes GPU much more efficient than CPU for matrix multiplications.
 
-But we have a lot of non-matmul operations in deep learning, such as normalization layers, activation functions or dropouts. Even though they only account for a small fraction of the total FLOPs, GPUs run them much slower. Fistly, because they have specialized units for matrix multiply, called Tensor Cores. That's why matmul throughput can be up to 16× higher than non-matmul throughput, e.g. 312 TFLOPs vs 19.5 TFLOPs on A100.[^TC] And secondly, they can be extremely memory-bound. 
+But we have a lot of non-matmul operations in deep learning, such as normalization layers, activation functions or dropouts. Even though they only account for a small fraction of the total FLOPs, GPUs run them much slower. Firstly, because they have specialized units for matrix multiply, called Tensor Cores. That's why matmul throughput can be up to 16× higher than non-matmul throughput, e.g. 312 TFLOPs vs 19.5 TFLOPs on A100.[^TC] And secondly, they can be extremely memory-bound. 
 
 Let's take $\mathbf{P}=\operatorname{softmax}(\mathbf{S}) \in \mathbb{R}^{L \times L}$ from attention. For a large sequence length $L$, tensor $\mathbf{S}$ has to reside on HBM, since it would be too large to fit on SRAM. The simplest implementation of softmax requires us to
 
@@ -1529,7 +1529,7 @@ def naive_softmax(logits):
     return exp_logits / exp_logits.sum()
 ```
 
-The naive implementation of softmax scans $\mathbf{x}$ 2 times - one to calculate normalization term and another to compute output vector $\mathbf{y}$. Unfortunately, on real hardware, such implementation has a serios flaw: for $\mathbf{x}_i \geq 89$ exponentiation results in infinity for bf16 and fp32. And here's a trick to avoid overflow: notice that for any constant $m$:
+The naive implementation of softmax scans $\mathbf{x}$ 2 times - one to calculate normalization term and another to compute output vector $\mathbf{y}$. Unfortunately, on real hardware, such implementation has a serious flaw: for $\mathbf{x}_i \geq 89$ exponentiation results in infinity for bf16 and fp32. And here's a trick to avoid overflow: notice that for any constant $m$:
 
 $$
 \begin{aligned}
@@ -1550,7 +1550,7 @@ def safe_softmax(logits):
     return exp_logits / exp_logits.sum()
 ```
 
-But stability comes with a price in a efficiency since we do one more pass over $\mathbf{x}$ now to calculate $m(\mathbf{x})$. This results in 4 memory access per vector element overall (3 loads and 1 store) and we want to improve on that.
+But stability comes with a price in a efficiency since we do one more pass over $\mathbf{x}$ now to calculate $m(\mathbf{x})$. This results in 4 memory accesses per vector element overall (3 loads and 1 store) and we want to improve on that.
 
 For two vectors $\mathbf{x}^1, \mathbf{x}^2$ we can decompose statistics of concatenated vector $\mathbf{x}=[\mathbf{x}^1, \mathbf{x}^2]$ as
 
@@ -1698,7 +1698,7 @@ m_j &\leftarrow \max(m, \mathbf{S}_{ij}), \\
 \end{aligned}
 $$
 
-Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm. Notice that they use `jax.checkpoint` decorator in `summarize_chunk` function. The reason is that during forward pass this algorihtm saves memory by summarizing parts of the attention matrix sequentially, allowing it to forget the parts of the attention matrix it has summarized already. A naive application of differentiation would have to store all those intermediate results and algorithm would loose its memory advantage entirely. So authors propose to apply gradient checkpointing to the function that summarizes the individual chunks. The intermediate results can thus be forgotten during the forward pass and recomputed during backpropagation.
+Authors also exploited massive parallelism and provided [code in Jax](https://github.com/google-research/google-research/tree/master/memory_efficient_attention) for memory-efficient parallel algorithm. Notice that they use `jax.checkpoint` decorator in `summarize_chunk` function. The reason is that during forward pass this algorihtm saves memory by summarizing parts of the attention matrix sequentially, allowing it to forget the parts of the attention matrix it has summarized already. A naive application of differentiation would have to store all those intermediate results and algorithm would lose its memory advantage entirely. So authors propose to apply gradient checkpointing to the function that summarizes the individual chunks. The intermediate results can thus be forgotten during the forward pass and recomputed during backpropagation.
 
 Applying checkpointing to the standard attention algorithm would not achieve these results. The standard attention algorithm with checkpointing would forget the attention matrix after it is formed; query chunk attention algorithm never forms the full attention matrix at all.
 
