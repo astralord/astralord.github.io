@@ -3,7 +3,7 @@ layout: post
 title: 'Transformers Inference Optimization Toolset'
 date: 2024-10-01 10:00 +0800
 categories: [Large Language Models, Engineering]
-tags: [jax, gpu, kv-cache, linear attention, cuda kernels, online softmax, flash attention, ring attention]
+tags: [jax, gpu, kv-cache, linear attention, cuda kernels, online softmax, flash attention, lightning attention, ring attention, vllm, sglang]
 math: true
 enable_d3: true
 published: true
@@ -21,9 +21,9 @@ A lot of optimization techniques will be left out, like for example quantization
 
 To tackle language model speedup problem, first we need to understand the concept of the hardware we work on. While Google's TPUs and Apple silicon chips are rising up, NVIDIA's **GPUs** still dominate the market, so they'll be the subject of our in-depth look. 
 
-Graphic processor unit performs all of the computations by multiple **streaming multiprocessors (SM)** (these are similar to the cores in the CPU). SM is basic GPU building block: it has its own instruction schedulers and various instruction execution pipelines. Modern GPUs are also equipped with special off-chip memory called **high bandwidth memory (HBM)**, where data is initially stored and ultimately written back. Unlike to the system **dynamic random access memory (DRAM)**, which is controlled by CPU and typically optimized for low latency access, HBM is physically bonded to the GPUs in stacked layers with thousands of pins and provides massively parallel data throughput by design. 
+Graphic processor unit performs all of the computations by multiple **streaming multiprocessors (SM)** (these are similar to the cores in the CPU). SM is basic GPU building block: it has its own instruction schedulers and various instruction execution pipelines. Modern GPUs are also equipped with special off-chip memory called **high bandwidth memory (HBM)**, where data is initially stored and ultimately written back. Unlike the system **dynamic random access memory (DRAM)**, which is controlled by CPU and typically optimized for low latency access, HBM is physically bonded to the GPUs in stacked layers with thousands of pins, providing massively parallel data throughput by design. 
 
-Streaming multiprocessors access data and code from HBM via the **L2 cache**. It acts as an intermediate level between off-chip and on-chip memory and caches data that be shared among multiple SMs. It also situated in the path of data moving between devices. And finally, each SM has its own **L1 cache** and **shared memory (SRAM)**, a low-latency on-chip memory caches: they are order of magnitude faster than HBM but many orders of magnitude smaller in size. L1 cache is managed by the GPU hardware, while SRAM can be explicitly managed by the programmer through NVIDIA tools. 
+Streaming multiprocessors access data and code from HBM via the **L2 cache**. It acts as an intermediate level between off-chip and on-chip memory and caches data that be shared among multiple SMs. It is also situated in the path of data moving between devices. Finally, each SM has its own **L1 cache** and **shared memory (SRAM)**, a low-latency on-chip memory caches: they are order of magnitude faster than HBM but many orders of magnitude smaller in capacity. L1 cache is managed by the GPU hardware, while SRAM can be explicitly managed by the programmer through NVIDIA tools. 
 
 The GPUs can communicate to each other with a high bandwidth interconnect called **NVLink**, and they can talk to the outside world with a **PCIe bus** (a high-speed bus standard, common on motherboards to transfer data) or a special ethernet alternative called **Infiniband**. Usually, 8 GPUs are packed into a single node. Feel free to check out my post on [parallelization strategies](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/) to learn more on multi-device training.
 
@@ -406,7 +406,7 @@ Depending on the balance of computation and memory accesses, operations can be c
 
 1. **Compute-bound**: the time spent on arithmetic operations exceeds time spent for other operations such as memory accesses. Typical examples are linear layer with large inner dimension or convolutional layer with large number of channels.
 2. **Memory-bound**: the time taken by memory accesses exceeds computation time. Most operations are memory bound, e.g. elementwise operations (activation functions, dropouts) or reductions (sum, softmax, normalization). 
-3. **Overhead-bound**: everything else, such as communication-bound, interpreter-bound, etc. We won't discuss it in this post, however I strongly advice to take a look [Making Deep Learning Go Brrrr From First Principles](https://horace.io/brrr_intro.html) blogpost to understand GPU mechanisms and why in most of the cases our bottleneck may not be related to them at all.
+3. **Overhead-bound**: everything else, such as communication-bound, interpreter-bound, etc. We won't discuss it in this post, however I strongly advise to check out [Making Deep Learning Go Brrrr From First Principles](https://horace.io/brrr_intro.html) blogpost to better understand GPU mechanisms and why in most of the cases our bottleneck may not be related to them at all.
 
 The balance between first two is commonly measured by the **arithmetic intensity**, which is the number of arithmetic operations per byte of memory access required to run the computation. For example, if we apply ReLU activation to an input tensor $x$ (assuming it's in half-precision), we need to
 
@@ -416,7 +416,7 @@ The balance between first two is commonly measured by the **arithmetic intensity
 
 for each element of the tensor. Regardless of the size of $x$, arithmetic intensity for ReLU is equal to $\frac{\\# \operatorname{flops}}{\\# \operatorname{bytes}}=\frac{1}{4}$. Again, this means that for each operation we need to make 4 memory accesses.
 
-Arithmetic intensity is commonly compared to a hardware specific `ops:byte` ratio to find if we are in compute- or memory-bound scenario. To explain how it works, let's take for example a linear layer forward pass on A100 GPU. Given an input batch $x \in \mathbb{R}^{B \times d}$ and weight matrix $\mathbf{W} \in \mathbb{R}^{d \times d}$ (here $B$ is a batch size and $d$ is an embedding dimension) linear layer basically represents a matrix multiplication $x\mathbf{W}$. We can calculate that linear layer computation requires $2Bd^2$ flops.[^MMM] Hence the compute-time for A100 will be
+Arithmetic intensity is commonly compared to a hardware-specific `ops:byte` ratio to determine whether we are in a compute- or memory-bound scenario. To explain how it works, let's take for example a linear layer forward pass on A100 GPU. Given an input batch $x \in \mathbb{R}^{B \times d}$ and weight matrix $\mathbf{W} \in \mathbb{R}^{d \times d}$ (here $B$ is a batch size and $d$ is an embedding dimension) linear layer basically represents a matrix multiplication $x\mathbf{W}$. We can calculate that linear layer computation requires $2Bd^2$ flops.[^MMM] Hence the compute-time for A100 will be
 
 $$T_{\operatorname{compute}} = \frac{\# \operatorname{flops}}{\operatorname{compute performance}} = \frac{2Bd^2}{312 \cdot 10^{12}} s.$$
 
@@ -428,13 +428,13 @@ Recall that arithmetic intensity is equal to $\frac{\\# \operatorname{flops}}{\\
 
 $$\frac{T_{\operatorname{compute}}}{T_{\operatorname{memory}}} \approx \frac{B}{200}.$$
 
-This means that until our batch size is smaller than $200$ our system performance is memory-bound. Enlarging input batch to a value greater than $200$ increases the computation time, while keeping the memory transfer time constant, which brings us to the compute-bound scenario. 
+This means that for batch sizes below $200$ our system performance remains memory-bound. Enlarging input batch to a value greater than $200$ increases the computation time, while keeping the memory transfer time constant, which brings us to the compute-bound scenario. 
 
 The `ops:byte` ratio analysis is useful, but keep in mind, that it assumes that a GPU workload is sufficiently large to saturate compute and memory pipelines. If the workload is not large enough, or does not have sufficient parallelism, the processor will be under-utilized and performance will be limited by latency. 
 
 ## High-level algorithmic optimizations
 
-Now we are ready to delve into the specifics of transformer optimization. We've defined transformer architecture earlier in [previous blog-posts](https://astralord.github.io/posts/building-aligned-intelligence-systems-part-i-creating-gpt-assistant/). Let's recall shortly that **scaled dot product attention** operation takes a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ as input and outputs
+Now, we are ready to delve into the specifics of transformer optimization. We've defined transformer architecture earlier in [previous blog-posts](https://astralord.github.io/posts/building-aligned-intelligence-systems-part-i-creating-gpt-assistant/). Let's recall shortly that **scaled dot product attention** operation takes a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ as input and outputs
 
 $$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d}}  \Big) \cdot \mathbf{V}, $$
 
@@ -893,13 +893,13 @@ A real world example: take A100 GPU with $80$ GB of HBM. Say, we work with GPT-3
 
 $$\underset{\mathbf{K/V}}{2} \cdot \underset{\text{float16}}{2} \cdot \underset{\text{sequence length}}{4096} \cdot \underset{\text{number of layers}}{96} \cdot \underset{\text{embedding dimension}}{12,288} = \underset{\text{bytes}}{19,327,352,832}.$$
 
-So $18$ GB or $22.5\%$ of A100 memory space is required for KV cache of just one sequence sample. Keeping in mind, that most of the GPU space would be taken by [model parameters](https://kipp.ly/transformer-param-count/), we can conclude that even without enlarging our batch size we may quickly run out of memory.
+So $18$ GB or $22.5\%$ of A100 memory space is required for KV cache of just one sequence sample. Given that [the majoriy of the GPU memory would be taken by model parameters](https://kipp.ly/transformer-param-count/), we can conclude that even without enlarging our batch size we may quickly run out of memory.
 
-### Multi-query / Grouped-query attention
+### Multi-/Grouped-query attention
 
 In the standard attention mechanism, the $\mathbf{KV}$ pairs are computed for each vector $\mathbf{Q}$ independently. This means that for each token in the input sequence, a separate key-value pair is computed and cached. However, in many cases, different query vectors may share similar attention patterns, and thus, the corresponding keys and values could be reused across multiple queries. **Multi-query attention (MQA)**([Shazeer, 2019](https://arxiv.org/pdf/1911.02150)) shares the cached key-value pairs across multiple queries, thus substantially reducing the memory requirements associated with the KV cache during text generation. 
 
-MQA not only lowers memory consumption, but it also leads to higher inference throughput. Our computational complexity doesn't change, because from algorithmic point of view the number of matrix multiplications stays the same and we only reuse $\mathbf{K}$ and $\mathbf{V}$ for different heads. But in terms of memory, KV cache requires only $\mathcal{O}\big( L \frac{d}{h} \big)$ space now and arithmetic intensity is proportional to
+MQA not only lowers memory consumption, but it also leads to higher inference throughput. Our computational complexity doesn't change, because from algorithmic point of view the number of matrix multiplications stays the same and we only reuse $\mathbf{K}$ and $\mathbf{V}$ for different heads. But in terms of memory, KV cache requires only $\mathcal{O}\big( L n \frac{d}{h} \big)$ space now and arithmetic intensity is proportional to
 
 $$\frac{Ld + d^2}{L\frac{d}{h} + Lh + d^2} \xrightarrow[L \gg d]{} \frac{dh}{d+h^2} \approx h,$$
 
@@ -1097,7 +1097,7 @@ groupquery_attention();
 </script>
 
 ![](.)
-*MHA ($h=6$) vs GQA ($g=3$) vs MQA*
+*MHA (with number of heads $h=6$) vs GQA (with number of groups $g=3$) vs MQA*
 
 ```python
 @jit
@@ -1112,26 +1112,180 @@ def gqa_dot_product_attention(query, key, value, mask=None):
 
 Below is a comparison table with batched decoding/inference algorithms complexities for input $x \in \mathbb{R}^{B \times L \times d}$ and large context size $L$. Note, that the computation complexity is the same for all algorithms in the table! However, the real effectiveness can vary greatly depending on the setting.
 
-|    | Vanilla Attention | Attention with KV Cache | GQA with KV Cache |
-| -------- | ------- | ------- | ------- |
-| Compute performance  | $BLd(d + L)$ | $BLd(d + L)$ | $BLd(d + L)$
-| Memory bandwidth | $BL (d + hL) + d^2$ | $BL^2(d + h) + d^2$ | $BL^2\big(\frac{d}{g} + h \big) + d^2$
-| Arithmetic intensity for sufficiently large $L$ | $\frac{d}{h}$  | $\frac{d}{d + h}$ | $\frac{dg}{d+hg}$
 
-### Prefill with chunking
+|    | Vanilla Attention | Attention with KV Cache | GQA with KV Cache | 
+| -------- | ------- | ------- | ------- | ------- |
+| Compute performance  | $BLd(d + L) $ | $BLd(d + L)$ | $BLd(d + L)$ 
+| Memory bandwidth | $BL (d + hL) + d^2$ | $BL^2(d + h) + d^2$ |$BL^2\big(\frac{d}{g} + h \big) + d^2$ 
+| KV cache size | $0$ | $B L n d $ | $BL n \frac{d}{g} $ 
+| Arithmetic intensity for sufficiently large $L$ | $\frac{d}{h}$  | $\frac{d}{d + h}$ | $\frac{dg}{d+hg}$ 
 
-A large KV cache is not the only source of memory problems as the sequence length increases. During prefill phase we compute all the outputs and $\mathbf{K}\mathbf{V}$ pairs in one pass. This requires us to compute the attention matrix $\mathbf{S} \in \mathbb{R}^{L \times L}$, which depends quadratically on the context length. What if the prompt size is so large that we can't fit in all attention weights? We can compute them by passing single tokens one-by-one as we do it in decoding stage, though this procedure is much slower since it's memory-bound. But since we know future tokens in advance, we can feed them to model in **chunks**:
+### Multi-head latent attention
 
-- Take first $C$ tokens ($C < L$) from the prompt, run them through the prefill stage and store their KV cache values. Attention weights will be $\mathbf{S} \in \mathbb{R}^{C \times C}$.
-- Then apply the same procedure for the next $C$ tokens, but now use cached $\mathbf{KV}$ pairs to attend to the tokens in a previous chunk. Attention weights then will be $\mathbf{S} \in \mathbb{R}^{C \times 2C}$.
-- Repeat until the whole prompt is prefilled. The maximum size of $\mathbf{S}$ at the end will be ${C \times L}$.
+Another way to reduce KV cache bottleneck is **multi-head latent attention (MLA)** introduced with [DeepSeek V2](https://arxiv.org/pdf/2405.04434) model. In standard multi-head self-attention mechanism all queries, keys and values are calculated as linear projections of input embedding $x \in \mathbb{R}^{d}$ with learnable parameters $\mathbf{W}^Q_{1 \dots h}$, $\mathbf{W}^K_{1 \dots h}$, $\mathbf{W}^V_{1 \dots h}$ respectively. In addition to that the low-rank joint compression latent vector $\mathbf{C}$ is computed for both keys and values in MLA:
 
-<div id="prefill_with_chunking" class="svg-container" align="center"></div> 
+$$\mathbf{C^{KV}} = x \mathbf{W}_{\mathbf{d}}^{KV}$$
+
+with down-projection matrix $\mathbf{W}_{\mathbf{d}}^{KV} \in \mathbb{R}^{d \times d_c}$ ($d_c \ll d$). Vector $\mathbf{C^{KV}} \in \mathbb{R}^{d_c}$ called **compressed latent vector** and is stored in KV cache instead of full-sized values of $\mathbf{K}$ and $\mathbf{V}$, reducing its size by a factor of $\frac{d}{d_c}$. When it comes to retrieval, keys and values can be restored as
+
+$$\mathbf{K} = \mathbf{C^{KV}} \mathbf{W}_{\mathbf{u}}^{K}, \quad \mathbf{V} = \mathbf{C^{KV}} \mathbf{W}_{\mathbf{u}}^{V}$$
+
+with up-projection matrices $\mathbf{W}_{\mathbf{u}}^{K}, \mathbf{W}_{\mathbf{u}}^{V} \in \mathbb{R}^{d_c \times d}$. Furthermore, authors of MLA also performed low-rank compression for the queries:
+
+$$\mathbf{Q} = \mathbf{C^{Q}} \mathbf{W}_{\mathbf{u}}^{Q}, \quad \mathbf{C^{Q}} = x \mathbf{W}_{\mathbf{d}}^{Q}$$
+
+with up/down-projection matrices $\mathbf{W}_{\mathbf{u}}^{Q} \in \mathbb{R}^{d'_c \times d}$, $\mathbf{W}_{\mathbf{d}}^{Q} \in \mathbb{R}^{d \times d'_c}$ and the query compression dimension $d'_c$. While it doesn't affect KV cache, it reduces the activation memory during training.
+
+<div id="multilatent_attention" class="svg-container" align="center"></div> 
 
 <script>
 
-function prefill_with_chunking() {
-	var svg = d3.select("#prefill_with_chunking")
+function gqa_line(svg, x1, y1, x2, y2) {
+	svg.append('g')
+	    .append("path")
+	      .datum([{x: x1, y: y1}, {x: x2, y: y2}])
+	      .attr("fill", "none")
+	      .attr("border", 0)
+	      .attr("stroke", "currentColor")
+	      .attr("stroke-width", 2)
+	      .attr("stroke-linejoin", "round")
+	      .style('stroke-dasharray', ('2,3'))
+	      .attr("d",  d3.line()
+	        .curve(d3.curveBasis)
+	          .x(function(d) { return d.x; })
+	          .y(function(d) { return d.y; })
+	      );
+}
+
+function multilatent_attention() {
+	var svg = d3.select("#multilatent_attention")
+				  .append("svg")
+				  .attr("width", 800)
+				  .attr("height", 255);
+				  
+	const x_start = 205, y_start = -5;
+	const shift = 10, rct_sz = 8;
+	const dim = 2, num_heads = 6, num_kv_heads = 3, seq_len = 6;
+	var num_heads_per_part = Math.floor(num_heads / num_kv_heads);
+	
+	text_(svg, "Value", 151, y_start + 60, size=12);
+	text_(svg, "heads", 151, y_start + 80, size=12);
+	text_(svg, "Key", 156, y_start + 140, size=12);
+	text_(svg, "heads", 151, y_start + 160, size=12);
+	text_(svg, "Query", 150, y_start + 220, size=12);
+	text_(svg, "heads", 151, y_start + 240, size=12);
+	
+	text_(svg, "Multi-head latent", x_start + 33, y_start + 15, size=12);
+	
+	text_(svg, "projection", x_start + 200, y_start + 110, size=10);
+	text_(svg, "⟺", x_start + 217, y_start + 117, size=15);
+	
+	text_(svg, "Compressed", x_start + 300, y_start + 93, size=12);
+	text_(svg, "latent vector", x_start + 300, y_start + 113, size=12);
+	text_(svg, "(KV cache)", x_start + 305, y_start + 133, size=12);
+	
+	for (var i = 0; i != num_heads; i += 1) {
+		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
+		
+		gqa_line(svg, x_start + 3 * i * shift + rct_sz + 1, y_start + 180, x_start + 3 * i * shift + rct_sz + 1, y_start + 198);
+		
+		vector_rect(svg, x_start + 3 * i * shift, y_start + 120, dim, seq_len, shift, rct_sz, matrix_colors[1]);
+		
+		gqa_line(svg, x_start + 3 * i * shift + rct_sz + 1, y_start + 100, x_start + 3 * i * shift + rct_sz + 1, y_start + 118);
+		
+		vector_rect(svg, x_start + 3 * i * shift, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
+	}
+		
+	var c_shift = 3 * (num_heads + 3) * shift;
+	vector_rect(svg, x_start + c_shift, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[3]);
+	vector_rect(svg, x_start + c_shift + rct_sz + 2, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[1]);
+	
+	svg.append('rect')
+	  .attr('x', x_start + c_shift - 3)
+	  .attr('y', y_start + 77)
+	  .attr('width', 2 * shift + 4)
+	  .attr('height', seq_len * shift + 4)
+	  .attr('stroke', 'currentColor')
+	  .attr('stroke-width', 2)
+	  .attr("rx", 3)
+	  .style('stroke-dasharray', ('2,3'))
+	  .attr('fill', 'none');
+	  
+	svg.append("path")
+	   .datum([{x: x_start + c_shift - 5, y: y_start + 75},
+	           {x: x_start + 3 * num_heads * shift, y: y_start + 40}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start + c_shift - 5, y: y_start + 145},
+	           {x: x_start + 3 * num_heads * shift, y: y_start + 180}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+}
+
+multilatent_attention();
+
+</script>
+
+![](.)
+*Intuitive illustration of how the KV joint compression in MLA reduces the KV cache.*
+
+##### Decoupled Rotary Position Embedding
+
+To improve the efficiency of MLA, a *weight-absorption trick* can be applied: since attention logits $\mathbf{S}$ for context tokens are
+
+$$
+\mathbf{S} = \mathbf{Q}\mathbf{K}^T = x\color{Salmon}{\mathbf{W}^Q{\mathbf{W}_{\mathbf{u}}^{K}}^T} \mathbf{C^{KV}}^T
+$$
+
+and corresponding final output is 
+
+$$
+\mathbf{O} \mathbf{W}^O = \mathbf{PV} \mathbf{W}^O = \mathbf{PC} \color{Salmon}{\mathbf{W}_{\mathbf{u}}^{V}\mathbf{W}^O},
+$$
+
+matrices $\mathbf{W}^Q {\mathbf{W}_{\mathbf{u}}^{K}}^T$ and $\mathbf{W}_{\mathbf{u}}^{V}\mathbf{W}^O$ can be merged together and there is no need to materialize full tensors of $\mathbf{K}$ and $\mathbf{V}$ from KV cache during inference.
+
+The problem with low-rank KV compression is that it is incompatible with commonly used [rotary positional embeddings transformation](https://arxiv.org/pdf/2104.09864), which is position-sensitive for both keys and queries. To be specific, when we apply RoPE transformation $\mathbf{R}_{\Theta}$
+
+$$\mathbf{Q}_{\text{rope}} = \mathbf{Q}\mathbf{R}_{\Theta}, \quad \mathbf{K}_{\text{rope}} = \mathbf{K}\mathbf{R}_{\Theta},$$
+
+for query token $\mathbf{q}_m$ at position $m$ and key token $\mathbf{k}_n$ at position $n$ the attention logit is
+
+$$
+\begin{aligned}
+\mathbf{q}_m\mathbf{k}_n^T &= \big(x_m \mathbf{W}^{Q} \mathbf{R}_{\Theta, m}\big) \big(x_n\mathbf{W}^{K}\mathbf{R}_{\Theta, n}\big)^T \\ &=x_m \mathbf{W}^{Q} \color{Salmon}{\mathbf{R}_{\Theta, m} \mathbf{R}_{\Theta, n}} {\mathbf{W}^{K}}^T x_n^T \\ &= x_m \mathbf{W}^{Q} \color{Salmon}{\mathbf{R}_{\Theta, n - m}} \mathbf{W}^{K} x_n^T.
+\end{aligned}$$
+
+Now $\mathbf{W}_{\mathbf{u}}^{K}$ cannot be absorbed into $\mathbf{W}^Q$ any more during inference, since positional-dependent matrix $\mathbf{R}_{\Theta, n - m}$ lies in-between. As a solution, the decoupled RoPE strategy is proposed: query and a shared key for each head are split along embedding dimension in two parts
+
+$$\mathbf{Q} = [\mathbf{Q}_{\text{rope}}, \mathbf{Q}_{\text{nope}}], \quad \mathbf{K} = [\mathbf{K}_{\text{rope}}, \mathbf{K}_{\text{nope}}],$$
+
+where $\mathbf{Q}_{\text{rope}} \in \mathbf{R}^{L \times d_h}$ and $\mathbf{Q}_{\text{nope}} \in \mathbf{R}^{L \times d_R}$ (the same is for $\mathbf{K}$) with $d_h + d_R$ - total dimension for each head. During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_R$ for each token in each layer (would be $B L n (d_c + d_R) $ in the table above).
+
+### Chunked prefill
+
+A large KV cache is not the only source of memory problems as the sequence length increases. During prefill phase we compute all the outputs and $\mathbf{K}\mathbf{V}$ pairs in one pass. This requires us to compute the attention matrix $\mathbf{S} \in \mathbb{R}^{L \times L}$, which depends quadratically on the context length. What if the prompt size is so large that we can't fit in all attention weights? We can compute them by passing single tokens one-by-one as we do it in decoding stage, though this procedure is much slower since it's memory-bound. But since we know future tokens in advance, we can feed them to model in **chunks**:
+
+- Take first $L_c$ tokens ($L_c < L$) from the prompt, run them through the prefill stage and store their KV cache values. Attention weights will be $\mathbf{S} \in \mathbb{R}^{L_c \times L_c}$.
+- Then apply the same procedure for the next $L_c$ tokens, but now use cached $\mathbf{KV}$ pairs to attend to the tokens in a previous chunk. Attention weights then will be $\mathbf{S} \in \mathbb{R}^{L_c \times 2L_c}$.
+- Repeat until the whole prompt is prefilled. The maximum size of $\mathbf{S}$ at the end will be ${L_c \times L_c}$.
+
+<div id="chunked_prefill" class="svg-container" align="center"></div> 
+
+<script>
+
+function chunked_prefill() {
+	var svg = d3.select("#chunked_prefill")
 				  .append("svg")
 				  .attr("width", 700)
 				  .attr("height", 290);
@@ -1218,18 +1372,18 @@ function prefill_with_chunking() {
 	createSlider(svg, draw_attn_cells_w_chunking, l_x, x_start + 120, 270, "Chunk", "currentColor", init_seq_len, roundN, 2, 30, 12);
 }
 
-prefill_with_chunking();
+chunked_prefill();
 
 </script>
 
 ![](.)
-*Prefill with chunking with $C = 4$ and prompt length $10$.*
+*Chunked prefill with $L_c = 4$ and prompt length $10$.*
 
-With chunking the maximum size of $\mathbf{S}$ depends linearly on $L$ multiplied by controllable constant coefficient $C$. 
+With chunked prefill the maximum size of $\mathbf{S}$ depends linearly on $L$ multiplied by controllable constant coefficient $L_c$. 
 
 ### Sliding window attention
 
-We can see that even with multi-query attention and prefill-chunking our KV cache and attention weights are still increasing with growing context during both prefill phase and decoding phase. If we truncate the amount of tokens each other token can attend to by some constant $L_w$, our memory requirements will not depend on the input sequence length. This is exactly what a technique called **sliding window attention** does: it changes attention mask from lower-diagonal matrix to a band matrix.
+We can see that even with multi-query attention and chunked prefill our KV cache and attention weights are still increasing with growing context during both prefill phase and decoding phase. If we truncate the amount of tokens each other token can attend to by some constant $L_w$, our memory requirements will not depend on the input sequence length. This is exactly what a technique called **sliding window attention** does: it changes attention mask from lower-diagonal matrix to a band matrix.
 
 <div id="sliding_window" class="svg-container" align="center"></div> 
 
@@ -1349,7 +1503,7 @@ text_generation_w_rolling_kv_cache();
 ![](.)
 *Decoding with sliding window attention with $L_w=4$.*
 
-Another advantage of sliding window attention is that combining it with chunking during prefill phase does not only keep maximum size of attention matrix constant ($\mathbf{S} \in \mathbb{R}^{C \times L_w}$), but also reduces the number of dot-products to compute it.
+Another advantage of sliding window attention is that combining it with chunked prefill does not only keep maximum size of attention matrix constant ($\mathbf{S} \in \mathbb{R}^{L_c \times L_w}$), but also reduces the number of dot-products to compute it.
 
 The drawback of sliding window attention is that it may lead to degradation as not all interactions between tokens are captured. An interesting phenomenon was found by [Xiao et al. (2024)](https://arxiv.org/pdf/2309.17453), which they called **attention sink**: keeping the $\mathbf{KV}$ of a small number of tokens in the beginning of the sequence will largely recover the performance of window attention. They observe that LLMs outputs strong attention scores towards initial tokens as a "sink" even if they are not semantically important.
 
@@ -1486,7 +1640,6 @@ $$\phi_\text{mlp}(\mathbf{x}) = \exp (\mathbf{xW}).$$
 To learn a softmax approximation, they train $\phi_\text{mlp}(\mathbf{x})$ to minimize the cross-entropy loss between the computed linear attention weights and those that would have been computed via softmax masked attention $\mathbf{P}$:
 
 $$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_j)}{\sum_{k \leq i} \phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_k)}.$$
-
 
 ## Low-level hardware optimizations
 
@@ -1770,7 +1923,7 @@ Standard attention forward pass looks like that:
 		- Write $\color{#E86456}{\ell_i} \color{#EDA137}{ \leftarrow } \color{#65AD69}{ \ell_{i}^{\text{new}}}$, $\color{#E86456}{m_i} \color{#EDA137}{ \leftarrow } \color{#65AD69}{m_{i}^{\text{new}}}$ to HBM.
 - Return $\color{#E86456}{\mathbf{O}}$.
 
-In the end FlashAttention alogithm returns $\mathbf{O} = \operatorname{softmax}(\mathbf{QK}^T)\mathbf{V}$ with $\mathcal{O}(L^2 d)$ FLOPs and requires $\mathcal{O}(L)$ additional memory beyond inputs and output. In terms of memory accesses, it requires $\mathcal{O}(L^2d^2M^{-1})$ HBM accesses, where $d \leq M \leq Ld$, compared to $\mathcal{O}(Ld + L^2)$ for standard attention.
+In the end FlashAttention algorithm returns $\mathbf{O} = \operatorname{softmax}(\mathbf{QK}^T)\mathbf{V}$ using $\mathcal{O}(L^2 d)$ FLOPs and $\mathcal{O}(L)$ additional memory beyond inputs and outputs. In terms of memory accesses, it requires $\mathcal{O}(L^2d^2M^{-1})$ HBM accesses, where $d \leq M \leq Ld$, compared to $\mathcal{O}(Ld + L^2)$ for standard dot-product attention.
 
 <div id="flash_attn" class="svg-container" align="center"></div> 
 
@@ -1984,7 +2137,7 @@ The most recent version, [FlashAttention-3 (2024)](https://tridao.me/publication
 3. Block quantization and incoherent processing that leverages hardware
 support for FP8 low-precision
 
-### Ring Attention
+### Ring attention
 
 Even with Flash Attention, the memory complexity is linear in $L$ so scaling the sequence length is limited by the memory capacity. We could scale context with number of devices $N$, split inputs into $N$ parts, perform computations in parallel, then gather the results. However, attention requires for $\mathbf{Q}$ to access all elements of $\mathbf{K}, \mathbf{V}$ matrices.[^OISWA] Sending large matrices between devices can add a huge communication overhead (e.g. A100 throughput is 600GB/s with NVLink and only 64GB/s with PCIe).
 
@@ -2224,6 +2377,9 @@ Rather than partitioning the tokens into contiguous blocks like in Ring Attentio
 
 Another recent improvement, called **Tree Attention** ([Shyam et al. 2024](https://arxiv.org/pdf/2408.04093)), leveraged tree-reduction topology to reduce communication costs for decoding across multiple GPUs and achieved *asymptotically* 8× speedup compared to Ring Attention.
 
+
+## Serving frameworks
+
 ### PagedAttention / vLLM
 
 KV cache takes up a significant amount of memory. In a straightforward implementation we can store the KV cache of a request in contiguous memory space like all the other tensors. However, unlike the tensors in the traditional deep learning workloads, KV cache dynamically grows and shrinks over time as the model generates new tokens, and its lifetime and length are not known a priori.
@@ -2395,9 +2551,300 @@ Beam search decoding with PagedAttention is more advanced, since also blocks acr
 
 Additionaly to the algorithm authors released [**vLLM**](https://github.com/vllm-project/vllm), a high-throughput distributed LLM serving engine on top of PagedAttention. Their evaluations on various models and workloads show that vLLM improves the LLM serving throughput by 2-4× compared to the other existing serving systems, without affecting the model accuracy.
 
+### RadixAttention
+
+While vLLM is optimized for independent requests - like a chatbot answering unrelated questions from different users, another system, called [**SGLang (Structured Generation Language for LLMs)**](https://github.com/sgl-project/sglang), proposed by [Zheng et al. (2024)](https://arxiv.org/pdf/2312.07104), is designed for complex multi-step LLM workflows like AI agentts or applications that need to call the LLM multiple times with related prompts.
+
+The core innovation of SGLang's core is **RadixAttention**. In traditional LLM serving each request computes its own KV cache. Even if two requests share a common prefix like "You are a helpful assistant. User: Hello!", both compute this prefix separately, which leads to massive waste of computation and memory. Instead of treating each generation call independently, SGLang identifies and reuses shared computational work like common prompt prefixes or KV cache values across multiple calls, dramatically improving efficiency. 
+
+SGLang retains the cache for prompts and generation results in a [radix tree](https://en.wikipedia.org/wiki/Radix_tree), enabling efficient prefix search, reuse, insertion, and eviction. The radix tree structure can be thought as a smart family tree for prompts, where each path stores the computed KV cache, so shared prefixes are computed once and reused.
+
+<div id="radix_attention" class="svg-container" align="center"></div> 
+
+<script>
+
+function draw_sampling_text_2(svg, x_start, y_start, rct_sz, shift) {
+	text_(svg, "Q", x_start + 8, y_start + 2 * shift);
+}
+
+function radix_attention() {
+	var svg = d3.select("#radix_attention")
+				  .append("svg")
+				  .attr("width", 550)
+				  .attr("height", 370);
+	const x_start = 50, y_start = 10;
+	const shift = 30, rct_sz = 16;
+	var init_timepoint = 9, dim = 2;
+	
+	function line(svg, x0, y0, x1, y1) {
+		svg.append("path")
+		   .datum([{x: x0, y: y0},
+		           {x: x1, y: y1}])
+		   .attr("fill", "none")
+		   .attr("stroke-width", 1)
+		   .attr("stroke", "currentColor")
+		   .attr("d",  d3.line()
+		       .x(function(d) { return d.x; })
+		       .y(function(d) { return d.y; }));
+	}
+	
+	function line_evicted(svg, x0, y0, x1, y1) {
+		svg.append("path")
+		   .datum([{x: x0, y: y0},
+		           {x: x1, y: y1}])
+		   .attr("fill", "none")
+		   .attr("stroke-width", 1)
+		   .attr("stroke", "Salmon")
+	  		.style('stroke-dasharray', ('2,3'))
+		   .attr("d",  d3.line()
+		       .x(function(d) { return d.x; })
+		       .y(function(d) { return d.y; }));
+	}
+	
+	function text_id_3_(svg, text, x, y, size=14, color="currentColor", text_id="fattn") {
+		svg.append('text')
+		  .attr("id", text_id)
+		  .attr('x', x)
+		  .attr('y', y)
+		  .attr('orig_x', x)
+		  .attr('orig_y', y)
+		  .text(text)
+		  .style("fill", color)
+		  .style("font-size", size + "px")
+		  .attr("font-family", "Arvo");
+	}
+	
+	function rect_evicted(svg, x, y, w, h) {
+		svg.append('rect')
+		  .attr('x', x)
+		  .attr('y', y)
+		  .attr('width', w)
+		  .attr('height', h)
+		  .attr('stroke', "Salmon")
+		  .attr('stroke-width', 1)
+	  	  .style('stroke-dasharray', ('2,3'))
+		  .attr("rx", Math.min(3, Math.min(w, h) / 3))
+		  .attr('fill', matrix_colors[1])
+		  .attr('opacity', 1.0);
+		  
+		text_id_3_(svg, 'x', x + w * 0.28, y + 0.75 * h, size=14, color="Salmon", text_id="sglang");
+	}
+		
+	function draw_request_evolution(timepoint) {
+	   svg.selectAll('rect').remove();
+	   svg.selectAll('path').remove();
+	   svg.selectAll('#sglang').remove();
+	   
+	   rect(svg, x_start, y_start, rct_sz, rct_sz, matrix_colors[7]);
+	   
+	   if (timepoint == 1) {
+	   		return;
+	   }
+	   
+	   if (timepoint == 2 || timepoint == 3) {
+	   	   line(svg, x_start + rct_sz / 2, y_start + rct_sz, x_start + rct_sz / 2, y_start + 3 * shift);
+		   text_id_2_(svg, 'You are a helpful assistant.', x_start + rct_sz / 2 + 5, y_start + rct_sz + 20, size=10, text_id="sglang");
+		   text_id_2_(svg, 'User: Hello!', x_start + rct_sz / 2 + 5, y_start + rct_sz + 35, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Assistant: Hi!', x_start + rct_sz / 2 + 5, y_start + rct_sz + 50, size=10, text_id="sglang");
+		   if (timepoint == 2) {
+			   rect(svg, x_start, y_start + 3 * shift, rct_sz, rct_sz, matrix_colors[4]);
+		   } else {
+			   rect(svg, x_start, y_start + 3 * shift, rct_sz, rct_sz, matrix_colors[0]);
+		   	   line(svg, x_start + rct_sz / 2, y_start + 3 * shift + rct_sz, x_start + rct_sz / 2, y_start + 6 * shift);
+				rect(svg, x_start, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[4]);
+			   text_id_2_(svg, 'User: Solve this problem …', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 30, size=10, text_id="sglang");
+			   text_id_2_(svg, 'Assistant: Sure! …', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 45, size=10, text_id="sglang");
+		   }
+		   return;
+	   }
+	   
+	   text_id_2_(svg, 'You are a helpful assistant.', x_start + rct_sz / 2 + 5, y_start + rct_sz + 25, size=10, text_id="sglang");
+	   text_id_2_(svg, 'User: Hello!', x_start + rct_sz / 2 + 5, y_start + rct_sz + 75, size=10, text_id="sglang");
+	   text_id_2_(svg, 'Assistant: Hi!', x_start + rct_sz / 2 + 5, y_start + rct_sz + 90, size=10, text_id="sglang");
+	   
+		if (timepoint < 8 && timepoint > 3) {
+		   text_id_2_(svg, 'User: What can you do?', x_start + 3 * shift + rct_sz / 2 + 5, y_start + rct_sz + 75, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Assistant: I can …', x_start + 3 * shift + rct_sz / 2 + 5, y_start + rct_sz + 90, size=10, text_id="sglang");
+		}
+		
+	   if (timepoint == 4) {
+	   	   line(svg, x_start + rct_sz / 2, y_start + rct_sz, x_start + rct_sz / 2, y_start + 2 * shift);
+			rect(svg, x_start, y_start + 2 * shift, rct_sz, rct_sz, matrix_colors[0]);
+		   text_id_2_(svg, 'User: Solve this problem …', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Assistant: Sure! …', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 65, size=10, text_id="sglang");
+			
+	   	   line(svg, x_start + rct_sz / 2, y_start + 2 * shift + rct_sz, x_start + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[7]);
+			
+	   	   line(svg, x_start + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[7]);
+			
+	   	   line(svg, x_start + rct_sz, y_start + 2 * shift + rct_sz / 2, x_start + 3 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2);
+	   	   line(svg, x_start + 3 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2, x_start + 3 * shift + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start + 3 * shift, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[4]);
+		}
+	   
+	   if (timepoint == 5) {
+	   	   line(svg, x_start + rct_sz / 2, y_start + rct_sz, x_start + rct_sz / 2, y_start + 2 * shift);
+			rect(svg, x_start, y_start + 2 * shift, rct_sz, rct_sz, matrix_colors[0]);
+	   	   line(svg, x_start + rct_sz / 2, y_start + 2 * shift + rct_sz, x_start + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[7]);
+	   	   line_evicted(svg, x_start + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + rct_sz / 2, y_start + 6 * shift);
+			rect_evicted(svg, x_start, y_start + 6 * shift, rct_sz, rct_sz);
+			
+	   	   line(svg, x_start + rct_sz, y_start + 2 * shift + rct_sz / 2, x_start + 3 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2);
+	   	   line(svg, x_start + 3 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2, x_start + 3 * shift + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start + 3 * shift, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[0]);
+	   	   line(svg, x_start + 3 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + 3 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start + 3 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[4]);
+			
+		   text_id_2_(svg, 'User: Write a story …', x_start + 3 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Assistant: Sure! …', x_start + 3 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 65, size=10, text_id="sglang");
+		   text_id_3_(svg, 'evicted', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, color="Salmon", text_id="sglang");
+		}
+		
+		if (timepoint > 5) {
+		   text_id_2_(svg, 'Question 1: …', x_start + 8 * shift + rct_sz / 2 + 5, y_start + rct_sz + 15, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Answer 1: …', x_start + 8 * shift + rct_sz / 2 + 5, y_start + rct_sz + 30, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Question 2: …', x_start + 8 * shift + rct_sz / 2 + 5, y_start + rct_sz + 45, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Answer 2: …', x_start + 8 * shift + rct_sz / 2 + 5, y_start + rct_sz + 60, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Question 3: …', x_start + 8 * shift + rct_sz / 2 + 5, y_start + rct_sz + 75, size=10, text_id="sglang");
+		  }
+		   
+	   if (timepoint < 8 && timepoint > 5) {
+		   text_id_2_(svg, 'User: Write a story …', x_start + 3 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Assistant: Sure! …', x_start + 3 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 65, size=10, text_id="sglang");
+		   		   
+	   	   line(svg, x_start + rct_sz / 2, y_start + rct_sz, x_start + rct_sz / 2, y_start + 2 * shift);
+			rect(svg, x_start, y_start + 2 * shift, rct_sz, rct_sz, matrix_colors[7]);
+	   	   line(svg, x_start + rct_sz / 2, y_start + 2 * shift + rct_sz, x_start + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[7]);
+			
+	   	   line(svg, x_start + rct_sz, y_start + 2 * shift + rct_sz / 2, x_start + 3 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2);
+	   	   line(svg, x_start + 3 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2, x_start + 3 * shift + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start + 3 * shift, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[7]);
+	   	   line(svg, x_start + 3 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + 3 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start + 3 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[7]);
+			
+	   	   line(svg, x_start + rct_sz, y_start + rct_sz / 2, x_start + 8 * shift + rct_sz / 2, y_start + rct_sz / 2);
+	   	   line(svg, x_start + 8 * shift + rct_sz / 2, y_start + rct_sz / 2, x_start + 8 * shift + rct_sz / 2, y_start + 4 * shift);
+	   	   
+	   	   if (timepoint == 6) {
+				rect(svg, x_start + 8 * shift, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[4]);
+			} else {
+				rect(svg, x_start + 8 * shift, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[0]);
+	   	   		line(svg, x_start + 8 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + 8 * shift + rct_sz / 2, y_start + 6 * shift);
+				rect(svg, x_start + 8 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[7]);
+	   	   		line(svg, x_start + 8 * shift + rct_sz, y_start + 4 * shift + rct_sz / 2, x_start + 14 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2);
+	   	   		line(svg, x_start + 11 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2, x_start + 11 * shift + rct_sz / 2, y_start + 6 * shift);
+				rect(svg, x_start + 11 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[4]);
+	   	   		line(svg, x_start + 14 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2, x_start + 14 * shift + rct_sz / 2, y_start + 6 * shift);
+				rect(svg, x_start + 14 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[4]);
+			}
+		}
+		
+		if (6 < timepoint) {
+		   text_id_2_(svg, 'What …', x_start + 8 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Answer 3: …', x_start + 8 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 65, size=10, text_id="sglang");
+		   if (timepoint < 9) {
+			   text_id_2_(svg, 'When …', x_start + 11 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, text_id="sglang");
+			   text_id_2_(svg, 'Answer 3: …', x_start + 11 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 65, size=10, text_id="sglang");
+			   text_id_2_(svg, 'How …', x_start + 14 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, text_id="sglang");
+			   text_id_2_(svg, 'Answer 3: …', x_start + 14 * shift + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 65, size=10, text_id="sglang");
+			}
+		}
+			
+	   if (timepoint == 8) {
+	   	   line(svg, x_start + rct_sz / 2, y_start + rct_sz, x_start + rct_sz / 2, y_start + 2 * shift);
+			rect(svg, x_start, y_start + 2 * shift, rct_sz, rct_sz, matrix_colors[0]);
+	   	   line(svg, x_start + rct_sz / 2, y_start + 2 * shift + rct_sz, x_start + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[0]);
+	   	   line(svg, x_start + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[4]);
+			
+	   	   line_evicted(svg, x_start + rct_sz, y_start + 2 * shift + rct_sz / 2, x_start + 5 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2);
+	   	   line_evicted(svg, x_start + 5 * shift + rct_sz / 2, y_start + 2 * shift + rct_sz / 2, x_start + 5 * shift + rct_sz / 2, y_start + 4 * shift);
+			rect_evicted(svg, x_start + 5 * shift, y_start + 4 * shift, rct_sz, rct_sz);
+	   	   line_evicted(svg, x_start + 5 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + 5 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect_evicted(svg, x_start + 5 * shift, y_start + 6 * shift, rct_sz, rct_sz);
+			
+	   	   line(svg, x_start + rct_sz, y_start + rct_sz / 2, x_start + 8 * shift + rct_sz / 2, y_start + rct_sz / 2);
+	   	   line(svg, x_start + 8 * shift + rct_sz / 2, y_start + rct_sz / 2, x_start + 8 * shift + rct_sz / 2, y_start + 4 * shift);
+   	   
+			rect(svg, x_start + 8 * shift, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[7]);
+   	   		line(svg, x_start + 8 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + 8 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start + 8 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[7]);
+   	   		line(svg, x_start + 8 * shift + rct_sz, y_start + 4 * shift + rct_sz / 2, x_start + 14 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2);
+   	   		line(svg, x_start + 11 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2, x_start + 11 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start + 11 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[7]);
+   	   		line(svg, x_start + 14 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2, x_start + 14 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start + 14 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[7]);
+		   text_id_3_(svg, 'evicted', x_start + 5 * shift + rct_sz / 2 + 5, y_start + shift + rct_sz + 50, size=10, color="Salmon", text_id="sglang");
+		   
+		   text_id_2_(svg, 'User: Solve this question …', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Assistant: Sure! …', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 65, size=10, text_id="sglang");
+		   
+		}
+			
+	   if (timepoint == 9) {
+	   	   line(svg, x_start + rct_sz / 2, y_start + rct_sz, x_start + rct_sz / 2, y_start + 2 * shift);
+			rect(svg, x_start, y_start + 2 * shift, rct_sz, rct_sz, matrix_colors[7]);
+	   	   line(svg, x_start + rct_sz / 2, y_start + 2 * shift + rct_sz, x_start + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[7]);
+	   	   line_evicted(svg, x_start + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + rct_sz / 2, y_start + 6 * shift);
+			rect_evicted(svg, x_start, y_start + 6 * shift, rct_sz, rct_sz);
+			
+	   	   line(svg, x_start + rct_sz, y_start + rct_sz / 2, x_start + 8 * shift + rct_sz / 2, y_start + rct_sz / 2);
+	   	   line(svg, x_start + 8 * shift + rct_sz / 2, y_start + rct_sz / 2, x_start + 8 * shift + rct_sz / 2, y_start + 4 * shift);
+			rect(svg, x_start + 8 * shift, y_start + 4 * shift, rct_sz, rct_sz, matrix_colors[0]);
+   	   		line(svg, x_start + 8 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz, x_start + 8 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect(svg, x_start + 8 * shift, y_start + 6 * shift, rct_sz, rct_sz, matrix_colors[0]);
+   	   		line_evicted(svg, x_start + 8 * shift + rct_sz, y_start + 4 * shift + rct_sz / 2, x_start + 14 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2);
+   	   		line_evicted(svg, x_start + 11 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2, x_start + 11 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect_evicted(svg, x_start + 11 * shift, y_start + 6 * shift, rct_sz, rct_sz);
+   	   		line_evicted(svg, x_start + 14 * shift + rct_sz / 2, y_start + 4 * shift + rct_sz / 2, x_start + 14 * shift + rct_sz / 2, y_start + 6 * shift);
+			rect_evicted(svg, x_start + 14 * shift, y_start + 6 * shift, rct_sz, rct_sz);
+		   text_id_3_(svg, 'evicted', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, color="Salmon", text_id="sglang");
+		   text_id_3_(svg, 'evicted', x_start + 9 * shift + rct_sz / 2 + 5, y_start + 2 * shift + rct_sz + 50, size=10, color="Salmon", text_id="sglang");
+		   
+		   for (var i = 0; i < 4; i += 1) {
+	   	   		line(svg, x_start + 8 * shift + rct_sz / 2, y_start + 6 * shift + rct_sz, x_start + 8 * shift + rct_sz / 2, y_start + 7 * shift + rct_sz);
+	   	   		line(svg, x_start + 5 * shift + rct_sz / 2, y_start + 7 * shift + rct_sz, x_start + 11 * shift + rct_sz / 2, y_start + 7 * shift + rct_sz);
+	   	   		line(svg, x_start + (5 + 2 * i) * shift + rct_sz / 2, y_start + 7 * shift + rct_sz, x_start + (5 + 2 * i) * shift + rct_sz / 2, y_start + 9 * shift);
+				rect(svg, x_start + (5 + 2 * i) * shift, y_start + 9 * shift, rct_sz, rct_sz, i == 0 ? matrix_colors[7] : matrix_colors[4]);
+		   }
+		   
+		   text_id_2_(svg, 'This is …', x_start + 5 * shift + rct_sz / 2 + 3, y_start + 6 * shift + rct_sz + 55, size=10, text_id="sglang");
+		   text_id_2_(svg, 'Let us …', x_start + 7 * shift + rct_sz / 2 + 3, y_start + 6 * shift + rct_sz + 55, size=10, text_id="sglang");
+		   text_id_2_(svg, 'We can …', x_start + 9 * shift + rct_sz / 2 + 3, y_start + 6 * shift + rct_sz + 55, size=10, text_id="sglang");
+		   text_id_2_(svg, 'To solve …', x_start + 11 * shift + rct_sz / 2 + 3, y_start + 6 * shift + rct_sz + 55, size=10, text_id="sglang");
+		}
+	
+		init_timepoint = timepoint;
+	}
+
+	draw_request_evolution(init_timepoint);
+
+	var l_x = d3.scaleLinear()
+	    .domain([1, 9])
+	    .range([0, 320])
+	    .clamp(true);
+
+	createSlider(svg, draw_request_evolution, l_x, x_start + 40, 350, "Step", "currentColor", init_timepoint, roundN, 9);
+}
+
+radix_attention();
+
+</script>
+
+![](.)
+*Examples of RadixAttention operations with an LRU eviction policy, illustrated across nine time points. The nodes are color-coded to reflect different states: green for newly added nodes, blue for cached nodes accessed during the time point, and red for nodes that have been evicted*
+
+When GPU memory fills up, SGLang removes least recently used branches. By evicting leaves first, it is possible to re-use their common ancestors until those ancestors become leaves and are also evicted. Also they propose cache-aware scheduling policy: instead of processing requests first-come-first-served, SGLang reorders them to maximize cache hits.
+
 ## Conclusion
 
-This essay has covered a wide range of transformer inference optimization techniques, from high-level algorithmic improvements like KV caching and MQA/GQA, to low-level hardware optimizations such as CUDA kernel fusion and vLLM. The key takeaway is clear: LLMs are resource-intensive beasts, and taming them requires a diverse toolkit.
+This essay has covered a wide range of transformer inference optimization techniques, from high-level algorithmic improvements like KV caching and MQA/GQA/MLA, to low-level hardware optimizations such as CUDA kernel fusion and vLLM. The key takeaway is clear: LLMs are resource-intensive beasts, and taming them requires a diverse toolkit.
 
 We've seen that successful ML engineering isn't just about understanding algorithms or hardware - it's about grasping how they work together. An algorithmic breakthrough might fall flat without the right hardware implementation, while a deep dive into GPU architecture could unlock unexpected performance gains.
 

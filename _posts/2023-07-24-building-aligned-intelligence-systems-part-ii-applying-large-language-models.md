@@ -807,7 +807,7 @@ parameterized with a pretrained weight matrix $\mathbf{W}$, with an additional p
 
 $$h \leftarrow h + x \Delta\mathbf{W} = x(\mathbf{W} + \Delta \mathbf{W})=x\mathbf{W}+x\mathbf{W_d W_u}.$$
 
-Here $\mathbf{W}_d \in \mathbb{R}^{d \times r}$ is down-projection, $\mathbf{W}_u \in \mathbb{R}^{r \times k}$ is up-projection and $r \ll \min(d, k)$ is a bottleneck dimension.
+Here $\mathbf{W_d} \in \mathbb{R}^{d \times r}$ is down-projection, $\mathbf{W_u} \in \mathbb{R}^{r \times k}$ is up-projection and $r \ll \min(d, k)$ is a bottleneck dimension.
 
 <div id="lora_svg" class="svg-container" align="center"></div> 
 
