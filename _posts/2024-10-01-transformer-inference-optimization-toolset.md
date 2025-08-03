@@ -1553,7 +1553,7 @@ function linear_attention() {
 		text_(svg, "φ(K)", x_start + 9 * rct_sz, y_start + 10 * shift);
 		
 		text_(svg, "T", x_start + 9 * rct_sz + 30, y_start + 10 * shift - 8, size=8);
-		text_(svg, "U", x_start + 15 * shift + 7, y_start + 200);
+		text_(svg, "u", x_start + 15 * shift + 9, y_start + 200);
 		
 		text_(svg, "V", x_start + 15 * shift + 8, y_start - 5);
 		text_(svg, "O", x_start + 19 * shift + 8, y_start + 6 * shift);
@@ -2161,8 +2161,8 @@ Note that this algorithm is parallelizable, but its time complexity is $\mathcal
 - Initialize $\mathbf{u}_0 = 0 \in \mathbb{R}^{d \times d}$.
 - for $i=1, \dots L$:
 	- Load $\mathbf{q}_i$, $\mathbf{k}_i$, $\mathbf{v}_i \in \mathbf{R}^d$ from HBM to on-chip SRAM
-	- On chip compute $\mathbf{u}_{i+1}=\mathbf{u}_i + \mathbf{k}_i\mathbf{v}_i^T$.
-	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{u}_{i+1}$.
+	- On chip compute $\mathbf{u}_{i}=\mathbf{u}_{i-1} + \mathbf{k}_i\mathbf{v}_{i}^T$.
+	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{u}_{i}$.
 	- Write $\mathbf{o}_i^T$ to HBM as the $i$-th row of $\mathbf{O}$.
 - Return $\mathbf{O}$
 
