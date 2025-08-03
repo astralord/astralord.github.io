@@ -1883,9 +1883,9 @@ Standard attention forward pass looks like that:
 
 **FlashAttention** forward pass:
 
-- Set block sizes $\text{B}_{\mathbf{KV}} = \lceil \frac{\text{M}}{4d} \rceil$, $\text{B}_{\mathbf{Q}} = \min \big( \lceil \frac{\text{M}}{4d} \rceil, d \big)$, where $\text{M}$ is an on-chip SRAM size.
+- Set block sizes $\text{B}_{\mathbf{KV}} = \lceil \frac{M}{4d} \rceil$, $\text{B}_{\mathbf{Q}} = \min \big( \lceil \frac{M}{4d} \rceil, d \big)$, where $M$ is an on-chip SRAM size.
 - Initialize $\color{#E86456}{\mathbf{O} \in \mathbb{R}^{L \times d}}$, $\color{#E86456}{\ell \in \mathbb{R}^{L}}$ both $0$-valued and $\color{#E86456}{m \in \mathbb{R}^L}$ with values set to $\mathbf{-\infty}$, all stored in HBM.
-- Split $\color{#E86456}{\mathbf{Q}}$ into $\text{T}_{\mathbf{Q}} = \lceil \frac{L}{\text{B}_{\mathbf{Q}}} \rceil$ blocks and split $\color{#E86456}{\mathbf{K}, \mathbf{V}}$ into $\text{T}_{\mathbf{KV}} = \lceil \frac{L}{\text{B}_{\mathbf{KV}}} \rceil$ blocks along sequence axis.
+- Split $\color{#E86456}{\mathbf{Q}}$ into $\text{T}_{\mathbf{Q}}$ blocks and $\color{#E86456}{\mathbf{K}, \mathbf{V}}$ into $\text{T}_{\mathbf{KV}}$ blocks along sequence axis, where $\text{T}_{\bullet} = \lceil \frac{L}{\text{B}_{\bullet}} \rceil$.
 - Split $\color{#E86456}{\mathbf{O}, \ell, m}$ into $\text{T}_{\mathbf{Q}}$ blocks along sequence axis.
 - For $j = 1, \dots, \text{T}_{\mathbf{KV}}$:
 	- Load $\color{#65AD69}{\mathbf{K}_j, \mathbf{V}_j}$ from HBM to SRAM
@@ -2158,11 +2158,11 @@ Note that this algorithm is parallelizable, but its time complexity is $\mathcal
 
 **Right-Product Linear Attention**
 
-- Initialize $\mathbf{kv} = 0 \in \mathbb{R}^{d \times d}$.
+- Initialize $\mathbf{kv}_0 = 0 \in \mathbb{R}^{d \times d}$.
 - for $i=1, \dots L$:
 	- Load $\mathbf{q}_i$, $\mathbf{k}_i$, $\mathbf{v}_i \in \mathbf{R}^d$ from HBM to on-chip SRAM
-	- On chip compute $\mathbf{kv}=\mathbf{kv} + \mathbf{k}_i\mathbf{v}_i^T$.
-	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{kv}$.
+	- On chip compute $\mathbf{kv}_{i+1}=\mathbf{kv}_i + \mathbf{k}_i\mathbf{v}_i^T$.
+	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{kv}_{i+1}$.
 	- Write $\mathbf{o}_i^T$ to HBM as the $i$-th row of $\mathbf{O}$.
 - Return $\mathbf{O}$
 
