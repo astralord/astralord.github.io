@@ -1124,17 +1124,17 @@ Below is a comparison table with batched decoding/inference algorithms complexit
 
 Another way to reduce KV cache bottleneck is **multi-head latent attention (MLA)** introduced with [DeepSeek V2](https://arxiv.org/pdf/2405.04434) model. In standard multi-head self-attention mechanism all queries, keys and values are calculated as linear projections of input embedding $x \in \mathbb{R}^{d}$ with learnable parameters $\mathbf{W}^Q_{1 \dots h}$, $\mathbf{W}^K_{1 \dots h}$, $\mathbf{W}^V_{1 \dots h}$ respectively. In addition to that the low-rank joint compression latent vector $\mathbf{C}$ is computed for both keys and values in MLA:
 
-$$\mathbf{C^{KV}} = x \mathbf{W}_{\mathbf{d}}^{KV}$$
+$$\mathbf{C^{KV}} = x \mathbf{W}_{d}^{KV}$$
 
-with down-projection matrix $\mathbf{W}_{\mathbf{d}}^{KV} \in \mathbb{R}^{d \times d_c}$ ($d_c \ll d$). Vector $\mathbf{C^{KV}} \in \mathbb{R}^{d_c}$ called **compressed latent vector** and is stored in KV cache instead of full-sized values of $\mathbf{K}$ and $\mathbf{V}$, reducing its size by a factor of $\frac{d}{d_c}$. When it comes to retrieval, keys and values can be restored as
+with down-projection matrix $\mathbf{W}_{d}^{KV} \in \mathbb{R}^{d \times d_c}$ ($d_c \ll d$). Vector $\mathbf{C^{KV}} \in \mathbb{R}^{d_c}$ called **compressed latent vector** and is stored in KV cache instead of full-sized values of $\mathbf{K}$ and $\mathbf{V}$, reducing its size by a factor of $\frac{d}{d_c}$. When it comes to retrieval, keys and values can be restored as
 
-$$\mathbf{K} = \mathbf{C^{KV}} \mathbf{W}_{\mathbf{u}}^{K}, \quad \mathbf{V} = \mathbf{C^{KV}} \mathbf{W}_{\mathbf{u}}^{V}$$
+$$\mathbf{K} = \mathbf{C^{KV}} \mathbf{W}_{u}^{K}, \quad \mathbf{V} = \mathbf{C^{KV}} \mathbf{W}_{u}^{V}$$
 
-with up-projection matrices $\mathbf{W}_{\mathbf{u}}^{K}, \mathbf{W}_{\mathbf{u}}^{V} \in \mathbb{R}^{d_c \times d}$. Furthermore, authors of MLA also performed low-rank compression for the queries:
+with up-projection matrices $\mathbf{W}_{u}^{K}$, $\mathbf{W}_{u}^{V} \in \mathbb{R}^{d_c \times d}$. Furthermore, authors of MLA also performed low-rank compression for the queries:
 
-$$\mathbf{Q} = \mathbf{C^{Q}} \mathbf{W}_{\mathbf{u}}^{Q}, \quad \mathbf{C^{Q}} = x \mathbf{W}_{\mathbf{d}}^{Q}$$
+$$\mathbf{Q} = \mathbf{C^{Q}} \mathbf{W}_{u}^{Q}, \quad \mathbf{C^{Q}} = x \mathbf{W}_{d}^{Q}$$
 
-with up/down-projection matrices $\mathbf{W}_{\mathbf{u}}^{Q} \in \mathbb{R}^{d'_c \times d}$, $\mathbf{W}_{\mathbf{d}}^{Q} \in \mathbb{R}^{d \times d'_c}$ and the query compression dimension $d'_c$. While it doesn't affect KV cache, it reduces the activation memory during training.
+with up- and down-projection matrices $\mathbf{W}_{u}^{Q} \in \mathbb{R}^{d'_c \times d}$ and $\mathbf{W}_{d}^{Q} \in \mathbb{R}^{d \times d'_c}$ and the query compression dimension $d'_c$. While it doesn't affect KV cache, it reduces the activation memory during training.
 
 <div id="multilatent_attention" class="svg-container" align="center"></div> 
 
@@ -1244,16 +1244,14 @@ multilatent_attention();
 To improve the efficiency of MLA, a *weight-absorption trick* can be applied: since attention logits $\mathbf{S}$ for context tokens are
 
 $$
-\mathbf{S} = \mathbf{Q}\mathbf{K}^T = x\color{Salmon}{\mathbf{W}^Q{\mathbf{W}_{\mathbf{u}}^{K}}^T} \mathbf{C^{KV}}^T
+\mathbf{S} = \mathbf{Q}\mathbf{K}^T = x {\color{Salmon}{\mathbf{W}^Q{\mathbf{W}_{u}^{K}}^T}} \mathbf{C^{KV}}^T,
 $$
 
-and corresponding final output is 
+matrices $\mathbf{W}^Q {\mathbf{W}_{u}^{K}}^T$ can be merged together and there is no need to materialize full tensor of $\mathbf{K}$ from KV cache during inference. The same is true for $\mathbf{V}$, since weight-absorption can be applied to output:
 
 $$
-\mathbf{O} \mathbf{W}^O = \mathbf{PV} \mathbf{W}^O = \mathbf{PC} \color{Salmon}{\mathbf{W}_{\mathbf{u}}^{V}\mathbf{W}^O},
+\mathbf{O} \mathbf{W}^O = \mathbf{PV} \mathbf{W}^O = \mathbf{PC} {\color{Salmon}{\mathbf{W}_{u}^{V}\mathbf{W}^O}},
 $$
-
-matrices $\mathbf{W}^Q {\mathbf{W}_{\mathbf{u}}^{K}}^T$ and $\mathbf{W}_{\mathbf{u}}^{V}\mathbf{W}^O$ can be merged together and there is no need to materialize full tensors of $\mathbf{K}$ and $\mathbf{V}$ from KV cache during inference.
 
 The problem with low-rank KV compression is that it is incompatible with commonly used [rotary positional embeddings transformation](https://arxiv.org/pdf/2104.09864), which is position-sensitive for both keys and queries. To be specific, when we apply RoPE transformation $\mathbf{R}_{\Theta}$
 
@@ -1263,14 +1261,17 @@ for query token $\mathbf{q}_m$ at position $m$ and key token $\mathbf{k}_n$ at p
 
 $$
 \begin{aligned}
-\mathbf{q}_m\mathbf{k}_n^T &= \big(x_m \mathbf{W}^{Q} \mathbf{R}_{\Theta, m}\big) \big(x_n\mathbf{W}^{K}\mathbf{R}_{\Theta, n}\big)^T \\ &=x_m \mathbf{W}^{Q} \color{Salmon}{\mathbf{R}_{\Theta, m} \mathbf{R}_{\Theta, n}} {\mathbf{W}^{K}}^T x_n^T \\ &= x_m \mathbf{W}^{Q} \color{Salmon}{\mathbf{R}_{\Theta, n - m}} \mathbf{W}^{K} x_n^T.
+\mathbf{q}_m\mathbf{k}_n^T &= \big(x_m \mathbf{W}^{Q} \mathbf{R}_{\Theta, m}\big) \big(x_n\mathbf{W}^{K}\mathbf{R}_{\Theta, n}\big)^T \\ &=x_m \mathbf{W}^{Q} {\color{Salmon}{\mathbf{R}_{\Theta, m} \mathbf{R}_{\Theta, n}}} {\mathbf{W}^{K}}^T x_n^T \\ &= x_m \mathbf{W}^{Q} {\color{Salmon}{\mathbf{R}_{\Theta, n - m}}} \mathbf{W}^{K} x_n^T.
 \end{aligned}$$
 
-Now $\mathbf{W}_{\mathbf{u}}^{K}$ cannot be absorbed into $\mathbf{W}^Q$ any more during inference, since positional-dependent matrix $\mathbf{R}_{\Theta, n - m}$ lies in-between. As a solution, the decoupled RoPE strategy is proposed: query and a shared key for each head are split along embedding dimension in two parts
+Now $\mathbf{W}_{u}^{K}$ cannot be absorbed into $\mathbf{W}^Q$ any more during inference, since positional-dependent matrix $\mathbf{R}_{\Theta, n - m}$ lies in-between. As a solution, the decoupled RoPE strategy is proposed: query and a shared key for each head are split along embedding dimension in two parts
 
-$$\mathbf{Q} = [\mathbf{Q}_{\text{rope}}, \mathbf{Q}_{\text{nope}}], \quad \mathbf{K} = [\mathbf{K}_{\text{rope}}, \mathbf{K}_{\text{nope}}],$$
+$$
+\begin{aligned}
+\mathbf{Q} = [\mathbf{Q}_{\text{rope}}, \mathbf{Q}_{\text{nope}}], &\quad \mathbf{Q}_{\text{rope}} \in \mathbf{R}^{L \times d_R}, \mathbf{Q}_{\text{nope}} \in \mathbf{R}^{L \times d_h} \\ \mathbf{K} = [\mathbf{K}_{\text{rope}}, \mathbf{K}_{\text{nope}}], & \quad \mathbf{K}_{\text{rope}} \in \mathbf{R}^{L \times d_R}, \mathbf{K}_{\text{nope}} \in \mathbf{R}^{L \times d_h}
+\end{aligned}$$
 
-where $\mathbf{Q}_{\text{rope}} \in \mathbf{R}^{L \times d_h}$ and $\mathbf{Q}_{\text{nope}} \in \mathbf{R}^{L \times d_R}$ (the same is for $\mathbf{K}$) with $d_h + d_R$ - total dimension for each head. During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_R$ for each token in each layer (would be $B L n (d_c + d_R) $ in the table above).
+with $d_h + d_R$ - total dimension for each head. During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_R$ elements for each token in each layer (would be $B L n (d_c + d_R) $ in the table above).
 
 ### Chunked prefill
 
@@ -1531,7 +1532,7 @@ $$
 &= \frac{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)} \\
 &= \frac{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) } \\
 &= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\sum_{j \leq i} \phi(\mathbf{K}_j) \mathbf{V}^T_{j}} }{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\sum_{j \leq i} \phi(\mathbf{K}_j)}} \\
-&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\mathbf{U}_i}}{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\mathbf{Z}_i} }.
+&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{u_i}}{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\mathbf{Z}_i} }.
 \end{aligned}
 $$
 
@@ -1539,7 +1540,7 @@ The above equation is simpler to follow when the numerator is written in vectori
 
 $$\big( \phi(\mathbf{Q})\phi(\mathbf{K})^T \big) \mathbf{V} = \phi(\mathbf{Q})\big( \phi(\mathbf{K})^T \mathbf{V} \big).$$
 
-Regardless of the value $L$ we no longer need to store the quadratically growing attention matrix, we only need $\mathcal{O}(d^2)$ space for $\mathbf{U}_L = \phi(\mathbf{K})^T \mathbf{V} \in \mathbb{R}^{d \times d}$:
+Regardless of the value $L$ we no longer need to store the quadratically growing attention matrix, we only need $\mathcal{O}(d^2)$ space for $u_L = \phi(\mathbf{K})^T \mathbf{V} \in \mathbb{R}^{d \times d}$:
 
 <div id="linear_attention" class="svg-container" align="center"></div> 
 
@@ -1609,13 +1610,13 @@ Another interesting property emerges with introduction of feature maps: linear a
 
 $$
 \begin{aligned}
-\mathbf{U}_i &= \mathbf{U}_{i-1} + \phi ( \mathbf{K}_i ) \mathbf{V}_{i}^T, \\ \mathbf{Z}_i &= \mathbf{Z}_{i-1} + \phi (\mathbf{K}_i),
+u_i &= u_{i-1} + \phi ( \mathbf{K}_i ) \mathbf{V}_{i}^T, \\ \mathbf{Z}_i &= \mathbf{Z}_{i-1} + \phi (\mathbf{K}_i),
 \end{aligned}
 $$
 
-assuming $\mathbf{U}_0, \mathbf{Z}_0$ are both 0-valued. 
+assuming $u_0, \mathbf{Z}_0$ are both 0-valued. 
 
-This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
+This allows us to keep only constant-sized hidden states $u$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
 
 #### The Hedgehog & the Porcupine
 
@@ -2137,7 +2138,7 @@ The most recent version, [FlashAttention-3 (2024)](https://tridao.me/publication
 3. Block quantization and incoherent processing that leverages hardware
 support for FP8 low-precision
 
-### Ring attention
+### Ring Attention
 
 Even with Flash Attention, the memory complexity is linear in $L$ so scaling the sequence length is limited by the memory capacity. We could scale context with number of devices $N$, split inputs into $N$ parts, perform computations in parallel, then gather the results. However, attention requires for $\mathbf{Q}$ to access all elements of $\mathbf{K}, \mathbf{V}$ matrices.[^OISWA] Sending large matrices between devices can add a huge communication overhead (e.g. A100 throughput is 600GB/s with NVLink and only 64GB/s with PCIe).
 
