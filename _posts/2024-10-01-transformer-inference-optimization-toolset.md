@@ -1532,7 +1532,7 @@ $$
 &= \frac{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)} \\
 &= \frac{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) } \\
 &= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\sum_{j \leq i} \phi(\mathbf{K}_j) \mathbf{V}^T_{j}} }{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\sum_{j \leq i} \phi(\mathbf{K}_j)}} \\
-&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{u_i}}{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\mathbf{Z}_i} }.
+&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\mathbf{u}_i}}{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\mathbf{Z}_i} }.
 \end{aligned}
 $$
 
@@ -1540,7 +1540,7 @@ The above equation is simpler to follow when the numerator is written in vectori
 
 $$\big( \phi(\mathbf{Q})\phi(\mathbf{K})^T \big) \mathbf{V} = \phi(\mathbf{Q})\big( \phi(\mathbf{K})^T \mathbf{V} \big).$$
 
-Regardless of the value $L$ we no longer need to store the quadratically growing attention matrix, we only need $\mathcal{O}(d^2)$ space for $u_L = \phi(\mathbf{K})^T \mathbf{V} \in \mathbb{R}^{d \times d}$:
+Regardless of the value $L$ we no longer need to store the quadratically growing attention matrix, we only need $\mathcal{O}(d^2)$ space for $\mathbf{u}_L = \phi(\mathbf{K})^T \mathbf{V}$:
 
 <div id="linear_attention" class="svg-container" align="center"></div> 
 
@@ -1610,13 +1610,13 @@ Another interesting property emerges with introduction of feature maps: linear a
 
 $$
 \begin{aligned}
-u_i &= u_{i-1} + \phi ( \mathbf{K}_i ) \mathbf{V}_{i}^T, \\ \mathbf{Z}_i &= \mathbf{Z}_{i-1} + \phi (\mathbf{K}_i),
+\mathbf{u}_i &= \mathbf{u}_{i-1} + \phi ( \mathbf{K}_i ) \mathbf{V}_{i}^T, \\ \mathbf{Z}_i &= \mathbf{Z}_{i-1} + \phi (\mathbf{K}_i),
 \end{aligned}
 $$
 
-assuming $u_0, \mathbf{Z}_0$ are both 0-valued. 
+assuming $\mathbf{u}_0, \mathbf{Z}_0$ are both 0-valued. 
 
-This allows us to keep only constant-sized hidden states $u$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
+This allows us to keep only constant-sized hidden states $\mathbf{u}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
 
 #### The Hedgehog & the Porcupine
 
@@ -1883,26 +1883,26 @@ Standard attention forward pass looks like that:
 
 **FlashAttention** forward pass:
 
-- Set block sizes $\text{B}_{\mathbf{KV}} = \lceil \frac{M}{4d} \rceil$, $\text{B}_{\mathbf{Q}} = \min \big( \lceil \frac{M}{4d} \rceil, d \big)$, where $M$ is an on-chip SRAM size.
+- Set block sizes $B_{\mathbf{KV}} = \lceil \frac{M}{4d} \rceil$, $B_{\mathbf{Q}} = \min \big( \lceil \frac{M}{4d} \rceil, d \big)$, where $M$ is an on-chip SRAM size.
 - Initialize $\color{#E86456}{\mathbf{O} \in \mathbb{R}^{L \times d}}$, $\color{#E86456}{\ell \in \mathbb{R}^{L}}$ both $0$-valued and $\color{#E86456}{m \in \mathbb{R}^L}$ with values set to $\mathbf{-\infty}$, all stored in HBM.
-- Split $\color{#E86456}{\mathbf{Q}}$ into $\text{T}_{\mathbf{Q}}$ blocks and $\color{#E86456}{\mathbf{K}, \mathbf{V}}$ into $\text{T}_{\mathbf{KV}}$ blocks along sequence axis, where $\text{T}_{\bullet} = \lceil \frac{L}{\text{B}_{\bullet}} \rceil$.
-- Split $\color{#E86456}{\mathbf{O}, \ell, m}$ into $\text{T}_{\mathbf{Q}}$ blocks along sequence axis.
-- For $j = 1, \dots, \text{T}_{\mathbf{KV}}$:
+- Split $\color{#E86456}{\mathbf{Q}}$ into $T_{\mathbf{Q}} = \lceil \frac{L}{B_{\mathbf{Q}}} \rceil$ blocks and split $\color{#E86456}{\mathbf{K}, \mathbf{V}}$ into $T_{\mathbf{KV}} = \lceil \frac{L}{B_{\mathbf{KV}}} \rceil$ blocks along sequence axis.
+- Split $\color{#E86456}{\mathbf{O}, \ell, m}$ into $T_{\mathbf{Q}}$ blocks along sequence axis.
+- For $j = 1, \dots, T_{\mathbf{KV}}$:
 	- Load $\color{#65AD69}{\mathbf{K}_j, \mathbf{V}_j}$ from HBM to SRAM
-	- For $i = 1, \dots, \text{T}_{\mathbf{Q}}$:
+	- For $i = 1, \dots, T_{\mathbf{Q}}$:
 		- Load $\color{#65AD69}{\mathbf{Q}_i, \mathbf{O}_i, \ell_i, m_i}$ from HBM to SRAM.
 		- Compute unnormalized attention scores 
 		
-		  $$\color{#65AD69}{\mathbf{S}_{ij} = \mathbf{Q}_i \mathbf{K}^\text{T}_j \in \mathbb{R}^{\text{B}_{\mathbf{Q}} \times \text{B}_{\mathbf{KV}}}}.$$
+		  $$\color{#65AD69}{\mathbf{S}_{ij} = \mathbf{Q}_i \mathbf{K}^T_j \in \mathbb{R}^{B_{\mathbf{Q}} \times B_{\mathbf{KV}}}}.$$
 		  
 		- Compute
 		
 		 $$
 		 \color{#65AD69}{
 		 \begin{aligned}
-		 \tilde{m}_{ij} & = \operatorname{rowmax}(\mathbf{S}_{ij}) \in \mathbb{R}^{\text{B}_{\mathbf{Q}}}, \\
-		 \tilde{\mathbf{P}}_{ij} & = \exp ( \mathbf{S}_{ij} - \tilde{m}_{ij}) \in \mathbb{R}^{\text{B}_{\mathbf{Q}} \times \text{B}_{\mathbf{KV}}}, \\
-		 \tilde{\ell}_{ij} & = \operatorname{rowsum}(\tilde{\mathbf{P}}_{ij}) \in \mathbb{R}^{\text{B}_{\mathbf{Q}}}
+		 \tilde{m}_{ij} & = \operatorname{rowmax}(\mathbf{S}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}}}, \\
+		 \tilde{\mathbf{P}}_{ij} & = \exp ( \mathbf{S}_{ij} - \tilde{m}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}} \times B_{\mathbf{KV}}}, \\
+		 \tilde{\ell}_{ij} & = \operatorname{rowsum}(\tilde{\mathbf{P}}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}}}
 		 \end{aligned}}
 		 $$
 		 
@@ -1911,8 +1911,8 @@ Standard attention forward pass looks like that:
 		 $$
 		 \color{#65AD69}{
 		 \begin{aligned}
-		 m_i^{\text{new}} & = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{\text{B}_{\mathbf{Q}}}, \\
-		 \ell_{i}^{\text{new}} & = e^{m_i-m_i^{\text{new}}} \ell_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}}\tilde{\ell}_{ij}  \in \mathbb{R}^{\text{B}_{\mathbf{Q}}}
+		 m_i^{\text{new}} & = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_{\mathbf{Q}}}, \\
+		 \ell_{i}^{\text{new}} & = e^{m_i-m_i^{\text{new}}} \ell_i + e^{\tilde{m}_{ij} - m_i^{\text{new}}}\tilde{\ell}_{ij}  \in \mathbb{R}^{B_{\mathbf{Q}}}
 		 \end{aligned}}
 		 $$
 		 
@@ -2093,7 +2093,7 @@ flash_attn();
 </script>
 
 ![](.)
-*Schematic diagram of how FlashAttention forward pass is performed, when $\mathbf{Q}$ is partitioned into $\text{T}_{\mathbf{Q}}=1$ block of size $B_{\mathbf{Q}} \times d$ with $B_{\mathbf{Q}}=3$ and $\mathbf{K}/\mathbf{V}$ are partitioned into $\text{T}_{\mathbf{KV}} = 2$ blocks of size $B_{\mathbf{KV}} \times d$ with $B_{\mathbf{KV}}=2$ each. Here $\ell_1=\sum e^{\mathbf{S}_{11}}$, $\ell_2=\ell_1 + \sum e^{\mathbf{S}_{12}}$. The step with subtracting $m$ in softmax is omitted for simplification.*
+*Schematic diagram of how FlashAttention forward pass is performed, when $\mathbf{Q}$ is partitioned into $T_{\mathbf{Q}}=1$ block of size $B_{\mathbf{Q}} \times d$ with $B_{\mathbf{Q}}=3$ and $\mathbf{K}/\mathbf{V}$ are partitioned into $T_{\mathbf{KV}} = 2$ blocks of size $B_{\mathbf{KV}} \times d$ with $B_{\mathbf{KV}}=2$ each. Here $\ell_1=\sum e^{\mathbf{S}_{11}}$, $\ell_2=\ell_1 + \sum e^{\mathbf{S}_{12}}$. The step with subtracting $m$ in softmax is omitted for simplification.*
 
 Authors of FlashAttention also compared it to query chunk attention algorithm, stating three major differences:
 
@@ -2144,11 +2144,11 @@ support for FP8 low-precision
 
 ### Lightning Attention
 
-A paper by [Qin et al. (2024)](https://arxiv.org/pdf/2405.17381) showed that not only standard MHA, but also Linear Attention can be made IO-aware. We start with formulation of two computational approaches to handling causal scenario:
+A paper by [Qin et al. (2024)](https://arxiv.org/pdf/2405.17381) showed that not only standard MHA, but also Linear Attention can be made IO-aware. We start with formulation of two computational approaches to handling causal scenario[^TNM]:
 
-**Left-Product Linear Attention** (let $\mathbf{Q}=\phi(x \mathbf{W}^Q)$ and $\mathbf{K}=\phi(x \mathbf{W}^K)$):
+**Left-Product Linear Attention**:
 
-- Load $\mathbf{Q}$, $\mathbf{K}$ from HBM
+- Load $\mathbf{Q}=\phi(x \mathbf{W}^Q)$ and $\mathbf{K}=\phi(x \mathbf{W}^K)$ from HBM
 - Initialize a unit lower triangular matrix $\text{mask} \in \mathbb{R}^{L \times L}$.
 - Compute $\mathbf{S}=\mathbf{QK^T} \odot \text{mask}$, write $\mathbf{S}$ to HBM.
 - Load $\mathbf{S}$ and $\mathbf{V}$ from HBM, compute $\mathbf{O} = \mathbf{SV}$, write $\mathbf{O}$ to HBM.
@@ -2158,11 +2158,11 @@ Note that this algorithm is parallelizable, but its time complexity is $\mathcal
 
 **Right-Product Linear Attention**
 
-- Initialize $\mathbf{kv}_0 = 0 \in \mathbb{R}^{d \times d}$.
+- Initialize $\mathbf{u}_0 = 0 \in \mathbb{R}^{d \times d}$.
 - for $i=1, \dots L$:
 	- Load $\mathbf{q}_i$, $\mathbf{k}_i$, $\mathbf{v}_i \in \mathbf{R}^d$ from HBM to on-chip SRAM
-	- On chip compute $\mathbf{kv}_{i+1}=\mathbf{kv}_i + \mathbf{k}_i\mathbf{v}_i^T$.
-	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{kv}_{i+1}$.
+	- On chip compute $\mathbf{u}_{i+1}=\mathbf{u}_i + \mathbf{k}_i\mathbf{v}_i^T$.
+	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{u}_{i+1}$.
 	- Write $\mathbf{o}_i^T$ to HBM as the $i$-th row of $\mathbf{O}$.
 - Return $\mathbf{O}$
 
@@ -2171,7 +2171,7 @@ This algorithm has a time complexity of $\mathcal{O}(Ld^2)$, but it is not GPU-f
 The authors of **Lightning Attention** adopted tiling technique from FlashAttention
 
 
-The time complexity of Lightning Attention is $\mathcal{O}(Ld^2 + L\text{B}d)$.
+The time complexity of Lightning Attention is $\mathcal{O}(Ld^2 + LBd)$.
 
 ### Lightning Attention-2
 
@@ -2900,5 +2900,7 @@ For ML engineers, the message is simple: stay curious and be ready to learn acro
 [^HP]: While it is clear that *hedgehog* comes from attention "spikyness" modelling, I still wonder what *porcupine* in the title refers to.
 
 [^TC]: This isn't unique to GPUs - in fact, TPUs are even less general than GPUs.
+
+[^TNM]: These algorithms abandoned the denominator $\phi(\mathbf{Q}_L)^T\mathbf{Z}_L$ in favor of the norm of the output. There is a nice explanation for the reasons in [TransNormer paper](https://aclanthology.org/2022.emnlp-main.473.pdf)
 
 [^OISWA]: If we don't use SWA.
