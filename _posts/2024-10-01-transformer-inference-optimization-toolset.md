@@ -1124,17 +1124,17 @@ Below is a comparison table with batched decoding/inference algorithms complexit
 
 Another way to reduce KV cache bottleneck is **multi-head latent attention (MLA)** introduced with [DeepSeek V2](https://arxiv.org/pdf/2405.04434) model. In standard multi-head self-attention mechanism all queries, keys and values are calculated as linear projections of input embedding $x \in \mathbb{R}^{d}$ with learnable parameters $\mathbf{W}^Q_{1 \dots h}$, $\mathbf{W}^K_{1 \dots h}$, $\mathbf{W}^V_{1 \dots h}$ respectively. In addition to that the low-rank joint compression latent vector $\mathbf{C}$ is computed for both keys and values in MLA:
 
-$$\mathbf{C^{KV}} = x \mathbf{W}_{d}^{KV}$$
+$$\mathbf{C^{KV}} = x \mathbf{W}_d^{KV}$$
 
-with down-projection matrix $\mathbf{W}_{d}^{KV} \in \mathbb{R}^{d \times d_c}$ ($d_c \ll d$). Vector $\mathbf{C^{KV}} \in \mathbb{R}^{d_c}$ called **compressed latent vector** and is stored in KV cache instead of full-sized values of $\mathbf{K}$ and $\mathbf{V}$, reducing its size by a factor of $\frac{d}{d_c}$. When it comes to retrieval, keys and values can be restored as
+with down-projection matrix $\mathbf{W}_d^{KV} \in \mathbb{R}^{d \times d_c}$ ($d_c \ll d$). Vector $\mathbf{C^{KV}} \in \mathbb{R}^{d_c}$ called **compressed latent vector** and is stored in KV cache instead of full-sized values of $\mathbf{K}$ and $\mathbf{V}$, reducing its size by a factor of $\frac{d}{d_c}$. When it comes to retrieval, keys and values can be restored as
 
-$$\mathbf{K} = \mathbf{C^{KV}} \mathbf{W}_{u}^{K}, \quad \mathbf{V} = \mathbf{C^{KV}} \mathbf{W}_{u}^{V}$$
+$$\mathbf{K} = \mathbf{C^{KV}} \mathbf{W}_u^K, \quad \mathbf{V} = \mathbf{C^{KV}} \mathbf{W}_u^V$$
 
-with up-projection matrices $\mathbf{W}_{u}^{K}$, $\mathbf{W}_{u}^{V} \in \mathbb{R}^{d_c \times d}$. Furthermore, authors of MLA also performed low-rank compression for the queries:
+with up-projection matrices $\mathbf{W}_u^K$, $\mathbf{W}_u^V \in \mathbb{R}^{d_c \times d}$. Furthermore, authors of MLA also performed low-rank compression for the queries:
 
-$$\mathbf{Q} = \mathbf{C^{Q}} \mathbf{W}_{u}^{Q}, \quad \mathbf{C^{Q}} = x \mathbf{W}_{d}^{Q}$$
+$$\mathbf{Q} = \mathbf{C^{Q}} \mathbf{W}_u^Q, \quad \mathbf{C^{Q}} = x \mathbf{W}_d^Q$$
 
-with up- and down-projection matrices $\mathbf{W}_{u}^{Q} \in \mathbb{R}^{d'_c \times d}$ and $\mathbf{W}_{d}^{Q} \in \mathbb{R}^{d \times d'_c}$ and the query compression dimension $d'_c$. While it doesn't affect KV cache, it reduces the activation memory during training.
+with up- and down-projection matrices $\mathbf{W}_u^Q \in \mathbb{R}^{d'_c \times d}$ and $\mathbf{W}_d^Q \in \mathbb{R}^{d \times d'_c}$ and the query compression dimension $d'_c$. While it doesn't affect KV cache, it reduces the activation memory during training.
 
 <div id="multilatent_attention" class="svg-container" align="center"></div> 
 
@@ -1244,13 +1244,13 @@ multilatent_attention();
 To improve the efficiency of MLA, a *weight-absorption trick* can be applied: since attention logits $\mathbf{S}$ for context tokens are
 
 $$
-\mathbf{S} = \mathbf{Q}\mathbf{K}^T = x {\color{Salmon}{\mathbf{W}^Q{\mathbf{W}_{u}^{K}}^T}} \mathbf{C^{KV}}^T,
+\mathbf{S} = \mathbf{Q}\mathbf{K}^T = x {\color{Salmon}{\mathbf{W}^Q{\mathbf{W}_u^K}^T}} \mathbf{C^{KV}}^T,
 $$
 
-matrices $\mathbf{W}^Q {\mathbf{W}_{u}^{K}}^T$ can be merged together and there is no need to materialize full tensor of $\mathbf{K}$ from KV cache during inference. The same is true for $\mathbf{V}$, since weight-absorption can be applied to output:
+matrices $\mathbf{W}^Q {\mathbf{W}_u^K}^T$ can be merged together and there is no need to materialize full tensor of $\mathbf{K}$ from KV cache during inference. The same is true for $\mathbf{V}$, since weight-absorption can be applied to output:
 
 $$
-\mathbf{O} \mathbf{W}^O = \mathbf{PV} \mathbf{W}^O = \mathbf{PC} {\color{Salmon}{\mathbf{W}_{u}^{V}\mathbf{W}^O}},
+\mathbf{O} \mathbf{W}^O = \mathbf{PV} \mathbf{W}^O = \mathbf{PC} {\color{Salmon}{\mathbf{W}_u^V\mathbf{W}^O}},
 $$
 
 The problem with low-rank KV compression is that it is incompatible with commonly used [rotary positional embeddings transformation](https://arxiv.org/pdf/2104.09864), which is position-sensitive for both keys and queries. To be specific, when we apply RoPE transformation $\mathbf{R}_{\Theta}$
@@ -1264,7 +1264,7 @@ $$
 \mathbf{q}_m\mathbf{k}_n^T &= \big(x_m \mathbf{W}^{Q} \mathbf{R}_{\Theta, m}\big) \big(x_n\mathbf{W}^{K}\mathbf{R}_{\Theta, n}\big)^T \\ &=x_m \mathbf{W}^{Q} {\color{Salmon}{\mathbf{R}_{\Theta, m} \mathbf{R}_{\Theta, n}}} {\mathbf{W}^{K}}^T x_n^T \\ &= x_m \mathbf{W}^{Q} {\color{Salmon}{\mathbf{R}_{\Theta, n - m}}} \mathbf{W}^{K} x_n^T.
 \end{aligned}$$
 
-Now $\mathbf{W}_{u}^{K}$ cannot be absorbed into $\mathbf{W}^Q$ any more during inference, since positional-dependent matrix $\mathbf{R}_{\Theta, n - m}$ lies in-between. As a solution, the decoupled RoPE strategy is proposed: query and a shared key for each head are split along embedding dimension in two parts
+Now $\mathbf{W}_u^K$ cannot be absorbed into $\mathbf{W}^Q$ any more during inference, since positional-dependent matrix $\mathbf{R}_{\Theta, n - m}$ lies in-between. As a solution, the decoupled RoPE strategy is proposed: query and a shared key for each head are split along embedding dimension in two parts
 
 $$
 \begin{aligned}
@@ -2138,6 +2138,16 @@ The most recent version, [FlashAttention-3 (2024)](https://tridao.me/publication
 3. Block quantization and incoherent processing that leverages hardware
 support for FP8 low-precision
 
+### Grouped-Tied / Grouped Latent Attention
+
+[Zadouri et al. (2025)](https://arxiv.org/pdf/2505.21487)
+
+### Lightning Attention
+
+A paper by [Qin et al. (2024)](https://arxiv.org/pdf/2405.17381) showed that not only standard MHA, but also Linear Attention can be made IO-aware.
+
+### Lightning Attention-2
+
 ### Ring Attention
 
 Even with Flash Attention, the memory complexity is linear in $L$ so scaling the sequence length is limited by the memory capacity. We could scale context with number of devices $N$, split inputs into $N$ parts, perform computations in parallel, then gather the results. However, attention requires for $\mathbf{Q}$ to access all elements of $\mathbf{K}, \mathbf{V}$ matrices.[^OISWA] Sending large matrices between devices can add a huge communication overhead (e.g. A100 throughput is 600GB/s with NVLink and only 64GB/s with PCIe).
@@ -2552,7 +2562,7 @@ Beam search decoding with PagedAttention is more advanced, since also blocks acr
 
 Additionaly to the algorithm authors released [**vLLM**](https://github.com/vllm-project/vllm), a high-throughput distributed LLM serving engine on top of PagedAttention. Their evaluations on various models and workloads show that vLLM improves the LLM serving throughput by 2-4× compared to the other existing serving systems, without affecting the model accuracy.
 
-### RadixAttention
+### RadixAttention / SGLang
 
 While vLLM is optimized for independent requests - like a chatbot answering unrelated questions from different users, another system, called [**SGLang (Structured Generation Language for LLMs)**](https://github.com/sgl-project/sglang), proposed by [Zheng et al. (2024)](https://arxiv.org/pdf/2312.07104), is designed for complex multi-step LLM workflows like AI agentts or applications that need to call the LLM multiple times with related prompts.
 
@@ -2831,7 +2841,7 @@ function radix_attention() {
 	    .range([0, 320])
 	    .clamp(true);
 
-	createSlider(svg, draw_request_evolution, l_x, x_start + 40, 350, "Step", "currentColor", init_timepoint, roundN, 9);
+	createSlider(svg, draw_request_evolution, l_x, x_start + 40, 350, "Step", "currentColor", init_timepoint, roundN, 9, 30, text_size=11);
 }
 
 radix_attention();
