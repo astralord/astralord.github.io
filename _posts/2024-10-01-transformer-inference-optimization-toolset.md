@@ -2158,11 +2158,11 @@ Note that this algorithm is parallelizable, but its time complexity is $\mathcal
 
 **Right-Product Linear Attention**
 
-- Initialize $\mathbf{u}_0 = 0 \in \mathbb{R}^{d \times d}$.
+- Initialize $\mathbf{u} = 0 \in \mathbb{R}^{d \times d}$.
 - for $i=1, \dots L$:
 	- Load $\mathbf{q}_i$, $\mathbf{k}_i$, $\mathbf{v}_i \in \mathbf{R}^d$ from HBM to on-chip SRAM
-	- On chip compute $\mathbf{u}_{i}=\mathbf{u}_{i-1} + \mathbf{k}_i\mathbf{v}_{i}^T$.
-	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{u}_{i}$.
+	- On chip compute $\mathbf{u}=\mathbf{u} + \mathbf{k}_i\mathbf{v}_{i}^T$.
+	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{u}$.
 	- Write $\mathbf{o}_i^T$ to HBM as the $i$-th row of $\mathbf{O}$.
 - Return $\mathbf{O}$
 
