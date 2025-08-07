@@ -1517,7 +1517,7 @@ Kernel function $\mathcal{K}(q, k)$ can be thought of as similarity measure betw
 
 $$\mathcal{K}(q, k) = \phi(q)^T \phi(k).$$
 
-If we find such feature map, it would allow us to implicitly compute similarities between queries and keys without explicitly computing the full attention matrix $\mathbf{QK^T}$.
+If we find such feature map, it would allow us to implicitly compute similarities between queries and keys without explicitly computing the full attention matrix $\mathbf{QK}^T$.
 
 In attention mechanism unnormalized similarity between query embedding $\mathbf{q}$ and key embedding $\mathbf{k}$ is measured as $\mathcal{K}(\mathbf{q}, \mathbf{k}) = \exp \big( \frac{\mathbf{q}^T\mathbf{k}}{\sqrt{d}} \big)$. Each element of softmax masked attention matrix $\mathbf{P} = \operatorname{softmax}(\mathbf{S} \circ \operatorname{mask})$, the normalized similarity between query row $\mathbf{Q}_i$ and key row $\mathbf{K}_j$ ($j \leq i$), can be represented as
 
@@ -1532,7 +1532,7 @@ $$
 &= \frac{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)} \\
 &= \frac{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) } \\
 &= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\sum_{j \leq i} \phi(\mathbf{K}_j) \mathbf{V}^T_{j}} }{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\sum_{j \leq i} \phi(\mathbf{K}_j)}} \\
-&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\mathbf{u}_i}}{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\mathbf{Z}_i} }.
+&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\mathbf{U}_i}}{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\mathbf{Z}_i} }.
 \end{aligned}
 $$
 
@@ -1540,7 +1540,7 @@ The above equation is simpler to follow when the numerator is written in vectori
 
 $$\big( \phi(\mathbf{Q})\phi(\mathbf{K})^T \big) \mathbf{V} = \phi(\mathbf{Q})\big( \phi(\mathbf{K})^T \mathbf{V} \big).$$
 
-Regardless of the value $L$ we no longer need to store the quadratically growing attention matrix, we only need $\mathcal{O}(d^2)$ space for $\mathbf{u}_L = \phi(\mathbf{K})^T \mathbf{V}$:
+Regardless of the value $L$ we no longer need to store the quadratically growing attention matrix, we only need $\mathcal{O}(d^2)$ space for $\mathbf{U}_L = \phi(\mathbf{K})^T \mathbf{V}$:
 
 <div id="linear_attention" class="svg-container" align="center"></div> 
 
@@ -1610,13 +1610,13 @@ Another interesting property emerges with introduction of feature maps: linear a
 
 $$
 \begin{aligned}
-\mathbf{u}_i &= \mathbf{u}_{i-1} + \phi ( \mathbf{K}_i ) \mathbf{V}_{i}^T, \\ \mathbf{Z}_i &= \mathbf{Z}_{i-1} + \phi (\mathbf{K}_i),
+\mathbf{U}_i &= \mathbf{U}_{i-1} + \phi ( \mathbf{K}_i ) \mathbf{V}_{i}^T, \\ \mathbf{Z}_i &= \mathbf{Z}_{i-1} + \phi (\mathbf{K}_i),
 \end{aligned}
 $$
 
-assuming $\mathbf{u}_0, \mathbf{Z}_0$ are both 0-valued. 
+assuming $\mathbf{U}_0, \mathbf{Z}_0$ are both 0-valued. 
 
-This allows us to keep only constant-sized hidden states $\mathbf{u}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
+This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
 
 #### The Hedgehog & the Porcupine
 
@@ -1862,7 +1862,7 @@ FlashAttention might be the most popular implementation of attention mechanism n
 
 Standard attention forward pass looks like that:
 
-- Load $\mathbf{Q}$, $\mathbf{K}$ from HBM, compute $\mathbf{S}=\mathbf{QK^T}$, write $\mathbf{S}$ to HBM.
+- Load $\mathbf{Q}$, $\mathbf{K}$ from HBM, compute $\mathbf{S}=\mathbf{QK}^T$, write $\mathbf{S}$ to HBM.
 - Read $\mathbf{S}$ from HBM, compute $\mathbf{P} = \operatorname{softmax}(\mathbf{S})$, write $\mathbf{P}$ to HBM.
 - Load $\mathbf{P}$ and $\mathbf{V}$ from HBM, compute $\mathbf{O} = \mathbf{PV}$, write $\mathbf{O}$ to HBM.
 - Return $\mathbf{O}$
@@ -2150,7 +2150,7 @@ A paper by [Qin et al. (2024)](https://arxiv.org/pdf/2405.17381) showed that not
 
 - Load $\mathbf{Q}=\phi(x \mathbf{W}^Q)$ and $\mathbf{K}=\phi(x \mathbf{W}^K)$ from HBM
 - Initialize a unit lower triangular matrix $\text{mask} \in \mathbb{R}^{L \times L}$.
-- Compute $\mathbf{S}=\mathbf{QK^T} \odot \text{mask}$, write $\mathbf{S}$ to HBM.
+- Compute $\mathbf{S}=\mathbf{QK}^T \odot \text{mask}$, write $\mathbf{S}$ to HBM.
 - Load $\mathbf{S}$ and $\mathbf{V}$ from HBM, compute $\mathbf{O} = \mathbf{SV}$, write $\mathbf{O}$ to HBM.
 - Return $\mathbf{O}$
 
@@ -2158,20 +2158,59 @@ Note that this algorithm is parallelizable, but its time complexity is $\mathcal
 
 **Right-Product Linear Attention**
 
-- Initialize $\mathbf{u} = 0 \in \mathbb{R}^{d \times d}$.
+- Initialize $\mathbf{U} = 0 \in \mathbb{R}^{d \times d}$.
 - for $i=1, \dots L$:
 	- Load $\mathbf{q}_i$, $\mathbf{k}_i$, $\mathbf{v}_i \in \mathbf{R}^d$ from HBM to on-chip SRAM
-	- On chip compute $\mathbf{u}=\mathbf{u} + \mathbf{k}_i \mathbf{v}_i^T$.
-	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{u}$.
+	- On chip compute $\mathbf{U}=\mathbf{U} + \mathbf{k}_i \mathbf{v}_i^T$.
+	- On chip compute $\mathbf{o}_i=\mathbf{q}_i^T\mathbf{U}$.
 	- Write $\mathbf{o}_i^T$ to HBM as the $i$-th row of $\mathbf{O}$.
 - Return $\mathbf{O}$
 
 This algorithm has a time complexity of $\mathcal{O}(Ld^2)$, but it is not GPU-friendly, making it slower than the first approach.
 
-The authors of **Lightning Attention** adopted tiling technique from FlashAttention
+The core idea is that we can adopt the same tiling technique from FlashAttention to perform the whole operation on SRAM. Say, we divide each of input tensors into two blocks along sequence length up to some step $m$: 
 
+$$
+\mathbf{Q} = \begin{pmatrix} \mathbf{Q}_1 \\ \mathbf{Q}_2 \end{pmatrix}, 
+\mathbf{K} = \begin{pmatrix} \mathbf{K}_1 \\ \mathbf{K}_2 \end{pmatrix}, 
+\mathbf{V} = \begin{pmatrix} \mathbf{V}_1 \\ \mathbf{V}_2 \end{pmatrix}.
+$$
 
-The time complexity of Lightning Attention is $\mathcal{O}(Ld^2 + LBd)$.
+Let also $\mathbf{U}_0 = 0$ and $\mathbf{U}_i = \mathbf{U}_{i-1} + \mathbf{k}_i\mathbf{v}_i^T$ for $i > 0$, then
+
+$$\mathbf{U}_l=\mathbf{U}_m + \sum_{m < i \leq l} \mathbf{k}_i\mathbf{v}_i^T \quad \forall 0 \leq m \leq l$$
+
+and
+
+$$
+\mathbf{O} = \begin{pmatrix} \mathbf{Q}_1 \mathbf{U}_m \\ \mathbf{Q}_2 \mathbf{U}_L \end{pmatrix} = \begin{pmatrix} {\color{Salmon}{\mathbf{Q}_1 \mathbf{U}_0}} + {\color{#007BA7}{[\mathbf{Q}_1\mathbf{K}_1^T \odot \text{mask} ] \mathbf{V}_1}} \\ {\color{Salmon}{\mathbf{Q}_2 \mathbf{U}_m} + {\color{#007BA7}{[\mathbf{Q}_2\mathbf{K}_2^T \odot \text{mask} ] \mathbf{V}_2}}} \end{pmatrix}. 
+$$
+
+The above formula shows that the forward causal linear attention can be divided into two parts:
+
+- The computation between blocks, *inter blocks* $\mathbf{O}_{\text{inter}} = {\color{Salmon}{\mathbf{Q} \mathbf{U}}}$ can use the Right-Product.
+- The computation within the block, *intra blocks* $\mathbf{O}_{\text{intra}} = {\color{#007BA7}{[\mathbf{Q}\mathbf{K}^T \odot \text{mask} ] \mathbf{V}}}$ can use the Left-Product.
+
+Now **Lightning Attention** forward pass looks like this:
+
+- Set block size $B_\mathbf{QKV}$ and split $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ into $T_\mathbf{QKV} = \lceil \frac{L}{B_\mathbf{QKV}} \rceil$ blocks.
+- Initialize $\text{mask} \in \mathbb{R}^{B_\mathbf{QKV} \times B_\mathbf{QKV}}$, where $\text{mask}_{ts} = 1_{s \leq t}$.
+- Initialize $\mathbf{U}=0$.
+- for $i=1, \dots T_\mathbf{QKV}$:
+	- Load $\mathbf{Q}_i$, $\mathbf{K}_i$, $\mathbf{V}_i \in \mathbf{R}^{B_\mathbf{QKV} \times d}$ from HBM to on-chip SRAM.
+	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
+	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
+	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}$
+	- Write $\mathbf{O}_i = \mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ to HBM as the $i$-th block of $\mathbf{O}$.
+- Return $\mathbf{O}$
+
+The time complexity of Lightning Attention consists of:
+
+- Inter block computation part $\mathcal{O}(B_\mathbf{QKV}d^2)$
+- Intra block computation part $\mathcal{O}(B_\mathbf{QKV}^2d)$
+- State $\mathbf{U}$ update $\mathcal{O}(B_\mathbf{QKV}d^2)$
+
+In total, since we run near $\frac{L}{B_\mathbf{QKV}}$ iterations, time complexity is $\mathcal{O}(Ld^2 + LB_\mathbf{QKV}d)$. In practice, authors of Lightning Attention chose $B_\mathbf{QKV} \approx d$, hence the time complexity is $\mathcal{O}(Ld^2)$.
 
 ### Lightning Attention-2
 
