@@ -1519,20 +1519,20 @@ $$\mathcal{K}(q, k) = \phi(q)^T \phi(k).$$
 
 If we find such feature map, it would allow us to implicitly compute similarities between queries and keys without explicitly computing the full attention matrix $\mathbf{QK}^T$.
 
-In attention mechanism unnormalized similarity between query embedding $\mathbf{q}$ and key embedding $\mathbf{k}$ is measured as $\mathcal{K}(\mathbf{q}, \mathbf{k}) = \exp \big( \frac{\mathbf{q}^T\mathbf{k}}{\sqrt{d}} \big)$. Each element of softmax masked attention matrix $\mathbf{P} = \operatorname{softmax}(\mathbf{S} \circ \operatorname{mask})$, the normalized similarity between query row $\mathbf{Q}_i$ and key row $\mathbf{K}_j$ ($j \leq i$), can be represented as
+In attention mechanism unnormalized similarity between query embedding $\mathbf{q}$ and key embedding $\mathbf{k}$ is measured as $\mathcal{K}(\mathbf{q}, \mathbf{k}) = \exp \big( \frac{\mathbf{q}^T\mathbf{k}}{\sqrt{d}} \big)$. Each element of softmax masked attention matrix $\mathbf{P} = \operatorname{softmax}(\mathbf{S} \circ \operatorname{mask})$, the normalized similarity between query row $\mathbf{q}_i$ and key row $\mathbf{k}_j$ ($j \leq i$), can be represented as
 
-$$\mathbf{P}_{ij}=\frac{\mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)}{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)}.$$
+$$\mathbf{P}_{ij}=\frac{\mathcal{K}(\mathbf{q}_i, \mathbf{k}_j)}{\sum_{j \leq i} \mathcal{k}(\mathbf{q}_i, \mathbf{k}_j)}.$$
 
 Using feature maps we can rewrite each row $i$ of dot-product attention output $\mathbf{O} = \mathbf{P} \mathbf{V}$ as
 
 $$
 \begin{aligned} 
 \mathbf{O}_{i}
-&= \sum_{j \leq i} \mathbf{P}_{ij} \mathbf{V}_j \\
-&= \frac{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \mathcal{K}(\mathbf{Q}_i, \mathbf{K}_j)} \\
-&= \frac{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \phi(\mathbf{Q}_i)^T \phi(\mathbf{K}_j) } \\
-&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\sum_{j \leq i} \phi(\mathbf{K}_j) \mathbf{V}^T_{j}} }{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\sum_{j \leq i} \phi(\mathbf{K}_j)}} \\
-&= \frac{ \phi(\mathbf{Q}_i)^T \cdot \color{Salmon}{\mathbf{U}_i}}{ \phi(\mathbf{Q}_i)^T \cdot \color{#007BA7}{\mathbf{Z}_i} }.
+&= \sum_{j \leq i} \mathbf{P}_{ij} \mathbf{v}_j \\
+&= \frac{\sum_{j \leq i} \mathcal{k}(\mathbf{q}_i, \mathbf{k}_j) \cdot \mathbf{V}_{j}}{\sum_{j \leq i} \mathcal{k}(\mathbf{q}_i, \mathbf{k}_j)} \\
+&= \frac{\sum_{j \leq i} \phi(\mathbf{q}_i)^T \phi(\mathbf{k}_j) \cdot \mathbf{v}_{j}}{\sum_{j \leq i} \phi(\mathbf{q}_i)^T \phi(\mathbf{k}_j) } \\
+&= \frac{ \phi(\mathbf{q}_i)^T \cdot \color{Salmon}{\sum_{j \leq i} \phi(\mathbf{k}_j) \mathbf{v}^T_{j}} }{ \phi(\mathbf{q}_i)^T \cdot \color{#007BA7}{\sum_{j \leq i} \phi(\mathbf{k}_j)}} \\
+&= \frac{ \phi(\mathbf{q}_i)^T \cdot \color{Salmon}{\mathbf{U}_i}}{ \phi(\mathbf{q}_i)^T \cdot \color{#007BA7}{\mathbf{z}_i} }.
 \end{aligned}
 $$
 
@@ -1553,7 +1553,7 @@ function linear_attention() {
 		text_(svg, "φ(K)", x_start + 9 * rct_sz, y_start + 10 * shift);
 		
 		text_(svg, "T", x_start + 9 * rct_sz + 30, y_start + 10 * shift - 8, size=8);
-		text_(svg, "u", x_start + 15 * shift + 9, y_start + 200);
+		text_(svg, "U", x_start + 15 * shift + 7, y_start + 200);
 		
 		text_(svg, "V", x_start + 15 * shift + 8, y_start - 5);
 		text_(svg, "O", x_start + 19 * shift + 8, y_start + 6 * shift);
@@ -1604,19 +1604,19 @@ linear_attention();
 </script>
 
 ![](.)
-*Neither prefill nor decoding phase with linear attention require $\mathcal{O}(L^2)$ space anymore. Scalar denominator $\phi(\mathbf{Q}_L)^T \cdot \mathbf{Z}_L$ is omitted here.*
+*Neither prefill nor decoding phase with linear attention require $\mathcal{O}(L^2)$ space anymore. Scalar denominator $\phi(\mathbf{Q}_L)^T \cdot \mathbf{z}_L$ is omitted here.*
 
 Another interesting property emerges with introduction of feature maps: linear attention computation can be expressed recurrently. Note that we have
 
 $$
 \begin{aligned}
-\mathbf{U}_i &= \mathbf{U}_{i-1} + \phi ( \mathbf{K}_i ) \mathbf{V}_{i}^T, \\ \mathbf{Z}_i &= \mathbf{Z}_{i-1} + \phi (\mathbf{K}_i),
+\mathbf{U}_i &= \mathbf{U}_{i-1} + \phi ( \mathbf{k}_i ) \mathbf{v}_{i}^T, \\ \mathbf{z}_i &= \mathbf{z}_{i-1} + \phi (\mathbf{k}_i),
 \end{aligned}
 $$
 
-assuming $\mathbf{U}_0, \mathbf{Z}_0$ are both 0-valued. 
+assuming $\mathbf{U}_0, \mathbf{z}_0$ are both 0-valued. 
 
-This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{Z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
+This allows us to keep only constant-sized hidden states $\mathbf{U}$ and $\mathbf{z}$ to compute the attention during auto-regressive decoding and we don't need to feed linearly increasing inputs to the model.
 
 #### The Hedgehog & the Porcupine
 
@@ -1640,7 +1640,7 @@ $$\phi_\text{mlp}(\mathbf{x}) = \exp (\mathbf{xW}).$$
 
 To learn a softmax approximation, they train $\phi_\text{mlp}(\mathbf{x})$ to minimize the cross-entropy loss between the computed linear attention weights and those that would have been computed via softmax masked attention $\mathbf{P}$:
 
-$$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_j)}{\sum_{k \leq i} \phi_\text{mlp}(\mathbf{Q}_i)^T\phi_\text{mlp}(\mathbf{K}_k)}.$$
+$$\mathcal{L}_i = -\sum_{j \leq i} \mathbf{P}_{ij} \cdot \log \frac{\phi_\text{mlp}(\mathbf{q}_i)^T\phi_\text{mlp}(\mathbf{k}_j)}{\sum_{k \leq i} \phi_\text{mlp}(\mathbf{q}_i)^T\phi_\text{mlp}(\mathbf{k}_k)}.$$
 
 ## Low-level hardware optimizations
 
@@ -2176,7 +2176,11 @@ $$
 \mathbf{V} = \begin{pmatrix} \mathbf{V}_1 \\ \mathbf{V}_2 \end{pmatrix}.
 $$
 
-Let also $\mathbf{U}_0 = 0$ and $\mathbf{U}_i = \mathbf{U}_{i-1} + \mathbf{k}_i\mathbf{v}_i^T$ for $i > 0$, then
+Recall also that for $i > 0$
+
+$$\mathbf{U}_i = \mathbf{U}_{i-1} + \mathbf{k}_i\mathbf{v}_i^T$$
+
+with $\mathbf{U}_0 = 0$. Then
 
 $$\mathbf{U}_l=\mathbf{U}_m + \sum_{m < i \leq l} \mathbf{k}_i\mathbf{v}_i^T \quad \forall 0 \leq m \leq l$$
 
@@ -2194,14 +2198,14 @@ The above formula shows that the forward causal linear attention can be divided 
 Now **Lightning Attention** forward pass looks like this:
 
 - Set block size $B_\mathbf{QKV}$ and split $\mathbf{Q}$, $\mathbf{K}$, $\mathbf{V}$ into $T_\mathbf{QKV} = \lceil \frac{L}{B_\mathbf{QKV}} \rceil$ blocks.
-- Initialize $\text{mask} \in \mathbb{R}^{B_\mathbf{QKV} \times B_\mathbf{QKV}}$, where $\text{mask}_{ts} = 1_{s \leq t}$.
+- Initialize unit lower triangular $\text{mask} \in \mathbb{R}^{B_\mathbf{QKV} \times B_\mathbf{QKV}}$.
 - Initialize $\mathbf{U}=0$.
 - for $i=1, \dots T_\mathbf{QKV}$:
-	- Load $\mathbf{Q}_i$, $\mathbf{K}_i$, $\mathbf{V}_i \in \mathbf{R}^{B_\mathbf{QKV} \times d}$ from HBM to on-chip SRAM.
+	- Load $\mathbf{Q}_i$, $\mathbf{K}_i$, $\mathbf{V}_i$ from HBM to on-chip SRAM.
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}$
-	- Write $\mathbf{O}_i = \mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ to HBM as the $i$-th block of $\mathbf{O}$.
+	- Write $\mathbf{O}_i = \mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
@@ -2210,7 +2214,7 @@ The time complexity of Lightning Attention consists of:
 - Intra block computation part $\mathcal{O}(B_\mathbf{QKV}^2d)$
 - State $\mathbf{U}$ update $\mathcal{O}(B_\mathbf{QKV}d^2)$
 
-In total, since we run near $\frac{L}{B_\mathbf{QKV}}$ iterations, time complexity is $\mathcal{O}(Ld^2 + LB_\mathbf{QKV}d)$. In practice, authors of Lightning Attention chose $B_\mathbf{QKV} \approx d$, hence the time complexity is $\mathcal{O}(Ld^2)$.
+In total, since we run near $\frac{L}{B_\mathbf{QKV}}$ iterations, time complexity is $\mathcal{O}(Ld^2 + LB_\mathbf{QKV}d)$. In practice, authors of Lightning Attention chose $B_\mathbf{QKV} \approx d$, hence its formula reduces to $\mathcal{O}(Ld^2)$.
 
 ### Lightning Attention-2
 
