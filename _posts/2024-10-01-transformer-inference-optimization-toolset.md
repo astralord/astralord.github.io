@@ -2192,8 +2192,8 @@ $$
 
 The above formula shows that the forward causal linear attention can be divided into two parts:
 
-- The computation between blocks, *inter blocks* $\mathbf{O}_{\text{inter}} = {\color{Salmon}{\mathbf{Q} \mathbf{U}}}$ can use the Right-Product.
-- The computation within the block, *intra blocks* $\mathbf{O}_{\text{intra}} = {\color{#007BA7}{[\mathbf{Q}\mathbf{K}^T \odot \text{mask} ] \mathbf{V}}}$ can use the Left-Product.
+- The computation of *inter blocks* $\mathbf{O}_{\text{inter}} = {\color{Salmon}{\mathbf{Q} \mathbf{U}}}$ can use the Right-Product.
+- The computation of *intra blocks* $\mathbf{O}_{\text{intra}} = {\color{#007BA7}{[\mathbf{Q}\mathbf{K}^T \odot \text{mask} ] \mathbf{V}}}$ can use the Left-Product.
 
 Now **Lightning Attention** forward pass looks like this:
 
@@ -2204,8 +2204,8 @@ Now **Lightning Attention** forward pass looks like this:
 	- Load $\mathbf{Q}_i$, $\mathbf{K}_i$, $\mathbf{V}_i$ from HBM to on-chip SRAM.
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
-	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}$
-	- Write $\mathbf{O}_i = \mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ to HBM.
+	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
+	- Write $\mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
