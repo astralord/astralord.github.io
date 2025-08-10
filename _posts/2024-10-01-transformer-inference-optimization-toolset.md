@@ -1012,7 +1012,7 @@ arithmetic_intensity_mqa();
 
 In our example above with GPT-3 model, using MQA would make KV cache $h=96$ times smaller, thus the required space would take around $200$ MB which is just $0.25\%$ of one A100 GPU memory.
 
-Of course, such acceleration and memory reduction come with a price - we cut model parameters and therefore its potential capacity. The possible way to avoid quality degradation is to use technique, which interpolates between MHA and MQA - **grouped query attention (GQA)** ([Ainslie et al. (2023)](https://arxiv.org/pdf/2305.13245)). With GQA we split $h$ query heads into groups of size $g$ (number of queries per KV-head), each with its own keys and values. Note that for $g=1$ GQA is equal to multi-head attention and for $g=1$ GQA is the same as multi-query attention. The choice of $g$ is a trade-off between memory savings and potential accuracy loss. A larger group size will result in more memory savings but may also lead to a larger approximation error in the attention computations. In practice, the optimal group size may need to be determined empirically based on the specific model architecture and the trade-off between memory efficiency and model performance.
+Of course, such acceleration and memory reduction come with a price - we cut model parameters and therefore its potential capacity. The possible way to avoid quality degradation is to use technique, which interpolates between MHA and MQA - **grouped query attention (GQA)** ([Ainslie et al. (2023)](https://arxiv.org/pdf/2305.13245)). With GQA we split $h$ query heads into groups of size $g$ (number of queries per KV-head), each with its own keys and values. Note that for $g=1$ GQA is equal to multi-head attention and for $g=h$ GQA is the same as multi-query attention. The choice of $g$ is a trade-off between memory savings and potential accuracy loss. A larger group size will result in more memory savings but may also lead to a larger approximation error in the attention computations. In practice, the optimal group size may need to be determined empirically based on the specific model architecture and the trade-off between memory efficiency and model performance.
 
 <div id="groupquery_attention" class="svg-container" align="center"></div> 
 
@@ -2152,7 +2152,11 @@ In GTA, the key and value projection parameters are tied together to yield a sin
 
 $$\mathbf{K} = \big[\mathbf{K}_\text{nope}, \operatorname{broadcast}(\mathbf{K}_{\text{rope}}, g) \big]$$
 
-respectively. The first half $\mathbf{K}_{\text{nope}}$ is retrieved from first half of tied $\mathbf{KV}$ and a second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}}$, broadcasted to all heads in the group.
+respectively. The first half $\mathbf{K}_{\text{nope}}$ is retrieved from the first half of tied state:
+
+$$\mathbf{K}_{\text{nope}} = \mathbf{KV}[..., :\frac{dg}{2h}].$$
+
+The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}}$, broadcasted to all heads in the group.
 
 TODO: picture
 
@@ -2221,7 +2225,7 @@ Now **Lightning Attention** forward pass looks like this:
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Write $\mathbf{O}_i = \mathbf{O}_{\operatorname{inter}} + \mathbf{O}_{\operatorname{intra}}$ to HBM.
+	- Write $\mathbf{O}_i = \mathbf{O_{\text{inter}}} + \mathbf{O_{\text{intra}}}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
