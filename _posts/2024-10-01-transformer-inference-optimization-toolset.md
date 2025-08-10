@@ -1012,7 +1012,7 @@ arithmetic_intensity_mqa();
 
 In our example above with GPT-3 model, using MQA would make KV cache $h=96$ times smaller, thus the required space would take around $200$ MB which is just $0.25\%$ of one A100 GPU memory.
 
-Of course, such acceleration and memory reduction come with a price - we cut model parameters and therefore its potential capacity. The possible way to avoid quality degradation is to use technique, which interpolates between MHA and MQA - **grouped query attention (GQA)** ([Ainslie et al. (2023)](https://arxiv.org/pdf/2305.13245)). With GQA we split $h$ query heads into $g$ groups, each with its own keys and values. Note that for $g=1$ GQA is equal to multi-query and for $g=h$ GQA is the same as multi-head attention. The choice of $g$ is a trade-off between memory savings and potential accuracy loss. A larger group size will result in more memory savings but may also lead to a larger approximation error in the attention computations. In practice, the optimal group size may need to be determined empirically based on the specific model architecture and the trade-off between memory efficiency and model performance.
+Of course, such acceleration and memory reduction come with a price - we cut model parameters and therefore its potential capacity. The possible way to avoid quality degradation is to use technique, which interpolates between MHA and MQA - **grouped query attention (GQA)** ([Ainslie et al. (2023)](https://arxiv.org/pdf/2305.13245)). With GQA we split $h$ query heads into groups of size $g$ (number of queries per KV-head), each with its own keys and values. Note that for $g=1$ GQA is equal to multi-head attention and for $g=1$ GQA is the same as multi-query attention. The choice of $g$ is a trade-off between memory savings and potential accuracy loss. A larger group size will result in more memory savings but may also lead to a larger approximation error in the attention computations. In practice, the optimal group size may need to be determined empirically based on the specific model architecture and the trade-off between memory efficiency and model performance.
 
 <div id="groupquery_attention" class="svg-container" align="center"></div> 
 
@@ -1097,7 +1097,7 @@ groupquery_attention();
 </script>
 
 ![](.)
-*MHA (with number of heads $h=6$) vs GQA (with number of groups $g=3$) vs MQA*
+*MHA (with number of heads $h=6$) vs GQA (with group size $g=2$) vs MQA ($g=h$)*
 
 ```python
 @jit
@@ -1118,7 +1118,7 @@ Below is a comparison table with batched decoding/inference algorithms complexit
 | Compute performance  | $BLd(d + L) $ | $BLd(d + L)$ | $BLd(d + L)$ 
 | Memory bandwidth | $BL (d + hL) + d^2$ | $BL^2(d + h) + d^2$ |$BL^2\big(\frac{d}{g} + h \big) + d^2$ 
 | KV cache size | $0$ | $B L n d $ | $BL n \frac{d}{g} $ 
-| Arithmetic intensity for sufficiently large $L$ | $\frac{d}{h}$  | $\frac{d}{d + h}$ | $\frac{dg}{d+hg}$ 
+| Arithmetic intensity for sufficiently large $L$ | $\frac{d}{h}$  | $\frac{d}{d + h} \approx 1$ | $\frac{dg}{d+hg} \approx g$
 
 ### Multi-head latent attention
 
@@ -1271,7 +1271,11 @@ $$
 \mathbf{Q} = [\mathbf{Q}_{\text{rope}}, \mathbf{Q}_{\text{nope}}], &\quad \mathbf{Q}_{\text{rope}} \in \mathbf{R}^{L \times d_R}, \mathbf{Q}_{\text{nope}} \in \mathbf{R}^{L \times d_h} \\ \mathbf{K} = [\mathbf{K}_{\text{rope}}, \mathbf{K}_{\text{nope}}], & \quad \mathbf{K}_{\text{rope}} \in \mathbf{R}^{L \times d_R}, \mathbf{K}_{\text{nope}} \in \mathbf{R}^{L \times d_h}
 \end{aligned}$$
 
-with $d_h + d_R$ - total dimension for each head. During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_R$ elements for each token in each layer (would be $B L n (d_c + d_R) $ in the table above).
+with $d_h + d_R$ - total dimension for each head. The resulting prefill attention is
+
+$$\mathbf{O} = \operatorname{softmax}(\mathbf{Q}_{\text{nope}}\mathbf{K}_{\text{nope}}^T + \mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T) \mathbf{V}.$$
+
+During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_R$ elements for each token in each layer (would be $B L n (d_c + d_R) $ in the table above). The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
 
 ### Chunked prefill
 
@@ -2140,11 +2144,23 @@ support for FP8 low-precision
 
 ### Grouped-Tied / Grouped Latent Attention
 
-[Zadouri et al. (2025)](https://arxiv.org/pdf/2505.21487)
+In a paper "Hardware-Efficient Attention for Fast Decoding" by [Zadouri et al. (2025)](https://arxiv.org/pdf/2505.21487) authors provided a thorough analysis on design strategies to maximize arithmetic intensity. They noticed that due to cache shrinking in [MLA](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#multi-head-latent-attention) we can reallocate the freed parameter budget to increase number of query heads $h$, potentially preserving model capacity and increasing arithmetic intensity (recall that it's roughly proportional to $h$ for MQA). Besides, tensors $\mathbf{K}$ and $\mathbf{V}$ share latent representation in MLA, which halves the KV cache and hence doubling the arithmetic intensity, compared to MQA.
+
+Based on this findings authors propose **Groped-Tied Attention**. It unifies GQA grouping design with partial RoPE: the basic principle idea is that the keys $\mathbf{K}$ are intrinsically low-rank and hence only a slice of each head needs rotation for positional encoding. So if applying RoPE only to a part of head dimension preserves accuracy, we can rotate just half of head dimension required for positional information; the remaining unrotated channels, which tend to be in low-rank subspace and redundant, can be shared with the value states.
+
+In GTA, the key and value projection parameters are tied together to yield a single state, called the **tied** $\mathbf{KV} \in \mathbb{R}^{d \times \frac{g}{h}}$. Then values and keys are obtained as $\mathbf{V} = \mathbf{KV}$ and
+
+$$\mathbf{K} = \big[\mathbf{K}_\text{nope}, \operatorname{broadcast}(\mathbf{K}_{\text{rope}}, g) \big]$$
+
+respectively. The first half $\mathbf{K}_{\text{nope}}$ is retrieved from first half of tied $\mathbf{KV}$ and a second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}}$, broadcasted to all heads in the group.
+
+TODO: picture
+
+**Grouped Latent Attention (GLA)**
 
 ### Lightning Attention
 
-A paper by [Qin et al. (2024)](https://arxiv.org/pdf/2405.17381) showed that not only standard MHA, but also Linear Attention can be made IO-aware. We start with formulation of two computational approaches to handling causal scenario[^TNM]:
+A paper by [Qin et al. (2024)](https://arxiv.org/pdf/2405.17381) showed that not only standard MHA, but also its fast alternative Linear Attention can be made IO-aware. We start with formulation of two computational approaches to handling causal scenario[^TNM]:
 
 **Left-Product Linear Attention**:
 
@@ -2205,7 +2221,7 @@ Now **Lightning Attention** forward pass looks like this:
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Write $\mathbf{O}_{\text{inter}}$ + $\mathbf{O}_{\text{intra}}$ to HBM.
+	- Write $\mathbf{O}_i = \mathbf{O}_{\operatorname{inter}} + \mathbf{O}_{\operatorname{intra}}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
@@ -2216,7 +2232,7 @@ The time complexity of Lightning Attention consists of:
 
 In total, since we run near $\frac{L}{B_\mathbf{QKV}}$ iterations, time complexity is $\mathcal{O}(Ld^2 + LB_\mathbf{QKV}d)$. In practice, authors of Lightning Attention chose $B_\mathbf{QKV} \approx d$, hence its formula reduces to $\mathcal{O}(Ld^2)$.
 
-### Lightning Attention-2
+There is more information the paper on how to perform backward pass calculation or how to combine Lightning Attention with positional encoding. This one is a great paper in terms of completeness and clarity, and it also a continuation: [Lightning Attention-2](https://arxiv.org/pdf/2401.04658)
 
 ### Ring Attention
 
@@ -2230,7 +2246,6 @@ Even with Flash Attention, the memory complexity is linear in $L$ so scaling the
 		- Let $j = (\text{iter} + i) \bmod N$.
 		- Compute memory-efficient attention incrementally using local $\mathbf{Q}_i$, $\mathbf{K}_j$, $\mathbf{V}_j$ blocks. 
 		- *Simultaneously*, send $\mathbf{K}_j, \mathbf{V}_j$ blocks to the next device and receive new blocks from the previous device.
-
 		
 
 <div id="ring_attn" class="svg-container" align="center"></div> 
