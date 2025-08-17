@@ -1012,7 +1012,7 @@ arithmetic_intensity_mqa();
 
 In our example above with GPT-3 model, using MQA would make KV cache $h=96$ times smaller, thus the required space would take around $200$ MB which is just $0.25\%$ of one A100 GPU memory.
 
-Of course, such acceleration and memory reduction come with a price - we cut model parameters and therefore its potential capacity. The possible way to avoid quality degradation is to use technique, which interpolates between MHA and MQA - **grouped query attention (GQA)** ([Ainslie et al. (2023)](https://arxiv.org/pdf/2305.13245)). With GQA we split $h$ query heads into groups of size $g$ (number of queries per KV-head), each with its own keys and values. Note that for $g=1$ GQA is equal to multi-head attention and for $g=h$ GQA is the same as multi-query attention. The choice of $g$ is a trade-off between memory savings and potential accuracy loss. A larger group size will result in more memory savings but may also lead to a larger approximation error in the attention computations. In practice, the optimal group size may need to be determined empirically based on the specific model architecture and the trade-off between memory efficiency and model performance.
+Of course, such acceleration and memory reduction come with a price - we cut model parameters and therefore its potential capacity. The possible way to avoid quality degradation is to use technique, which interpolates between MHA and MQA - **grouped query attention (GQA)** ([Ainslie et al. (2023)](https://arxiv.org/pdf/2305.13245)). With GQA we split $h$ query heads into groups of size $g$, each with its own keys and values. Note that for $g=1$ GQA is equal to multi-head attention and for $g=h$ GQA is the same as multi-query attention. The choice of $g$ is a trade-off between memory savings and potential accuracy loss. A larger group size will result in more memory savings but may also lead to a larger approximation error in the attention computations. In practice, the optimal group size may need to be determined empirically based on the specific model architecture and the trade-off between memory efficiency and model performance.
 
 <div id="groupquery_attention" class="svg-container" align="center"></div> 
 
@@ -1097,7 +1097,7 @@ groupquery_attention();
 </script>
 
 ![](.)
-*MHA (with number of heads $h=6$) vs GQA (with group size $g=2$) vs MQA ($g=h$)*
+*MHA (with number of heads $h=6$) vs GQA (with number of queries per KV-head $g=2$) vs MQA ($g=h$)*
 
 ```python
 @jit
@@ -1139,23 +1139,6 @@ with up- and down-projection matrices $\mathbf{W}_u^Q \in \mathbb{R}^{d'_c \time
 <div id="multilatent_attention" class="svg-container" align="center"></div> 
 
 <script>
-
-function gqa_line(svg, x1, y1, x2, y2) {
-	svg.append('g')
-	    .append("path")
-	      .datum([{x: x1, y: y1}, {x: x2, y: y2}])
-	      .attr("fill", "none")
-	      .attr("border", 0)
-	      .attr("stroke", "currentColor")
-	      .attr("stroke-width", 2)
-	      .attr("stroke-linejoin", "round")
-	      .style('stroke-dasharray', ('2,3'))
-	      .attr("d",  d3.line()
-	        .curve(d3.curveBasis)
-	          .x(function(d) { return d.x; })
-	          .y(function(d) { return d.y; })
-	      );
-}
 
 function multilatent_attention() {
 	var svg = d3.select("#multilatent_attention")
@@ -1276,6 +1259,135 @@ with $d_h + d_R$ - total dimension for each head. The resulting prefill attentio
 $$\mathbf{O} = \operatorname{softmax}(\mathbf{Q}_{\text{nope}}\mathbf{K}_{\text{nope}}^T + \mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T) \mathbf{V}.$$
 
 During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_R$ elements for each token in each layer (would be $B L n (d_c + d_R) $ in the table above). The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
+
+### Grouped-Tied / Grouped Latent Attention
+
+In a paper "Hardware-Efficient Attention for Fast Decoding" by [Zadouri et al. (2025)](https://arxiv.org/pdf/2505.21487) authors provided a thorough analysis on design strategies to maximize arithmetic intensity. They noticed that due to cache shrinking in [MLA](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#multi-head-latent-attention) we can reallocate the freed parameter budget to increase number of query heads $h$, potentially preserving model capacity and increasing arithmetic intensity (recall that it's roughly proportional to $h$ for MQA). Besides, tensors $\mathbf{K}$ and $\mathbf{V}$ share latent representation in MLA, which halves the KV cache and hence doubles the arithmetic intensity, compared to MQA.
+
+Based on this findings authors propose **Groped-Tied Attention (GTA)**. It unifies GQA grouping design with partial RoPE: the basic principle assumption is that the keys $\mathbf{K}$ are intrinsically low-rank and hence only a slice of each head needs rotation for positional encoding. So if applying RoPE only to a part of head dimension $d$ preserves accuracy, we can rotate just half of $d$ required for positional information; the remaining unrotated channels, which tend to be in low-rank subspace and redundant, can be shared with the value states.
+
+In GTA, the key and value projection parameters are tied together to yield a single state, called the **tied** $\mathbf{KV} \in \mathbb{R}^{h_{kv} \times \frac{d}{h}}$, where $h_{kv} = \frac{h}{g}$ is a **number of kv-heads**. Then values and keys are obtained as $\mathbf{V} = \mathbf{KV}$ and
+
+$$\mathbf{K} = [\mathbf{K}_\text{nope}, \operatorname{broadcast}(\mathbf{K}_{\text{rope}}, h_{kv})]$$
+
+respectively. The first half $\mathbf{K}_{\text{nope}} \in \mathbb{R}^{h_{kv} \times \frac{d}{2h}}$ is retrieved from the first half of tied state:
+
+$$\mathbf{K}_{\text{nope}} = \mathbf{KV}\big[..., :\frac{d}{2h}\big].$$
+
+The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}} \in \mathbb{R}^{\frac{d}{2h}}$, broadcasted to all kv-heads $h_{kv}$.
+
+
+<div id="group_tied_attention" class="svg-container" align="center"></div> 
+
+<script>
+
+function group_tied_attention() {
+	var svg = d3.select("#group_tied_attention")
+				  .append("svg")
+				  .attr("width", 800)
+				  .attr("height", 255);
+				  
+	const x_start = 100, y_start = -5;
+	const shift = 10, rct_sz = 8;
+	const dim = 2, num_heads = 6, num_kv_heads = 3, seq_len = 6;
+	var num_heads_per_part = Math.floor(num_heads / num_kv_heads);
+	
+	text_(svg, "Value", 51, y_start + 60, size=12);
+	text_(svg, "heads", 51, y_start + 80, size=12);
+	text_(svg, "Key", 56, y_start + 140, size=12);
+	text_(svg, "heads", 51, y_start + 160, size=12);
+	text_(svg, "Query", 50, y_start + 220, size=12);
+	text_(svg, "heads", 51, y_start + 240, size=12);
+	
+	text_(svg, "Group-Tied", x_start + 45, y_start + 15, size=12);
+	text_(svg, "tied", x_start - 90, y_start + 110, size=12);
+	text_(svg, "broadcast", x_start + 175, y_start + 160, size=12);
+	
+	for (var i = 0; i != num_heads; i += 1) {
+		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
+	}
+	
+	for (var i = 0; i != num_kv_heads; i += 1) {
+		vector_rect(svg, x_start + (6 * i + 2) * shift - 6, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[3]);
+		vector_rect(svg, x_start + (6 * i + 2) * shift - 4 + rct_sz, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[1]);
+		vector_rect(svg, x_start + (6 * i + 2) * shift - 6, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
+		gqa_line(svg, x_start + (6 * i + 2) * shift + 2, y_start + 100, x_start + (6 * i + 2) * shift + 2, y_start + 118);
+		gqa_line(svg, x_start + (6 * i + 1) * shift + rct_sz, y_start + 180, x_start + 6 * i * shift + rct_sz, y_start + 198);
+		gqa_line(svg, x_start + (6 * i + 2) * shift + rct_sz, y_start + 180, x_start + (6 * i + 3) * shift + rct_sz, y_start + 198);
+	}
+
+	vector_rect(svg, x_start + 250, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[1]);
+	       
+	svg.append("path")
+	   .datum([{x: x_start + 4 * num_heads * shift, y: y_start + 148},
+	           {x: x_start + 3 * num_heads * shift - 20, y: y_start + 148}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start + 3 * num_heads * shift - 15, y: y_start + 147},
+	           {x: x_start + 3 * num_heads * shift - 20, y: y_start + 148},
+	           {x: x_start + 3 * num_heads * shift - 15, y: y_start + 149}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start + 5, y: y_start + 148},
+	           {x: x_start - 5, y: y_start + 148}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start + 5, y: y_start + 66},
+	           {x: x_start - 5, y: y_start + 66}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start - 5, y: y_start + 66},
+	           {x: x_start - 5, y: y_start + 148}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start - 60, y: y_start + 107},
+	           {x: x_start - 5, y: y_start + 107}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+}
+
+group_tied_attention();
+
+</script>
+
+![](.)
+*Decscription*
+
+**Grouped Latent Attention (GLA)**
 
 ### Chunked prefill
 
@@ -2142,25 +2254,6 @@ The most recent version, [FlashAttention-3 (2024)](https://tridao.me/publication
 3. Block quantization and incoherent processing that leverages hardware
 support for FP8 low-precision
 
-### Grouped-Tied / Grouped Latent Attention
-
-In a paper "Hardware-Efficient Attention for Fast Decoding" by [Zadouri et al. (2025)](https://arxiv.org/pdf/2505.21487) authors provided a thorough analysis on design strategies to maximize arithmetic intensity. They noticed that due to cache shrinking in [MLA](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#multi-head-latent-attention) we can reallocate the freed parameter budget to increase number of query heads $h$, potentially preserving model capacity and increasing arithmetic intensity (recall that it's roughly proportional to $h$ for MQA). Besides, tensors $\mathbf{K}$ and $\mathbf{V}$ share latent representation in MLA, which halves the KV cache and hence doubling the arithmetic intensity, compared to MQA.
-
-Based on this findings authors propose **Groped-Tied Attention**. It unifies GQA grouping design with partial RoPE: the basic principle idea is that the keys $\mathbf{K}$ are intrinsically low-rank and hence only a slice of each head needs rotation for positional encoding. So if applying RoPE only to a part of head dimension preserves accuracy, we can rotate just half of head dimension required for positional information; the remaining unrotated channels, which tend to be in low-rank subspace and redundant, can be shared with the value states.
-
-In GTA, the key and value projection parameters are tied together to yield a single state, called the **tied** $\mathbf{KV} \in \mathbb{R}^{d \times \frac{g}{h}}$. Then values and keys are obtained as $\mathbf{V} = \mathbf{KV}$ and
-
-$$\mathbf{K} = \big[\mathbf{K}_\text{nope}, \operatorname{broadcast}(\mathbf{K}_{\text{rope}}, g) \big]$$
-
-respectively. The first half $\mathbf{K}_{\text{nope}}$ is retrieved from the first half of tied state:
-
-$$\mathbf{K}_{\text{nope}} = \mathbf{KV}[..., :\frac{dg}{2h}].$$
-
-The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}}$, broadcasted to all heads in the group.
-
-TODO: picture
-
-**Grouped Latent Attention (GLA)**
 
 ### Lightning Attention
 
