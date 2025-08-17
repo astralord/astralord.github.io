@@ -1274,7 +1274,7 @@ respectively. The first half $\mathbf{K}_{\text{nope}}$ is retrieved from the fi
 
 $$\mathbf{K}_{\text{nope}} = \mathbf{KV}\big[..., :\frac{d}{2h}\big].$$
 
-The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}}$, broadcasted to all kv-heads $h_{kv}$.
+The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}} \in \mathbb{R}^{\frac{d}{2h}}$, broadcasted to all kv-heads.
 
 **Grouped Latent Attention (GLA)**
 
