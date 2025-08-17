@@ -1270,12 +1270,13 @@ In GTA, the key and value projection parameters are tied together to yield a sin
 
 $$\mathbf{K} = [\mathbf{K}_\text{nope}, \operatorname{broadcast}(\mathbf{K}_{\text{rope}}, h_{kv})]$$
 
-respectively. The first half $\mathbf{K}_{\text{nope}} \in \mathbb{R}^{h_{kv} \times \frac{d}{2h}}$ is retrieved from the first half of tied state:
+respectively. The first half $\mathbf{K}_{\text{nope}}$ is retrieved from the first half of tied state:
 
 $$\mathbf{K}_{\text{nope}} = \mathbf{KV}\big[..., :\frac{d}{2h}\big].$$
 
-The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}} \in \mathbb{R}^{\frac{d}{2h}}$, broadcasted to all kv-heads $h_{kv}$.
+The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}}$, broadcasted to all kv-heads $h_{kv}$.
 
+**Grouped Latent Attention (GLA)**
 
 <div id="group_tied_attention" class="svg-container" align="center"></div> 
 
@@ -1301,7 +1302,10 @@ function group_tied_attention() {
 	
 	text_(svg, "Group-Tied", x_start + 45, y_start + 15, size=12);
 	text_(svg, "tied", x_start - 90, y_start + 110, size=12);
+	text_(svg, "rotate", x_start + 185, y_start + 145, size=12);
 	text_(svg, "broadcast", x_start + 175, y_start + 160, size=12);
+	
+	text_(svg, "Group-Latent", x_start + 345, y_start + 15, size=12);
 	
 	for (var i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
@@ -1311,9 +1315,9 @@ function group_tied_attention() {
 		vector_rect(svg, x_start + (6 * i + 2) * shift - 6, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[3]);
 		vector_rect(svg, x_start + (6 * i + 2) * shift - 4 + rct_sz, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[1]);
 		vector_rect(svg, x_start + (6 * i + 2) * shift - 6, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
-		gqa_line(svg, x_start + (6 * i + 2) * shift + 2, y_start + 100, x_start + (6 * i + 2) * shift + 2, y_start + 118);
-		gqa_line(svg, x_start + (6 * i + 1) * shift + rct_sz, y_start + 180, x_start + 6 * i * shift + rct_sz, y_start + 198);
-		gqa_line(svg, x_start + (6 * i + 2) * shift + rct_sz, y_start + 180, x_start + (6 * i + 3) * shift + rct_sz, y_start + 198);
+		gqa_line(svg, x_start + (6 * i + 2) * shift + 3, y_start + 100, x_start + (6 * i + 2) * shift + 3, y_start + 118);
+		gqa_line(svg, x_start + (6 * i + 1) * shift + 9, y_start + 180, x_start + 6 * i * shift + 9, y_start + 198);
+		gqa_line(svg, x_start + (6 * i + 2) * shift + 8, y_start + 180, x_start + (6 * i + 3) * shift + 9, y_start + 198);
 	}
 
 	vector_rect(svg, x_start + 250, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[1]);
@@ -1387,7 +1391,7 @@ group_tied_attention();
 ![](.)
 *Decscription*
 
-**Grouped Latent Attention (GLA)**
+Authors also propose low-level optimizations for MLA, GTA and GLA, such as distributed offset calculation for [paged KV](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#pagedattention--vllm) and prefix caching with [RadixAttention](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#radixattention--sglang).
 
 ### Chunked prefill
 
