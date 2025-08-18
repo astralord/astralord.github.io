@@ -1122,7 +1122,13 @@ Below is a comparison table with batched decoding/inference algorithms complexit
 
 ### Multi-head latent attention
 
-Another way to reduce KV cache bottleneck is **multi-head latent attention (MLA)** introduced with [DeepSeek V2](https://arxiv.org/pdf/2405.04434) model. In standard multi-head self-attention mechanism all queries, keys and values are calculated as linear projections of input embedding $x \in \mathbb{R}^{d}$ with learnable parameters $\mathbf{W}^Q_{1 \dots h}$, $\mathbf{W}^K_{1 \dots h}$, $\mathbf{W}^V_{1 \dots h}$ respectively. In addition to that the low-rank joint compression latent vector $\mathbf{C}$ is computed for both keys and values in MLA:
+Another way to reduce KV cache bottleneck is **multi-head latent attention (MLA)** introduced with [DeepSeek V2](https://arxiv.org/pdf/2405.04434) model. In multi-head self-attention mechanism all queries, keys and values are calculated as linear projections of input embedding $x \in \mathbb{R}^{B \times L \times d}$ with learnable parameters $\mathbf{W}^Q$, $\mathbf{W}^K$, $\mathbf{W}^V$ respectively. These projections are sliced into $h$ heads each to compute the attention separately as:
+
+$$\mathbf{O} = \operatorname{softmax}\bigg(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_h}}\bigg) \mathbf{V}$$
+
+where $d_h = \frac{d}{h}$ - a head dimension. Head outputs $\mathbf{O}$ are concatenated together and multiplied with $\mathbf{W}^O$ forming final output embedding.
+
+In addition to that the low-rank joint compression latent vector $\mathbf{C}$ is computed for both keys and values in MLA:
 
 $$\mathbf{C^{KV}} = x \mathbf{W}_d^{KV}$$
 
@@ -1222,9 +1228,7 @@ multilatent_attention();
 ![](.)
 *Intuitive illustration of how the KV joint compression in MLA reduces the KV cache.*
 
-##### Decoupled Rotary Position Embedding
-
-To improve the efficiency of MLA, a *weight-absorption trick* can be applied: since attention logits $\mathbf{S}$ for context tokens are
+To improve the efficiency of MLA during decoding, a *weight-absorption trick* can be applied: since attention logits $\mathbf{S}$ for context tokens are
 
 $$
 \mathbf{S} = \mathbf{Q}\mathbf{K}^T = x {\color{Salmon}{\mathbf{W}^Q{\mathbf{W}_u^K}^T}} \mathbf{C^{KV}}^T,
@@ -1251,14 +1255,24 @@ Now $\mathbf{W}_u^K$ cannot be absorbed into $\mathbf{W}^Q$ any more during infe
 
 $$
 \begin{aligned}
-\mathbf{Q} = [\mathbf{Q}_{\text{rope}}, \mathbf{Q}_{\text{nope}}], &\quad \mathbf{Q}_{\text{rope}} \in \mathbf{R}^{L \times d_R}, \mathbf{Q}_{\text{nope}} \in \mathbf{R}^{L \times d_h} \\ \mathbf{K} = [\mathbf{K}_{\text{rope}}, \mathbf{K}_{\text{nope}}], & \quad \mathbf{K}_{\text{rope}} \in \mathbf{R}^{L \times d_R}, \mathbf{K}_{\text{nope}} \in \mathbf{R}^{L \times d_h}
+\mathbf{Q} = [\mathbf{Q}_{\text{nope}}, \mathbf{Q}_{\text{rope}}], &\quad \mathbf{Q}_{\text{nope}} \in \mathbf{R}^{B \times L \times d_h},\mathbf{Q}_{\text{rope}} \in \mathbf{R}^{B \times L \times d_r}, \\ \mathbf{K} = [\mathbf{K}_{\text{nope}}, \mathbf{K}_{\text{rope}}], & \quad \mathbf{K}_{\text{nope}} \in \mathbf{R}^{B \times L \times d_h},\mathbf{K}_{\text{rope}} \in \mathbf{R}^{B \times L \times d_r} 
 \end{aligned}$$
 
-with $d_h + d_R$ - total dimension for each head. The resulting prefill attention is
+with $d_r$ - dimension of *rotated* embeddings for each head. The resulting attention is
 
-$$\mathbf{O} = \operatorname{softmax}(\mathbf{Q}_{\text{nope}}\mathbf{K}_{\text{nope}}^T + \mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T) \mathbf{V}.$$
+$$\mathbf{O} = \operatorname{softmax}\bigg(\frac{\mathbf{Q}_{\text{nope}}\mathbf{K}_{\text{nope}}^T + \mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T}{\sqrt{d_h + d_r}} \bigg) \mathbf{V}.$$
 
-During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_R$ elements for each token in each layer (would be $B L n (d_c + d_R) $ in the table above). The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
+The **nope**-part is computed as before from compressed latent tensors and with weight-absorption trick:
+
+$$\mathbf{Q}_{\text{nope}}\mathbf{K}_{\text{nope}}^T = x{\color{Salmon}{\mathbf{W}^Q{\mathbf{W}_u^K}^T}} \mathbf{C^{KV}}^T.$$
+
+The **rope**-part rotates uncompressed inputs,
+
+$$\mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T = (x \mathbf{W}^{Q}_r \mathbf{R}_{\Theta}) (x\mathbf{W}^{K}_r\mathbf{R}_{\Theta})^T,$$
+
+where $\mathbf{W}^{Q}_r, \mathbf{W}^{K}_r \in \mathbb{R}^{d \times d_r}$ are matrices to produce the decouples queries and key, respectively. As in multi-query attention, $\mathbf{W}^{Q}_r$ is different for each head, while $\mathbf{W}^{K}_r$ stays the same. 
+
+During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_r$ elements for each token in each layer (would be $B L n (d_c + d_r) $ in the table above). The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
 
 ### Grouped-Tied / Grouped Latent Attention
 
