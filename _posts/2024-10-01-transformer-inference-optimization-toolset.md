@@ -1272,7 +1272,7 @@ $$\mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T = (x \mathbf{W}^{Q}_r \math
 
 where $\mathbf{W}^{Q}_r, \mathbf{W}^{K}_r \in \mathbb{R}^{d \times d_r}$ are matrices to produce the decouples queries and key, respectively. As in multi-query attention, $\mathbf{W}^{Q}_r$ is different for each head, while $\mathbf{W}^{K}_r$ stays the same. 
 
-During inference, the decoupled key should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_r$ elements for each token in each layer (would be $B L n (d_c + d_r) $ in the table above). The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
+During inference, the decoupled key $\mathbf{K}_{\text{rope}}$ should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_r$ elements for each token in each layer (would be $B L n (d_c + d_r) $ in the table above). The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
 
 ### Grouped-Tied / Grouped Latent Attention
 
