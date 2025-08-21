@@ -1272,7 +1272,10 @@ $$\mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T = (x \mathbf{W}^{Q}_r \math
 
 where $\mathbf{W}^{Q}_r, \mathbf{W}^{K}_r \in \mathbb{R}^{d \times d_r}$ are matrices to produce the decouples queries and key, respectively. As in multi-query attention, $\mathbf{W}^{Q}_r$ is different for each head, while $\mathbf{W}^{K}_r$ stays the same. 
 
-During inference, the decoupled key $\mathbf{K}_{\text{rope}}$ should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_r$ elements for each token in each layer (would be $B L n (d_c + d_r) $ in the table above). The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
+During inference, the decoupled key $\mathbf{K}_{\text{rope}}$ should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_r$ elements for each token in each layer (would be $B L n (d_c + d_r) $ in the table above). In DeepSeek-V2 the setting is $d_c=4\frac{d}{h}$ and $d_r = \frac{d}{2h}$, so its KV cache is equal to $\frac{9}{2h} B L nd$, which is the same as for GQA with $g=\frac{9}{4h}$. This setting makes KV cache ~2.25 smaller, than it would be for MHA, but keeps the same level of performance.
+
+The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
+
 
 ### Grouped-Tied / Grouped Latent Attention
 
@@ -1297,6 +1300,11 @@ Compare two inference setups, MLA vs GQA with a model sharded in tensor parallel
 With MLA we store $(d_c + d_r) \times N$ per token, where $N$ is a number of GPUs.
 
 With GQA we store $2h_{kv}d_h$ elements per token.
+
+$d_c = 4d_h$, $h_{kv}=8$
+
+MLA: $4d_h$
+GQA: $8d_h$
 
 
 <div id="group_tied_attention" class="svg-container" align="center"></div> 
@@ -2343,7 +2351,7 @@ Now **Lightning Attention** forward pass looks like this:
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Sum $\mathbf{O}_{\text{inter}}$ with $\mathbf{O}_{\text{intra}}$ and write to HBM.
+	- Write $\mathbf{O}_\text{inter} + \mathbf{O}_\text{intra}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
