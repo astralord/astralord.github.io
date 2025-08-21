@@ -2336,7 +2336,7 @@ Now **Lightning Attention** forward pass looks like this:
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Write $\mathbf{O}_i = \mathbf{O_{\text{inter}}} + \mathbf{O_{\text{intra}}}$ to HBM.
+	- Write $\mathbf{O}_i = \mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ as the $i$-th block of $\mathbf{O}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
