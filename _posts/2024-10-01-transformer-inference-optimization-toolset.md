@@ -1117,7 +1117,7 @@ Below is a comparison table with batched decoding/inference algorithms complexit
 | -------- | ------- | ------- | ------- | ------- |
 | Compute performance  | $BLd(d + L) $ | $BLd(d + L)$ | $BLd(d + L)$ 
 | Memory bandwidth | $BL (d + hL) + d^2$ | $BL^2(d + h) + d^2$ |$BL^2\big(\frac{d}{g} + h \big) + d^2$ 
-| KV cache size | $0$ | $B L n d $ | $BL n \frac{d}{g} $ 
+| KV cache size | $0$ | $2B L n d $ | $2BL n \frac{d}{g} $ 
 | Arithmetic intensity for sufficiently large $L$ | $\frac{d}{h}$  | $\frac{d}{d + h} \approx 1$ | $\frac{dg}{d+hg} \approx g$
 
 ### Multi-head latent attention
@@ -1286,15 +1286,17 @@ $$\mathbf{K} = [\mathbf{K}_\text{nope}, \operatorname{broadcast}(\mathbf{K}_{\te
 
 respectively. The first half $\mathbf{K}_{\text{nope}}$ is retrieved from the first half of tied state:
 
-$$\mathbf{K}_{\text{nope}} = \mathbf{KV}\big[..., :\frac{d}{2h}\big].$$
+$$\mathbf{K}_{\text{nope}} = \mathbf{KV}\big[..., :\frac{d_h}{2}\big].$$
 
-The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}} \in \mathbb{R}^{\frac{d}{2h}}$, broadcasted to all kv-heads.
+The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}} \in \mathbb{R}^{\frac{d_h}{2}}$, broadcasted to all kv-heads.
 
 **Grouped Latent Attention (GLA)**
 
 Compare two inference setups, MLA vs GQA with a model sharded in tensor parallel fashion across multiple devices:
 
-With MLA we 
+With MLA we store $(d_c + d_r) \times N$ per token, where $N$ is a number of GPUs.
+
+With GQA we store $2h_{kv}d$ elements per token
 
 
 <div id="group_tied_attention" class="svg-container" align="center"></div> 
@@ -2341,7 +2343,7 @@ Now **Lightning Attention** forward pass looks like this:
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Write $\mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ to HBM.
+	- Write $\mathbf{O}_{\text{inter}}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
