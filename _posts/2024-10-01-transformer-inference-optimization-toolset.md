@@ -1296,7 +1296,7 @@ Compare two inference setups, MLA vs GQA with a model sharded in tensor parallel
 
 With MLA we store $(d_c + d_r) \times N$ per token, where $N$ is a number of GPUs.
 
-With GQA we store $2h_{kv}d$ elements per token
+With GQA we store $2h_{kv}d_h$ elements per token.
 
 
 <div id="group_tied_attention" class="svg-container" align="center"></div> 
@@ -2343,7 +2343,7 @@ Now **Lightning Attention** forward pass looks like this:
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Write $\mathbf{O}_{\text{inter}}$ to HBM.
+	- Sum $\mathbf{O}_{\text{inter}}$ with $\mathbf{O}_{\text{intra}}$ and write to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
