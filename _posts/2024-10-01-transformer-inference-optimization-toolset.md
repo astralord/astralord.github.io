@@ -1280,7 +1280,7 @@ In a paper "Hardware-Efficient Attention for Fast Decoding" by [Zadouri et al. (
 
 Based on this findings authors propose **Groped-Tied Attention (GTA)**. It unifies GQA grouping design with partial RoPE: the basic principle assumption is that the keys $\mathbf{K}$ are intrinsically low-rank and hence only a slice of each head needs rotation for positional encoding. So if applying RoPE only to a part of head dimension $d$ preserves accuracy, we can rotate just half of $d$ required for positional information; the remaining unrotated channels, which tend to be in low-rank subspace and redundant, can be shared with the value states.
 
-In GTA, the key and value projection parameters are tied together to yield a single state, called the **tied** $\mathbf{KV} \in \mathbb{R}^{h_{kv} \times \frac{d}{h}}$, where $h_{kv} = \frac{h}{g}$ is a **number of kv-heads**. Then values and keys are obtained as $\mathbf{V} = \mathbf{KV}$ and
+In GTA, the key and value projection parameters are tied together to yield a single state, called the **tied** $\mathbf{KV} \in \mathbb{R}^{h_{kv} \times d_h}$, where $h_{kv} = \frac{h}{g}$ is a **number of kv-heads** and $d_h = \frac{d}{h}$ is a **head dimension**. Then values and keys are obtained as $\mathbf{V} = \mathbf{KV}$ and
 
 $$\mathbf{K} = [\mathbf{K}_\text{nope}, \operatorname{broadcast}(\mathbf{K}_{\text{rope}}, h_{kv})]$$
 
@@ -1291,6 +1291,10 @@ $$\mathbf{K}_{\text{nope}} = \mathbf{KV}\big[..., :\frac{d}{2h}\big].$$
 The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}} \in \mathbb{R}^{\frac{d}{2h}}$, broadcasted to all kv-heads.
 
 **Grouped Latent Attention (GLA)**
+
+Compare two inference setups MLA vs GQA with a model sharded in tensor parallel fashion across multiple devices.
+
+
 
 <div id="group_tied_attention" class="svg-container" align="center"></div> 
 
@@ -2336,7 +2340,7 @@ Now **Lightning Attention** forward pass looks like this:
 	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
 	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
 	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Write $\mathbf{O}_i = \mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ as the $i$-th block of $\mathbf{O}$ to HBM.
+	- Write $\mathbf{O}_i = \mathbf{O}_{\text{inter}} + \mathbf{O}_{\text{intra}}$ to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
