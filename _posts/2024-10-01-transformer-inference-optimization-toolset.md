@@ -752,7 +752,7 @@ arithmetic_intensity();
 ![](.)
 *Arithmetic intensity vs sequence length $L$ for multi-head self-attention with embedding dimension $d=12,288$ and number of heads $h=96$ (GPT-3 scale).*
 
-We've noticed already that modern GPU hardware has the computational capacity orders of magnitude higher than the memory bandwidth. As the graph shows, for sufficiently large sequence length the arithmetic intensity is always larger than embedding dimension per attention head $\frac{d}{h}$, which is usually one or few hundreds.[^AIL] Hence, the arithmetic intensity is equal if not greater than `ops:byte` ratio.
+We've noticed already that modern GPU hardware has the computational capacity orders of magnitude higher than the memory bandwidth. As the graph shows, for sufficiently large sequence length the arithmetic intensity is always larger than embedding dimension per attention head $\frac{d}{h}$, which is usually one or few hundreds.[^AIL] Consequently, the arithmetic intensity is equal if not greater than `ops:byte` ratio.
 
 Generally, this would imply high algorithm efficiency, but the situation is different for the second phase, text generation. First thing to notice here is that in generation scenario there is no need to compute the attention outputs for each token in the input sequence $x$, only for the last one to decode the next token $x_{L+1}$. Thus there is no need to send the whole query $\mathbf{Q}$ vector into attention mechanism.
 
@@ -1279,6 +1279,8 @@ The arithmetic intensity will be approximately doubled compared to MQA, since ML
 
 ### Grouped-Tied / Grouped Latent Attention
 
+**Grouped-Tied Attention (GTA)**
+
 In a paper "Hardware-Efficient Attention for Fast Decoding" by [Zadouri et al. (2025)](https://arxiv.org/pdf/2505.21487) authors provided a thorough analysis on design strategies to maximize arithmetic intensity. They noticed that due to cache shrinking in [MLA](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#multi-head-latent-attention) we can reallocate the freed parameter budget to increase number of query heads $h$, potentially preserving model capacity and increasing arithmetic intensity (recall that it's roughly proportional to $h$ for MQA). Besides, tensors $\mathbf{K}$ and $\mathbf{V}$ share latent representation in MLA, which halves the KV cache and hence doubles the arithmetic intensity, compared to MQA.
 
 Based on this findings authors propose **Groped-Tied Attention (GTA)**. It unifies GQA grouping design with partial RoPE: the basic principle assumption is that the keys $\mathbf{K}$ are intrinsically low-rank and hence only a slice of each head needs rotation for positional encoding. So if applying RoPE only to a part of head dimension $d$ preserves accuracy, we can rotate just half of $d$ required for positional information; the remaining unrotated channels, which tend to be in low-rank subspace and redundant, can be shared with the value states.
@@ -1295,17 +1297,27 @@ The second half with RoPE is a separate single-head projection $\mathbf{K}_{\tex
 
 **Grouped Latent Attention (GLA)**
 
-Compare two inference setups, MLA vs GQA with a model sharded in tensor parallel fashion across multiple devices:
+Compare two inference setups, MLA vs GQA with a model sharded with [tensor parallel](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/#tensor-parallelism) across multiple devices:
 
-With MLA we store $(d_c + d_r) \times N$ per token, where $N$ is a number of GPUs.
+With MLA the size of latent KV cache $\mathbf{C^{KV}}$ is $d_c$ per token. Because tensor parallelism partitions the key and value up-projections $\mathbf{W}_u^K,\mathbf{W}_u^V \in \mathbb{R}^{d_c \times d}$ in a column-wise fashion, each device must retain the entire latent to reconstruct the keys and values for its heads. This leads to duplication of $\mathbf{C^{KV}}$ in every $\text{TP}$ rank, scaling the KV cache footprint in proportion to $\text{TP}$. Let's set $d_c=4d_h$[^GLA] as in DeepSeek-v2 and replicate it over $4$ GPUs, then KV cache will occupy
 
-With GQA we store $2h_{kv}d_h$ elements per token.
+$$\mathbf{C^{KV}} = \underset{\text{latent dim}}{4d_h} \cdot \underset{\text{tensor parallel}}{4} \cdot \underset{\text{float16}}{2} = 32d_h$$
 
-$d_c = 4d_h$, $h_{kv}=8$
+bytes per token in total. In contrast, with GQA the KV cache is already sharded across the devices. So for $h_{kv}=8$ we have a KV cache with $4$ times more elements than with $\mathbf{C^{KV}}$ but its physical size is actually the same:
 
-MLA: $4d_h$
-GQA: $8d_h$
+$$\mathbf{KV} = \underset{\mathbf{K/V}}{2} \cdot \underset{\text{number of kv heads}}{8} \cdot \underset{\text{head dim}}{d_h} \cdot \underset{\text{float16}}{2} = 32d_h.$$
 
+**Grouped Latent Attention (GLA)** is an efficient way to combine model parallelism with latent attention:
+
+- It compresses tokens into $h_c$ latent heads, each with dimension equal to half of MLA dimension, $2d_h$.
+- During training, every latent head and its up-projection matrices reconstruct distinct $\mathbf{K}$ and $\mathbf{V}$ for the query heads in its group. Consequently, the up-projection matrix for one latent head has column dimension $\frac{d}{h_c}$, rather than $d$. 
+- After weight absorption in decoding, each latent head attends only to the query heads in its group. Sharding the latent heads with $h_c=\text{TP}$ provides head-level parallelism without duplicating the latent KV cache (or reducing it when $h_c \leq \text{TP}$).
+
+For example, take $h_c = \text{TP} = 2$, then the KV cache size is $4d_h$ elements per token as in MLA, but we keep only half of it on each device: $\mathbf{C^{KV}}_0, \mathbf{C^{KV}}_1 \in \mathbb{R}^{L \times 2d_h}$. To compute the attention during decoding, each TP rank performs its local calculation:
+
+$$\mathbf{O}_i = \operatorname{softmax}(\mathbf{Q}_i \mathbf{C^{KV}}_i^T)\mathbf{C^{KV}}_i \cdot \mathbf{W}_i^O, \quad i=0,1, $$
+
+where $\mathbf{Q}_0, \mathbf{Q}_1 \in \mathbb{R}^{\frac{h}{2} \times 2d_h}$ and $\mathbf{W}_0^O, \mathbf{W}_1^O \in \mathbb{R}^{d \times d}$. Then partial outputs are summed through all-reduce into the final result: $\mathbf{O} = \mathbf{O}_0 + \mathbf{O}_1$.
 
 <div id="group_tied_attention" class="svg-container" align="center"></div> 
 
@@ -2348,10 +2360,10 @@ Now **Lightning Attention** forward pass looks like this:
 - Initialize $\mathbf{U}=0$.
 - for $i=1, \dots T_\mathbf{QKV}$:
 	- Load $\mathbf{Q}_i$, $\mathbf{K}_i$, $\mathbf{V}_i$ from HBM to on-chip SRAM.
-	- On chip compute $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
-	- On chip compute $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
-	- On chip compute $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
-	- Write $\mathbf{O}_\text{inter} + \mathbf{O}_\text{intra}$ to HBM.
+	- On chip compute inter block $\mathbf{O}_{\text{inter}} = \mathbf{Q}_i\mathbf{U}$
+	- On chip compute intra block $\mathbf{O}_{\text{intra}} = [\mathbf{Q}_i\mathbf{K}_i^T \odot \text{mask} ] \mathbf{V}_i$
+	- On chip update state $\mathbf{U} = \mathbf{U} + \mathbf{K}_i^T\mathbf{V}_i$
+	- Sum intra and inter blocks into $\mathbf{O}_i$ and write it to HBM.
 - Return $\mathbf{O}$
 
 The time complexity of Lightning Attention consists of:
@@ -3084,6 +3096,8 @@ For ML engineers, the message is simple: stay curious and be ready to learn acro
 [^VD]: Dimension size of values $\mathbf{V}$ can be different from $d$, but usually it's not the case.
 
 [^AIL]: A reasonable question might be: "What is the best way to utilize GPU to generate small sequences, e.g. $L \ll d$?" A possible solution is to enlarge batch processing, since one can compute that for $x \in \mathbb{R}^{B \times d}$ the arithmetic intensity is $$\frac{BL^2d + BLd^2}{BL^2h + BLd + d^2} \xrightarrow[d \gg L]{} BL $$
+
+[^GLA]: As in DeepSeek-v2, but we drop $d_r$ for simplicity
 
 [^HP]: While it is clear that *hedgehog* comes from attention "spikyness" modelling, I still wonder what *porcupine* in the title refers to.
 
