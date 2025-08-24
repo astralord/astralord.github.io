@@ -442,7 +442,7 @@ where $d$ is a hidden dimensionality for queries and keys. When we work with GPT
 
 Also let's recap **multi-head attention layer (MHA)** definition:
  
-$$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=[\operatorname{head}_1; \dots; \operatorname{head}_k] \cdot \mathbf{W}^O,$$
+$$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=[\operatorname{head}_1; \dots; \operatorname{head}_h] \cdot \mathbf{W}^O,$$
 
 where
 
@@ -1297,7 +1297,7 @@ The second half with RoPE is a separate single-head projection $\mathbf{K}_{\tex
 
 **Grouped Latent Attention (GLA)**
 
-Compare two inference setups, MLA vs GQA with a model sharded with [tensor parallel](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/#tensor-parallelism) across multiple devices:
+Compare two inference setups, MLA vs GQA with a model sharded with [tensor parallel](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/#tensor-parallelism) across multiple devices. 
 
 With MLA the size of latent KV cache $\mathbf{C^{KV}}$ is $d_c$ per token. Because tensor parallelism partitions the key and value up-projections $\mathbf{W}_u^K,\mathbf{W}_u^V \in \mathbb{R}^{d_c \times d}$ in a column-wise fashion, each device must retain the entire latent to reconstruct the keys and values for its heads. This leads to duplication of $\mathbf{C^{KV}}$ in every $\text{TP}$ rank, scaling the KV cache footprint in proportion to $\text{TP}$. Let's set $d_c=4d_h$[^GLA] as in DeepSeek-v2 and replicate it over $4$ GPUs, then KV cache will occupy
 
@@ -1307,27 +1307,23 @@ bytes per token in total. In contrast, with GQA the KV cache is already sharded 
 
 $$\mathbf{KV} = \underset{\mathbf{K/V}}{2} \cdot \underset{\text{number of kv heads}}{8} \cdot \underset{\text{head dim}}{d_h} \cdot \underset{\text{float16}}{2} = 32d_h.$$
 
-**Grouped Latent Attention (GLA)** is an efficient way to combine model parallelism with latent attention:
+An efficient way to combine model parallelism with latent attention is to use **Grouped Latent Attention (GLA)**:
 
-- It compresses tokens into $h_c$ latent heads, each with dimension equal to half of MLA dimension, $2d_h$.
+- It compresses tokens into $h_c$ latent heads, each with dimension equal to half of MLA dimension, $\frac{d_c}{2}$.
 - During training, every latent head and its up-projection matrices reconstruct distinct $\mathbf{K}$ and $\mathbf{V}$ for the query heads in its group. Consequently, the up-projection matrix for one latent head has column dimension $\frac{d}{h_c}$, rather than $d$. 
 - After weight absorption in decoding, each latent head attends only to the query heads in its group. Sharding the latent heads with $h_c=\text{TP}$ provides head-level parallelism without duplicating the latent KV cache (or reducing it when $h_c \leq \text{TP}$).
 
-For example, take $h_c = \text{TP} = 2$, then the KV cache size is $4d_h$ elements per token as in MLA, but we keep only half of it on each device: $\mathbf{C^{KV}}_0, \mathbf{C^{KV}}_1 \in \mathbb{R}^{L \times 2d_h}$. To compute the attention during decoding, each TP rank performs its local calculation:
+For example, if $h_c = \text{TP} = 2$ the KV cache size is $d_c$ elements per token as in MLA, but we need to keep only half of that on each device: $\mathbf{C^{KV}}_0, \mathbf{C^{KV}}_1 \in \mathbb{R}^{L \times \frac{d_c}{2}}$. To compute the attention during decoding, each TP rank performs its local calculation:
 
 $$\mathbf{O}_i = \operatorname{softmax}(\mathbf{Q}_i \mathbf{C^{KV}}_i^T)\mathbf{C^{KV}}_i \cdot \mathbf{W}_i^O, \quad i=0,1, $$
 
-where $\mathbf{Q}_0, \mathbf{Q}_1 \in \mathbb{R}^{\frac{h}{2} \times 2d_h}$ and $\mathbf{W}_0^O, \mathbf{W}_1^O \in \mathbb{R}^{d \times d}$. Then partial outputs are summed through all-reduce into the final result: $\mathbf{O} = \mathbf{O}_0 + \mathbf{O}_1$.
+where query heads (after weights absorbtion) are partitioned into two groups $\mathbf{Q}_0, \mathbf{Q}_1 \in \mathbb{R}^{\frac{h}{2} \times \frac{d_c}{2}}$ and separate slices of the output projection are applied, $\mathbf{W}_0^O, \mathbf{W}_1^O \in \mathbb{R}^{\frac{h d_c}{4} \times d}$. Then partial outputs are summed by all-reduce into the final result: $\mathbf{O} = \mathbf{O}_0 + \mathbf{O}_1$.
 
 <div id="group_tied_attention" class="svg-container" align="center"></div> 
 
 <script>
 
-function group_tied_attention() {
-	var svg = d3.select("#group_tied_attention")
-				  .append("svg")
-				  .attr("width", 800)
-				  .attr("height", 255);
+function group_tied_attention(svg) {
 				  
 	const x_start = 100, y_start = -5;
 	const shift = 10, rct_sz = 8;
@@ -1341,12 +1337,10 @@ function group_tied_attention() {
 	text_(svg, "Query", 50, y_start + 220, size=12);
 	text_(svg, "heads", 51, y_start + 240, size=12);
 	
-	text_(svg, "Group-Tied", x_start + 45, y_start + 15, size=12);
+	text_(svg, "Grouped-Tied", x_start + 42, y_start + 15, size=12);
 	text_(svg, "tied", x_start - 90, y_start + 110, size=12);
 	text_(svg, "rotate", x_start + 185, y_start + 145, size=12);
 	text_(svg, "broadcast", x_start + 175, y_start + 160, size=12);
-	
-	text_(svg, "Group-Latent", x_start + 345, y_start + 15, size=12);
 	
 	for (var i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
@@ -1425,12 +1419,134 @@ function group_tied_attention() {
 	       .y(function(d) { return d.y; }));
 }
 
-group_tied_attention();
+function group_latent_attention(svg) {
+				  
+	const x_start = 450, y_start = -5;
+	const shift = 10, rct_sz = 8;
+	const dim = 2, num_heads = 6, num_kv_heads = 2, seq_len = 6;
+	var num_heads_per_part = Math.floor(num_heads / num_kv_heads);
+	
+	text_(svg, "Grouped Latent", x_start + 35, y_start + 15, size=12);
+	text_(svg, "projection", x_start + 145, y_start + 110, size=10);
+	text_(svg, "⟺", x_start + 162, y_start + 117, size=15);
+	text_(svg, "projection", x_start - 35, y_start + 110, size=10);
+	text_(svg, "⟺", x_start - 18, y_start + 117, size=15);
+	
+	text_(svg, "C", x_start + 211, y_start + 65, size=12);
+	text_(svg, "KV", x_start + 217, y_start + 55, size=7);
+	text_(svg, "1", x_start + 220, y_start + 70, size=7);
+	
+	text_(svg, "C", x_start - 70, y_start + 65, size=12);
+	text_(svg, "KV", x_start - 64, y_start + 55, size=7);
+	text_(svg, "0", x_start - 61, y_start + 70, size=7);
+	
+	for (var i = 0; i != num_heads; i += 1) {
+		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
+	}
+	
+	var c_shift = 3 * (num_heads + 1) * shift;
+	var a_shift = (num_heads + 1) * shift;
+	vector_rect(svg, x_start + c_shift, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[3]);
+	vector_rect(svg, x_start + c_shift + rct_sz + 2, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[1]);
+
+	vector_rect(svg, x_start - a_shift, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[3]);
+	vector_rect(svg, x_start - a_shift + rct_sz + 2, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[1]);
+	
+	for (var i = 0; i != num_kv_heads; i += 1) {
+		vector_rect(svg, x_start + (9 * i + 3) * shift, y_start + 120, dim, seq_len, shift, rct_sz, matrix_colors[1]);
+		vector_rect(svg, x_start + (9 * i + 3) * shift, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
+		gqa_line(svg, x_start + (9 * i + 3) * shift + 9, y_start + 100, x_start + (9 * i + 3) * shift + 9, y_start + 118);
+		gqa_line(svg, x_start + (9 * i + 3) * shift + 9, y_start + 180, x_start + 9 * i * shift + 9, y_start + 198);
+		gqa_line(svg, x_start + (9 * i + 3) * shift + 9, y_start + 180, x_start + (9 * i + 3) * shift + 9, y_start + 198);
+		gqa_line(svg, x_start + (9 * i + 3) * shift + 9, y_start + 180, x_start + (9 * i + 6) * shift + 9, y_start + 198);
+	}
+	
+	svg.append('rect')
+	  .attr('x', x_start - a_shift - 3)
+	  .attr('y', y_start + 77)
+	  .attr('width', 2 * shift + 4)
+	  .attr('height', seq_len * shift + 4)
+	  .attr('stroke', 'currentColor')
+	  .attr('stroke-width', 2)
+	  .attr("rx", 3)
+	  .style('stroke-dasharray', ('2,3'))
+	  .attr('fill', 'none');
+	  
+	svg.append('rect')
+	  .attr('x', x_start + c_shift - 3)
+	  .attr('y', y_start + 77)
+	  .attr('width', 2 * shift + 4)
+	  .attr('height', seq_len * shift + 4)
+	  .attr('stroke', 'currentColor')
+	  .attr('stroke-width', 2)
+	  .attr("rx", 3)
+	  .style('stroke-dasharray', ('2,3'))
+	  .attr('fill', 'none');
+	  
+	svg.append("path")
+	   .datum([{x: x_start + c_shift - 5, y: y_start + 75},
+	           {x: x_start + c_shift - 5 * shift, y: y_start + 40}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start + c_shift - 5, y: y_start + 145},
+	           {x: x_start + c_shift - 5 * shift, y: y_start + 180}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	  
+	svg.append("path")
+	   .datum([{x: x_start - a_shift - 5 + 3 * shift, y: y_start + 75},
+	           {x: x_start - a_shift + 8 * shift, y: y_start + 40}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+	       
+	svg.append("path")
+	   .datum([{x: x_start - a_shift - 5 + 3 * shift, y: y_start + 145},
+	           {x: x_start - a_shift + 8 * shift, y: y_start + 180}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 1)
+	   .attr("stroke", "currentColor")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+
+	svg.append("path")
+	   .datum([{x: x_start - 83, y: y_start},
+	           {x: x_start - 83, y: y_start + 300}])
+	   .attr("fill", "none")
+	   .attr("stroke-width", 3)
+	   .attr("opacity", 0.4)
+	   .attr("stroke", "gray")
+	   .attr("d",  d3.line()
+	       .x(function(d) { return d.x; })
+	       .y(function(d) { return d.y; }));
+}
+
+var svg = d3.select("#group_tied_attention")
+			  .append("svg")
+			  .attr("width", 800)
+			  .attr("height", 255);
+			  
+group_tied_attention(svg);
+group_latent_attention(svg);
 
 </script>
 
 ![](.)
-*Decscription*
+*GTA with $h_{kv}=3$ and GLA with $h_{kv} = h_c = 2$.*
 
 Authors also propose low-level optimizations for MLA, GTA and GLA, such as distributed offset calculation for [paged KV](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#pagedattention--vllm) and prefix caching with [RadixAttention](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#radixattention--sglang).
 
