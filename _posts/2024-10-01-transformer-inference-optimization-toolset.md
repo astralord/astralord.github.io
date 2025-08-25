@@ -434,7 +434,7 @@ The `ops:byte` ratio analysis is useful, but keep in mind, that it assumes that 
 
 ## High-level algorithmic optimizations
 
-### Multi-Head Attention (MHA)
+### Multi-Head Attention
 
 Now, we are ready to delve into the specifics of transformer optimization. We've defined transformer architecture earlier in [previous blog-posts](https://astralord.github.io/posts/building-aligned-intelligence-systems-part-i-creating-gpt-assistant/). Let's recall shortly that **scaled dot product attention** operation takes a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ as input and outputs
 
@@ -442,7 +442,7 @@ $$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{s
 
 where $d$ is a hidden dimensionality for queries and keys. When we work with GPT-based models, we use **masked attention** where $\operatorname{softmax}$ input is modified with $\text{mask}$ tensor, setting masked attention values to $-\infty$ if we don't want to attend to corresponding tokens. Input tensors are $\mathbf{Q} \in \mathbb{R}^{L \times d}$ and $\mathbf{K}, \mathbf{V} \in \mathbb{R}^{M \times d}$, where $L$ and $M$ are sequence lengths[^VD].
 
-Also let's recap **Multi-Head Attention (MHA)** definition:
+Also let's recap **multi-head attention (MHA)** definition:
  
 $$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=[\operatorname{head}_1; \dots; \operatorname{head}_h] \cdot \mathbf{W}^O,$$
 
@@ -1122,7 +1122,7 @@ Below is a comparison table with batched decoding/inference algorithms complexit
 | KV cache size | $0$ | $2B L n d $ | $2BL n \frac{d}{g} $ 
 | Arithmetic intensity for sufficiently large $L$ | $\frac{d}{h}$  | $\frac{d}{d + h} \approx 1$ | $\frac{dg}{d+hg} \approx g$
 
-### Multi-head latent attention
+### Multi-head Latent Attention
 
 Another way to reduce KV cache bottleneck is **multi-head latent attention (MLA)** introduced with [DeepSeek V2](https://arxiv.org/pdf/2405.04434) model. In multi-head self-attention mechanism all queries, keys and values are calculated as linear projections of input embedding $x \in \mathbb{R}^{B \times L \times d}$ with learnable parameters $\mathbf{W}^Q$, $\mathbf{W}^K$, $\mathbf{W}^V$ respectively. These projections are sliced into $h$ heads each to compute the attention separately as:
 
@@ -1281,11 +1281,11 @@ The arithmetic intensity will be approximately doubled compared to MQA, since ML
 
 ### Grouped-Tied / Grouped Latent Attention
 
-**Grouped-Tied Attention (GTA)**
+**Grouped-Tied Attention**
 
 In a paper "Hardware-Efficient Attention for Fast Decoding" by [Zadouri et al. (2025)](https://arxiv.org/pdf/2505.21487) authors provided a thorough analysis on design strategies to maximize arithmetic intensity. They noticed that due to cache shrinking in [MLA](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#multi-head-latent-attention) we can reallocate the freed parameter budget to increase number of query heads $h$, potentially preserving model capacity and increasing arithmetic intensity (recall that it's roughly proportional to $h$ for MQA). Besides, tensors $\mathbf{K}$ and $\mathbf{V}$ share latent representation in MLA, which halves the KV cache and hence doubles the arithmetic intensity, compared to MQA.
 
-Based on this findings authors propose **Groped-Tied Attention (GTA)**. It unifies GQA grouping design with partial RoPE: the basic principle assumption is that the keys $\mathbf{K}$ are intrinsically low-rank and hence only a slice of each head needs rotation for positional encoding. So if applying RoPE only to a part of head dimension $d$ preserves accuracy, we can rotate just half of $d$ required for positional information; the remaining unrotated channels, which tend to be in low-rank subspace and redundant, can be shared with the value states.
+Based on this findings authors propose **groped-tied attention (GTA)**. It unifies GQA grouping design with partial RoPE: the basic principle assumption is that the keys $\mathbf{K}$ are intrinsically low-rank and hence only a slice of each head needs rotation for positional encoding. So if applying RoPE only to a part of head dimension $d$ preserves accuracy, we can rotate just half of $d$ required for positional information; the remaining unrotated channels, which tend to be in low-rank subspace and redundant, can be shared with the value states.
 
 In GTA, the key and value projection parameters are tied together to yield a single state, called the **tied** $\mathbf{KV} \in \mathbb{R}^{h_{kv} \times d_h}$, where $h_{kv} = \frac{h}{g}$ is a **number of kv-heads** and $d_h = \frac{d}{h}$ is a **head dimension**. Then values and keys are obtained as $\mathbf{V} = \mathbf{KV}$ and
 
@@ -1297,7 +1297,7 @@ $$\mathbf{K}_{\text{nope}} = \mathbf{KV}\big[..., :\frac{d_h}{2}\big].$$
 
 The second half with RoPE is a separate single-head projection $\mathbf{K}_{\text{rope}} \in \mathbb{R}^{\frac{d_h}{2}}$, broadcasted to all kv-heads.
 
-**Grouped Latent Attention (GLA)**
+**Grouped Latent Attention**
 
 Compare two inference setups, MLA vs GQA with a model sharded with [tensor parallel](https://astralord.github.io/posts/exploring-parallel-strategies-with-jax/#tensor-parallelism) across multiple devices. 
 
@@ -1309,7 +1309,7 @@ bytes per token in total. In contrast, with GQA the KV cache is already sharded 
 
 $$\mathbf{KV} = \underset{\mathbf{K/V}}{2} \cdot \underset{\text{number of kv heads}}{8} \cdot \underset{\text{head dim}}{d_h} \cdot \underset{\text{float16}}{2} = 32d_h.$$
 
-An efficient way to combine model parallelism with latent attention is to use **Grouped Latent Attention (GLA)**:
+An efficient way to combine model parallelism with latent attention is to use **grouped latent attention (GLA)**:
 
 - It compresses tokens into $h_c$ latent heads, each with dimension equal to half of MLA dimension, $\frac{d_c}{2}$.
 - During training, every latent head and its up-projection matrices reconstruct distinct $\mathbf{K}$ and $\mathbf{V}$ for the query heads in its group. Consequently, the up-projection matrix for one latent head has column dimension $\frac{d}{h_c}$, rather than $d$. 
