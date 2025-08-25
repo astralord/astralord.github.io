@@ -11,7 +11,7 @@ enable_d3: true
 > In 2022, insanely beautiful and original images created with generative neural networks are taking the internet by storm. This post focuses on the theory behind diffusion models that underpin the core ideas of the latest generative AI. Brace yourself, this post is math-heavy and there are a lot of formulas ahead.
 
 ![Space Opera]({{'/assets/img/space-opera.png'|relative_url}})
-*In 2022 'Théâtre D’opéra Spatial', an artwork by Jason M. Allen with help of Midjourney took 1st place in the digital art competition at Colorado State Fair. This event sparked a backslash from artists, claiming that creative jobs are now not safe from machines and in danger of becoming obsolete. Here I chose this picture emerging from noise as a symbol of an upcoming age of art, created by artificial intelligence.*
+*In 2022 'Théâtre D’opéra Spatial', an artwork by Jason M. Allen with help of Midjourney took 1st place in the digital art competition at Colorado State Fair. This event sparked a backlash from artists, claiming that creative jobs are now not safe from machines and in danger of becoming obsolete. Here I chose this picture emerging from noise as a symbol of an upcoming age of art, created by artificial intelligence.*
 
 Before we start, I want to mention all the sources which were helpful to write this post:
 
@@ -462,7 +462,7 @@ graph_chain();
 </script>
 
 ![](.)
-*Forward diffusion process. Given a data point sampled from a real data distribution $\mathbf{x}_0 \sim q(x_0)$, we produce noisy latents $\mathbf{x}_1 \rightarrow \cdots \rightarrow \mathbf{x}_T$ by adding small amount of Gaussian noise at each timestep $t$. The latent $\mathbf{x}_t$ gradually loses its recognizable features as the step $t$ becomes larger and eventually with $T \rightarrow \infty$, $q(\mathbf{x}_T)$ is nearly an isotropic Gaussian distribution.*
+*Forward diffusion process. Given a data point sampled from a real data distribution $\mathbf{x}_0 \sim q(\mathbf{x}_0)$, we produce noisy latents $\mathbf{x}_1 \rightarrow \cdots \rightarrow \mathbf{x}_T$ by adding small amount of Gaussian noise at each timestep $t$. The latent $\mathbf{x}_t$ gradually loses its recognizable features as the step $t$ becomes larger and eventually with $T \rightarrow \infty$, $q(\mathbf{x}_T)$ is nearly an isotropic Gaussian distribution.*
 
 The step sizes are controlled by a variance schedule $\beta_t \in (0, 1)$:
 

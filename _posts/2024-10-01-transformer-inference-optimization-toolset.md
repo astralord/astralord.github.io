@@ -21,7 +21,7 @@ A lot of optimization techniques will be left out, like for example quantization
 
 To tackle language model speedup problem, first we need to understand the concept of the hardware we work on. While Google's TPUs and Apple silicon chips are rising up, NVIDIA's **GPUs** still dominate the market, so they'll be the subject of our in-depth look. 
 
-Graphic processor unit performs all of the computations by multiple **streaming multiprocessors (SM)** (these are similar to the cores in the CPU). SM is basic GPU building block: it has its own instruction schedulers and various instruction execution pipelines. Modern GPUs are also equipped with special off-chip memory called **high bandwidth memory (HBM)**, where data is initially stored and ultimately written back. Unlike the system **dynamic random access memory (DRAM)**, which is controlled by CPU and typically optimized for low latency access, HBM is physically bonded to the GPUs in stacked layers with thousands of pins, providing massively parallel data throughput by design. 
+A graphic processor unit performs all of the computations by multiple **streaming multiprocessors (SM)** (these are similar to the cores in the CPU). SM is a basic GPU building block: it has its own instruction schedulers and various instruction execution pipelines. Modern GPUs are also equipped with special off-chip memory called **high bandwidth memory (HBM)**, where data is initially stored and ultimately written back. Unlike the system **dynamic random access memory (DRAM)**, which is controlled by CPU and typically optimized for low latency access, HBM is physically bonded to the GPUs in stacked layers with thousands of pins, providing massively parallel data throughput by design. 
 
 Streaming multiprocessors access data and code from HBM via the **L2 cache**. It acts as an intermediate level between off-chip and on-chip memory and caches data that be shared among multiple SMs. It is also situated in the path of data moving between devices. Finally, each SM has its own **L1 cache** and **shared memory (SRAM)**, a low-latency on-chip memory caches: they are order of magnitude faster than HBM but many orders of magnitude smaller in capacity. L1 cache is managed by the GPU hardware, while SRAM can be explicitly managed by the programmer through NVIDIA tools. 
 
@@ -312,7 +312,7 @@ Now, when it comes to GPU capability, we must look at three things:
 * **Memory bandwidth** measured in GB/s - the speed of bytes movement from 
 GPU to processing units.
 
-GPU capabilities grow exponentially fast. According to NVIDIA documentation, T4 graphics card released in 2018 had **65 TFLOPs**, <span style="color:#65AD69">40 SMs</span> with <span style="color:#65AD69">64KB</span> L1 cache each, <span style="color:#EDA137">4MB</span> L2 cache with <span style="color:#EDA137">1.3TB/s</span> bandwidth and <span style="color:#E86456">16GB</span> HBM with <span style="color:#E86456">300 GB/s</span> bandwidth. After just 2 years A100 was released with **312 TFLOPs** and <span style="color:#65AD69">108 SMs</span> with <span style="color:#65AD69">192KB</span> of L1, <span style="color:#EDA137">40MB</span> of L2 cache and <span style="color:#E86456">80 GB</span> of HBM with <span style="color:#E86456">1.55 TB/s</span> bandwidth. Compare those numbers to the latest B100 card, which can perform **1.8 PFLOPs** and which HBM has a capacity of <span style="color:#E86456">192 GB</span> and a throughput of <span style="color:#E86456">8 TB/s</span>.
+GPU capabilities grow exponentially fast. According to NVIDIA documentation, T4 graphics card released in 2018 had **65 TFLOPs**, <span style="color:#65AD69">40 SMs</span> with <span style="color:#65AD69">64KB</span> L1 cache each, <span style="color:#EDA137">4MB</span> L2 cache with <span style="color:#EDA137">1.3TB/s</span> bandwidth and <span style="color:#E86456">16GB</span> HBM with <span style="color:#E86456">300 GB/s</span> bandwidth. After just 2 years, A100 was released with **312 TFLOPs** and <span style="color:#65AD69">108 SMs</span> with <span style="color:#65AD69">192KB</span> of L1, <span style="color:#EDA137">40MB</span> of L2 cache and <span style="color:#E86456">80 GB</span> of HBM with <span style="color:#E86456">1.55 TB/s</span> bandwidth. Compare those numbers to the latest B100 card, which can perform **1.8 PFLOPs** and which HBM has a capacity of <span style="color:#E86456">192 GB</span> and a throughput of <span style="color:#E86456">8 TB/s</span>.
 
 <div id="gpu_timeline" class="svg-container" align="center"></div> 
 
@@ -434,13 +434,15 @@ The `ops:byte` ratio analysis is useful, but keep in mind, that it assumes that 
 
 ## High-level algorithmic optimizations
 
+### Multi-Head Attention (MHA)
+
 Now, we are ready to delve into the specifics of transformer optimization. We've defined transformer architecture earlier in [previous blog-posts](https://astralord.github.io/posts/building-aligned-intelligence-systems-part-i-creating-gpt-assistant/). Let's recall shortly that **scaled dot product attention** operation takes a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ as input and outputs
 
 $$\operatorname{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \operatorname{softmax} \Big( \frac{\mathbf{QK}^T}{\sqrt{d}}  \Big) \cdot \mathbf{V}, $$
 
 where $d$ is a hidden dimensionality for queries and keys. When we work with GPT-based models, we use **masked attention** where $\operatorname{softmax}$ input is modified with $\text{mask}$ tensor, setting masked attention values to $-\infty$ if we don't want to attend to corresponding tokens. Input tensors are $\mathbf{Q} \in \mathbb{R}^{L \times d}$ and $\mathbf{K}, \mathbf{V} \in \mathbb{R}^{M \times d}$, where $L$ and $M$ are sequence lengths[^VD].
 
-Also let's recap **multi-head attention layer (MHA)** definition:
+Also let's recap **Multi-Head Attention (MHA)** definition:
  
 $$\operatorname{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V})=[\operatorname{head}_1; \dots; \operatorname{head}_h] \cdot \mathbf{W}^O,$$
 
@@ -1933,7 +1935,7 @@ The computations are defined in **kernels**, small C++ functions, which supposed
 
 Let's take A100 as an example again. It has 108 SMs, each can run up to 2048 threads. Shared memory capacity for each SM is up to 192KB. This means that we can take large matrices (up to few MBs), split them up in smaller chunks that fit into A100 registers and SRAM and then do matrix multiplication at the speed of 18 TB/s, SRAM bandwidth. This in total makes GPU much more efficient than CPU for matrix multiplications.
 
-But we have a lot of non-matmul operations in deep learning, such as normalization layers, activation functions or dropouts. Even though they only account for a small fraction of the total FLOPs, GPUs run them much slower. Firstly, because they have specialized units for matrix multiply, called Tensor Cores. That's why matmul throughput can be up to 16× higher than non-matmul throughput, e.g. 312 TFLOPs vs 19.5 TFLOPs on A100.[^TC] And secondly, they can be extremely memory-bound. 
+However we have a lot of non-matmul operations in deep learning, such as normalization layers, activation functions or dropouts. Even though they only account for a small fraction of the total FLOPs, GPUs run them much slower. Firstly, because they have specialized units for matrix multiply, called Tensor Cores. That's why matmul throughput can be up to 16× higher than non-matmul throughput, e.g. 312 TFLOPs vs 19.5 TFLOPs on A100.[^TC] And secondly, they can be extremely memory-bound. 
 
 Let's take $\mathbf{P}=\operatorname{softmax}(\mathbf{S}) \in \mathbb{R}^{L \times L}$ from attention. For a large sequence length $L$, tensor $\mathbf{S}$ has to reside on HBM, since it would be too large to fit on SRAM. The simplest implementation of softmax requires us to
 
