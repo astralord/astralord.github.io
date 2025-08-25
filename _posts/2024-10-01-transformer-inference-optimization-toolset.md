@@ -434,7 +434,7 @@ The `ops:byte` ratio analysis is useful, but keep in mind, that it assumes that 
 
 ## High-level algorithmic optimizations
 
-### Multi-Head Attention
+### Multi-head Attention
 
 Now, we are ready to delve into the specifics of transformer optimization. We've defined transformer architecture earlier in [previous blog-posts](https://astralord.github.io/posts/building-aligned-intelligence-systems-part-i-creating-gpt-assistant/). Let's recall shortly that **scaled dot product attention** operation takes a set of queries $\mathbf{Q}$, keys $\mathbf{K}$ and values $\mathbf{V}$ as input and outputs
 
