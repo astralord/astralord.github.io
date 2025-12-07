@@ -1274,9 +1274,9 @@ $$\mathbf{Q}_{\text{rope}}\mathbf{K}_{\text{rope}}^T = (x \mathbf{W}^{Q}_r \math
 
 where $\mathbf{W}^{Q}_r, \mathbf{W}^{K}_r \in \mathbb{R}^{d \times d_r}$ are matrices to produce the decouples queries and key, respectively. As in multi-query attention, $\mathbf{W}^{Q}_r$ is different for each head, while $\mathbf{W}^{K}_r$ stays the same. 
 
-During inference, the decoupled key $\mathbf{K}_{\text{rope}}$ should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_r$ elements for each token in each layer (would be $B L n (d_c + d_r) $ in the table above). In DeepSeek-V2 the setting is $d_c=4\frac{d}{h}$ and $d_r = \frac{d}{2h}$, so its KV cache is equal to $\frac{9}{2h} B L nd$, which is the same as for GQA with $g=\frac{9}{4h}$. This setting makes KV cache ~2.25 smaller, than it would be for MHA, but keeps the same level of performance.
+During inference, the decoupled key $\mathbf{K}_{\text{rope}}$ should also be cached, therefore, MLA requires a total KV cache containing $d_c + d_r$ elements for each token in each layer (would be $B L n (d_c + d_r) $ in the table above). In DeepSeek-V2 the setting is $d_c=4\frac{d}{h}$ and $d_r = \frac{d}{2h}$, so its KV cache is equal to $\frac{9}{2h} B L nd$, which is the same as for GQA with $g=\frac{4h}{9}$. This setting makes KV cache only ~2.25 larger, than it would be with MQA, but at the same time it keeps the same level of performance as with MHA.
 
-The arithmetic intensity will be approximately doubled compared to MQA, since MLA loads one hidden head and reuses it across all query headers, whereas the hidden representation loaded into SRAM serves both key and value states.
+The arithmetic intensity is approximately doubled compared to MQA, since the single latent representation loaded into SRAM serves both key and value states — effectively halving the memory traffic while keeping FLOPs constant[^MLA].
 
 
 ### Grouped-Tied / Grouped Latent Attention
@@ -3214,6 +3214,8 @@ For ML engineers, the message is simple: stay curious and be ready to learn acro
 [^VD]: Dimension size of values $\mathbf{V}$ can be different from $d$, but usually it's not the case.
 
 [^AIL]: A reasonable question might be: "What is the best way to utilize GPU to generate small sequences, e.g. $L \ll d$?" A possible solution is to enlarge batch processing, since one can compute that for $x \in \mathbb{R}^{B \times d}$ the arithmetic intensity is $$\frac{BL^2d + BLd^2}{BL^2h + BLd + d^2} \xrightarrow[d \gg L]{} BL $$
+
+[^MLA]: This is an idealized estimate; the actual gain depends on the latent dimension $d_c$​, the RoPE cache overhead $d_r$, and the number of query heads.
 
 [^GLA]: As in DeepSeek-v2, but we drop $d_r$ for simplicity
 
