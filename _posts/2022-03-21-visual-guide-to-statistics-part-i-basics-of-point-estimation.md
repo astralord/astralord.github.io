@@ -162,118 +162,113 @@ d3.select("#drug_exp")
   .style("position", "relative");
 
 function drug_exp() {
-var theta = 0.2;
+  const theta = 0.2;
 
-var margin = {top: 10, right: 0, bottom: 10, left: 30},
-    width = 750 - margin.left - margin.right,
-    height = 150 - margin.top - margin.bottom,
-    fig_height = 125 - margin.top - margin.bottom,
-    fig_width = 650;
-    
-const w = width + margin.left + margin.right;
-const h = height + margin.top + margin.bottom;
+  const margin = {top: 10, right: 0, bottom: 10, left: 30};
+  const width = 750 - margin.left - margin.right;
+  const height = 150 - margin.top - margin.bottom;
+  const fig_height = 125 - margin.top - margin.bottom;
+  const fig_width = 650;
+  const w = width + margin.left + margin.right;
+  const h = height + margin.top + margin.bottom;
 
-var svg = d3.select("div#drug_exp")
-  .append("svg")
-  .attr("preserveAspectRatio", "xMinYMin meet")
-  .attr("viewBox", "0 0 " + w + " " + h)
-  .classed("svg-content", true)
-  .append("g")
-  .attr("transform",
-    "translate(" + margin.left + "," + margin.top + ")");
-  
-const g = svg.append("g")
-  .attr("id", "node");
-  
-var x = d3.scaleLinear()
-          .domain([0, 10])
-          .range([10, fig_width]);
-            
-var xAxis = g.append("g")
-   .attr("transform", "translate(0," + fig_height + ")")
-   .call(d3.axisBottom(x));
-  
-xAxis.selectAll(".tick text")
-   .attr("font-family", "Arvo");
+  const svg = d3.select("div#drug_exp")
+    .append("svg")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", `0 0 ${w} ${h}`)
+    .classed("svg-content", true)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-var y = d3.scaleLinear()
-          .range([fig_height - 10, 0])
-          .domain([0, 1]);
-            
-var yAxis = g.append("g")
-    .call(d3.axisLeft(y).ticks(1));
-  
-yAxis.selectAll(".tick text")
+  const g = svg.append("g")
+    .attr("id", "node");
+
+  const x = d3.scaleLinear()
+    .domain([0, 10])
+    .range([10, fig_width]);
+
+  const xAxis = g.append("g")
+    .attr("transform", `translate(0,${fig_height})`)
+    .call(d3.axisBottom(x));
+
+  xAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
-    
-var xi_text = d3.select("#drug_exp")
-  .append("div")
-  .text("Dose \\(X_i \\)")
-  .style("font-size", "13px")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .style("position", "absolute")
-  .style("left", g.node().getBoundingClientRect().width / 2 + "px")
-  .style("top", g.node().getBoundingClientRect().height + "px");
-  
-var y_itext = d3.select("#drug_exp")
-  .append("div")
-  .text("\\(Y_i \\)")
-  .style("font-size", "13px")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .style("position", "absolute")
-  .style("left", margin.left / 2 + "px")
-  .style("top", 0.4 * g.node().getBoundingClientRect().height + "px");
 
-var figs = [];
-for (var i = 0; i < 11; i += 1) {
-  if (Math.random() < 1 - Math.exp(-theta * i)) {
-    figs.push(g.append("path")
-    .attr("d", d3.symbol().type(d3.symbolCross).size(100))
-    .attr("transform", function(d) { return "translate(" + x(i) + "," + y(1) + ")"; })
-    .style("fill", "#65AD69")
-    .style('stroke', 'black')
-    .style('stroke-width', '0.7')
-    .style('opacity', 0.8));
-  }
-  else {
-    figs.push(g.append("path")
-    .attr("d", d3.symbol().type(d3.symbolCross).size(100))
-    .attr("transform", function(d) { return "translate(" + x(i) + "," + y(0) + ") rotate(-45)"; })
-    .style("fill", "#E86456")
-    .style('stroke', 'black')
-    .style('stroke-width', '0.7')
-    .style('opacity', 0.8));
-  }
-}
-    
-function updateSymbols() {
-  for (var i = 0; i < 11; i += 1) {
+  const y = d3.scaleLinear()
+    .range([fig_height - 10, 0])
+    .domain([0, 1]);
+
+  const yAxis = g.append("g")
+    .call(d3.axisLeft(y).ticks(1));
+
+  yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const xi_text = d3.select("#drug_exp")
+    .append("div")
+    .text("Dose \\(X_i \\)")
+    .style("font-size", "13px")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .style("position", "absolute")
+    .style("left", `${g.node().getBoundingClientRect().width / 2}px`)
+    .style("top", `${g.node().getBoundingClientRect().height}px`);
+
+  const y_itext = d3.select("#drug_exp")
+    .append("div")
+    .text("\\(Y_i \\)")
+    .style("font-size", "13px")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .style("position", "absolute")
+    .style("left", `${margin.left / 2}px`)
+    .style("top", `${0.4 * g.node().getBoundingClientRect().height}px`);
+
+  const figs = [];
+  for (let i = 0; i < 11; i += 1) {
     if (Math.random() < 1 - Math.exp(-theta * i)) {
-      figs[i].transition()
-             .duration(1000)
-             .attr("d", d3.symbol().type(d3.symbolCross).size(100))
-             .attr("transform", function(d) { return "translate(" + x(i) + "," + y(1) + ")"; })
-             .style("fill", "#65AD69");
-    }
-    else {
-      figs[i].transition()
-             .duration(1000)
-             .attr("d", d3.symbol().type(d3.symbolCross).size(100))
-             .attr("transform", function(d) { return "translate(" + x(i) + "," +y(0) + ") rotate(-45)"; })
-             .style("fill", "#E86456");
+      figs.push(g.append("path")
+        .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+        .attr("transform", () => `translate(${x(i)},${y(1)})`)
+        .style("fill", "#65AD69")
+        .style('stroke', 'black')
+        .style('stroke-width', '0.7')
+        .style('opacity', 0.8));
+    } else {
+      figs.push(g.append("path")
+        .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+        .attr("transform", () => `translate(${x(i)},${y(0)}) rotate(-45)`)
+        .style("fill", "#E86456")
+        .style('stroke', 'black')
+        .style('stroke-width', '0.7')
+        .style('opacity', 0.8));
     }
   }
-}
 
-var sampleButton = d3.select("#sample-button");
+  function updateSymbols() {
+    for (let i = 0; i < 11; i += 1) {
+      if (Math.random() < 1 - Math.exp(-theta * i)) {
+        figs[i].transition()
+          .duration(1000)
+          .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+          .attr("transform", () => `translate(${x(i)},${y(1)})`)
+          .style("fill", "#65AD69");
+      } else {
+        figs[i].transition()
+          .duration(1000)
+          .attr("d", d3.symbol().type(d3.symbolCross).size(100))
+          .attr("transform", () => `translate(${x(i)},${y(0)}) rotate(-45)`)
+          .style("fill", "#E86456");
+      }
+    }
+  }
 
-sampleButton
+  const sampleButton = d3.select("#sample-button");
+
+  sampleButton
     .on("click", function() {
       updateSymbols();
-});
-
+    });
 }
 
 drug_exp();
@@ -391,246 +386,242 @@ Remember we talked about $\overline{x}_n$ and $\hat{s}_n^2$ being typical estima
 
 d3.select("#chi_t_plt")
   .style("position", "relative");
-  
-function plt_label_path(svg, color, x, y) {
 
-	svg.append("path")
-	   .attr("stroke", color)
-	   .attr("stroke-width", 4)
-	   .datum([{x: x, y: y + 2}, {x: x + 25, y: y + 2}])
-	   .attr("d",  d3.line()
-	       .x(function(d) { return d.x; })
-	       .y(function(d) { return d.y; }));
-	       
-	svg.append("path")
-	   .attr("stroke", "currentColor")
-	   .attr("stroke-width", 1)
-	   .datum([{x: x, y: y}, {x: x + 25, y: y}])
-	   .attr("d",  d3.line()
-	       .x(function(d) { return d.x; })
-	       .y(function(d) { return d.y; }));
-	       
+function plt_label_path(svg, color, x, y) {
+  svg.append("path")
+    .attr("stroke", color)
+    .attr("stroke-width", 4)
+    .datum([{x: x, y: y + 2}, {x: x + 25, y: y + 2}])
+    .attr("d", d3.line()
+      .x(d => d.x)
+      .y(d => d.y));
+
+  svg.append("path")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 1)
+    .datum([{x: x, y: y}, {x: x + 25, y: y}])
+    .attr("d", d3.line()
+      .x(d => d.x)
+      .y(d => d.y));
 }
 
 function chi_t_plts() {
 
-var margin = {top: 20, right: 0, bottom: 30, left: 45},
-    width = 700 - margin.left - margin.right,
-    height = 200 - margin.top - margin.bottom,
-    fig_width = 300;
+  const margin = {top: 20, right: 0, bottom: 30, left: 45};
+  const width = 700 - margin.left - margin.right;
+  const height = 200 - margin.top - margin.bottom;
+  const fig_width = 300;
 
-var chi_svg = d3.select("#chi_t_plt")
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+  const chi_svg = d3.select("#chi_t_plt")
+    .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
-var margin = {top: 0, right: 0, bottom: 35, left: 350};
-    
-var t_svg = chi_svg
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+  const margin_t = {top: 0, right: 0, bottom: 35, left: 350};
 
-plt_label_path(chi_svg, "#EDA137", fig_width * 0.72, height * 0.13);
+  const t_svg = chi_svg
+    .append("svg")
+      .attr("width", width + margin_t.left + margin_t.right)
+      .attr("height", height + margin_t.top + margin_t.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin_t.left},${margin_t.top})`);
 
-var span_chi = d3.select("#chi_t_plt")
-  .append("span")
-  .text("\\(f_{\\chi_n^2}(x)\\)")
-  .style('color', '#EDA137')
-  .style("font-size", "17px")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
-  .style("position", "absolute")
-  .style("left", fig_width * 0.98 + "px")
-  .style("top", height * 0.18 + "px");
+  plt_label_path(chi_svg, "#EDA137", fig_width * 0.72, height * 0.13);
 
-plt_label_path(t_svg, "#348ABD", fig_width * 0.72, height * 0.13);
-
-var span_t = d3.select("#chi_t_plt")
-  .append("div")
-  .text("\\(f_{t_n}(x) \\)")
-  .style('color', '#348ABD')
-  .style("font-size", "17px")
-  .attr("font-family", "Arvo")
-  .attr("font-weight", 700)
-  .attr("font-size", 20)
-  .style("position", "absolute")
-  .style("left", fig_width * 2.145 + "px")
-  .style("top", height * 0.18 + "px");
-  
-var chi_x = d3.scaleLinear()
-        .domain([-0, 40])
-        .range([0, fig_width]);
-        
-  var xAxis = chi_svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(chi_x));
-  
-  xAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
-
-  var t_x = d3.scaleLinear()
-            .domain([-20, 20])
-            .range([0, fig_width]);
-            
-  xAxis = t_svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(t_x));
-       
-  xAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
-
-  var y = d3.scaleLinear()
-            .range([height, 0])
-            .domain([0, 0.5]);
-            
-  var yAxis = chi_svg.append("g")
-      .call(d3.axisLeft(y).ticks(5));
-  
-  yAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
-     
-  var t_y = d3.scaleLinear()
-            .range([height, 5])
-            .domain([0, 0.5]);
-                
-  yAxis = t_svg.append("g")
-      .call(d3.axisLeft(t_y).ticks(5));
-      
-  yAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
-        
-d3.csv("../../../../assets/chi-t.csv").then(data => {
-
-  var chi_curve = chi_svg
-    .append('g')
-    .append("path")
-      .datum(data)
-      .attr("fill", "#EDA137")
-      .attr("border", 0)
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return chi_x(d.chi_x); })
-          .y(function(d) { return y(d["chi_5"]); })
-      );
-      
-  var t_curve = t_svg
-    .append('g')
-    .append("path")
-      .datum(data)
-      .attr("fill", "#348ABD")
-      .attr("border", 0)
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return t_x(d.t_x); })
-          .y(function(d) { return t_y(d["t_5"]); })
-      );
-
-  function updateChart(n) {
-    n = parseInt(n);
-    
-    chi_curve
-      .datum(data)
-      .transition()
-      .duration(1000)
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return chi_x(d.chi_x); })
-          .y(function(d) { return y(d["chi_" + n]); })
-      );
-      
-    t_curve
-      .datum(data)
-      .transition()
-      .duration(1000)
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return t_x(d.t_x); })
-          .y(function(d) { return t_y(d["t_" + n]); })
-      );
-  }
-  
-var slider_svg = d3.select("#chi_t_plt")
-  .append("svg")
-  .attr("width", width + 20)
-  .attr("height", 70)
-  .append("g")
-  .attr("transform", "translate(" + 25 + "," + 20 + ")");
-  
-var n_x = d3.scaleLinear()
-    .domain([1, 12])
-    .range([0, width / 2])
-    .clamp(true);
-    
-function roundN(x) { return Math.round(x - 0.5); }
-
-function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
-    var slider = svg_.append("g")
-      .attr("class", "slider")
-      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
-    
-    var drag = d3.drag()
-	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function(event, d) { 
-	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
-	          parameter_update(round_fun(x.invert(event.x)));
-	         });
-	         
-    slider.append("line")
-	    .attr("class", "track")
-	    .attr("x1", x.range()[0])
-	    .attr("x2", x.range()[1])
-	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-inset")
-	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-overlay")
-	    .call(drag);
-
-	slider.insert("g", ".track-overlay")
-    .attr("class", "ticks")
-    .attr("transform", "translate(0," + 18 + ")")
-  .selectAll("text")
-  .data(x.ticks(6))
-  .enter().append("text")
-    .attr("x", x)
-    .attr("text-anchor", "middle")
+  const span_chi = d3.select("#chi_t_plt")
+    .append("span")
+    .text("\\(f_{\\chi_n^2}(x)\\)")
+    .style('color', '#EDA137')
+    .style("font-size", "17px")
     .attr("font-family", "Arvo")
-    .style('fill', "currentColor")
-    .text(function(d) { return d; });
+    .attr("font-weight", 700)
+    .attr("font-size", 20)
+    .style("position", "absolute")
+    .style("left", `${fig_width * 0.98}px`)
+    .style("top", `${height * 0.18}px`);
 
-   var handle = slider.insert("circle", ".track-overlay")
-      .attr("class", "handle")
-      .attr("r", 5).attr("cx", x(init_val));
-      
-	svg_
-	  .append("text")
-	  .attr("text-anchor", "middle")
-	  .attr("y", loc_y + 3)
-	  .attr("x", loc_x - 21)
-	  .attr("font-family", "Arvo")
-	  .attr("font-size", 17)
-	  .text(letter)
-	  .style("fill", color);
-	  	  
-	return handle;
-}
+  plt_label_path(t_svg, "#348ABD", fig_width * 0.72, height * 0.13);
 
-createSlider(slider_svg, updateChart, n_x, 190, 0.1 * height, "n", "currentColor", 5, roundN);
+  const span_t = d3.select("#chi_t_plt")
+    .append("div")
+    .text("\\(f_{t_n}(x) \\)")
+    .style('color', '#348ABD')
+    .style("font-size", "17px")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .attr("font-size", 20)
+    .style("position", "absolute")
+    .style("left", `${fig_width * 2.145}px`)
+    .style("top", `${height * 0.18}px`);
 
-});
+  const chi_x = d3.scaleLinear()
+    .domain([-0, 40])
+    .range([0, fig_width]);
+
+  const xAxis = chi_svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(chi_x));
+
+  xAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const t_x = d3.scaleLinear()
+    .domain([-20, 20])
+    .range([0, fig_width]);
+
+  const t_xAxis = t_svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(t_x));
+
+  t_xAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const y = d3.scaleLinear()
+    .range([height, 0])
+    .domain([0, 0.5]);
+
+  const yAxis = chi_svg.append("g")
+    .call(d3.axisLeft(y).ticks(5));
+
+  yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const t_y = d3.scaleLinear()
+    .range([height, 5])
+    .domain([0, 0.5]);
+
+  const t_yAxis = t_svg.append("g")
+    .call(d3.axisLeft(t_y).ticks(5));
+
+  t_yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  d3.csv("../../../../assets/chi-t.csv").then(data => {
+
+    const chi_curve = chi_svg
+      .append('g')
+      .append("path")
+        .datum(data)
+        .attr("fill", "#EDA137")
+        .attr("border", 0)
+        .attr("stroke", "currentColor")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round")
+        .attr("d", d3.line()
+          .curve(d3.curveBasis)
+          .x(d => chi_x(d.chi_x))
+          .y(d => y(d["chi_5"]))
+        );
+
+    const t_curve = t_svg
+      .append('g')
+      .append("path")
+        .datum(data)
+        .attr("fill", "#348ABD")
+        .attr("border", 0)
+        .attr("stroke", "currentColor")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round")
+        .attr("d", d3.line()
+          .curve(d3.curveBasis)
+          .x(d => t_x(d.t_x))
+          .y(d => t_y(d["t_5"]))
+        );
+
+    function updateChart(n) {
+      n = parseInt(n);
+
+      chi_curve
+        .datum(data)
+        .transition()
+        .duration(1000)
+        .attr("d", d3.line()
+          .curve(d3.curveBasis)
+          .x(d => chi_x(d.chi_x))
+          .y(d => y(d[`chi_${n}`]))
+        );
+
+      t_curve
+        .datum(data)
+        .transition()
+        .duration(1000)
+        .attr("d", d3.line()
+          .curve(d3.curveBasis)
+          .x(d => t_x(d.t_x))
+          .y(d => t_y(d[`t_${n}`]))
+        );
+    }
+
+    const slider_svg = d3.select("#chi_t_plt")
+      .append("svg")
+      .attr("width", width + 20)
+      .attr("height", 70)
+      .append("g")
+      .attr("transform", "translate(25,20)");
+
+    const n_x = d3.scaleLinear()
+      .domain([1, 12])
+      .range([0, width / 2])
+      .clamp(true);
+
+    function roundN(x) { return Math.round(x - 0.5); }
+
+    function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
+      const slider = svg_.append("g")
+        .attr("class", "slider")
+        .attr("transform", `translate(${loc_x},${loc_y})`);
+
+      const drag = d3.drag()
+        .on("start.interrupt", function() { slider.interrupt(); })
+        .on("start drag", function(event, d) {
+          handle.attr("cx", x(round_fun(x.invert(event.x))));
+          parameter_update(round_fun(x.invert(event.x)));
+        });
+
+      slider.append("line")
+        .attr("class", "track")
+        .attr("x1", x.range()[0])
+        .attr("x2", x.range()[1])
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+        .attr("class", "track-inset")
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+        .attr("class", "track-overlay")
+        .call(drag);
+
+      slider.insert("g", ".track-overlay")
+        .attr("class", "ticks")
+        .attr("transform", "translate(0,18)")
+        .selectAll("text")
+        .data(x.ticks(6))
+        .enter().append("text")
+          .attr("x", x)
+          .attr("text-anchor", "middle")
+          .attr("font-family", "Arvo")
+          .style('fill', "currentColor")
+          .text(d => d);
+
+      const handle = slider.insert("circle", ".track-overlay")
+        .attr("class", "handle")
+        .attr("r", 5).attr("cx", x(init_val));
+
+      svg_
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", loc_y + 3)
+        .attr("x", loc_x - 21)
+        .attr("font-family", "Arvo")
+        .attr("font-size", 17)
+        .text(letter)
+        .style("fill", color);
+
+      return handle;
+    }
+
+    createSlider(slider_svg, updateChart, n_x, 190, 0.1 * height, "n", "currentColor", 5, roundN);
+
+  });
 }
 
 
@@ -698,514 +689,504 @@ $$ \mathbb{E}[\hat{s}_n^2(X)] = \frac{\sigma^2}{n} (n - 1) \neq \sigma^2.$$
 
 d3.select("#biased_viz")
   .style("position", "relative");
-	
+
 function randn_bm() {
-    var u = 0, v = 0;
-    while(u === 0) u = Math.random();
-    while(v === 0) v = Math.random();
-    var u_a = Math.sqrt(-2.0 * Math.log(u));
-    var u_b = Math.cos(2.0 * Math.PI * v);
-    return u_a * u_b;
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  const u_a = Math.sqrt(-2.0 * Math.log(u));
+  const u_b = Math.cos(2.0 * Math.PI * v);
+  return u_a * u_b;
 }
-  
+
 function biasedness() {
-	var mu = 0,
-	    sigma = 1,
-	    n = 6,
-	    xn_dots = [],
-	    sn_dots = [];
-	
-	var avg_dur = 1200;
+  let mu = 0,
+      sigma = 1,
+      n = 6,
+      xn_dots = [],
+      sn_dots = [];
 
-	var margin = {top: 20, right: 0, bottom: 5, left: 70},
-	    width = 750 - margin.left - margin.right,
-	    height = 400 - margin.top - margin.bottom,
-	    fig_height = 250 - margin.top - margin.bottom,
-	    fig_width = 500,
-	    cfs = 100;
-	    
-	var svg = d3.select("#biased_viz")
-	  .append("svg")
-	    .attr("width", width + margin.left + margin.right)
-	    .attr("height", height + margin.top + margin.bottom)
-	  .append("g")
-	    .attr("transform",
-	          "translate(" + margin.left + "," + margin.top + ")");
+  const ANIM_DURATION = 1200;
 
-	var x = d3.scaleLinear()
-	          .domain([-4, 4])
-	          .range([cfs, fig_width + cfs]);
-            
-	var xAxis = svg.append("g")
-	   .attr("transform", "translate(0," + fig_height + ")")
-	   .call(d3.axisBottom(x));
-	  
-	xAxis.selectAll(".tick text")
-	   .attr("font-family", "Arvo");
-	
-	var y = d3.scaleLinear()
-	          .range([fig_height, 0])
-	          .domain([0, 5]);
-            
-	var yAxis = svg.append("g")
-	   .attr("transform", "translate(" + cfs + ",0)")
-	   .call(d3.axisLeft(y).ticks(5));
-	  
-	yAxis.selectAll(".tick text")
-	    .attr("font-family", "Arvo");
-	  
-	var gauss_data = [{x: -4, y: 0}];
-	for (var i = -4; i < 4; i += 0.01) {
-	  gauss_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) });
-	}
-	gauss_data.push({x: 4, y: 0});
-	  
-	var gauss_curve = svg
-	  .append('g')
-	  .append("path")
-	    .datum(gauss_data)
-	    .attr("fill", "#65AD69")
-	    .attr("border", 0)
-	    .attr("stroke", "currentColor")
-	    .attr("stroke-width", 1)
-	    .attr("stroke-linejoin", "round")
-	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
-	        .x(function(d) { return x(d.x); })
-	        .y(function(d) { return y(d.y); })
-	);
-	    
-	var xn_data = [{x: -3, y: 0}];
-	for (var i = -3; i < 3; i += 0.01) {
-	    xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
-	}
-	xn_data.push({x: 3, y: 0});
-		  
-	var xn_curve = svg
-	  .append('g')
-	  .append("path")
-	    .datum(xn_data)
-	    .attr("fill", "#E86456")
-	    .attr("border", 0)
-	    .attr("stroke", "currentColor")
-	    .attr("stroke-width", 1)
-	    .attr("stroke-linejoin", "round")
-	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
-	        .x(function(d) { return x(d.x); })
-	        .y(function(d) { return y(-d.y - 0.5); })
-	);
+  const margin = {top: 20, right: 0, bottom: 5, left: 70};
+  const width = 750 - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
+  const fig_height = 250 - margin.top - margin.bottom;
+  const fig_width = 500;
+  const cfs = 100;
 
-	var std_curve;
-	
-	d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
-	  std_curve = svg
-	    .append('g')
-	    .append("path")
-	      .datum(chi_data)
-	      .attr("fill", "#EDA137")
-	      .attr("border", 0)
-	      .attr("stroke", "currentColor")
-	      .attr("stroke-width", 1)
-	      .attr("stroke-linejoin", "round")
-	      .attr("d",  d3.line()
-	        .curve(d3.curveBasis)
-	          .x(function(d) { 
-	          	return x(-(n - 1) * d["chi_" + (n-1)] - 4.5);
-	          })
-	          .y(function(d) { 
-	          	return y(Math.min(4, d.chi_x / n)); 
-	          })
-	   	  );
-	   	  
-	  sn_avg_curve = svg
-	    .append('g')
-	    .append("path")
-	      .datum([{x: 1 - 1/n, y: -4}, {x: 1 - 1 / n, y: -6}, {x: 1.5 - 1/n, y: -6}])
-	      .attr("fill", "none")
-	      .attr("border", 0)
-	      .attr("stroke", "currentColor")
-	      .attr("stroke-width", 1)
-	      .attr("stroke-linejoin", "round")
-	      .attr("stroke-dasharray", "3 3")
-	      .attr("d",  d3.line()
-		      .x(function(d) { return x(d.y); })
-		      .y(function(d) { return y(d.x); })
-	   	  );
-	   	  
-		}
-	);
-	
-	var labels_x = 500;
-	
-	plt_label_path(svg, "#65AD69", labels_x, 0);
-	
-	var span_sample = d3.select("#biased_viz")
-	  .append("span")
-	  .text("\\(f_X(x) \\sim \\mathcal{N}(0, 1)\\)")
-	  .style('color', '#65AD69')
-	  .style("font-size", "13px")
-	  .attr("font-family", "Arvo")
-	  .attr("font-weight", 700)
-	  .style("position", "absolute")
-	  .style("left", labels_x + 100 + "px")
-	  .style("top", 10 + "px");
-	
-	plt_label_path(svg, "#E86456", labels_x, 25);
-	       
-	var span_mean = d3.select("#biased_viz")
-	  .append("span")
-	  .text("\\( f_{\\overline{X}_n}(x) \\sim \\mathcal{N}(0, \\frac{1}{n}) \\)")
-	  .style('color', '#E86456')
-	  .style("font-size", "13px")
-	  .style("font-weight", "700")
-	  .attr("font-family", "Arvo")
-	  .attr("font-weight", 700)
-	  .style("position", "absolute")
-	  .style("left", labels_x + 100 + "px")
-	  .style("top", 35 + "px");
-	  
-	plt_label_path(svg, "#EDA137", labels_x, 50);
-	  
-	var span_std = d3.select("#biased_viz")
-	  .append("span")
-	  .text("\\( f_{\\hat{s}_n^2(X)}(x) \\sim \\frac{1}{n} \\chi_{n-1}^2 \\)")
-	  .style('color', '#EDA137')
-	  .style("font-size", "13px")
-	  .style("font-weight", "700")
-	  .attr("font-family", "Arvo")
-	  .attr("font-weight", 700)
-	  .style("position", "absolute")
-	  .style("left", labels_x + 100 + "px")
-	  .style("top", 60 + "px");
-	  
-	var xn_avg_curve = svg
-	    .append('g')
-	    .append("path")
-	      .datum([{x: 0, y: 0}, {x: 0, y: -2}, {x: -0.5, y: -2}])
-	      .attr("fill", "none")
-	      .attr("border", 0)
-	      .attr("stroke", "currentColor")
-	      .attr("stroke-width", 1)
-	      .attr("stroke-linejoin", "round")
-	      .attr("stroke-dasharray", "3 3")
-	      .attr("d",  d3.line()
-	          .x(function(d) { return x(d.x); })
-	          .y(function(d) { return y(d.y); })
-	   );
-	
-	var span_mean_avg = d3.select("#biased_viz")
-	  .append("span")
-	  .text("\\( \\mathbb{E}[\\overline{X}_n] \\)")
-	  .style('color', '#696969')
-	  .style("font-size", "13px")
-	  .style("font-weight", "700")
-	  .attr("font-family", "Arvo")
-	  .attr("font-weight", 700)
-	  .style("position", "absolute")
-	  .style("left", x(-0.05) + "px")
-	  .style("top", y(-2.15) + "px");
-	   
-	var sn_avg_curve;
-	
-	var span_mean_std = d3.select("#biased_viz")
-	  .append("span")
-	  .text("\\( \\mathbb{E}[\\hat{s}_n^2(X)] \\)")
-	  .style('color', '#696969')
-	  .style("font-size", "13px")
-	  .attr("font-family", "Arvo")
-	  .attr("font-weight", 700)
-	  .style("position", "absolute")
-	  .style("left", x(-5.3) + "px")
-	  .style("top", y(1.6 - 1 / n) + "px");
-  
-function sample() {
-  random_samples = [];
-  smpl_dots = [];
-  smpl_copy_dots = [];
-  var average = 0;
-  
-  var sq_curve = svg
+  const svg = d3.select("#biased_viz")
+    .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear()
+    .domain([-4, 4])
+    .range([cfs, fig_width + cfs]);
+
+  const xAxis = svg.append("g")
+    .attr("transform", `translate(0,${fig_height})`)
+    .call(d3.axisBottom(x));
+
+  xAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const y = d3.scaleLinear()
+    .range([fig_height, 0])
+    .domain([0, 5]);
+
+  const yAxis = svg.append("g")
+    .attr("transform", `translate(${cfs},0)`)
+    .call(d3.axisLeft(y).ticks(5));
+
+  yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const gauss_data = [{x: -4, y: 0}];
+  for (let i = -4; i < 4; i += 0.01) {
+    gauss_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI))});
+  }
+  gauss_data.push({x: 4, y: 0});
+
+  const gauss_curve = svg
     .append('g')
-    .append("path");
-    
-  for (var i = 0; i < n; i += 1) {
-    random_samples.push(mu + sigma * randn_bm());
-    
-    smpl_dots.push(svg.append('g')
-      .selectAll("dot")
-      .data([{x: random_samples[i], y: 5}])
-      .enter()
-      .append("circle")
-        .attr("cx", function (d) { return x(d.x); } )
-        .attr("cy", function (d) { return y(d.y); } )
-        .attr("r", 3)
-        .style("fill", "#65AD69")
-        .attr("stroke", "black")
-        .attr("stroke-width", 1));
-        
-    smpl_copy_dots.push(svg.append('g')
-      .selectAll("dot")
-      .data([{x: random_samples[i], y: 0}])
-      .enter()
-      .append("circle")
-        .attr("cx", function (d) { return x(d.x); } )
-        .attr("cy", function (d) { return y(d.y); } )
-        .attr("r", 0)
-        .style("fill", "#65AD69")
-        .attr("stroke", "black")
-        .attr("stroke-width", 1));
-        
-     smpl_dots[i].transition()
-           .duration(avg_dur)
-           .attr("cx", function (d) { return x(random_samples[i]); } )
-           .attr("cy", function (d) { return y(0); } );
-     
-     average += random_samples[i];
-   }
-   average /= n;
-   
-   for (var i = 0; i < n; i += 1) {
-     smpl_copy_dots[i]
-           .transition()
-           .delay(avg_dur) 
-           .duration(0)
-           .attr("r", 3);
-     
-     smpl_copy_dots[i]
-           .transition()
-           .delay(avg_dur) 
-           .duration(avg_dur)
-           .style("fill", "#E86456")
-           .attr("cx", function (d) { return x(average); } )
-           .attr("cy", function (d) { return y(0); } );
-     
-     smpl_dots[i]
-           .transition()
-           .delay(3 * avg_dur) 
-           .duration(avg_dur)
-           .attr("cx", function (d) { return x(random_samples[i]); } )
-           .attr("cy", function (d) { return y( (random_samples[i] - average) ** 2); } );
-   }
-   
-   var xn_dot = svg.append('g')
+    .append("path")
+      .datum(gauss_data)
+      .attr("fill", "#65AD69")
+      .attr("border", 0)
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+      );
+
+  let xn_data = [{x: -3, y: 0}];
+  for (let i = -3; i < 3; i += 0.01) {
+    xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n))});
+  }
+  xn_data.push({x: 3, y: 0});
+
+  const xn_curve = svg
+    .append('g')
+    .append("path")
+      .datum(xn_data)
+      .attr("fill", "#E86456")
+      .attr("border", 0)
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(-d.y - 0.5))
+      );
+
+  let std_curve;
+  let sn_avg_curve;
+
+  d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
+    std_curve = svg
+      .append('g')
+      .append("path")
+        .datum(chi_data)
+        .attr("fill", "#EDA137")
+        .attr("border", 0)
+        .attr("stroke", "currentColor")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round")
+        .attr("d", d3.line()
+          .curve(d3.curveBasis)
+          .x(d => x(-(n - 1) * d[`chi_${n - 1}`] - 4.5))
+          .y(d => y(Math.min(4, d.chi_x / n)))
+        );
+
+    sn_avg_curve = svg
+      .append('g')
+      .append("path")
+        .datum([{x: 1 - 1/n, y: -4}, {x: 1 - 1/n, y: -6}, {x: 1.5 - 1/n, y: -6}])
+        .attr("fill", "none")
+        .attr("border", 0)
+        .attr("stroke", "currentColor")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-dasharray", "3 3")
+        .attr("d", d3.line()
+          .x(d => x(d.y))
+          .y(d => y(d.x))
+        );
+  });
+
+  const labels_x = 500;
+
+  plt_label_path(svg, "#65AD69", labels_x, 0);
+
+  const span_sample = d3.select("#biased_viz")
+    .append("span")
+    .text("\\(f_X(x) \\sim \\mathcal{N}(0, 1)\\)")
+    .style('color', '#65AD69')
+    .style("font-size", "13px")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .style("position", "absolute")
+    .style("left", `${labels_x + 100}px`)
+    .style("top", "10px");
+
+  plt_label_path(svg, "#E86456", labels_x, 25);
+
+  const span_mean = d3.select("#biased_viz")
+    .append("span")
+    .text("\\( f_{\\overline{X}_n}(x) \\sim \\mathcal{N}(0, \\frac{1}{n}) \\)")
+    .style('color', '#E86456')
+    .style("font-size", "13px")
+    .style("font-weight", "700")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .style("position", "absolute")
+    .style("left", `${labels_x + 100}px`)
+    .style("top", "35px");
+
+  plt_label_path(svg, "#EDA137", labels_x, 50);
+
+  const span_std = d3.select("#biased_viz")
+    .append("span")
+    .text("\\( f_{\\hat{s}_n^2(X)}(x) \\sim \\frac{1}{n} \\chi_{n-1}^2 \\)")
+    .style('color', '#EDA137')
+    .style("font-size", "13px")
+    .style("font-weight", "700")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .style("position", "absolute")
+    .style("left", `${labels_x + 100}px`)
+    .style("top", "60px");
+
+  const xn_avg_curve = svg
+    .append('g')
+    .append("path")
+      .datum([{x: 0, y: 0}, {x: 0, y: -2}, {x: -0.5, y: -2}])
+      .attr("fill", "none")
+      .attr("border", 0)
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 1)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-dasharray", "3 3")
+      .attr("d", d3.line()
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+      );
+
+  const span_mean_avg = d3.select("#biased_viz")
+    .append("span")
+    .text("\\( \\mathbb{E}[\\overline{X}_n] \\)")
+    .style('color', '#696969')
+    .style("font-size", "13px")
+    .style("font-weight", "700")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .style("position", "absolute")
+    .style("left", `${x(-0.05)}px`)
+    .style("top", `${y(-2.15)}px`);
+
+  const span_mean_std = d3.select("#biased_viz")
+    .append("span")
+    .text("\\( \\mathbb{E}[\\hat{s}_n^2(X)] \\)")
+    .style('color', '#696969')
+    .style("font-size", "13px")
+    .attr("font-family", "Arvo")
+    .attr("font-weight", 700)
+    .style("position", "absolute")
+    .style("left", `${x(-5.3)}px`)
+    .style("top", `${y(1.6 - 1 / n)}px`);
+
+  function sample() {
+    const random_samples = [];
+    const smpl_dots = [];
+    const smpl_copy_dots = [];
+    let average = 0;
+
+    const sq_curve = svg
+      .append('g')
+      .append("path");
+
+    for (let i = 0; i < n; i += 1) {
+      random_samples.push(mu + sigma * randn_bm());
+
+      smpl_dots.push(svg.append('g')
+        .selectAll("dot")
+        .data([{x: random_samples[i], y: 5}])
+        .enter()
+        .append("circle")
+          .attr("cx", d => x(d.x))
+          .attr("cy", d => y(d.y))
+          .attr("r", 3)
+          .style("fill", "#65AD69")
+          .attr("stroke", "black")
+          .attr("stroke-width", 1));
+
+      smpl_copy_dots.push(svg.append('g')
+        .selectAll("dot")
+        .data([{x: random_samples[i], y: 0}])
+        .enter()
+        .append("circle")
+          .attr("cx", d => x(d.x))
+          .attr("cy", d => y(d.y))
+          .attr("r", 0)
+          .style("fill", "#65AD69")
+          .attr("stroke", "black")
+          .attr("stroke-width", 1));
+
+      smpl_dots[i].transition()
+        .duration(ANIM_DURATION)
+        .attr("cx", () => x(random_samples[i]))
+        .attr("cy", () => y(0));
+
+      average += random_samples[i];
+    }
+    average /= n;
+
+    for (let i = 0; i < n; i += 1) {
+      smpl_copy_dots[i]
+        .transition()
+        .delay(ANIM_DURATION)
+        .duration(0)
+        .attr("r", 3);
+
+      smpl_copy_dots[i]
+        .transition()
+        .delay(ANIM_DURATION)
+        .duration(ANIM_DURATION)
+        .style("fill", "#E86456")
+        .attr("cx", () => x(average))
+        .attr("cy", () => y(0));
+
+      smpl_dots[i]
+        .transition()
+        .delay(3 * ANIM_DURATION)
+        .duration(ANIM_DURATION)
+        .attr("cx", () => x(random_samples[i]))
+        .attr("cy", () => y((random_samples[i] - average) ** 2));
+    }
+
+    const xn_dot = svg.append('g')
       .selectAll("dot")
       .data([{x: average, y: 0}])
       .enter()
       .append("circle")
-        .attr("cx", function (d) { return x(d.x); } )
-        .attr("cy", function (d) { return y(d.y); } )
+        .attr("cx", d => x(d.x))
+        .attr("cy", d => y(d.y))
         .attr("r", 0)
         .style("fill", "#E86456")
         .attr("stroke", "black")
         .attr("stroke-width", 1);
-   
-   xn_dot.transition().delay(2 * avg_dur).attr("r", 3);
-      
-   var sq_data = [];
-   for (var i = -4; i <= 4; i += 0.1) {
-       sq_data.push({x: i, y: (i - average) ** 2 });
-   }
-   
-   sq_curve
+
+    xn_dot.transition().delay(2 * ANIM_DURATION).attr("r", 3);
+
+    const sq_data = [];
+    for (let i = -4; i <= 4; i += 0.1) {
+      sq_data.push({x: i, y: (i - average) ** 2});
+    }
+
+    sq_curve
       .datum(sq_data)
       .attr("fill", "none")
       .attr("border", 0)
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
+      .attr("d", d3.line()
         .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
+        .x(d => x(d.x))
+        .y(d => y(d.y))
       );
-   
-   var average_y = 0;
-   for (var i = 0; i < n; i += 1) {
-       average_y += (random_samples[i] - average) ** 2;
-   }
-   average_y /= n;
-   
-   for (var i = 0; i < n; i += 1) {
-       smpl_dots[i]
-           .transition()
-           .delay(4 * avg_dur) 
-           .duration(avg_dur)
-           .attr("cx", function (d) { return x(-4); } )
-           .attr("cy", function (d) { return y( (random_samples[i] - average) ** 2); } );
-           
-       smpl_dots[i]
-           .transition()
-           .delay(5 * avg_dur) 
-           .duration(avg_dur)
-           .style("fill", "#EDA137")
-           .attr("cx", function (d) { return x(-4); } )
-           .attr("cy", function (d) { return y(average_y);  } );
-   }
-      
-   var totalLength = sq_curve.node().getTotalLength();
-   sq_curve.attr("stroke-dasharray", totalLength + " " + totalLength)
-           .attr("stroke-dashoffset", totalLength)
-           .transition().duration(4 * avg_dur)
-           .attr("stroke-dashoffset", 0);
-    
-   sq_curve.transition().delay(6 * avg_dur).remove();
-   
-   var sn_dot = svg.append('g')
+
+    let average_y = 0;
+    for (let i = 0; i < n; i += 1) {
+      average_y += (random_samples[i] - average) ** 2;
+    }
+    average_y /= n;
+
+    for (let i = 0; i < n; i += 1) {
+      smpl_dots[i]
+        .transition()
+        .delay(4 * ANIM_DURATION)
+        .duration(ANIM_DURATION)
+        .attr("cx", () => x(-4))
+        .attr("cy", () => y((random_samples[i] - average) ** 2));
+
+      smpl_dots[i]
+        .transition()
+        .delay(5 * ANIM_DURATION)
+        .duration(ANIM_DURATION)
+        .style("fill", "#EDA137")
+        .attr("cx", () => x(-4))
+        .attr("cy", () => y(average_y));
+    }
+
+    const totalLength = sq_curve.node().getTotalLength();
+    sq_curve.attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+      .attr("stroke-dashoffset", totalLength)
+      .transition().duration(4 * ANIM_DURATION)
+      .attr("stroke-dashoffset", 0);
+
+    sq_curve.transition().delay(6 * ANIM_DURATION).remove();
+
+    const sn_dot = svg.append('g')
       .selectAll("dot")
       .data([{x: -4, y: average_y}])
       .enter()
       .append("circle")
-        .attr("cx", function (d) { return x(d.x); } )
-        .attr("cy", function (d) { return y(d.y); } )
+        .attr("cx", d => x(d.x))
+        .attr("cy", d => y(d.y))
         .attr("r", 0)
         .style("fill", "#EDA137")
         .attr("stroke", "black")
         .attr("stroke-width", 1);
-   
-   sn_dot.transition().delay(6 * avg_dur).attr("r", 3);
-   
-   for (var i = 0; i < n; i += 1) {
-      smpl_dots[i].transition().delay(6 * avg_dur).remove();
-      smpl_copy_dots[i].transition().delay(2 * avg_dur).remove();
-   }
-   
-   xn_dots.push(xn_dot);
-   sn_dots.push(sn_dot);
-}
 
-function updateNGauss(new_n) { 
-   n = new_n;
-   reset();
-   
-   xn_data = [{x: -3, y: 0}];
-   for (var i = -3; i < 3; i += 0.01) {
-       xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n)) });
+    sn_dot.transition().delay(6 * ANIM_DURATION).attr("r", 3);
+
+    for (let i = 0; i < n; i += 1) {
+      smpl_dots[i].transition().delay(6 * ANIM_DURATION).remove();
+      smpl_copy_dots[i].transition().delay(2 * ANIM_DURATION).remove();
     }
-   xn_data.push({x: 3, y: 0});
 
-   xn_curve
+    xn_dots.push(xn_dot);
+    sn_dots.push(sn_dot);
+  }
+
+  function updateNGauss(new_n) {
+    n = new_n;
+    reset();
+
+    xn_data = [{x: -3, y: 0}];
+    for (let i = -3; i < 3; i += 0.01) {
+      xn_data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma * Math.sqrt(n)) ** 2) / (sigma * Math.sqrt(2 * Math.PI / n))});
+    }
+    xn_data.push({x: 3, y: 0});
+
+    xn_curve
       .datum(xn_data)
       .transition()
       .duration(1000)
-      .attr("d",  d3.line()
+      .attr("d", d3.line()
         .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(-d.y - 0.5); })
-   );
-   
-   d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
-     std_curve
+        .x(d => x(d.x))
+        .y(d => y(-d.y - 0.5))
+      );
+
+    d3.csv("../../../../assets/chi-t.csv").then(chi_data => {
+      std_curve
         .datum(chi_data)
         .transition()
         .duration(1000)
-        .attr("d",  d3.line()
+        .attr("d", d3.line()
           .curve(d3.curveBasis)
-            .x(function(d) { return x(-(n - 1) * d["chi_" + (n-1)] - 4.5); })
-            .y(function(d) { return y(Math.min(4, d.chi_x / n)); })
-         );
-   
-     sn_avg_curve
-        .datum([{x: 1 - 1/n, y: -4}, {x: 1-1/n, y: -6}, {x: 1.5-1/n, y: -6}])
+          .x(d => x(-(n - 1) * d[`chi_${n - 1}`] - 4.5))
+          .y(d => y(Math.min(4, d.chi_x / n)))
+        );
+
+      sn_avg_curve
+        .datum([{x: 1 - 1/n, y: -4}, {x: 1 - 1/n, y: -6}, {x: 1.5 - 1/n, y: -6}])
         .transition()
         .duration(1000)
-        .attr("d",  d3.line()
-            .x(function(d) { return x(d.y); })
-            .y(function(d) { return y(d.x); })
-            );
-   });
-    
+        .attr("d", d3.line()
+          .x(d => x(d.y))
+          .y(d => y(d.x))
+        );
+    });
+
     span_mean_std
       .transition()
       .duration(1000)
-      .style("left", x(-5.3) + "px")
-      .style("top", y(1.6 - 1 / n) + "px");
-     
-}
+      .style("left", `${x(-5.3)}px`)
+      .style("top", `${y(1.6 - 1 / n)}px`);
+  }
 
-var sampleButton = d3.select("#sample-button-2");
+  const sampleButton = d3.select("#sample-button-2");
 
-sampleButton
+  sampleButton
     .on("click", function() {
       sample();
-});
+    });
 
-function reset() {
-   for (var i = 0; i < xn_dots.length; i += 1) {
-       xn_dots[i].remove();
-       sn_dots[i].remove();
-   }
-   xn_dots = [];
-   sn_dots = [];
-}
+  function reset() {
+    for (let i = 0; i < xn_dots.length; i += 1) {
+      xn_dots[i].remove();
+      sn_dots[i].remove();
+    }
+    xn_dots = [];
+    sn_dots = [];
+  }
 
-var resetButton = d3.select("#reset-button");
+  const resetButton = d3.select("#reset-button");
 
-resetButton
+  resetButton
     .on("click", function() {
       reset();
-});
+    });
 
-var ng_x = d3.scaleLinear()
+  const ng_x = d3.scaleLinear()
     .domain([2, 13])
     .range([0, width / 2])
     .clamp(true);
-    
-function roundN(x) { return Math.round(x - 0.5); }
 
-function createSlider(svg_, parameter_update, slider_x, loc_x, loc_y, letter, color, init_val, round_fun) {
-    var slider = svg_.append("g")
+  function roundN(x) { return Math.round(x - 0.5); }
+
+  function createSlider(svg_, parameter_update, slider_x, loc_x, loc_y, letter, color, init_val, round_fun) {
+    const slider = svg_.append("g")
       .attr("class", "slider")
-      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
-    
-    var drag = d3.drag()
-	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function(event, d) { 
-	          handle.attr("cx", slider_x(round_fun(slider_x.invert(event.x))));  
-	          parameter_update(round_fun(slider_x.invert(event.x)));
-	         });
-	         
+      .attr("transform", `translate(${loc_x},${loc_y})`);
+
+    const drag = d3.drag()
+      .on("start.interrupt", function() { slider.interrupt(); })
+      .on("start drag", function(event, d) {
+        handle.attr("cx", slider_x(round_fun(slider_x.invert(event.x))));
+        parameter_update(round_fun(slider_x.invert(event.x)));
+      });
+
     slider.append("line")
-	    .attr("class", "track")
-	    .attr("x1", slider_x.range()[0])
-	    .attr("x2", slider_x.range()[1])
-	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-inset")
-	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-overlay")
-	    .call(drag);
+      .attr("class", "track")
+      .attr("x1", slider_x.range()[0])
+      .attr("x2", slider_x.range()[1])
+      .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+      .attr("class", "track-inset")
+      .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+      .attr("class", "track-overlay")
+      .call(drag);
 
-	slider.insert("g", ".track-overlay")
-    .attr("class", "ticks")
-    .attr("transform", "translate(0," + 18 + ")")
-  .selectAll("text")
-  .data(slider_x.ticks(6))
-  .enter().append("text")
-    .attr("x", slider_x)
-    .attr("text-anchor", "middle")
-    .attr("font-family", "Arvo")
-    .style('fill', "currentColor")
-    .text(function(d) { return d; });
+    slider.insert("g", ".track-overlay")
+      .attr("class", "ticks")
+      .attr("transform", "translate(0,18)")
+      .selectAll("text")
+      .data(slider_x.ticks(6))
+      .enter().append("text")
+        .attr("x", slider_x)
+        .attr("text-anchor", "middle")
+        .attr("font-family", "Arvo")
+        .style('fill', "currentColor")
+        .text(d => d);
 
-   var handle = slider.insert("circle", ".track-overlay")
+    const handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
       .attr("r", 5).attr("cx", slider_x(init_val));
-      
-	svg_
-	  .append("text")
-	  .attr("text-anchor", "middle")
-	  .attr("y", loc_y + 3)
-	  .attr("x", loc_x - 21)
-	  .attr("font-family", "Arvo")
-	  .attr("font-size", 17)
-	  .text(letter)
-	  .style("fill", color);
-	  	  
-	return handle;
-}
 
-createSlider(svg, updateNGauss, ng_x, 190, 350, "n", "currentColor", 6, roundN);
+    svg_
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("y", loc_y + 3)
+      .attr("x", loc_x - 21)
+      .attr("font-family", "Arvo")
+      .attr("font-size", 17)
+      .text(letter)
+      .style("fill", color);
 
+    return handle;
+  }
+
+  createSlider(svg, updateNGauss, ng_x, 190, 350, "n", "currentColor", 6, roundN);
 }
 
 biasedness();
