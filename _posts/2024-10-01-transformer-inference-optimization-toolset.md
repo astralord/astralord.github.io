@@ -2298,23 +2298,23 @@ function flash_attn() {
 	function draw_flash_attn_cells(stage) {
 	   svg.selectAll('rect').remove();
 
-	   rect(svg, x_start + 410, y_start - 45, 40, 20, colors[2], opacity=0.3);
-	   rect(svg, x_start + 360, y_start - 45, 40, 20, colors[0], opacity=0.3);
+	   rect(svg, x_start + 410, y_start - 45, 40, 20, colors[2], 0.3);
+	   rect(svg, x_start + 360, y_start - 45, 40, 20, colors[0], 0.3);
 	   
-	   rect(svg, x_start - 5, y_start + 3 * shift - 5, dim * shift + 8, t_r * (b_r + 1) * shift - 5, colors[2], opacity=0.3);
+	   rect(svg, x_start - 5, y_start + 3 * shift - 5, dim * shift + 8, t_r * (b_r + 1) * shift - 5, colors[2], 0.3);
 	   
 	   for (let i = 0; i < t_r; i += 1) {
 			vector_rect(svg, x_start, y_start + (3 + i * (b_r + 1)) * shift, dim, b_r, shift, rct_sz, matrix_colors[0]);
 		}
 		
-	   rect(svg, x_start + 3 * shift - 5, y_start - 5, t_c * (b_c + 1) * shift - 5, dim * shift + 8, colors[2], opacity=0.3);
+	   rect(svg, x_start + 3 * shift - 5, y_start - 5, t_c * (b_c + 1) * shift - 5, dim * shift + 8, colors[2], 0.3);
 	   
 		for (let i = 0; i < t_c; i += 1) {
 		   const opacity = (i == stage - 1) ? 1 : shade;
 			vector_rect(svg, x_start + (3 + i * (b_c + 1)) * shift, y_start, b_c, dim, shift, rct_sz, matrix_colors[1], opacity);
 		}
 		
-	   rect(svg, x_start + 3 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], opacity=0.3);
+	   rect(svg, x_start + 3 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], 0.3);
 	   
 	   for (let i = 0; i < t_c; i += 1) {
 		   const opacity = (i == stage - 1) ? 1 : shade;
@@ -2323,7 +2323,7 @@ function flash_attn() {
 			}
 		}
 		
-	   rect(svg, x_start + 11 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], opacity=0.3);
+	   rect(svg, x_start + 11 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], 0.3);
 	   
 	   for (let i = 0; i < t_c; i += 1) {
 		   const opacity = (i == stage - 1) ? 1 : shade;
@@ -2332,14 +2332,14 @@ function flash_attn() {
 			}
 		}
 	   
-	   rect(svg, x_start + 19 * shift - 5, y_start + 2 * shift - 5, dim * shift + 8, t_c * (b_c + 1) * shift - 5, colors[2], opacity=0.3);
+	   rect(svg, x_start + 19 * shift - 5, y_start + 2 * shift - 5, dim * shift + 8, t_c * (b_c + 1) * shift - 5, colors[2], 0.3);
 		
 		for (let i = 0; i < t_c; i += 1) {
 		   const opacity = (i == stage - 1) ? 1 : shade;
 			vector_rect(svg, x_start + 19 * shift, y_start + (2 + i * (b_c + 1)) * shift, b_c, dim, shift, rct_sz, matrix_colors[3], opacity);
 		}
 	  	   
-	   rect(svg, x_start + 25 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 2) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[2], opacity=0.3);
+	   rect(svg, x_start + 25 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 2) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[2], 0.3);
 	   
 	   for (let i = 0; i < t_c; i += 1) {
 		   const opacity = (i <= stage - 1) ? 1 : shade;
