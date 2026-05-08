@@ -97,7 +97,7 @@ function line(svg, x1, y1, x2, y2, opacity=1.0, width=2, stroke='currentColor') 
 
 function triangle(svg, x, y, rotate=0, opacity=1, stroke="currentColor") {
 	const triangleSize = 25;
-	var triangle_symb = d3.symbol()
+	const triangle_symb = d3.symbol()
 	            .type(d3.symbolTriangle)
 	            .size(triangleSize);
 
@@ -201,7 +201,7 @@ function transformer_block(svg, x, y) {
 
 function gpt_arch_simple() {
 
-var svg = d3.select("#gpt_arch_simple")
+const svg = d3.select("#gpt_arch_simple")
 			  .append("svg")
 			  .attr("width", 300)
 			  .attr("height", 375);
@@ -626,7 +626,7 @@ function mask_block(svg, x, y) {
 
 function gpt_arch() {
 
-var svg = d3.select("#gpt_arch")
+const svg = d3.select("#gpt_arch")
 			  .append("svg")
 			  .attr("width", 725)
 			  .attr("height", 465);
@@ -1021,7 +1021,7 @@ function net_block(svg, x, y, text) {
 }
 
 function sft_learning() {
- var svg = d3.select("#sft_learning")
+ const svg = d3.select("#sft_learning")
             .append("svg")
 			  .attr("width", 620)
 			  .attr("height", 145);
@@ -1230,7 +1230,7 @@ function rank_block(svg, x, y) {
 }
 
 function rm_learning() {
- var svg = d3.select("#rm_learning")
+ const svg = d3.select("#rm_learning")
             .append("svg")
 			  .attr("width", 620)
 			  .attr("height", 220);
@@ -1408,7 +1408,7 @@ function frog_block(svg, x, y) {
 }
 
 function rlhf() {
-  var svg = d3.select("#rlhf")
+  const svg = d3.select("#rlhf")
             .append("svg")
 			  .attr("width", 620)
 			  .attr("height", 195);
@@ -1578,7 +1578,7 @@ function action_circle(svg, x, y) {
 
 function backup_diagram() {
 
-var svg = d3.select("#backup_diagram")
+const svg = d3.select("#backup_diagram")
 			  .append("svg")
 			  .attr("width", 520)
 			  .attr("height", 80);
