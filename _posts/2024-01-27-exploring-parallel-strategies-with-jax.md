@@ -173,7 +173,7 @@ function shaded_cell(svg, x, y, color, mark=false) {
 	  .attr('fill', color);
 	  
 	if (mark) {
-	   for (var i = 1; i < 5; i += 1) {
+	   for (let i = 1; i < 5; i += 1) {
 			svg.append("path")
 			   .datum([{x: x + 3 * i, y: y + 1},
 			           {x: x + 1, y: y + 3 * i}])
@@ -185,7 +185,7 @@ function shaded_cell(svg, x, y, color, mark=false) {
 			       .y(function(d) { return d.y; }));
 		}
 		
-		for (var i = 1; i < 4; i += 1) {
+		for (let i = 1; i < 4; i += 1) {
 			svg.append("path")
 			   .datum([{x: x + 3 * i, y: y + 13},
 			           {x: x + 13, y: y + 3 * i}])
@@ -218,15 +218,15 @@ function gate(svg, x, y) {
 	  .attr("font-family", "Arvo");
 }
 
-function tensor(svg, x, y, w, h, color) {	for (var i = 0; i < w; i += 1) {
-		for (var j = 0; j < h; j += 1) {
+function tensor(svg, x, y, w, h, color) {	for (let i = 0; i < w; i += 1) {
+		for (let j = 0; j < h; j += 1) {
 		   cell(svg, x + i * 16, y + j * 16, color);
 		}
 	}
 }
 
-function dotted_tensor(svg, x, y, w, h, color, mark=1) {	for (var i = 0; i < w; i += 1) {
-		for (var j = 0; j < h; j += 1) {
+function dotted_tensor(svg, x, y, w, h, color, mark=1) {	for (let i = 0; i < w; i += 1) {
+		for (let j = 0; j < h; j += 1) {
 		   dotted_cell(svg, x + i * 16, y + j * 16, color, mark);
 		}
 	}
@@ -239,8 +239,8 @@ function rplc_tensor(svg, x, y, w, h) {
 function shrd_tensor(svg, x, y, w, h, xsh, ysh) {
    xsplit = ~~(w / xsh);
    ysplit = ~~(h / ysh);
-	for (var i = 0; i < ysh; i += 1) {
-		for (var j = 0; j < xsh; j += 1) {
+	for (let i = 0; i < ysh; i += 1) {
+		for (let j = 0; j < xsh; j += 1) {
 		   tensor(svg, 
 		          x + j * 16 * xsplit, 
 		          y + i * 20 * ysplit,
@@ -254,8 +254,8 @@ function shrd_tensor(svg, x, y, w, h, xsh, ysh) {
 function shrd_tensor_no_split(svg, x, y, w, h, xsh, ysh) {
    xsplit = ~~(w / xsh);
    ysplit = ~~(h / ysh);
-	for (var i = 0; i < ysh; i += 1) {
-		for (var j = 0; j < xsh; j += 1) {
+	for (let i = 0; i < ysh; i += 1) {
+		for (let j = 0; j < xsh; j += 1) {
 		   tensor(svg, 
 		          x + j * 16 * xsplit, 
 		          y + i * 16 * ysplit,
@@ -493,7 +493,7 @@ function upright_arrow(svg, x_sh, y_sh) {
 
 function legend() {
 
-	var svg = d3.select("#lgnd")
+	const svg = d3.select("#lgnd")
 				  .append("svg")
 				  .attr("width", 600)
 				  .attr("height", 90);
@@ -622,7 +622,7 @@ visualize(ffn(sharded_x, params))
 d3.select("#data_prll").style("position", "relative");
 
 function data_parallel() {
-	var svg = d3.select("#data_prll")
+	const svg = d3.select("#data_prll")
 				  .append("svg")
 				  .attr("width", 700)
 				  .attr("height", 455);
@@ -681,7 +681,7 @@ function data_parallel() {
 		  
 	shrd_tensor(svg, x_start, 30, 2, 5 * k, 1, k);
 	
-	for (var i = 0; i < k; i += 1) 
+	for (let i = 0; i < k; i += 1) 
 	{
 		svg.append('text')
 		  .attr('x', x_start - 50)
@@ -708,7 +708,7 @@ function data_parallel() {
 
 	shrd_tensor(svg, x_start + 156, 30, 4, 5 * k, 1, k);
 	
-	for (var i = 0; i < k; i += 1) {
+	for (let i = 0; i < k; i += 1) {
 	   relu(svg, x_start + 237, 68 + i * y_shift);
 	   cdot(svg, x_start + 252, 75 + i * y_shift);
 	   rplc_tensor(svg, x_start + 267, 38 + i * y_shift, 2, 4);
@@ -727,7 +727,7 @@ function data_parallel() {
 	
 	shrd_tensor(svg, x_start + 344, 30, 2, 5 * k, 1, k);
 		
-	for (var i = 0; i < k; i += 1) {
+	for (let i = 0; i < k; i += 1) {
 		cdots(svg, x_start + 387, 72 + i * y_shift);
 		aggregate(svg, x_start + 412, 28 + i * y_shift, 82);
 		cell(svg, x_start + 432, 62 + i * y_shift, colors[i]);
@@ -973,7 +973,7 @@ The model weights on different devices do not overlap, and the only communicatio
 
 <script>
 function tensor_parallel() {
-	var svg = d3.select("#tnsr_prll")
+	const svg = d3.select("#tnsr_prll")
 				  .append("svg")
 				  .attr("width", 650)
 				  .attr("height", 540);
@@ -1082,7 +1082,7 @@ function tensor_parallel() {
     .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
-	for (var i = 0; i < k; i += 1) {
+	for (let i = 0; i < k; i += 1) {
 		svg.append('text')
 		  .attr('x', x_start - 50)
 		  .attr('y', x_start + 103 + i * y_shift)
@@ -1109,7 +1109,7 @@ function tensor_parallel() {
 	
 	shrd_tensor(svg, x_start + 103, y_start, 1, 20, 1, 4);
 	
-	for (var i = 0; i < k; i += 1) {
+	for (let i = 0; i < k; i += 1) {
 	   relu(svg, x_start + 136, y_start + 38 + i * y_shift);
 		cdot(svg, x_start + 151, y_start + 45 + i * y_shift);
 		tensor(svg, x_start + 167, y_start + 32 + i * y_shift, 2, 1, colors[i]);
@@ -1117,11 +1117,11 @@ function tensor_parallel() {
 		
 	shrd_tensor(svg, x_start + 236, y_start, 2, 20, 1, 4);
 	
-	for (var i = 0; i < k - 1; i += 1) {
+	for (let i = 0; i < k - 1; i += 1) {
 	   sync(svg, x_start + 246, y_start + 93 + i * y_shift);
 	   cdot(svg, x_start + 270, y_start + 45 + (i + 1) * y_shift);	}
 		
-	for (var i = 0; i < k; i += 1) {
+	for (let i = 0; i < k; i += 1) {
 	   cdots(svg, x_start + 295, y_start + 42 + i * y_shift);	}
 		
 	aggregate(svg, x_start + 318, y_start - 2, 382);
@@ -1130,7 +1130,7 @@ function tensor_parallel() {
 	
 	split(svg, x_start + 389, y_start - 2, 382);
 	
-	for (var i = 0; i < k; i += 1) {
+	for (let i = 0; i < k; i += 1) {
 		cdots(svg, x_start + 400, y_start + 42 + i * y_shift);
 		grad_right_arrow(svg, x_start + 422, y_start + 41 + i * y_shift);
 		tensor(svg, x_start + 447, y_start + 32 + i * y_shift, 2, 1, colors[i]);
@@ -1346,7 +1346,7 @@ function stage(svg, x, y, id, width=80) {
 
 
 function pipeline_parallel() {
-	var svg = d3.select("#pp_prll")
+	const svg = d3.select("#pp_prll")
 				  .append("svg")
 				  .attr("width", 700)
 				  .attr("height", 360);
@@ -1357,7 +1357,7 @@ function pipeline_parallel() {
 	y_shift = 80;
 	k = 4;
 	
-	for (var i = 0; i < k; i += 1) {		
+	for (let i = 0; i < k; i += 1) {		
 		svg.append('text')
 			.attr('x', x_start - 50)
 			.attr('y', y_start + 43 + i * y_shift)
@@ -1495,7 +1495,7 @@ Let's reorganize the way we look at our model architecture. If we stack weights 
 d3.select("#pp_as_tp").style("position", "relative");
 
 function pipeline_parallel_as_tensor() {
-	var svg = d3.select("#pp_as_tp")
+	const svg = d3.select("#pp_as_tp")
 				  .append("svg")
 				  .attr("width", 700)
 				  .attr("height", 435);
@@ -1506,8 +1506,8 @@ function pipeline_parallel_as_tensor() {
 	y_shift = 100;
 	k = 4;
 	
-	for (var j = 0; j < 4; j += 1) {
-		for (var i = 0; i < k; i += 1) {
+	for (let j = 0; j < 4; j += 1) {
+		for (let i = 0; i < k; i += 1) {
 			if (j == 0) {
 				svg.append('text')
 				  .attr('x', x_start - 50)
@@ -1890,7 +1890,7 @@ function dispatch_tensor(svg, x_sh, y_sh, add_probs=true) {
 }
 
 function expert_parallel_dispatch() {
-	var svg = d3.select("#expert_prll_dsptch")
+	const svg = d3.select("#expert_prll_dsptch")
 				  .append("svg")
 				  .attr("width", 600)
 				  .attr("height", 615);
@@ -2072,7 +2072,7 @@ function expert_parallel_dispatch() {
 	shaded_cell(svg, x_start, y_start + y_shift - 25, colors[1], true);
 	shaded_cell(svg, x_start + 16, y_start + y_shift - 25, colors[1], true);
 					
-	for (var i = 0; i < k; i += 1) 
+	for (let i = 0; i < k; i += 1) 
 	{
 		svg.append('text')
 		  .attr('x', x_start - 50)
@@ -2109,7 +2109,7 @@ function expert_parallel_dispatch() {
 			long_right_arrow(svg, x_sh + 10, y_sh - 5, 60);
 		}
 		
-		for (var j = 0; j < expert_capacity; j += 1) {
+		for (let j = 0; j < expert_capacity; j += 1) {
 			tensor(svg, x_sh - j * 5, y_sh + j * 5, 5, num_experts, 'white');
 			for (const [token, value] of Object.entries(experts_mapping[i])) {
 				const [expert, capacity] = value;
@@ -2138,13 +2138,13 @@ function expert_parallel_dispatch() {
 	shaded_cell(svg, x_start + 266, y_start + y_shift - 25, colors[1], true);
 	
 	x_sh = x_start + 320;
-	for (var i = 0; i < k; i += 1)
+	for (let i = 0; i < k; i += 1)
 	{
 		y_sh = y_start + i * y_shift - 20;
 		
 		right_arrow(svg, x_sh - 30, y_start + i * y_shift + 16);
 		
-		for (var j = 0; j < expert_capacity; j += 1) {
+		for (let j = 0; j < expert_capacity; j += 1) {
 			tensor(svg, x_sh - j * 5, y_sh + j * 5, 2, num_experts, 'white');
 			for (const [token, value] of Object.entries(experts_mapping[i])) {
 				const [expert, capacity] = value;
@@ -2158,12 +2158,12 @@ function expert_parallel_dispatch() {
 	}
 	
 	x_sh = x_start + 380;
-	for (var i = 0; i < num_experts; i += 1) 
+	for (let i = 0; i < num_experts; i += 1) 
 	{
 		y_sh = y_start + i * y_shift - 20;
-		for (var j = 0; j < expert_capacity; j += 1) {
+		for (let j = 0; j < expert_capacity; j += 1) {
 			tensor(svg, x_sh - j * 5, y_sh + j * 5, 2, 4, 'white');
-			for (var ii = 0; ii < k; ii += 1) {
+			for (let ii = 0; ii < k; ii += 1) {
 				for (const [token, value] of Object.entries(experts_mapping[ii])) {
 					const [expert, capacity] = value;
 					if ((expert == i) && (capacity == expert_capacity - 1 - j)) {
@@ -2178,12 +2178,12 @@ function expert_parallel_dispatch() {
 	}
 	
 	x_sh = x_start + 440;
-	for (var i = 0; i < num_experts; i += 1) 
+	for (let i = 0; i < num_experts; i += 1) 
 	{
 		y_sh = y_start + i * y_shift - 20;
-		for (var j = 0; j < expert_capacity; j += 1) {
+		for (let j = 0; j < expert_capacity; j += 1) {
 			tensor(svg, x_sh - j * 5, y_sh + j * 5, 2, k, 'white');
-			for (var ii = 0; ii < k; ii += 1) {
+			for (let ii = 0; ii < k; ii += 1) {
 				for (const [token, value] of Object.entries(experts_mapping[ii])) {
 					const [expert, capacity] = value;
 					if ((expert == i) && (capacity == expert_capacity - 1 - j)) {
