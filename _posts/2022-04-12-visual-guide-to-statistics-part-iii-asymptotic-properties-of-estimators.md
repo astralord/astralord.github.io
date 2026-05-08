@@ -267,11 +267,11 @@ d3.select("#mclt")
   .style("position", "relative");
 
 function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
-    var slider = svg_.append("g")
+    const slider = svg_.append("g")
       .attr("class", "slider")
       .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
     
-    var drag = d3.drag()
+    const drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
 	        .on("start drag", function(event, d) { 
 	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
@@ -300,7 +300,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     .style('fill', "currentColor")
     .text(function(d) { return d; });
 
-   var handle = slider.insert("circle", ".track-overlay")
+   const handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
       .attr("r", 5).attr("cx", x(init_val));
       
@@ -318,17 +318,17 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 }
 
 function gamma_rand(k) {
-    x = 0;
-    for (var i = 0; i < k; i += 1) {
+    let x = 0;
+    for (let i = 0; i < k; i += 1) {
         x -= Math.log(Math.random());
     }
     return x;
 }
 
 function dirichlet(ks) {
-    xs = [];
-    x0 = 0;
-    for (var i = 0; i < ks.length; i += 1) {
+    const xs = [];
+    let x0 = 0;
+    for (let i = 0; i < ks.length; i += 1) {
         xs.push(gamma_rand(ks[i]));
         x0 += xs[i];
     }
@@ -340,10 +340,10 @@ function erf(x) {
     if (Math.abs(x) > 3) {
       return x / Math.abs(x);
     }
-    var m = 1.00;
-    var s = 1.00;
-    var sum = x * 1.0;
-    for(var i = 1; i < 50; i++){
+    let m = 1.00;
+    let s = 1.00;
+    let sum = x * 1.0;
+    for (let i = 1; i < 50; i++){
         m *= i;
         s *= -1;
         sum += (s * Math.pow(x, 2.0 * i + 1.0)) / (m * (2.0 * i + 1.0));
@@ -356,26 +356,26 @@ function Phi(x) {
 }
 
 function randn_bm() {
-    var u = 0, v = 0;
+    let u = 0, v = 0;
     while(u === 0) u = Math.random();
     while(v === 0) v = Math.random();
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
 function biv_gauss(rho) {
-    var z1 = randn_bm();
-    var z2 = rho * z1 + Math.sqrt(1 - rho * rho) * randn_bm();
+    const z1 = randn_bm();
+    const z2 = rho * z1 + Math.sqrt(1 - rho * rho) * randn_bm();
     return [z1, z2];
 }
 
 function biv_uni(r) {
-    var rho = 2 * Math.sin(r * Math.PI / 6);
-    var z = biv_gauss(rho);
+    const rho = 2 * Math.sin(r * Math.PI / 6);
+    const z = biv_gauss(rho);
     return [erf(z[0]), erf(z[1])];
 }
 
 function phi(x, mu, sigma) {
-    var y = (x - mu) / sigma;
+    let y = (x - mu) / sigma;
     y *= y;
     y = Math.exp(-y / 2);
     y /= (sigma * 1.41421356237 * Math.PI);
@@ -384,7 +384,7 @@ function phi(x, mu, sigma) {
 
 
 function mclt() {
-var n = 7,
+let n = 7,
     rho = 0;
 
 const margin = {top: 20, right: 0, bottom: 5, left: 70},
@@ -397,7 +397,7 @@ const margin = {top: 20, right: 0, bottom: 5, left: 70},
     
 const avg_dur = 1000;
     
-var svg = d3.select("div#mclt")
+const svg = d3.select("div#mclt")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -405,43 +405,43 @@ var svg = d3.select("div#mclt")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleLinear()
+const x = d3.scaleLinear()
           .range([0, fig_width])
           .domain([-1, 1]);
             
-var xAxis = svg.append("g")
+const xAxis = svg.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(x).ticks(4));
   
 xAxis.selectAll(".tick text")
    .attr("font-family", "Arvo");
    
-var xAvg = d3.scaleLinear()
+const xAvg = d3.scaleLinear()
           .range([fig_trans, 2 * fig_width + fig_margin])
           .domain([-3, 3]);
 
-var xAvgAxis = svg.append("g")
+const xAvgAxis = svg.append("g")
    .attr("transform", "translate("+ 0 + "," + fig_height + ")")
    .call(d3.axisBottom(xAvg).ticks(5));
   
 xAvgAxis.selectAll(".tick text")
    .attr("font-family", "Arvo");
 
-var y = d3.scaleLinear()
+const y = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([-1, 1]);
             
-var yAxis = svg.append("g")
+const yAxis = svg.append("g")
     .call(d3.axisLeft(y).ticks(4));
   
 yAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-var yAvg = d3.scaleLinear()
+const yAvg = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([-3, 3]);
             
-var yAvgAxis = svg.append("g")
+const yAvgAxis = svg.append("g")
    .attr("transform", "translate("+ fig_trans + ",0)")
     .call(d3.axisLeft(yAvg).ticks(5));
   
@@ -450,7 +450,7 @@ yAvgAxis.selectAll(".tick text")
 
 const axs_mrgn = 0.25;
 const uni_data = [{x: -1, y: -1.25}, {x: -1, y: -1.5}, {x: 1, y: -1.5}, {x: 1, y: -1.25}];
-var uni_x_curve = svg
+const uni_x_curve = svg
     .append('g')
     .append("path")
       .datum(uni_data)
@@ -465,7 +465,7 @@ var uni_x_curve = svg
           .y(function(d) { return y(d.y); })
       );
       
-var uni_y_curve = svg
+const uni_y_curve = svg
     .append('g')
     .append("path")
       .datum(uni_data)
@@ -480,14 +480,14 @@ var uni_y_curve = svg
           .y(function(d) { return y(d.x); })
       );
       
-var gauss_data = [];
-var mu = 0, sigma = 1 / Math.sqrt(3);
-var scale = 3 * axs_mrgn * (sigma * 1.41421356237 * Math.PI);
-for (var i = -3; i <= 3; i += 0.01) {
+const gauss_data = [];
+const mu = 0, sigma = 1 / Math.sqrt(3);
+const scale = 3 * axs_mrgn * (sigma * 1.41421356237 * Math.PI);
+for (let i = -3; i <= 3; i += 0.01) {
     gauss_data.push({x: i, y: -3.75 - scale * phi(i, mu, sigma)});
 }
       
-var gauss_x_curve = svg
+const gauss_x_curve = svg
     .append('g')
     .append("path")
       .datum(gauss_data)
@@ -502,7 +502,7 @@ var gauss_x_curve = svg
           .y(function(d) { return yAvg(d.y); })
       );
       
-var gauss_y_curve = svg
+const gauss_y_curve = svg
     .append('g')
     .append("path")
       .datum(gauss_data)
@@ -518,14 +518,14 @@ var gauss_y_curve = svg
       );
 
 
-var avg_dots = [];
+let avg_dots = [];
 	      
 function sampleUniform() {
-    var uni_data = [], uni_dots = [];
-    var avg_x = 0, avg_y = 0;
-    var sqrt_n = Math.sqrt(n);
-    for (var i = 0; i < n; i += 1) {
-        var uni_point = biv_uni(rho);
+    const uni_data = [], uni_dots = [];
+    let avg_x = 0, avg_y = 0;
+    const sqrt_n = Math.sqrt(n);
+    for (let i = 0; i < n; i += 1) {
+        const uni_point = biv_uni(rho);
         uni_data.push({x: uni_point[0], y: uni_point[1]});
         avg_x += uni_data[i].x;
         avg_y += uni_data[i].y;
@@ -533,7 +533,7 @@ function sampleUniform() {
     avg_x /= n;
     avg_y /= n;
     
-    for (var i = 0; i < n; i += 1) {
+    for (let i = 0; i < n; i += 1) {
         
 	    uni_dots.push(svg.append('g')
 	      .selectAll("dot")
@@ -580,30 +580,30 @@ function sampleUniform() {
 }
 
 function reset() {
-    for (var i = 0; i < avg_dots.length; i += 1) {
+    for (let i = 0; i < avg_dots.length; i += 1) {
         avg_dots[i].remove();
     }
     avg_dots = [];
 }
 
-var sampleButton = d3.select("#sample-button")
+d3.select("#sample-button")
     .on("click", function() {
     sampleUniform();
 });
 
-var sampleButton = d3.select("#sample-button-2")
+d3.select("#sample-button-2")
     .on("click", function() {
-    for (var i = 0; i < 100; i += 1) {
+    for (let i = 0; i < 100; i += 1) {
         sampleUniform();
     }
 });
 
-var resetButton = d3.select("#reset-button")
+d3.select("#reset-button")
     .on("click", function() {
       reset();
 });
 
-var rho_x = d3.scaleLinear()
+const rho_x = d3.scaleLinear()
     .domain([-1, 1])
     .range([0, width / 4])
     .clamp(true);
@@ -617,7 +617,7 @@ function updateRho(r) {
 
 createSlider(svg, updateRho, rho_x, 50, 0.95 * height, "", "#65AD69", rho, trivialRound);
 
-var n_x = d3.scaleLinear()
+const n_x = d3.scaleLinear()
     .domain([1, 12])
     .range([0, width / 4])
     .clamp(true);
@@ -827,10 +827,10 @@ d3.select("#prsn_plt")
   .style("position", "relative");
   
 function prsn_plt() {
-var n = 10,
+let n = 10,
     rho = 0,
     rho_n = 0;
-var sqxx = 0, sqyy = 0, sqxy = 0;
+let sqxx = 0, sqyy = 0, sqxy = 0;
 
 const margin = {top: 20, right: 0, bottom: 5, left: 70},
     width = 750 - margin.left - margin.right,
@@ -842,7 +842,7 @@ const margin = {top: 20, right: 0, bottom: 5, left: 70},
     
 const avg_dur = 1000;
     
-var svg = d3.select("div#prsn_plt")
+const svg = d3.select("div#prsn_plt")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -850,43 +850,43 @@ var svg = d3.select("div#prsn_plt")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleLinear()
+const x = d3.scaleLinear()
           .range([0, fig_width])
           .domain([-3, 3]);
             
-var xAxis = svg.append("g")
+const xAxis = svg.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(x).ticks(5));
   
 xAxis.selectAll(".tick text")
    .attr("font-family", "Arvo");
 
-var xRho = d3.scaleLinear()
+const xRho = d3.scaleLinear()
           .range([fig_trans, 2 * fig_width + fig_margin])
           .domain([-3, 3]);
 
-var xRhoAxis = svg.append("g")
+const xRhoAxis = svg.append("g")
    .attr("transform", "translate("+ 0 + "," + fig_height + ")")
    .call(d3.axisBottom(xRho).ticks(5));
   
 xRhoAxis.selectAll(".tick text")
    .attr("font-family", "Arvo");
    
-var y = d3.scaleLinear()
+const y = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([-3, 3]);
             
-var yAxis = svg.append("g")
+const yAxis = svg.append("g")
     .call(d3.axisLeft(y).ticks(5));
   
 yAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-var yRho = d3.scaleLinear()
+const yRho = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([0, 0.25]);
             
-var yRhoAxis = svg.append("g")
+const yRhoAxis = svg.append("g")
    .attr("transform", "translate("+ fig_trans + ",0)")
     .call(d3.axisLeft(yRho).ticks(5));
   
@@ -895,17 +895,17 @@ yRhoAxis.selectAll(".tick text")
           
 const axs_mrgn = 0.25;
 
-var gauss_data = [];
-var mu = 0, sigma = 1;
-var scale = 3 * axs_mrgn * (sigma * 1.41421356237 * Math.PI);
-for (var i = -3; i <= 3; i += 0.01) {
-    gauss_data.push({x: i, y: -3.75 - scale * phi(i, mu, sigma)});
+const marginal_data = [];
+const mu = 0, sigma = 1;
+const scale = 3 * axs_mrgn * (sigma * 1.41421356237 * Math.PI);
+for (let i = -3; i <= 3; i += 0.01) {
+    marginal_data.push({x: i, y: -3.75 - scale * phi(i, mu, sigma)});
 }
       
-var gauss_x_curve = svg
+const gauss_x_curve = svg
     .append('g')
     .append("path")
-      .datum(gauss_data)
+      .datum(marginal_data)
       .attr("fill", "#65AD69")
       .attr("border", 0)
       .attr("opacity", ".8")
@@ -917,10 +917,10 @@ var gauss_x_curve = svg
           .y(function(d) { return y(d.y); })
       );
       
-var gauss_y_curve = svg
+const gauss_y_curve = svg
     .append('g')
     .append("path")
-      .datum(gauss_data)
+      .datum(marginal_data)
       .attr("fill", "#65AD69")
       .attr("border", 0)
       .attr("opacity", ".8")
@@ -933,18 +933,18 @@ var gauss_y_curve = svg
       );
 
 function getGaussRhoData() {
-	var sigma_rho = Math.max(1 - rho ** 2, 1e-6);
-	var gauss_rho_data = [{x: -3, y: 0}];
-	for (var i = -3; i <= 3; i += 0.01) {
+	const sigma_rho = Math.max(1 - rho ** 2, 1e-6);
+	const gauss_rho_data = [{x: -3, y: 0}];
+	for (let i = -3; i <= 3; i += 0.01) {
 	    gauss_rho_data.push({x: i, y: phi(i, 0, sigma_rho)});
 	}
 	gauss_rho_data.push({x: 3, y: 0});
 	return gauss_rho_data;
 }
 
-var gauss_rho_data = getGaussRhoData();
+const gauss_rho_data = getGaussRhoData();
 	
-var gauss_rho_curve = svg
+const gauss_rho_curve = svg
     .append('g')
     .append("path")
       .datum(gauss_rho_data)
@@ -960,7 +960,7 @@ var gauss_rho_curve = svg
       );
       
 function updateRhoCurve() {
-    var gauss_rho_data = getGaussRhoData();
+    const gauss_rho_data = getGaussRhoData();
       
     yRho.domain([0,
               Math.max(0.25, d3.max(gauss_rho_data, function(d) { return d.y })) ]);
@@ -982,8 +982,8 @@ function updateRhoCurve() {
 }
 
 function estimate_rho() {
-    var avg_x = 0, avg_y = 0;
-    for (var i = 0; i < n; i += 1) {
+    let avg_x = 0, avg_y = 0;
+    for (let i = 0; i < n; i += 1) {
         avg_x += x.invert(gauss_dots[i].attr("cx"));
         avg_y += y.invert(gauss_dots[i].attr("cy"));
     }
@@ -991,14 +991,14 @@ function estimate_rho() {
     avg_y /= n;
     
     sqxx = 0, sqyy = 0, sqxy = 0;
-    for (var i = 0; i < n; i += 1) {
+    for (let i = 0; i < n; i += 1) {
         sqxx += (x.invert(gauss_dots[i].attr("cx")) - avg_x) ** 2;
         sqyy += (y.invert(gauss_dots[i].attr("cy")) - avg_y) ** 2;
         sqxy += (x.invert(gauss_dots[i].attr("cx")) - avg_x) * (y.invert(gauss_dots[i].attr("cy")) - avg_y);
     }
     return sqxy / Math.sqrt(sqxx * sqyy);
 }
-var sqxx_text = svg
+const sqxx_text = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 45)
@@ -1007,7 +1007,7 @@ var sqxx_text = svg
   .attr("font-size", 12)
   .style("fill", "#EDA137");
   
-var sqyy_text = svg
+const sqyy_text = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 70)
@@ -1016,7 +1016,7 @@ var sqyy_text = svg
   .attr("font-size", 12)
   .style("fill", "#EDA137");
   
-var sqxy_text = svg
+const sqxy_text = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 95)
@@ -1025,7 +1025,7 @@ var sqxy_text = svg
   .attr("font-size", 12)
   .style("fill", "#EDA137");
   
-var rho_text = svg
+const rho_text = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 120)
@@ -1054,7 +1054,7 @@ function updateText() {
 }
 
 function update_rho_n() {
-    var sqrt_n = Math.sqrt(n);
+    const sqrt_n = Math.sqrt(n);
     rho_n = estimate_rho();
     rho_dots[rho_dots.length - 1]
              .transition()
@@ -1070,26 +1070,26 @@ function drag(event, d) {
     update_rho_n();
 }
 
-var gauss_data = [];
-var gauss_dots = [];
-var rho_dots = [];
+let gauss_data = [];
+let gauss_dots = [];
+let rho_dots = [];
 
 function sampleGauss() {
     if (gauss_dots.length > 0) {
-        for (var i = 0; i < gauss_dots.length; i += 1) {
+        for (let i = 0; i < gauss_dots.length; i += 1) {
             gauss_dots[i].remove();
         }
         gauss_dots = [];
     }
     
     gauss_data = [];
-    var sqrt_n = Math.sqrt(n);
-    for (var i = 0; i < n; i += 1) {
-        var rnd_pnt = biv_gauss(rho);
+    const sqrt_n = Math.sqrt(n);
+    for (let i = 0; i < n; i += 1) {
+        const rnd_pnt = biv_gauss(rho);
         gauss_data.push({x: rnd_pnt[0], y: rnd_pnt[1]});
     }
     
-    for (var i = 0; i < n; i += 1) {
+    for (let i = 0; i < n; i += 1) {
 	    gauss_dots.push(svg.append('g')
 	      .selectAll("dot")
 	      .data([{x: x(gauss_data[i].x), y: y(gauss_data[i].y)}])
@@ -1116,7 +1116,7 @@ function sampleGauss() {
     }
     
     rho_n = estimate_rho();
-    var rho_dot = svg.append('g')
+    const rho_dot = svg.append('g')
 	      .selectAll("dot")
 	      .data([{x: sqrt_n * (rho_n - rho), y: 0}])
 	      .enter()
@@ -1141,10 +1141,10 @@ function sampleGauss() {
 }
 
 function reset() {
-    for (var i = 0; i < rho_dots.length; i += 1) {
+    for (let i = 0; i < rho_dots.length; i += 1) {
         rho_dots[i].remove();
     }
-    for (var i = 0; i < gauss_dots.length; i += 1) {
+    for (let i = 0; i < gauss_dots.length; i += 1) {
         gauss_dots[i].remove();
     }
     rho_dots = [];
@@ -1164,7 +1164,7 @@ d3.select("#reset-button-2")
       reset();
 });
 
-var rho_x = d3.scaleLinear()
+const rho_x = d3.scaleLinear()
     .domain([-1, 1])
     .range([0, width / 4])
     .clamp(true);
@@ -1179,7 +1179,7 @@ function updateRho(r) {
 
 createSlider(svg, updateRho, rho_x, 50, 0.95 * height, "", "#65AD69", rho, trivialRound);
 
-var n_x = d3.scaleLinear()
+const n_x = d3.scaleLinear()
     .domain([2, 100])
     .range([0, width / 4])
     .clamp(true);
