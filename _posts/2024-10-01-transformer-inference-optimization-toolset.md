@@ -218,7 +218,7 @@ function gpu_rect(svg, x, y) {
 	line_(svg, x + 84, y + 30, x + 88, y + 30);
 	line_(svg, x + 88, y + 10, x + 88, y + 48);
 	
-	for (var i = 0; i != 5; i += 1) {
+	for (let i = 0; i != 5; i += 1) {
 		rect(svg, x + 90, y + 10 + i * 8, 6, 6, colors[0]);
 		rect(svg, x + 98, y + 10 + i * 8, 6, 6, colors[0]);
 		rect(svg, x + 106, y + 10 + i * 8, 6, 6, colors[0]);
@@ -278,7 +278,7 @@ function cache_rect(svg, x, y) {
 }
 
 function gpu_arch() {
-	var svg = d3.select("#gpu_arch")
+	const svg = d3.select("#gpu_arch")
 				  .append("svg")
 				  .attr("width", 600)
 				  .attr("height", 215);
@@ -334,28 +334,28 @@ function add_gpu_dot(svg, x, y, cx, cy, x_shift, y_shift) {
 }
 
 function gpu_timeline() {
-	var svg = d3.select("#gpu_timeline")
+	const svg = d3.select("#gpu_timeline")
 				  .append("svg")
 				  .attr("width", 600)
 				  .attr("height", 190);
 	const x_shift = 100, y_shift = 20;
 		
-	var x = d3.scaleLog()
+	const x = d3.scaleLog()
 		.domain([50, 2000])
 		.range([0, 300]).base(2).nice();
 		
-   var xAxis = svg.append("g")
+   const xAxis = svg.append("g")
       .attr("transform", "translate(" + x_shift + ", " +  (y_shift + 150) + ")")
       .call(d3.axisBottom(x).ticks(4));
       
    xAxis.selectAll(".tick text")
      .attr("font-family", "Arvo");
    
-   var y = d3.scaleLog()
+   const y = d3.scaleLog()
             .domain([300, 8000])
             .range([150, 0]).base(2).nice();
             
-   var yAxis = svg.append("g")
+   const yAxis = svg.append("g")
       .attr("transform", "translate(" + x_shift + ", " + y_shift + ")")
       .call(d3.axisLeft(y).ticks(3));
       
@@ -472,11 +472,11 @@ function trivialRound(x) { return x; }
 function roundN(x) { return Math.round(x); }
 
 function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun, x_ticks, shift_text=23, text_size=14) {
-    var slider = svg_.append("g")
+    const slider = svg_.append("g")
       .attr("class", "slider")
       .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
     
-    var drag = d3.drag()
+    const drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
 	        .on("start drag", function(event, d) { 
 	          handle.attr("cx", x(round_fun(x.invert(d3.event.x))));  
@@ -504,7 +504,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     .style('fill', "currentColor")
     .text(function(d) { return d; });
 
-   var handle = slider.insert("circle", ".track-overlay")
+   const handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
       .attr("r", 5).attr("cx", x(init_val));
       
@@ -522,8 +522,8 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 }
 
 function vector_rect(svg, x, y, w, h, shift, rct_sz, color, opacity=1.0) {
-	for (var i = 0; i < w; i += 1) {
-		for (var j = 0; j < h; j += 1) {
+	for (let i = 0; i < w; i += 1) {
+		for (let j = 0; j < h; j += 1) {
 			rect(svg,
 				x + i * shift, 
 				y + j * shift, 
@@ -536,8 +536,8 @@ function vector_rect(svg, x, y, w, h, shift, rct_sz, color, opacity=1.0) {
 }
 
 function causal_mask(svg, x, y, w, h, shift, rct_sz, color, sliding_window_size=10, mask_shift=0, opacity=1) {
-	for (var i = 0; i < w; i += 1) {
-		for (var j = 0; j < h; j += 1) {
+	for (let i = 0; i < w; i += 1) {
+		for (let j = 0; j < h; j += 1) {
 			rect(svg,
 				x + i * shift, 
 				y + j * shift, 
@@ -579,13 +579,13 @@ function draw_sampling_text(svg, x_start, y_start, rct_sz, shift) {
 }
 
 function text_generation() {
-	var svg = d3.select("#text_generation")
+	const svg = d3.select("#text_generation")
 				  .append("svg")
 				  .attr("width", 700)
 				  .attr("height", 300);
 	const x_start = 90, y_start = 30;
 	const shift = 14, rct_sz = 12;
-	var init_seq_len = 10, dim = 2;
+	let init_seq_len = 10, dim = 2;
 	
 	function draw_attn_cells(seq_len) {
 	   svg.selectAll('rect').remove();
@@ -607,7 +607,7 @@ function text_generation() {
 	draw_sampling_text(svg, x_start, y_start, rct_sz, shift);
 	draw_attn_cells(init_seq_len);
 
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 10])
 	    .range([0, 320])
 	    .clamp(true);
@@ -664,7 +664,7 @@ Let's check whether MHA inference is compute- or memory-bound.
 
 function arithmetic_intensity() {
 
-	var svg = d3.select("#arithmetic_intensity")
+	const svg = d3.select("#arithmetic_intensity")
 				  .append("svg")
 				  .attr("width", 500)
 				  .attr("height", 200);
@@ -678,35 +678,35 @@ function arithmetic_intensity() {
 	text_(svg, "L", x_end + 20, y_end + 5, size=11);
 	text_(svg, "d/h -", 55, 152, size=11);
 	
-	var ai_x = d3.scaleLinear()
+	const ai_x = d3.scaleLinear()
         .domain([0, 30000])
         .range([x_start, x_end]);
         
-  	var xAxis = svg.append("g")
+  	const xAxis = svg.append("g")
       .attr("transform", "translate(0," + y_end + ")")
       .call(d3.axisBottom(ai_x).ticks(4));
       
    xAxis.selectAll(".tick text")
 	   .attr("font-family", "Arvo");
 	
-	var ai_y = d3.scaleLinear()
+	const ai_y = d3.scaleLinear()
 	          .range([y_end, y_start])
 	          .domain([0, 700]);
 	          
-	var yAxis = svg.append("g")
+	const yAxis = svg.append("g")
 	   .attr("transform", "translate(" + x_start + ", 0)")
 	   .call(d3.axisLeft(ai_y).ticks(0));
 	   
 	yAxis.selectAll(".tick text")
 	    .attr("font-family", "Arvo");
 	    
-   var ai_data = [];
-   for (var l = 0; l < 30000; l += 10) {
-   		var lsq = l * l, dsq = dim * dim;
+   const ai_data = [];
+   for (let l = 0; l < 30000; l += 10) {
+   		const lsq = l * l, dsq = dim * dim;
    		ai_data.push({x: l, y: (lsq * dim + dsq * l) / (lsq * h + l * dim + dsq) });
 	};
 	
-	var ai_curve = svg
+	const ai_curve = svg
 	    .append('g')
 	    .append("path")
 	      .datum(ai_data)
@@ -721,7 +721,7 @@ function arithmetic_intensity() {
 	          .y(function(d) { return ai_y(d.y); })
 	      );
 	      
-	var ai_limit = svg
+	const ai_limit = svg
 	    .append('g')
 	    .append("path")
 	      .datum([{x: 0, y: dim / h}, {x: 30000, y: dim / h}])
@@ -738,7 +738,7 @@ function arithmetic_intensity() {
 	      );
 	      
 	
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 10])
 	    .range([0, 320])
 	    .clamp(true);
@@ -783,14 +783,14 @@ function draw_sampling_text_2(svg, x_start, y_start, rct_sz, shift) {
 }
 
 function text_generation_w_kv_cache() {
-	var svg = d3.select("#text_generation_w_kv_cache")
+	const svg = d3.select("#text_generation_w_kv_cache")
 				  .append("svg")
 				  .attr("width", 550)
 				  .attr("height", 300);
 				  
 	const x_start = 110, y_start = 30;
 	const shift = 14, rct_sz = 12;
-	var init_seq_len = 10, dim = 2;
+	let init_seq_len = 10, dim = 2;
 	
 	function draw_attn_cells_w_kv_cache(seq_len) {
 	   svg.selectAll('rect').remove();
@@ -799,7 +799,7 @@ function text_generation_w_kv_cache() {
 		
 		vector_rect(svg, x_start + 3 * shift, y_start, seq_len, dim, shift, rct_sz, matrix_colors[1]);
 		
-		for (var i = 1; i < seq_len; i += 1) {
+		for (let i = 1; i < seq_len; i += 1) {
 			vector_rect(svg, x_start + 3 * shift, y_start + (i + 2) * shift, i, 1, shift, rct_sz, matrix_colors[2], 0.1);
 		}
 		vector_rect(svg, x_start + 3 * shift, y_start + (seq_len + 2) * shift, seq_len, 1, shift, rct_sz, matrix_colors[2]);
@@ -853,7 +853,7 @@ function text_generation_w_kv_cache() {
 	draw_sampling_text_2(svg, x_start, y_start, rct_sz, shift);
 	draw_attn_cells_w_kv_cache(init_seq_len);
 
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 10])
 	    .range([0, 320])
 	    .clamp(true);
@@ -916,7 +916,7 @@ meaning it is steadily growing with increasing $L$ until it reaches the plateau 
 
 function arithmetic_intensity_mqa() {
 
-	var svg = d3.select("#arithmetic_intensity_mqa")
+	const svg = d3.select("#arithmetic_intensity_mqa")
 				  .append("svg")
 				  .attr("width", 500)
 				  .attr("height", 200);
@@ -931,37 +931,37 @@ function arithmetic_intensity_mqa() {
 	text_(svg, "MHA", x_end + 20, y_end - 30, size=11);
 	text_(svg, "MQA", x_end + 20, y_end - 110, size=11);
 	
-	var ai_x = d3.scaleLinear()
+	const ai_x = d3.scaleLinear()
         .domain([0, 30000])
         .range([x_start, x_end]);
         
-  	var xAxis = svg.append("g")
+  	const xAxis = svg.append("g")
       .attr("transform", "translate(0," + y_end + ")")
       .call(d3.axisBottom(ai_x).ticks(4));
       
    xAxis.selectAll(".tick text")
 	   .attr("font-family", "Arvo");
 	
-	var ai_y = d3.scaleLinear()
+	const ai_y = d3.scaleLinear()
 	          .range([y_end, y_start])
 	          .domain([0, 5]);
 	          
-	var yAxis = svg.append("g")
+	const yAxis = svg.append("g")
 	   .attr("transform", "translate(" + x_start + ", 0)")
 	   .call(d3.axisLeft(ai_y).ticks(3));
 	   
 	yAxis.selectAll(".tick text")
 	    .attr("font-family", "Arvo");
 	    
-   var mha_data = [];
-   for (var l = 0; l < 30000; l += 10) {
-   		var lsq = l * l, dsq = dim * dim;
+   const mha_data = [];
+   for (let l = 0; l < 30000; l += 10) {
+   		const lsq = l * l, dsq = dim * dim;
    		mha_data.push({x: l, y: (l * dim + dsq) / (l * dim + l * h + dsq) });
 	};
 	    
-   var mqa_data = [];
-   for (var l = 0; l < 30000; l += 10) {
-   		var lsq = l * l, dsq = dim * dim;
+   const mqa_data = [];
+   for (let l = 0; l < 30000; l += 10) {
+   		const lsq = l * l, dsq = dim * dim;
    		mqa_data.push({x: l, y: (l * dim + dsq) / (l * dim / h + l * h + dsq) });
 	};
 	
@@ -996,7 +996,7 @@ function arithmetic_intensity_mqa() {
 	          .y(function(d) { return ai_y(d.y); })
 	      );
 	      
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 10])
 	    .range([0, 320])
 	    .clamp(true);
@@ -1038,7 +1038,7 @@ function gqa_line(svg, x1, y1, x2, y2) {
 }
 
 function groupquery_attention() {
-	var svg = d3.select("#groupquery_attention")
+	const svg = d3.select("#groupquery_attention")
 				  .append("svg")
 				  .attr("width", 800)
 				  .attr("height", 255);
@@ -1046,7 +1046,7 @@ function groupquery_attention() {
 	const x_start = 55, y_start = -5;
 	const shift = 10, rct_sz = 8;
 	const dim = 2, num_heads = 6, num_kv_heads = 3, seq_len = 6;
-	var num_heads_per_part = Math.floor(num_heads / num_kv_heads);
+	const num_heads_per_part = Math.floor(num_heads / num_kv_heads);
 	
 	text_(svg, "Value", 1, y_start + 60, size=12);
 	text_(svg, "heads", 1, y_start + 80, size=12);
@@ -1059,7 +1059,7 @@ function groupquery_attention() {
 	text_(svg, "Grouped-query", x_start + 271, 10, size=12);
 	text_(svg, "Multi-query", x_start + 506, 10, size=12);
 	
-	for (var i = 0; i != num_heads; i += 1) {
+	for (let i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
 		
 		gqa_line(svg, x_start + 3 * i * shift + rct_sz + 1, y_start + 180, x_start + 3 * i * shift + rct_sz + 1, y_start + 198);
@@ -1071,11 +1071,11 @@ function groupquery_attention() {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
 	}
 	
-	for (var i = 0; i != num_heads; i += 1) {
+	for (let i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 230 + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
 	}
 	
-	for (var i = 0; i != num_kv_heads; i += 1) {
+	for (let i = 0; i != num_kv_heads; i += 1) {
 		vector_rect(svg, x_start + 245 + 6 * i * shift, y_start + 120, dim, seq_len, shift, rct_sz, matrix_colors[1]);
 		vector_rect(svg, x_start + 245 + 6 * i * shift, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
 		gqa_line(svg, x_start + 246 + 6 * i * shift + rct_sz, y_start + 100, x_start + 246 + 6 * i * shift + rct_sz, y_start + 118);
@@ -1083,7 +1083,7 @@ function groupquery_attention() {
 		gqa_line(svg, x_start + 246 + 6 * i * shift + rct_sz, y_start + 180, x_start + 251 + (6 * i + 1) * shift + rct_sz, y_start + 198);
 	}
 	
-	for (var i = 0; i != num_heads; i += 1) {
+	for (let i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 460 + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
 		gqa_line(svg, x_start + 544, y_start + 180, x_start + 471 + 3 * i * shift, y_start + 198);
 	}
@@ -1149,7 +1149,7 @@ with up- and down-projection matrices $\mathbf{W}_u^Q \in \mathbb{R}^{d'_c \time
 <script>
 
 function multilatent_attention() {
-	var svg = d3.select("#multilatent_attention")
+	const svg = d3.select("#multilatent_attention")
 				  .append("svg")
 				  .attr("width", 800)
 				  .attr("height", 255);
@@ -1157,7 +1157,7 @@ function multilatent_attention() {
 	const x_start = 205, y_start = -5;
 	const shift = 10, rct_sz = 8;
 	const dim = 2, num_heads = 6, num_kv_heads = 3, seq_len = 6;
-	var num_heads_per_part = Math.floor(num_heads / num_kv_heads);
+	const num_heads_per_part = Math.floor(num_heads / num_kv_heads);
 	
 	text_(svg, "Value", 151, y_start + 60, size=12);
 	text_(svg, "heads", 151, y_start + 80, size=12);
@@ -1175,7 +1175,7 @@ function multilatent_attention() {
 	text_(svg, "latent vector", x_start + 300, y_start + 113, size=12);
 	text_(svg, "(KV cache)", x_start + 305, y_start + 133, size=12);
 	
-	for (var i = 0; i != num_heads; i += 1) {
+	for (let i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
 		
 		gqa_line(svg, x_start + 3 * i * shift + rct_sz + 1, y_start + 180, x_start + 3 * i * shift + rct_sz + 1, y_start + 198);
@@ -1187,7 +1187,7 @@ function multilatent_attention() {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
 	}
 		
-	var c_shift = 3 * (num_heads + 3) * shift;
+	const c_shift = 3 * (num_heads + 3) * shift;
 	vector_rect(svg, x_start + c_shift, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[3]);
 	vector_rect(svg, x_start + c_shift + rct_sz + 2, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[1]);
 	
@@ -1330,7 +1330,7 @@ function group_tied_attention(svg) {
 	const x_start = 100, y_start = -5;
 	const shift = 10, rct_sz = 8;
 	const dim = 2, num_heads = 6, num_kv_heads = 3, seq_len = 6;
-	var num_heads_per_part = Math.floor(num_heads / num_kv_heads);
+	const num_heads_per_part = Math.floor(num_heads / num_kv_heads);
 	
 	text_(svg, "Value", 51, y_start + 60, size=12);
 	text_(svg, "heads", 51, y_start + 80, size=12);
@@ -1344,11 +1344,11 @@ function group_tied_attention(svg) {
 	text_(svg, "rotate", x_start + 185, y_start + 145, size=12);
 	text_(svg, "broadcast", x_start + 175, y_start + 160, size=12);
 	
-	for (var i = 0; i != num_heads; i += 1) {
+	for (let i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
 	}
 	
-	for (var i = 0; i != num_kv_heads; i += 1) {
+	for (let i = 0; i != num_kv_heads; i += 1) {
 		vector_rect(svg, x_start + (6 * i + 2) * shift - 6, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[3]);
 		vector_rect(svg, x_start + (6 * i + 2) * shift - 4 + rct_sz, y_start + 120, 1, seq_len, shift, rct_sz, matrix_colors[1]);
 		vector_rect(svg, x_start + (6 * i + 2) * shift - 6, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
@@ -1426,7 +1426,7 @@ function group_latent_attention(svg) {
 	const x_start = 450, y_start = -5;
 	const shift = 10, rct_sz = 8;
 	const dim = 2, num_heads = 6, num_kv_heads = 2, seq_len = 6;
-	var num_heads_per_part = Math.floor(num_heads / num_kv_heads);
+	const num_heads_per_part = Math.floor(num_heads / num_kv_heads);
 	
 	text_(svg, "Grouped Latent", x_start + 35, y_start + 15, size=12);
 	text_(svg, "projection", x_start + 145, y_start + 110, size=10);
@@ -1442,19 +1442,19 @@ function group_latent_attention(svg) {
 	text_(svg, "KV", x_start - 64, y_start + 55, size=7);
 	text_(svg, "0", x_start - 61, y_start + 70, size=7);
 	
-	for (var i = 0; i != num_heads; i += 1) {
+	for (let i = 0; i != num_heads; i += 1) {
 		vector_rect(svg, x_start + 3 * i * shift, y_start + 200, dim, seq_len, shift, rct_sz, matrix_colors[0]);
 	}
 	
-	var c_shift = 3 * (num_heads + 1) * shift;
-	var a_shift = (num_heads + 1) * shift;
+	const c_shift = 3 * (num_heads + 1) * shift;
+	const a_shift = (num_heads + 1) * shift;
 	vector_rect(svg, x_start + c_shift, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[3]);
 	vector_rect(svg, x_start + c_shift + rct_sz + 2, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[1]);
 
 	vector_rect(svg, x_start - a_shift, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[3]);
 	vector_rect(svg, x_start - a_shift + rct_sz + 2, y_start + 80, 1, seq_len, shift, rct_sz, matrix_colors[1]);
 	
-	for (var i = 0; i != num_kv_heads; i += 1) {
+	for (let i = 0; i != num_kv_heads; i += 1) {
 		vector_rect(svg, x_start + (9 * i + 3) * shift, y_start + 120, dim, seq_len, shift, rct_sz, matrix_colors[1]);
 		vector_rect(svg, x_start + (9 * i + 3) * shift, y_start + 40, dim, seq_len, shift, rct_sz, matrix_colors[3]);
 		gqa_line(svg, x_start + (9 * i + 3) * shift + 9, y_start + 100, x_start + (9 * i + 3) * shift + 9, y_start + 118);
@@ -1537,7 +1537,7 @@ function group_latent_attention(svg) {
 	       .y(function(d) { return d.y; }));
 }
 
-var svg = d3.select("#group_tied_attention")
+const svg = d3.select("#group_tied_attention")
 			  .append("svg")
 			  .attr("width", 800)
 			  .attr("height", 255);
@@ -1565,30 +1565,30 @@ A large KV cache is not the only source of memory problems as the sequence lengt
 <script>
 
 function chunked_prefill() {
-	var svg = d3.select("#chunked_prefill")
+	const svg = d3.select("#chunked_prefill")
 				  .append("svg")
 				  .attr("width", 700)
 				  .attr("height", 290);
 				  
 	const x_start = 70, y_start = 30;
 	const shift = 14, rct_sz = 12;
-	var init_seq_len = 10;
+	let init_seq_len = 10;
 	const chunk_size = 4, dim = 2;
 	
 	function draw_attn_cells_w_chunking(chunk_id) {
-		var seq_len = Math.min(chunk_id * chunk_size, init_seq_len);
+		const seq_len = Math.min(chunk_id * chunk_size, init_seq_len);
 	   svg.selectAll('rect').remove();
-		kv_width = Math.round(seq_len / chunk_size - 1) * chunk_size;
+		const kv_width = Math.round(seq_len / chunk_size - 1) * chunk_size;
 			
 		vector_rect(svg, x_start, y_start + 3 * shift, dim, kv_width, shift, rct_sz, matrix_colors[0], 0.1);
 		vector_rect(svg, x_start, y_start + (kv_width + 3) * shift, dim, seq_len - kv_width, shift, rct_sz, matrix_colors[0]);
 		
 		vector_rect(svg, x_start + 3 * shift, y_start, seq_len, dim, shift, rct_sz, matrix_colors[1]);
 		
-		var max_i = Math.round(seq_len / chunk_size);
-		for (var i = 0; i < max_i; i += 1) {
-			var opacity = (i + 1 >= max_i) ? 1 : 0.1;
-			var height = (i + 1 >= max_i) ? seq_len - kv_width : chunk_size;
+		const max_i = Math.round(seq_len / chunk_size);
+		for (let i = 0; i < max_i; i += 1) {
+			const opacity = (i + 1 >= max_i) ? 1 : 0.1;
+			const height = (i + 1 >= max_i) ? seq_len - kv_width : chunk_size;
 			vector_rect(svg, x_start + 3 * shift, y_start + (3 + i * chunk_size) * shift, Math.min((i + 1) * chunk_size, seq_len), height, shift, rct_sz, matrix_colors[2], opacity);
 			
 			causal_mask(svg, x_start + 16 * shift, y_start + (3 + i * chunk_size) * shift, Math.min((i + 1) * chunk_size, seq_len), height, shift, rct_sz, matrix_colors[7], chunk_size, i * chunk_size, opacity);
@@ -1644,7 +1644,7 @@ function chunked_prefill() {
 	
 	text_(svg, "KV cache", x_start + 39 * shift, y_start - 10, size=11);
 
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 		 .domain([1, 3])
 	    .range([0, 320])
 	    .clamp(true);
@@ -1670,7 +1670,7 @@ We can see that even with multi-query attention and chunked prefill our KV cache
 <script>
 
 function sliding_window() {
-	var svg = d3.select("#sliding_window")
+	const svg = d3.select("#sliding_window")
 				  .append("svg")
 				  .attr("width", 300)
 				  .attr("height", 160);
@@ -1696,14 +1696,14 @@ When we use sliding window attention, we might use **rolling KV cache** as well.
 <script>
 
 function text_generation_w_rolling_kv_cache() {
-	var svg = d3.select("#text_generation_w_rolling_kv_cache")
+	const svg = d3.select("#text_generation_w_rolling_kv_cache")
 				  .append("svg")
 				  .attr("width", 550)
 				  .attr("height", 300);
 				  
 	const x_start = 110, y_start = 30;
 	const shift = 14, rct_sz = 12;
-	var init_seq_len = 10;
+	let init_seq_len = 10;
 	const window_size = 4, dim = 2;
 	
 	function draw_attn_cells_w_kv_cache(seq_len) {
@@ -1713,7 +1713,7 @@ function text_generation_w_rolling_kv_cache() {
 		
 		vector_rect(svg, x_start + Math.max(seq_len - window_size + 3, 3) * shift, y_start, Math.min(seq_len, window_size), dim, shift, rct_sz, matrix_colors[1]);
 		
-		for (var i = 1; i < seq_len; i += 1) {
+		for (let i = 1; i < seq_len; i += 1) {
 			vector_rect(svg, x_start + Math.max(i - window_size + 3, 3) * shift, y_start + (i + 2) * shift, Math.min(i, window_size), 1, shift, rct_sz, matrix_colors[2], 0.1);
 		}
 		
@@ -1768,7 +1768,7 @@ function text_generation_w_rolling_kv_cache() {
 	draw_sampling_text_2(svg, x_start, y_start, rct_sz, shift);
 	draw_attn_cells_w_kv_cache(init_seq_len);
 
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 10])
 	    .range([0, 320])
 	    .clamp(true);
@@ -1842,14 +1842,14 @@ function linear_attention() {
 		text_(svg, "=", x_start + 18 * shift, y_start + shift * 12.25, size=18);
 	}
 	
-	var svg = d3.select("#linear_attention")
+	const svg = d3.select("#linear_attention")
 				  .append("svg")
 				  .attr("width", 550)
 				  .attr("height", 300);
 				  
 	const x_start = 100, y_start = 20;
 	const shift = 14, rct_sz = 12;
-	var init_seq_len = 10;
+	let init_seq_len = 10;
 	const window_size = 4, dim = 2;
 	
 	function draw_attn_cells(seq_len) {
@@ -1870,7 +1870,7 @@ function linear_attention() {
 	draw_attn_cells(init_seq_len);
 	draw_sampling_text_3(svg, x_start, y_start, rct_sz, shift);
 		
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 10])
 	    .range([0, 320])
 	    .clamp(true);
@@ -2284,7 +2284,7 @@ function draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift) {
 }
 
 function flash_attn() {
-	var svg = d3.select("#flash_attn")
+	const svg = d3.select("#flash_attn")
 				  .append("svg")
 				  .attr("width", 600)
 				  .attr("height", 205);
@@ -2303,61 +2303,61 @@ function flash_attn() {
 	   
 	   rect(svg, x_start - 5, y_start + 3 * shift - 5, dim * shift + 8, t_r * (b_r + 1) * shift - 5, colors[2], opacity=0.3);
 	   
-	   for (var i = 0; i < t_r; i += 1) {
+	   for (let i = 0; i < t_r; i += 1) {
 			vector_rect(svg, x_start, y_start + (3 + i * (b_r + 1)) * shift, dim, b_r, shift, rct_sz, matrix_colors[0]);
 		}
 		
 	   rect(svg, x_start + 3 * shift - 5, y_start - 5, t_c * (b_c + 1) * shift - 5, dim * shift + 8, colors[2], opacity=0.3);
 	   
-		for (var i = 0; i < t_c; i += 1) {
-		   var opacity = (i == stage - 1) ? 1 : shade;
+		for (let i = 0; i < t_c; i += 1) {
+		   const opacity = (i == stage - 1) ? 1 : shade;
 			vector_rect(svg, x_start + (3 + i * (b_c + 1)) * shift, y_start, b_c, dim, shift, rct_sz, matrix_colors[1], opacity);
 		}
 		
 	   rect(svg, x_start + 3 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], opacity=0.3);
 	   
-	   for (var i = 0; i < t_c; i += 1) {
-		   var opacity = (i == stage - 1) ? 1 : shade;
-			for (var j = 0; j < t_r; j += 1) {
+	   for (let i = 0; i < t_c; i += 1) {
+		   const opacity = (i == stage - 1) ? 1 : shade;
+			for (let j = 0; j < t_r; j += 1) {
 				vector_rect(svg, x_start + (3 + i * (b_c + 1)) * shift, y_start + (3 + j * (b_r + 1)) * shift, b_c, b_r, shift, rct_sz, matrix_colors[2], opacity);
 			}
 		}
 		
 	   rect(svg, x_start + 11 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 1) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[0], opacity=0.3);
 	   
-	   for (var i = 0; i < t_c; i += 1) {
-		   var opacity = (i == stage - 1) ? 1 : shade;
-		   for (var j = 0; j < t_r; j += 1) {
+	   for (let i = 0; i < t_c; i += 1) {
+		   const opacity = (i == stage - 1) ? 1 : shade;
+		   for (let j = 0; j < t_r; j += 1) {
 				vector_rect(svg, x_start + (11 + i * (b_c + 1)) * shift, y_start + (3 + j * (b_r + 1)) * shift, b_c, b_r, shift, rct_sz, matrix_colors[2], opacity);
 			}
 		}
 	   
 	   rect(svg, x_start + 19 * shift - 5, y_start + 2 * shift - 5, dim * shift + 8, t_c * (b_c + 1) * shift - 5, colors[2], opacity=0.3);
 		
-		for (var i = 0; i < t_c; i += 1) {
-		   var opacity = (i == stage - 1) ? 1 : shade;
+		for (let i = 0; i < t_c; i += 1) {
+		   const opacity = (i == stage - 1) ? 1 : shade;
 			vector_rect(svg, x_start + 19 * shift, y_start + (2 + i * (b_c + 1)) * shift, b_c, dim, shift, rct_sz, matrix_colors[3], opacity);
 		}
 	  	   
 	   rect(svg, x_start + 25 * shift - 5, y_start + 3 * shift - 5, t_c * (b_c + 2) * shift - 5, t_r * (b_r + 1) * shift - 5, colors[2], opacity=0.3);
 	   
-	   for (var i = 0; i < t_c; i += 1) {
-		   var opacity = (i <= stage - 1) ? 1 : shade;
-		   for (var j = 0; j < t_r; j += 1) {
+	   for (let i = 0; i < t_c; i += 1) {
+		   const opacity = (i <= stage - 1) ? 1 : shade;
+		   for (let j = 0; j < t_r; j += 1) {
 				vector_rect(svg, x_start + (25 + i * (b_c + 3)) * shift, y_start + (3 + j * (b_r + 1)) * shift, dim, b_r, shift, rct_sz, matrix_colors[4], opacity);
 			}
 		}
 		
 		d3.selectAll("#fattn").remove();
 		
-		var opacity = (stage == 1) ? 1 : shade;
+		let opacity = (stage == 1) ? 1 : shade;
 		draw_fa_stage1_text(svg, x_start, y_start, rct_sz, shift, opacity);
 		
 		opacity = (stage == 2) ? 1 : shade;
 		draw_fa_stage2_text(svg, x_start, y_start, rct_sz, shift, opacity);
 	}
 
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 2])
 	    .range([0, 320])
 	    .clamp(true);
@@ -2559,8 +2559,8 @@ function labeled_rect(svg, x, y, w, h, color, label="kv") {
 }
 
 function labeled_vector_rect(svg, x, y, w, h, shift, rct_sz, color, label="kv") {
-	for (var i = 0; i < w; i += 1) {
-		for (var j = 0; j < h; j += 1) {
+	for (let i = 0; i < w; i += 1) {
+		for (let j = 0; j < h; j += 1) {
 			labeled_rect(
 				svg,
 				x + i * shift, 
@@ -2587,7 +2587,7 @@ function get_positions(iter, x_start, y_start) {
 }
 
 function ring_attn() {
-	var svg = d3.select("#ring_attn")
+	const svg = d3.select("#ring_attn")
 				  .append("svg")
 				  .attr("width", 600)
 				  .attr("height", 350);
@@ -2613,17 +2613,17 @@ function ring_attn() {
 		  
 	}
 	
-	var xAxis = d3.scaleLinear()
+	const xAxis = d3.scaleLinear()
 	    .domain([0, 1000])
 	    .range([0, 1000])
 	    .clamp(true);
 
 	function drag_ring_attn_cells(iter) {
-		for (var i = 0; i < 4; i += 1) {
-			var [x_st_new, y_st_new] = get_positions((iter + i) % 4, x_start, y_start);
-			var [x_st, y_st] = get_positions(i, x_start, y_start);
-			var x_shift = x_st_new - x_st;
-			var y_shift = y_st_new - y_st;
+		for (let i = 0; i < 4; i += 1) {
+			const [x_st_new, y_st_new] = get_positions((iter + i) % 4, x_start, y_start);
+			const [x_st, y_st] = get_positions(i, x_start, y_start);
+			const x_shift = x_st_new - x_st;
+			const y_shift = y_st_new - y_st;
 			
 			d3.selectAll("#kv" + i).transition()
 	        .delay(0)
@@ -2637,15 +2637,15 @@ function ring_attn() {
 	    }
    }
 
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([0, 3])
 	    .range([0, 415])
 	    .clamp(true);
 	    
 	createSlider(svg, drag_ring_attn_cells, l_x, x_start + 50, 330, "iter", "currentColor", 0, roundN, 4);
 	
-	var x_st = 0, y_st = 0;
-	for (var i = 0; i < 4; i += 1) {
+	let x_st = 0, y_st = 0;
+	for (let i = 0; i < 4; i += 1) {
 		[x_st, y_st] = get_positions(i, x_start, y_start);
 		draw_ring_attn_init_cells(x_st, y_st, "kv" + i);
 		rect(svg, x_st - 30, y_st - 40, 130, 70, colors[i], 0.08);
@@ -2676,7 +2676,7 @@ The problem of Ring Attention is that on all but the first iteration, the worklo
 <script>
 
 function stripe_attn() {
-	var svg = d3.select("#stripe_attn")
+	const svg = d3.select("#stripe_attn")
 				  .append("svg")
 				  .attr("width", 600)
 				  .attr("height", 300);
@@ -2689,8 +2689,8 @@ function stripe_attn() {
 	function ring_causal(iter, x_st, y_st) {
 		causal_mask(svg, x_st, y_st, 16, 16, shift, rct_sz, matrix_colors[7], 16, 0, 1);
 		
-		for (var i = 0; i < 4; i += 1) {
-			var k = (i + iter) % 4;
+		for (let i = 0; i < 4; i += 1) {
+			const k = (i + iter) % 4;
 			vector_rect(svg, x_st + 4 * shift * k, y_st + 4 * shift * i, 4, 4, shift, rct_sz, colors[i], 0.5);
 		}	
 	}
@@ -2698,9 +2698,9 @@ function stripe_attn() {
 	function stripe_causal(iter, x_st, y_st) {
 		causal_mask(svg, x_st, y_st, 16, 16, shift, rct_sz, matrix_colors[7], 16, 0, 1);
 		
-		for (var j = 0; j < 4; j += 1) {
-			for (var i = 0; i < 16; i += 1) {
-				var k = (i + 4 * j + iter) % 16;
+		for (let j = 0; j < 4; j += 1) {
+			for (let i = 0; i < 16; i += 1) {
+				const k = (i + 4 * j + iter) % 16;
 				rect(svg, x_st + shift * k, y_st + shift * i, rct_sz, rct_sz, colors[i % 4], 0.5);
 			}
 		}
@@ -2714,7 +2714,7 @@ function stripe_attn() {
 	
 	stripe_attn(0);
 	
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([0, 3])
 	    .range([0, 415])
 	    .clamp(true);
@@ -2764,8 +2764,8 @@ function block(svg, x, y, w, h, color, opacity=1.0) {
 }
 
 function vector_block(svg, x, y, w, h, shift_w, shift_h, rct_sz_w, rct_sz_h, color, opacity=1.0) {
-	for (var i = 0; i < w; i += 1) {
-		for (var j = 0; j < h; j += 1) {
+	for (let i = 0; i < w; i += 1) {
+		for (let j = 0; j < h; j += 1) {
 			block(svg,
 				x + i * shift_w, 
 				y + j * shift_h, 
@@ -2778,7 +2778,7 @@ function vector_block(svg, x, y, w, h, shift_w, shift_h, rct_sz_w, rct_sz_h, col
 }
 
 function paged_attn() {
-	var svg = d3.select("#paged_attn")
+	const svg = d3.select("#paged_attn")
 				  .append("svg")
 				  .attr("width", 525)
 				  .attr("height", 300);
@@ -2793,17 +2793,17 @@ function paged_attn() {
 	
 	function block_text() {
 		text_(svg, "Logical KV blocks", x_start + 95, y_start - 15, 11);
-		for (var i = 0; i < 3; i += 1) {
+		for (let i = 0; i < 3; i += 1) {
 			text_(svg, "Block " + i, x_start, y_start + 15 + i * shift_h, 11);
 		}
 		text_(svg, "Request A", x_start + 115, y_start + 4 * shift_h - 10, 10);
 		
-		for (var i = 0; i < 3; i += 1) {
+		for (let i = 0; i < 3; i += 1) {
 			text_(svg, "Block " + i, x_start, y_start + 15 + (i + 5) * shift_h, 11);
 		}
 		text_(svg, "Request B", x_start + 115, y_start + 9 * shift_h - 10, 10);
 		text_(svg, "Physical KV blocks", x_start + 365, y_start - 15, 11);
-		for (var i = 0; i < 9; i += 1) {
+		for (let i = 0; i < 9; i += 1) {
 			text_(svg, "Block " + i, x_start + 275, y_start + 15 + i * shift_h, 11);
 		}
 	}
@@ -2814,7 +2814,7 @@ function paged_attn() {
 		svg.selectAll('rect').remove();
 		d3.selectAll("#vllm").remove();
 		
-		var x_ph = x_start + 50;
+		let x_ph = x_start + 50;
 		vector_block(svg, x_ph, y_start, 4, 3, shift_w, shift_h, rct_sz_w, rct_sz_h, 'none', 0.5);	
 		
 		vector_block(svg, x_ph, y_start + 5 * shift_h, 4, 3, shift_w, shift_h, rct_sz_w, rct_sz_h, 'none', 0.5);	
@@ -2824,7 +2824,7 @@ function paged_attn() {
 		if (token < 4) {
 			vector_block(svg, x_ph, y_start + 7 * shift_h, token, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
 			vector_block(svg, x_ph - 275, y_start, token, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
-			for (var i = 0; i < token; i += 1) {
+			for (let i = 0; i < token; i += 1) {
 				text_id_(svg, a_text[i], x_ph - 273 + i * shift_w, y_start + 15, 1, 10, "vllm");
 				text_id_(svg, a_text[i], x_ph + 2 + i * shift_w, y_start + 7 * shift_h + 15, 1, 10, "vllm");
 			}
@@ -2832,14 +2832,14 @@ function paged_attn() {
 		else {
 			vector_block(svg, x_ph, y_start + 7 * shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
 			vector_block(svg, x_ph - 275, y_start, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
-			for (var i = 0; i < 4; i += 1) {
+			for (let i = 0; i < 4; i += 1) {
 				text_id_(svg, a_text[i], x_ph - 273 + i * shift_w, y_start + 15, 1, 10, "vllm");
 				text_id_(svg, a_text[i], x_ph + 2 + i * shift_w, y_start + 7 * shift_h + 15, 1, 10, "vllm");
 			}
 			if (token <= 8) {
 				vector_block(svg, x_ph, y_start + shift_h, token - 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
 				vector_block(svg, x_ph - 275, y_start + shift_h, token - 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
-				for (var i = 4; i < token; i += 1) {
+				for (let i = 4; i < token; i += 1) {
 					text_id_(svg, a_text[i], x_ph - 273 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
 					text_id_(svg, a_text[i], x_ph + 2 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
 				}
@@ -2847,7 +2847,7 @@ function paged_attn() {
 			else {
 				vector_block(svg, x_ph, y_start + shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
 				vector_block(svg, x_ph - 275, y_start + shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[1], 0.5);
-				for (var i = 4; i < 8; i += 1) {
+				for (let i = 4; i < 8; i += 1) {
 					text_id_(svg, a_text[i], x_ph - 273 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
 					text_id_(svg, a_text[i], x_ph + 2 + (i - 4) * shift_w, y_start + shift_h + 15, 1, 10, "vllm");
 				}
@@ -2862,7 +2862,7 @@ function paged_attn() {
 			if (token < 7) {
 				vector_block(svg, x_ph - 275, y_start + 5 * shift_h, token - 3, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
 				vector_block(svg, x_ph, y_start + 5 * shift_h, token - 3, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
-				for (var i = 0; i < token - 3; i += 1) {
+				for (let i = 0; i < token - 3; i += 1) {
 					text_id_(svg, b_text[i], x_ph - 273 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
 					text_id_(svg, b_text[i], x_ph + 2 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
 				}
@@ -2870,14 +2870,14 @@ function paged_attn() {
 			else {
 				vector_block(svg, x_ph - 275, y_start + 5 * shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
 				vector_block(svg, x_ph, y_start + 5 * shift_h, 4, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
-				for (var i = 0; i < 4; i += 1) {
+				for (let i = 0; i < 4; i += 1) {
 					text_id_(svg, b_text[i], x_ph - 273 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
 					text_id_(svg, b_text[i], x_ph + 2 + i * shift_w, y_start + 5 * shift_h + 15, 1, 10, "vllm");
 				}
 				
 				vector_block(svg, x_ph - 275, y_start + 6 * shift_h, token - 7, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
 				vector_block(svg, x_ph, y_start + 2 * shift_h, token - 7, 1, shift_w, shift_h, rct_sz_w, rct_sz_h, colors[0], 0.5);
-				for (var i = 4; i < token - 3; i += 1) {
+				for (let i = 4; i < token - 3; i += 1) {
 					text_id_(svg, b_text[i], x_ph - 273 + (i - 4) * shift_w, y_start + 6 * shift_h + 15, 1, 10, "vllm");
 					text_id_(svg, b_text[i], x_ph + 2 + (i - 4) * shift_w, y_start + 2 * shift_h + 15, 1, 10, "vllm");
 				}
@@ -2887,7 +2887,7 @@ function paged_attn() {
 	
 	generate(1);
 	
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 9])
 	    .range([0, 415])
 	    .clamp(true);
@@ -2924,13 +2924,13 @@ function draw_sampling_text_2(svg, x_start, y_start, rct_sz, shift) {
 }
 
 function radix_attention() {
-	var svg = d3.select("#radix_attention")
+	const svg = d3.select("#radix_attention")
 				  .append("svg")
 				  .attr("width", 550)
 				  .attr("height", 370);
 	const x_start = 50, y_start = 10;
 	const shift = 30, rct_sz = 16;
-	var init_timepoint = 9, dim = 2;
+	let init_timepoint = 9, dim = 2;
 	
 	function line(svg, x0, y0, x1, y1) {
 		svg.append("path")
@@ -3163,7 +3163,7 @@ function radix_attention() {
 		   text_id_3_(svg, 'evicted', x_start + rct_sz / 2 + 5, y_start + 3 * shift + rct_sz + 50, size=10, color="Salmon", text_id="sglang");
 		   text_id_3_(svg, 'evicted', x_start + 9 * shift + rct_sz / 2 + 5, y_start + 2 * shift + rct_sz + 50, size=10, color="Salmon", text_id="sglang");
 		   
-		   for (var i = 0; i < 4; i += 1) {
+		   for (let i = 0; i < 4; i += 1) {
 	   	   		line(svg, x_start + 8 * shift + rct_sz / 2, y_start + 6 * shift + rct_sz, x_start + 8 * shift + rct_sz / 2, y_start + 7 * shift + rct_sz);
 	   	   		line(svg, x_start + 5 * shift + rct_sz / 2, y_start + 7 * shift + rct_sz, x_start + 11 * shift + rct_sz / 2, y_start + 7 * shift + rct_sz);
 	   	   		line(svg, x_start + (5 + 2 * i) * shift + rct_sz / 2, y_start + 7 * shift + rct_sz, x_start + (5 + 2 * i) * shift + rct_sz / 2, y_start + 9 * shift);
@@ -3181,7 +3181,7 @@ function radix_attention() {
 
 	draw_request_evolution(init_timepoint);
 
-	var l_x = d3.scaleLinear()
+	const l_x = d3.scaleLinear()
 	    .domain([1, 9])
 	    .range([0, 320])
 	    .clamp(true);
