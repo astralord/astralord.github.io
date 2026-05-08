@@ -65,14 +65,14 @@ We also don't want to miss the information which is not included in this kind of
 <script>
 function graph_zoomed() {
 
-var svg = d3.select("#grphzmd")
+const svg = d3.select("#grphzmd")
 			  .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 300);
 
 function draw_edge(x, y, type, opacity=0.95) {
-   var x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-   var dash = 0;
+   let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+   let dash = 0;
    if (type == 'hrz') {
        x1 = x - 40;
        y1 = y;
@@ -128,8 +128,8 @@ function draw_cross(x, y, opacity) {
 	draw_node(x + 150, y, opacity);
 	draw_node(x + 98, y - 69, opacity);
 
-	var triangleSize = 70;
-	var triangle = d3.symbol()
+	const triangleSize = 70;
+	const triangle = d3.symbol()
 	            .type(d3.symbolTriangle)
 	            .size(triangleSize);
 		
@@ -144,7 +144,7 @@ function draw_cross(x, y, opacity) {
 
 draw_cross(300, 150, 0.95);
 
-var opacity = 0.04;
+const opacity = 0.04;
 
 draw_cross(300, 50, opacity);
 draw_cross(200, 150, opacity);
@@ -177,7 +177,7 @@ svg.append('line')
   .attr("opacity", 0.95)
   .attr('stroke', 'currentColor');
   
-for (var i = 0; i < 6; i += 1) {
+for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
 	  .attr('x', 100 - i * 6)
 	  .attr('y', 85 + i * 3)
@@ -248,7 +248,7 @@ svg.append('line')
   .attr("opacity", 0.95)
   .attr('stroke', 'currentColor');
   
-for (var i = 0; i < 3; i += 1) {
+for (let i = 0; i < 3; i += 1) {
 	svg.append('rect')
 	  .attr('x', 100 - i * 6)
 	  .attr('y', 225 + i * 3)
@@ -283,8 +283,8 @@ If we had to work with standard representations of board, we would most likely u
 <script>
 			  
 function draw_triangle(svg, x, y, rotate=0) {
-	var triangleSize = 25;
-	var triangle = d3.symbol()
+	const triangleSize = 25;
+	const triangle = d3.symbol()
 	            .type(d3.symbolTriangle)
 	            .size(triangleSize);
 	
@@ -298,7 +298,7 @@ function draw_triangle(svg, x, y, rotate=0) {
 
 function architecture() {
 
-var svg = d3.select("#archtctr")
+const svg = d3.select("#archtctr")
 			  .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 95);
@@ -507,12 +507,12 @@ It is also extremely important to make our graph neural network **anisotropic**,
 
 function resgcn() {
 
-var svg = d3.select("#resgcn")
+const svg = d3.select("#resgcn")
 			  .append("svg")
 			  .attr("width", 700)
 			  .attr("height", 200);
 			  
-for (var i = 0; i < 6; i += 1) {
+for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
 	  .attr('x', 60 - i * 6)
 	  .attr('y', 15 + i * 3)
@@ -524,7 +524,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('fill', '#348ABD');
 }
 
-for (var i = 0; i < 3; i += 1) {
+for (let i = 0; i < 3; i += 1) {
 	svg.append('rect')
 	  .attr('x', 50 - i * 6)
 	  .attr('y', 150 + i * 3)
@@ -690,7 +690,7 @@ svg.append('text')
   .style("fill", "currentColor")
   .attr("font-family", "Arvo");
 			  
-for (var i = 0; i < 6; i += 1) {
+for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
 	  .attr('x', 610 - i * 6)
 	  .attr('y', 15 + i * 3)
@@ -874,7 +874,7 @@ svg.append('text')
   .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
-for (var i = 0; i < 3; i += 1) {
+for (let i = 0; i < 3; i += 1) {
 	svg.append('rect')
 	  .attr('x', 600 - i * 6)
 	  .attr('y', 150 + i * 3)
@@ -920,12 +920,12 @@ $$\hat{d}_i = 1 + \sum_{j \in \mathcal{N}(i)}e_{ji}$$ and $\mathcal{N}(i)$ - set
 
 function resgcn_head() {
 
-var svg = d3.select("#resgcn_head")
+const svg = d3.select("#resgcn_head")
 			  .append("svg")
 			  .attr("width", 500)
 			  .attr("height", 342);
 
-for (var i = 0; i < 6; i += 1) {
+for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
 	  .attr('x', 200 - i * 6)
 	  .attr('y', 5 + i * 3)
@@ -1041,7 +1041,7 @@ svg.append('line')
   .attr('stroke', "currentColor");
   
 
-for (var i = 0; i < 3; i += 1) {
+for (let i = 0; i < 3; i += 1) {
 	svg.append('rect')
 	  .attr('x', 400 - i * 6)
 	  .attr('y', 5 + i * 3)
@@ -1131,7 +1131,7 @@ draw_triangle(svg, 260, 95, -90);
 draw_triangle(svg, 260, 175, -90);
 draw_triangle(svg, 260, 255, -90);
 
-for (var i = 0; i < 2; i += 1) {
+for (let i = 0; i < 2; i += 1) {
 	svg.append('rect')
 	  .attr('x', 192 - i * 6)
 	  .attr('y', 325 + i * 3)
@@ -1177,12 +1177,12 @@ Here in total we have 16 classes, but this amount can be reduced or increased, d
 
 function losses() {
 
-var svg = d3.select("#gnn_losses")
+const svg = d3.select("#gnn_losses")
 			  .append("svg")
 			  .attr("width", 800)
 			  .attr("height", 280);
 			  
-for (var i = 0; i < 6; i += 1) {
+for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
 	  .attr('x', 50 - i * 6)
 	  .attr('y', 85 + i * 3)
@@ -1231,7 +1231,7 @@ svg.append('line')
   
 draw_triangle(svg, 250, 95, 90);
   
-for (var i = 0; i < 6; i += 1) {
+for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
 	  .attr('x', 320)
 	  .attr('y', 60 + i * 12)
@@ -1243,7 +1243,7 @@ for (var i = 0; i < 6; i += 1) {
 	  .attr('fill', i == 1 ? '#65AD69' : 'white');
 }
 
-for (var i = 0; i < 6; i += 1) {
+for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
 	  .attr('x', 270)
 	  .attr('y', 60 + i * 12)
@@ -1592,7 +1592,7 @@ Finally, we face path generation task. The idea is that for each node, starting 
 <script>
 function path_search() {
 
-var svg = d3.select("#pthsrch")
+const svg = d3.select("#pthsrch")
 			  .append("svg")
 			  .attr("width", 800)
 			  .attr("height", 350);
@@ -1607,13 +1607,13 @@ function draw_node(x, y, opacity=0.95) {
 	  .attr('fill', '#A4D8D8');
 }
 
-var opacity = 0.04;
+const opacity = 0.04;
   
-for (var i = 0; i < 5; i += 1) {
+for (let i = 0; i < 5; i += 1) {
 	
 	draw_node(50, 45 + i * 30);
 	
-	for (var j = 0; j < 6; j += 1) {
+	for (let j = 0; j < 6; j += 1) {
 		svg.append('rect')
 		  .attr('x', 100 - j * 6)
 		  .attr('y', 32 + j * 3 + i * 30)
@@ -2000,7 +2000,7 @@ svg.append('text')
   .style("font-size", "12px")
   .attr("font-family", "Arvo");
   
-for (var i = 0; i < 5; i += 1) {
+for (let i = 0; i < 5; i += 1) {
 	svg.append('rect')
 	  .attr('x', 330 + i * 12)
 	  .attr('y', 260)
@@ -2029,7 +2029,7 @@ svg.append('text')
   .attr("font-family", "Arvo");
   
   
-for (var i = 0; i < 5; i += 1) {
+for (let i = 0; i < 5; i += 1) {
 	svg.append('rect')
 	  .attr('x', 110 + i * 12)
 	  .attr('y', 2)
@@ -2050,7 +2050,7 @@ svg.append('text')
   .style("fill", "currentColor")
   .attr("font-family", "Arvo");
   
-for (var i = 0; i < 5; i += 1) {
+for (let i = 0; i < 5; i += 1) {
 	svg.append('rect')
 	  .attr('x', 490 + i * 12)
 	  .attr('y', 2)
