@@ -211,493 +211,464 @@ Otherwise, $g_{\nu, \tau^2}(x)$ $\approx \nu$.
 
 <script>
 
+const COLORS = {
+  prior: '#348ABD',
+  posterior: '#EDA137',
+  mu: '#65AD69',
+  xBar: '#E86456',
+  minimax: '#F5CC18'
+};
+
+const ANIM_DURATION = 1200;
+
 d3.select("#gauss_bayes_plt")
   .style("position", "relative");
-  
-var mu = -1,
+
+let mu = -1,
     sigma = 3,
     nu = 0,
     tau = 1,
     avg = -2,
     n = 3;
-    
-var avg_dur = 1200;
-  
+
 function randn_bm() {
-    var u = 0, v = 0;
-    while(u === 0) u = Math.random();
-    while(v === 0) v = Math.random();
-    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }
 
-var margin = {top: 20, right: 0, bottom: 25, left: 25},
-    width = 700 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom,
-    fig_height = 200;
-    
-var svg = d3.select("#gauss_bayes_plt")
+function gaussianPDF(x, mean, std) {
+  return Math.exp(-0.5 * ((x - mean) / std) ** 2) / (std * Math.sqrt(2 * Math.PI));
+}
+
+function computeBayesEstimator(avg, n, sigma, tau, nu) {
+  return avg / (1 + sigma ** 2 / (n * tau ** 2)) + nu / (1 + (n * tau ** 2) / sigma ** 2);
+}
+
+function computePosteriorStd(n, sigma, tau) {
+  return 1 / Math.sqrt(n / sigma ** 2 + 1 / tau ** 2);
+}
+
+function gaussianCurveData(mean, std) {
+  const pts = [{x: -7, y: 0}];
+  for (let i = -7; i < 7; i += 0.01) {
+    pts.push({x: i, y: gaussianPDF(i, mean, std)});
+  }
+  pts.push({x: 7, y: 0});
+  return pts;
+}
+
+const margin = {top: 20, right: 0, bottom: 25, left: 25};
+const width = 700 - margin.left - margin.right;
+const height = 400 - margin.top - margin.bottom;
+const fig_height = 200;
+
+const svg = d3.select("#gauss_bayes_plt")
   .append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  .attr("transform", `translate(${margin.left},${margin.top})`);
 
-var prior_data = [], posterior_data = [];
+let prior_data = [], posterior_data = [];
 updateData();
 
-var x = d3.scaleLinear()
-        .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
-        .range([0, width]);
-        
-var xAxis = svg.append("g")
-  .attr("transform", "translate(0," + fig_height + ")")
+const x = d3.scaleLinear()
+  .domain([d3.min(prior_data, d => d.x), d3.max(prior_data, d => d.x)])
+  .range([0, width]);
+
+const xAxis = svg.append("g")
+  .attr("transform", `translate(0,${fig_height})`)
   .call(d3.axisBottom(x).ticks(8));
- 
+
 xAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
+  .attr("font-family", "Arvo");
 
-var y = d3.scaleLinear()
-        .range([fig_height, 0])
-        .domain([0,
-                 d3.max(posterior_data, function(d) { return d.y }) ]);
+const y = d3.scaleLinear()
+  .range([fig_height, 0])
+  .domain([0, d3.max(posterior_data, d => d.y)]);
 
-var yAxis = svg.append("g").call(d3.axisLeft(y).ticks(3));
+const yAxis = svg.append("g").call(d3.axisLeft(y).ticks(3));
 yAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
+  .attr("font-family", "Arvo");
 
-var g, post_std, avg_y, mode_y, mu_y;
+let g, post_std, avg_y, mode_y, mu_y;
 
 function updateData() {
-  prior_data = [{x: -7, y: 0}];
-  for (var i = -7; i < 7; i += 0.01) {
-      prior_data.push({x: i, y: Math.exp(-0.5 * ((i - nu) / tau) ** 2) / (tau * Math.sqrt(2 * Math.PI)) });
-  }
-  prior_data.push({x: 7, y: 0});
+  prior_data = gaussianCurveData(nu, tau);
+  g = computeBayesEstimator(avg, n, sigma, tau, nu);
+  post_std = computePosteriorStd(n, sigma, tau);
+  posterior_data = gaussianCurveData(g, post_std);
 
-  posterior_data = [{x: -7, y: 0}];
-  g = avg / (1 + sigma ** 2 / (n * tau ** 2)) + nu / (1 + (n * tau ** 2) / sigma ** 2);
-  post_std = 1 / Math.sqrt(n / sigma ** 2 + 1 / tau ** 2);
-  for (var i = -7; i < 7; i += 0.01) {
-      posterior_data.push({x: i, y: Math.exp(-0.5 * ((i - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI)) });
-  }
-  posterior_data.push({x: 7, y: 0});
-  
-  avg_y = Math.exp(-0.5 * ((avg - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI));
-  mode_y = 1 / (post_std * Math.sqrt(2 * Math.PI));
-  mu_y = Math.exp(-0.5 * ((mu - g) / post_std) ** 2) / (post_std * Math.sqrt(2 * Math.PI));
+  avg_y = gaussianPDF(avg, g, post_std);
+  mode_y = gaussianPDF(g, g, post_std);
+  mu_y = gaussianPDF(mu, g, post_std);
+}
+
+function dashedLine(svg, points) {
+  return svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", "3, 3")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 1)
+    .datum(points)
+    .attr("d", d3.line()
+      .x(d => d.x)
+      .y(d => d.y));
+}
+
+function indicator(svg, x0, y0, color) {
+  return svg.append('g')
+    .selectAll("dot")
+    .data([{x: x0, y: y0}])
+    .enter()
+    .append("circle")
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y)
+      .attr("r", 3)
+      .style("fill", color)
+      .attr("stroke", "black")
+      .attr("stroke-width", 1);
+}
+
+function legendStrip(svg, yPos, color) {
+  svg.append("path")
+    .attr("stroke", color)
+    .attr("stroke-width", 4)
+    .attr("opacity", ".9")
+    .datum([{x: LEGEND_X, y: yPos}, {x: LEGEND_X + 25, y: yPos}])
+    .attr("d", d3.line()
+      .x(d => d.x)
+      .y(d => d.y));
+
+  svg.append("path")
+    .attr("stroke", "currentColor")
+    .attr("stroke-width", 1)
+    .datum([{x: LEGEND_X, y: yPos - 2}, {x: LEGEND_X + 25, y: yPos - 2}])
+    .attr("d", d3.line()
+      .x(d => d.x)
+      .y(d => d.y));
 }
 
 function updateCurves(delay) {
-    updateData();
-     
-    y.domain([0,
-              d3.max(posterior_data, function(d) { return d.y }) ]);
-    yAxis
-        .transition()
-        .delay(delay)
-        .duration(avg_dur)
-        .call(d3.axisLeft(y).ticks(3))
-        .selectAll(".tick text")
-        .attr("font-family", "Arvo");
-    
-    prior_curve
-      .datum(prior_data)
-      .transition()
-      .delay(delay) 
-      .duration(avg_dur)
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-        .x(function(d) { return x(d.x); })
-        .y(function(d) { return y(d.y); })
-      );
-      
-    posterior_curve
-      .datum(posterior_data)
-      .transition()
-      .delay(delay) 
-      .duration(avg_dur)
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-        .x(function(d) { return x(d.x); })
-        .y(function(d) { return y(d.y); })
-      );
-      
-	 avg_dash.datum([{x: avg, y: 0}, {x: avg, y: avg_y}])
-       .transition()
-       .delay(delay) 
-	    .duration(avg_dur)
-	    .attr("d",  d3.line()
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	    );
-	    
-	 avg_dot
-       .transition()
-       .delay(delay) 
-	    .duration(avg_dur)
-       .attr("cx", function (d) { return x(avg); } )
-       .attr("cy", function (d) { return y(avg_y); } );
-       
-	 mode_dash.datum([{x: g, y: 0}, {x: g, y: mode_y}])
-       .transition()
-       .delay(delay) 
-	    .duration(avg_dur)
-	    .attr("d",  d3.line()
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	    );
-	    
-	 mode_dot
-       .transition()
-       .delay(delay) 
-	    .duration(avg_dur)
-       .attr("cx", function (d) { return x(g); } )
-       .attr("cy", function (d) { return y(mode_y); } );
-       
-	 mu_dash.datum([{x: mu, y: 0}, {x: mu, y: mu_y}])
-       .transition()
-       .delay(delay) 
-	    .duration(avg_dur)
-	    .attr("d",  d3.line()
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	    );
-    
-    mu_dot
-       .transition()
-       .delay(delay)
-       .duration(avg_dur)
-       .attr("cx", function (d) { return x(mu); } )
-       .attr("cy", function (d) { return y(mu_y); } );
+  updateData();
+
+  y.domain([0, d3.max(posterior_data, d => d.y)]);
+  yAxis
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .call(d3.axisLeft(y).ticks(3))
+    .selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  prior_curve
+    .datum(prior_data)
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("d", d3.line()
+      .curve(d3.curveBasis)
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+    );
+
+  posterior_curve
+    .datum(posterior_data)
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("d", d3.line()
+      .curve(d3.curveBasis)
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+    );
+
+  avg_dash.datum([{x: avg, y: 0}, {x: avg, y: avg_y}])
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("d", d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+    );
+
+  avg_dot
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("cx", () => x(avg))
+    .attr("cy", () => y(avg_y));
+
+  mode_dash.datum([{x: g, y: 0}, {x: g, y: mode_y}])
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("d", d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+    );
+
+  mode_dot
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("cx", () => x(g))
+    .attr("cy", () => y(mode_y));
+
+  mu_dash.datum([{x: mu, y: 0}, {x: mu, y: mu_y}])
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("d", d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+    );
+
+  mu_dot
+    .transition()
+    .delay(delay)
+    .duration(ANIM_DURATION)
+    .attr("cx", () => x(mu))
+    .attr("cy", () => y(mu_y));
 }
 
-var prior_curve = svg
-    .append('g')
-    .append("path")
-      .datum(prior_data)
-      .attr("fill", "#348ABD")
-      .attr("border", 0)
-      .attr("opacity", ".9")
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-      );
-      
-var posterior_curve = svg
-    .append('g')
-    .append("path")
-      .datum(posterior_data)
-      .attr("fill", "#EDA137")
-      .attr("border", 0)
-      .attr("opacity", ".9")
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", 1)
-      .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
-      );
-    
-var avg_dash = svg.append("path")
-    .attr("class", "line")
-    .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "black")
+const prior_curve = svg
+  .append('g')
+  .append("path")
+    .datum(prior_data)
+    .attr("fill", COLORS.prior)
+    .attr("border", 0)
+    .attr("opacity", ".9")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
-    .datum([{x: avg, y: avg_y}, {x: avg, y: 0}])
-    .attr("d",  d3.line()
-      .x(function(d) { return x(d.x); })
-      .y(function(d) { return y(d.y); }));
+    .attr("stroke-linejoin", "round")
+    .attr("d", d3.line()
+      .curve(d3.curveBasis)
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+    );
 
-var mode_dash = svg.append("path")
-    .attr("class", "line")
-    .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "black")
+const posterior_curve = svg
+  .append('g')
+  .append("path")
+    .datum(posterior_data)
+    .attr("fill", COLORS.posterior)
+    .attr("border", 0)
+    .attr("opacity", ".9")
+    .attr("stroke", "currentColor")
     .attr("stroke-width", 1)
-    .datum([{x: g, y: mode_y}, {x: g, y: 0}])
-    .attr("d",  d3.line()
-      .x(function(d) { return x(d.x); })
-      .y(function(d) { return y(d.y); }));
+    .attr("stroke-linejoin", "round")
+    .attr("d", d3.line()
+      .curve(d3.curveBasis)
+      .x(d => x(d.x))
+      .y(d => y(d.y))
+    );
 
-var mu_dash = svg.append("path")
-    .attr("class", "line")
-    .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "black")
-    .attr("stroke-width", 1)
-    .datum([{x: mu, y: mu_y}, {x: mu, y: 0}])
-    .attr("d",  d3.line()
-      .x(function(d) { return x(d.x); })
-      .y(function(d) { return y(d.y); }));
-      
-var mu_dot = svg.append('g')
+const avg_dash = svg.append("path")
+  .attr("class", "line")
+  .style("stroke-dasharray", "3, 3")
+  .attr("stroke", "black")
+  .attr("stroke-width", 1)
+  .datum([{x: avg, y: avg_y}, {x: avg, y: 0}])
+  .attr("d", d3.line()
+    .x(d => x(d.x))
+    .y(d => y(d.y)));
+
+const mode_dash = svg.append("path")
+  .attr("class", "line")
+  .style("stroke-dasharray", "3, 3")
+  .attr("stroke", "black")
+  .attr("stroke-width", 1)
+  .datum([{x: g, y: mode_y}, {x: g, y: 0}])
+  .attr("d", d3.line()
+    .x(d => x(d.x))
+    .y(d => y(d.y)));
+
+const mu_dash = svg.append("path")
+  .attr("class", "line")
+  .style("stroke-dasharray", "3, 3")
+  .attr("stroke", "black")
+  .attr("stroke-width", 1)
+  .datum([{x: mu, y: mu_y}, {x: mu, y: 0}])
+  .attr("d", d3.line()
+    .x(d => x(d.x))
+    .y(d => y(d.y)));
+
+const mu_dot = svg.append('g')
   .selectAll("dot")
   .data([{x: mu, y: mu_y}])
   .enter()
   .append("circle")
-    .attr("cx", function (d) { return x(d.x); } )
-    .attr("cy", function (d) { return y(d.y); } )
+    .attr("cx", d => x(d.x))
+    .attr("cy", d => y(d.y))
     .attr("r", 3)
-    .style("fill", "#65AD69")
+    .style("fill", COLORS.mu)
     .attr("stroke", "black")
     .attr("stroke-width", 1);
-      
-var avg_dot = svg.append('g')
-    .selectAll("dot")
-    .data([{x: avg, y: avg_y}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return x(d.x); } )
-      .attr("cy", function (d) { return y(d.y); } )
-      .attr("r", 3)
-      .style("fill", "#E86456")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-      
-var mode_dot = svg.append('g')
+
+const avg_dot = svg.append('g')
+  .selectAll("dot")
+  .data([{x: avg, y: avg_y}])
+  .enter()
+  .append("circle")
+    .attr("cx", d => x(d.x))
+    .attr("cy", d => y(d.y))
+    .attr("r", 3)
+    .style("fill", COLORS.xBar)
+    .attr("stroke", "black")
+    .attr("stroke-width", 1);
+
+const mode_dot = svg.append('g')
   .selectAll("dot")
   .data([{x: g, y: mode_y}])
   .enter()
   .append("circle")
-    .attr("cx", function (d) { return x(d.x); } )
-    .attr("cy", function (d) { return y(d.y); } )
+    .attr("cx", d => x(d.x))
+    .attr("cy", d => y(d.y))
     .attr("r", 3)
-    .style("fill", "#348ABD")
+    .style("fill", COLORS.prior)
     .attr("stroke", "black")
     .attr("stroke-width", 1);
 
-var labels_x = 550;
-  
-svg.append("path")
-   .attr("stroke", "#348ABD")
-   .attr("stroke-width", 4)
-   .attr("opacity", ".9")
-   .datum([{x: labels_x, y: -5}, {x: labels_x + 25, y: -5}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("path")
-   .attr("stroke", "currentColor")
-   .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: -7}, {x: labels_x + 25, y: -7}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-      
-svg
-  .append("text")
+const LEGEND_X = 550;
+
+legendStrip(svg, -5, COLORS.prior);
+svg.append("text")
   .attr("text-anchor", "start")
   .attr("y", 0)
-  .attr("x", labels_x + 30)
+  .attr("x", LEGEND_X + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Prior")
-  .style("fill", "#348ABD");
- 
-svg.append("path")
-   .attr("stroke", "#EDA137")
-   .attr("stroke-width", 4)
-   .attr("opacity", ".9")
-   .datum([{x: labels_x, y: 15}, {x: labels_x + 25, y: 15}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-       
-svg.append("path")
-   .attr("stroke", "currentColor")
-   .attr("stroke-width", 1)
-   .datum([{x: labels_x, y: 13}, {x: labels_x + 25, y: 13}])
-   .attr("d",  d3.line()
-       .x(function(d) { return d.x; })
-       .y(function(d) { return d.y; }));
-      
-svg
-  .append("text")
+  .style("fill", COLORS.prior);
+
+legendStrip(svg, 15, COLORS.posterior);
+svg.append("text")
   .attr("text-anchor", "start")
   .attr("y", 20)
-  .attr("x", labels_x + 30)
+  .attr("x", LEGEND_X + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Posterior")
-  .style("fill", "#EDA137");
+  .style("fill", COLORS.posterior);
 
 d3.select("#gauss_bayes_plt")
   .append("div")
   .text("\\(\\mu \\)")
-  .style('color', '#65AD69')
+  .style('color', COLORS.mu)
   .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", labels_x + 55 + "px")
-  .style("top", 45 + "px");
-      
-svg.append("path")
-    .attr("class", "line")
-    .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "currentColor")
-    .attr("stroke-width", 1)
-    .datum([{x: labels_x + 20, y: 30}, {x: labels_x + 20, y: 45}])
-    .attr("d",  d3.line()
-      .x(function(d) { return d.x; })
-      .y(function(d) { return d.y; }));
-  
-svg.append('g')
-    .selectAll("dot")
-    .data([{x: labels_x + 20, y: 30}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return d.x; } )
-      .attr("cy", function (d) { return d.y; } )
-      .attr("r", 3)
-      .style("fill", "#65AD69")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-      
+  .style("left", `${LEGEND_X + 55}px`)
+  .style("top", "45px");
+
+dashedLine(svg, [{x: LEGEND_X + 20, y: 30}, {x: LEGEND_X + 20, y: 45}]);
+indicator(svg, LEGEND_X + 20, 30, COLORS.mu);
+
 d3.select("#gauss_bayes_plt")
   .append("div")
   .text("\\(\\overline{X}_n \\)")
-  .style('color', '#E86456')
+  .style('color', COLORS.xBar)
   .style("font-size", "13px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", labels_x + 55 + "px")
-  .style("top", 75 + "px");
-      
-svg.append("path")
-    .attr("class", "line")
-    .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "currentColor")
-    .attr("stroke-width", 1)
-    .datum([{x: labels_x + 20, y: 60}, {x: labels_x + 20, y: 75}])
-    .attr("d",  d3.line()
-      .x(function(d) { return d.x; })
-      .y(function(d) { return d.y; }));
-  
-svg.append('g')
-    .selectAll("dot")
-    .data([{x: labels_x + 20, y: 60}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return d.x; } )
-      .attr("cy", function (d) { return d.y; } )
-      .attr("r", 3)
-      .style("fill", "#E86456")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-      
-svg
-  .append("text")
+  .style("left", `${LEGEND_X + 55}px`)
+  .style("top", "75px");
+
+dashedLine(svg, [{x: LEGEND_X + 20, y: 60}, {x: LEGEND_X + 20, y: 75}]);
+indicator(svg, LEGEND_X + 20, 60, COLORS.xBar);
+
+svg.append("text")
   .attr("text-anchor", "start")
   .attr("y", 100)
-  .attr("x", labels_x + 30)
+  .attr("x", LEGEND_X + 30)
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .text("Bayes")
   .attr("font-size", 12)
-  .style("fill", "#348ABD");
-      
-svg.append("path")
-    .attr("class", "line")
-    .style("stroke-dasharray", ("3, 3"))
-    .attr("stroke", "currentColor")
-    .attr("stroke-width", 1)
-    .datum([{x: labels_x + 20, y: 90}, {x: labels_x + 20, y: 105}])
-    .attr("d",  d3.line()
-      .x(function(d) { return d.x; })
-      .y(function(d) { return d.y; }));
-  
-svg.append('g')
-    .selectAll("dot")
-    .data([{x: labels_x + 20, y: 90}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return d.x; } )
-      .attr("cy", function (d) { return d.y; } )
-      .attr("r", 3)
-      .style("fill", "#348ABD")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
+  .style("fill", COLORS.prior);
 
-var mu_x = d3.scaleLinear()
-    .domain([-3, 3])
-    .range([0, width / 3])
-    .clamp(true);
-    
-var sigma_x = d3.scaleLinear()
-    .domain([0.1, 3])
-    .range([0, width / 3])
-    .clamp(true);
+dashedLine(svg, [{x: LEGEND_X + 20, y: 90}, {x: LEGEND_X + 20, y: 105}]);
+indicator(svg, LEGEND_X + 20, 90, COLORS.prior);
 
-var nu_x = d3.scaleLinear()
-    .domain([-3, 3])
-    .range([0, width / 3])
-    .clamp(true);
-    
-var tau_x = d3.scaleLinear()
-    .domain([0.1, 3])
-    .range([0, width / 3])
-    .clamp(true);
+const mu_x = d3.scaleLinear()
+  .domain([-3, 3])
+  .range([0, width / 3])
+  .clamp(true);
+
+const sigma_x = d3.scaleLinear()
+  .domain([0.1, 3])
+  .range([0, width / 3])
+  .clamp(true);
+
+const nu_x = d3.scaleLinear()
+  .domain([-3, 3])
+  .range([0, width / 3])
+  .clamp(true);
+
+const tau_x = d3.scaleLinear()
+  .domain([0.1, 3])
+  .range([0, width / 3])
+  .clamp(true);
 
 function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
-    var slider = svg_.append("g")
-      .attr("class", "slider")
-      .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
-    
-    var drag = d3.drag()
-	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function(event, d) { 
-	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
-	          parameter_update(x.invert(event.x));
-	          updateCurves(0);
-	         });
-	         
-    slider.append("line")
-	    .attr("class", "track")
-	    .attr("x1", x.range()[0])
-	    .attr("x2", x.range()[1])
-	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-inset")
-	  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-overlay")
-	    .call(drag)
-	    .attr('stroke-width', 1);
+  const slider = svg_.append("g")
+    .attr("class", "slider")
+    .attr("transform", `translate(${loc_x},${loc_y})`);
 
-	slider.insert("g", ".track-overlay")
+  const drag = d3.drag()
+    .on("start.interrupt", function() { slider.interrupt(); })
+    .on("start drag", function(event, d) {
+      handle.attr("cx", x(round_fun(x.invert(event.x))));
+      parameter_update(x.invert(event.x));
+      updateCurves(0);
+    });
+
+  slider.append("line")
+    .attr("class", "track")
+    .attr("x1", x.range()[0])
+    .attr("x2", x.range()[1])
+    .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+      .attr("class", "track-inset")
+    .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+      .attr("class", "track-overlay")
+      .call(drag)
+      .attr('stroke-width', 1);
+
+  slider.insert("g", ".track-overlay")
     .attr("class", "ticks")
-    .attr("transform", "translate(0," + 18 + ")")
-  .selectAll("text")
-  .data(x.ticks(6))
-  .enter().append("text")
-    .attr("x", x)
-    .attr("text-anchor", "middle")
-    .attr("font-family", "Arvo")
-    .style('fill', "currentColor")
-    .text(function(d) { return d; });
+    .attr("transform", `translate(0,18)`)
+    .selectAll("text")
+    .data(x.ticks(6))
+    .enter().append("text")
+      .attr("x", x)
+      .attr("text-anchor", "middle")
+      .attr("font-family", "Arvo")
+      .style('fill', "currentColor")
+      .text(d => d);
 
-   var handle = slider.insert("circle", ".track-overlay")
-      .attr("class", "handle")
-      .attr("r", 5)
-      .attr("cx", x(init_val));
-      
-	svg_
-	  .append("text")
-	  .attr("text-anchor", "middle")
-	  .attr("y", loc_y + 3)
-	  .attr("x", loc_x - 21)
-	  .attr("font-family", "Arvo")
-	  .attr("font-size", 17)
-	  .text(letter)
-	  .style("fill", color);
-	  	  
-	return handle;
+  const handle = slider.insert("circle", ".track-overlay")
+    .attr("class", "handle")
+    .attr("r", 5)
+    .attr("cx", x(init_val));
+
+  svg_
+    .append("text")
+    .attr("text-anchor", "middle")
+    .attr("y", loc_y + 3)
+    .attr("x", loc_x - 21)
+    .attr("font-family", "Arvo")
+    .attr("font-size", 17)
+    .text(letter)
+    .style("fill", color);
+
+  return handle;
 }
 
 function updateNu(x) { nu = x; }
@@ -706,117 +677,114 @@ function updateMu(x) { mu = x; }
 function updateSigma(x) { sigma = x; }
 function trivialRound(x) { return x; }
 
-createSlider(svg, updateMu, mu_x, margin.left, 0.75 * height, "", "#65AD69", mu, trivialRound);
-createSlider(svg, updateSigma, sigma_x, margin.left, 0.9 * height, "", "#65AD69", sigma, trivialRound);
-createSlider(svg, updateNu, nu_x, margin.left + width / 2, 0.75 * height, "", "#348ABD", nu, trivialRound);
-createSlider(svg, updateTau, tau_x, margin.left + width / 2, 0.9 * height, "", "#348ABD", tau, trivialRound);
-
+createSlider(svg, updateMu, mu_x, margin.left, 0.75 * height, "", COLORS.mu, mu, trivialRound);
+createSlider(svg, updateSigma, sigma_x, margin.left, 0.9 * height, "", COLORS.mu, sigma, trivialRound);
+createSlider(svg, updateNu, nu_x, margin.left + width / 2, 0.75 * height, "", COLORS.prior, nu, trivialRound);
+createSlider(svg, updateTau, tau_x, margin.left + width / 2, 0.9 * height, "", COLORS.prior, tau, trivialRound);
 
 d3.select("#gauss_bayes_plt")
   .append("div")
   .text("\\(\\mu \\)")
-  .style('color', '#65AD69')
+  .style('color', COLORS.mu)
   .style("font-size", "17px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", margin.left+ "px")
-  .style("top", 0.75 * height + 5 + "px");
-
+  .style("left", `${margin.left}px`)
+  .style("top", `${0.75 * height + 5}px`);
 
 d3.select("#gauss_bayes_plt")
   .append("div")
   .text("\\(\\sigma \\)")
-  .style('color', '#65AD69')
+  .style('color', COLORS.mu)
   .style("font-size", "17px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", margin.left + "px")
-  .style("top", 0.9 * height + 5 + "px");
-
+  .style("left", `${margin.left}px`)
+  .style("top", `${0.9 * height + 5}px`);
 
 d3.select("#gauss_bayes_plt")
   .append("div")
   .text("\\(\\nu \\)")
-  .style('color', '#348ABD')
+  .style('color', COLORS.prior)
   .style("font-size", "17px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", margin.left + width / 2 + "px")
-  .style("top", 0.75 * height + 5 + "px");
-  
+  .style("left", `${margin.left + width / 2}px`)
+  .style("top", `${0.75 * height + 5}px`);
+
 d3.select("#gauss_bayes_plt")
   .append("div")
   .text("\\(\\tau \\)")
-  .style('color', '#348ABD')
+  .style('color', COLORS.prior)
   .style("font-size", "17px")
   .style("font-weight", "700")
   .attr("font-family", "Arvo")
   .attr("font-weight", 700)
   .style("position", "absolute")
-  .style("left", margin.left + width / 2 + "px")
-  .style("top", 0.9 * height + 5 + "px");
+  .style("left", `${margin.left + width / 2}px`)
+  .style("top", `${0.9 * height + 5}px`);
 
 d3.select("#n-num").on("input", function() {
-    n = this.value;
-    updateCurves(0);
+  n = this.value;
+  updateCurves(0);
 });
 
-var sampleButton = d3.select("#sample-button");
+const sampleButton = d3.select("#sample-button");
 
 sampleButton
-    .on("click", function() {
-      random_samples = [];
-      smpl_dots = [];
-      avg = 0;
-      for (var i = 0; i < n; i += 1) {
-          random_samples.push(mu + sigma * randn_bm());
-          smpl_dots.push(svg.append('g')
-            .selectAll("dot")
-            .data([{x: random_samples[i], y: d3.max(posterior_data, function(d) { return d.y })}])
-            .enter()
-            .append("circle")
-              .attr("cx", function (d) { return x(d.x); } )
-              .attr("cy", function (d) { return y(d.y); } )
-              .attr("r", 3)
-              .style("fill", "#65AD69")
-              .attr("stroke", "black")
-              .attr("stroke-width", 1));
-          
-          smpl_dots[i].transition()
-            .duration(avg_dur)
-            .attr("cx", function (d) { return x(random_samples[i]); } )
-            .attr("cy", function (d) { return y(0); } );
-      
-          avg += random_samples[i];
-      }
-      avg /= n;  
-      
-      for (var i = 0; i < n; i += 1) {
-          smpl_dots[i]
-            .transition()
-            .delay(avg_dur) 
-            .duration(avg_dur)
-            .style("fill", "#E86456")
-            .attr("cx", function (d) { return x(avg); } )
-            .attr("cy", function (d) { return y(0); } );
-            
-          smpl_dots[i]
-            .transition()
-            .delay(2.5 * avg_dur) 
-            .duration(avg_dur)
-            .attr("r", 0);
-            
-          smpl_dots[i].transition().delay(3.5 * avg_dur).remove();
-      }
-      
-      updateCurves(2 * avg_dur);
-});
+  .on("click", function() {
+    const random_samples = [];
+    const smpl_dots = [];
+    avg = 0;
+    for (let i = 0; i < n; i += 1) {
+      random_samples.push(mu + sigma * randn_bm());
+      smpl_dots.push(svg.append('g')
+        .selectAll("dot")
+        .data([{x: random_samples[i], y: d3.max(posterior_data, d => d.y)}])
+        .enter()
+        .append("circle")
+          .attr("cx", d => x(d.x))
+          .attr("cy", d => y(d.y))
+          .attr("r", 3)
+          .style("fill", COLORS.mu)
+          .attr("stroke", "black")
+          .attr("stroke-width", 1));
+
+      smpl_dots[i].transition()
+        .duration(ANIM_DURATION)
+        .attr("cx", () => x(random_samples[i]))
+        .attr("cy", () => y(0));
+
+      avg += random_samples[i];
+    }
+    avg /= n;
+
+    for (let i = 0; i < n; i += 1) {
+      smpl_dots[i]
+        .transition()
+        .delay(ANIM_DURATION)
+        .duration(ANIM_DURATION)
+        .style("fill", COLORS.xBar)
+        .attr("cx", () => x(avg))
+        .attr("cy", () => y(0));
+
+      smpl_dots[i]
+        .transition()
+        .delay(2.5 * ANIM_DURATION)
+        .duration(ANIM_DURATION)
+        .attr("r", 0);
+
+      smpl_dots[i].transition().delay(3.5 * ANIM_DURATION).remove();
+    }
+
+    updateCurves(2 * ANIM_DURATION);
+  });
 
 </script>
 
@@ -926,62 +894,69 @@ Such risk doesn't depend on $\vartheta$ and hence an estimator $g_{\hat{a}, \hat
 <script>
 
 d3.json("../../../../assets/beta.json").then(data => {
-  var sample = 1;
-  var n = 8;
-  var a = 1, b = 1;
-  var a_key = 10, b_key = 10;
-  
-var margin = {top: 25, right: 0, bottom: 25, left: 20},
-    width = 800 - margin.left - margin.right,
-    height = 200 - margin.top - margin.bottom,
-    fig_width = 200;
-    
-var prior_svg = d3.select("#bin_bayes_plt")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  const COLORS2 = {
+    prior: '#348ABD',
+    posterior: '#EDA137',
+    mu: '#65AD69',
+    xBar: '#E86456',
+    minimax: '#F5CC18'
+  };
 
-var prior_data = [];
-updatePriorData();
+  let sample = 1;
+  let n = 8;
+  let a = 1, b = 1;
+  let a_key = 10, b_key = 10;
 
-var x = d3.scaleLinear()
-        .domain([d3.min(prior_data, function(d) { return d.x }), d3.max(prior_data, function(d) { return d.x }) ])
-        .range([0, fig_width]);
-        
-var xAxis = prior_svg.append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(d3.axisBottom(x).ticks(4));
+  const margin_main = {top: 25, right: 0, bottom: 25, left: 20};
+  const width = 800 - margin_main.left - margin_main.right;
+  const height = 200 - margin_main.top - margin_main.bottom;
+  const fig_width = 200;
 
-xAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
-     
-var y = d3.scaleLinear()
-        .range([height, 0])
-        .domain([0, 12]);
+  const prior_svg = d3.select("#bin_bayes_plt")
+    .append("svg")
+    .attr("width", width + margin_main.left + margin_main.right)
+    .attr("height", height + margin_main.top + margin_main.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin_main.left},${margin_main.top})`);
 
-var yAxis = prior_svg.append("g").call(d3.axisLeft(y).ticks(3));
+  let prior_data = [];
+  updatePriorData();
 
-yAxis.selectAll(".tick text")
-     .attr("font-family", "Arvo");
-  
-var prior_curve = prior_svg
+  const x = d3.scaleLinear()
+    .domain([d3.min(prior_data, d => d.x), d3.max(prior_data, d => d.x)])
+    .range([0, fig_width]);
+
+  const xAxis = prior_svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(4));
+
+  xAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const y = d3.scaleLinear()
+    .range([height, 0])
+    .domain([0, 12]);
+
+  const yAxis = prior_svg.append("g").call(d3.axisLeft(y).ticks(3));
+  yAxis.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
+  const prior_curve = prior_svg
     .append('g')
     .append("path")
       .datum(prior_data)
-      .attr("fill", "#348ABD")
+      .attr("fill", COLORS2.prior)
       .attr("border", 0)
       .attr("opacity", ".9")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
       );
-     
+
   prior_svg
     .append("text")
     .attr("text-anchor", "start")
@@ -990,79 +965,77 @@ var prior_curve = prior_svg
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Prior")
-    .style("fill", "#348ABD");
-      
-    margin = {top: 0, right: 0, bottom: 35, left: 250};
+    .style("fill", COLORS2.prior);
 
-	 var smpl_svg = prior_svg
-	  .append("svg")
-	    .attr("width", width + margin.left + margin.right)
-	    .attr("height", height + margin.top + margin.bottom)
-	  .append("g")
-	    .attr("transform",
-	          "translate(" + margin.left + "," + margin.top + ")");
-	 
-	 var smpl_x = d3.scaleBand()
-	        .range([0, fig_width]);
-	 var smpl_x_axis = smpl_svg.append("g")
-	  .attr("transform", "translate(0," + height + ")");
-	 
-	 var smpl_y = d3.scaleLinear().range([height, 0]).domain([0, 1]);
-	 var smpl_y_axis = smpl_svg.append("g").call(d3.axisLeft(smpl_y).ticks(0)); 
-    
-    
+  const margin_smpl = {top: 0, right: 0, bottom: 35, left: 250};
+
+  const smpl_svg = prior_svg
+    .append("svg")
+      .attr("width", width + margin_smpl.left + margin_smpl.right)
+      .attr("height", height + margin_smpl.top + margin_smpl.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin_smpl.left},${margin_smpl.top})`);
+
+  const smpl_x = d3.scaleBand()
+    .range([0, fig_width]);
+  const smpl_x_axis = smpl_svg.append("g")
+    .attr("transform", `translate(0,${height})`);
+
+  const smpl_y = d3.scaleLinear().range([height, 0]).domain([0, 1]);
+  const smpl_y_axis = smpl_svg.append("g").call(d3.axisLeft(smpl_y).ticks(0));
+
   function updateRectSample() {
-    var rect_data = [];
-    for (var i = 0; i <= n; i++) {
-       rect_data.push({x: i, y: 1});
+    const rect_data = [];
+    for (let i = 0; i <= n; i++) {
+      rect_data.push({x: i, y: 1});
     }
 
-	 smpl_x.domain(rect_data.map(function(d) { return d.x; }));
-	 smpl_x_axis.call(d3.axisBottom(smpl_x));
-	 smpl_x_axis.selectAll(".tick text").attr("font-family", "Arvo");
-	
-	 var rect_sample = smpl_svg.selectAll("rect").data(rect_data);
+    smpl_x.domain(rect_data.map(d => d.x));
+    smpl_x_axis.call(d3.axisBottom(smpl_x));
+    smpl_x_axis.selectAll(".tick text").attr("font-family", "Arvo");
+
+    const rect_sample = smpl_svg.selectAll("rect").data(rect_data);
 
     rect_sample.enter()
-	    .append("rect")
-	      .merge(rect_sample)
-	      .attr("x", function(d) { return smpl_x(d.x); })
-	      .attr("y", function(d) { return smpl_y(d.y); })
-	      .attr("width", smpl_x.bandwidth())
-	      .attr("border", 0)
-	      .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; })
-	      .attr("stroke", "currentColor")
-	      .attr("stroke-width", 1)
-	      .attr("stroke-linejoin", "round")
-	      .attr("height", function(d) { return height - smpl_y(d.y); })
-	      .attr("fill", "#65AD69")
-	      .on('mouseover', function(event, d) {
-	        d3.select(this)
-	          .transition()
-	          .attr("opacity", function(d) { return d.x == sample ? ".8" : ".4"; });
-	      })
-	      .on('mouseout', function(event, d) {
-	        d3.select(this)
-	          .transition()
-	          .attr("opacity", function(d) { return d.x == sample ? ".8" : "0"; });
-	      })
-	      .on('click', function(event, d) {
-	        sample = d.x;
-	        
-	        d3.selectAll("rect")
-	          .transition()
-		       .attr("x", function(d2) { return smpl_x(d2.x); })
-		       .attr("y", function(d2) { return smpl_y(d2.y); })
-	          .attr("opacity", function(d2) { return d2.x == sample ? ".8" : "0"; });
-	          
-	        updatePosteriorCurve();
-	    });
-    
-     rect_sample.exit().remove();
+      .append("rect")
+        .merge(rect_sample)
+        .attr("x", d => smpl_x(d.x))
+        .attr("y", d => smpl_y(d.y))
+        .attr("width", smpl_x.bandwidth())
+        .attr("border", 0)
+        .attr("opacity", d => d.x == sample ? ".8" : "0")
+        .attr("stroke", "currentColor")
+        .attr("stroke-width", 1)
+        .attr("stroke-linejoin", "round")
+        .attr("height", d => height - smpl_y(d.y))
+        .attr("fill", COLORS2.mu)
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .transition()
+            .attr("opacity", d => d.x == sample ? ".8" : ".4");
+        })
+        .on('mouseout', function(event, d) {
+          d3.select(this)
+            .transition()
+            .attr("opacity", d => d.x == sample ? ".8" : "0");
+        })
+        .on('click', function(event, d) {
+          sample = d.x;
+
+          d3.selectAll("rect")
+            .transition()
+            .attr("x", d2 => smpl_x(d2.x))
+            .attr("y", d2 => smpl_y(d2.y))
+            .attr("opacity", d2 => d2.x == sample ? ".8" : "0");
+
+          updatePosteriorCurve();
+        });
+
+    rect_sample.exit().remove();
   }
-    	
-    updateRectSample();
-	    
+
+  updateRectSample();
+
   smpl_svg
     .append("text")
     .attr("text-anchor", "start")
@@ -1072,29 +1045,28 @@ var prior_curve = prior_svg
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Sample")
-    .style("fill", "#65AD69");
-    
-margin = {top: 0, right: 0, bottom: 35, left: 250};
-    
-var post_svg = smpl_svg
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-        
-  xAxis = post_svg.append("g")
-    .attr("transform", "translate(0, " + height + ")")
+    .style("fill", COLORS2.mu);
+
+  const margin_post = {top: 0, right: 0, bottom: 35, left: 250};
+
+  const post_svg = smpl_svg
+    .append("svg")
+      .attr("width", width + margin_post.left + margin_post.right)
+      .attr("height", height + margin_post.top + margin_post.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin_post.left},${margin_post.top})`);
+
+  const xAxis2 = post_svg.append("g")
+    .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(x).ticks(4));
-    
-  xAxis.selectAll(".tick text")
+
+  xAxis2.selectAll(".tick text")
     .attr("font-family", "Arvo");
-    
-  yAxis = post_svg.append("g").call(d3.axisLeft(y).ticks(3));
-  yAxis.selectAll(".tick text")
-       .attr("font-family", "Arvo");
-    
+
+  const yAxis2 = post_svg.append("g").call(d3.axisLeft(y).ticks(3));
+  yAxis2.selectAll(".tick text")
+    .attr("font-family", "Arvo");
+
   post_svg
     .append("text")
     .attr("text-anchor", "start")
@@ -1103,328 +1075,263 @@ var post_svg = smpl_svg
     .attr("font-family", "Arvo")
     .attr("font-weight", 700)
     .text("Posterior")
-    .style("fill", "#EDA137");
-    
-  post_svg
-    .append("text")
-    .attr("text-anchor", "start")
-    .attr("y", 55)
-    .attr("x", 217)
-    .attr("font-family", "Arvo")
-    .attr("font-weight", 700)
-    .attr("font-size", 10)
-    .text("UMVU")
-    .style("fill", "#E86456");
-      
-  post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "currentColor")
-        .attr("stroke-width", 1)
-        .datum([{x: 210, y: 45}, {x: 210, y: 60}])
-        .attr("d",  d3.line()
-          .x(function(d) { return d.x; })
-          .y(function(d) { return d.y; }));
-  
-  post_svg.append('g')
-    .selectAll("dot")
-    .data([{x: 210, y: 45}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return d.x; } )
-      .attr("cy", function (d) { return d.y; } )
-      .attr("r", 3)
-      .style("fill", "#E86456")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-    
-  post_svg
-    .append("text")
-    .attr("text-anchor", "start")
-    .attr("y", 85)
-    .attr("x", 217)
-    .attr("font-family", "Arvo")
-    .attr("font-weight", 700)
-    .attr("font-size", 10)
-    .text("Bayes")
-    .style("fill", "#348ABD");
-      
-  post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "currentColor")
-        .attr("stroke-width", 1)
-        .datum([{x: 210, y: 75}, {x: 210, y: 90}])
-        .attr("d",  d3.line()
-          .x(function(d) { return d.x; })
-          .y(function(d) { return d.y; }));
-  
-  post_svg.append('g')
-    .selectAll("dot")
-    .data([{x: 210, y: 75}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return d.x; } )
-      .attr("cy", function (d) { return d.y; } )
-      .attr("r", 3)
-      .style("fill", "#348ABD")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-      
-  post_svg
-    .append("text")
-    .attr("text-anchor", "start")
-    .attr("y", 115)
-    .attr("x", 217)
-    .attr("font-family", "Arvo")
-    .attr("font-weight", 700)
-    .attr("font-size", 10)
-    .text("Minimax")
-    .style("fill", "#F5CC18");
-      
-  post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "currentColor")
-        .attr("stroke-width", 1)
-        .datum([{x: 210, y: 105}, {x: 210, y: 120}])
-        .attr("d",  d3.line()
-          .x(function(d) { return d.x; })
-          .y(function(d) { return d.y; }));
-  
-  post_svg.append('g')
-    .selectAll("dot")
-    .data([{x: 210, y: 105}])
-    .enter()
-    .append("circle")
-      .attr("cx", function (d) { return d.x; } )
-      .attr("cy", function (d) { return d.y; } )
-      .attr("r", 3)
-      .style("fill", "#F5CC18")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-          
-  var posterior_data = [];
+    .style("fill", COLORS2.posterior);
+
+  function postLegendItem(svg, yLabel, yDash, yDot, label, color) {
+    svg
+      .append("text")
+      .attr("text-anchor", "start")
+      .attr("y", yLabel)
+      .attr("x", 217)
+      .attr("font-family", "Arvo")
+      .attr("font-weight", 700)
+      .attr("font-size", 10)
+      .text(label)
+      .style("fill", color);
+
+    svg.append("path")
+      .attr("class", "line")
+      .style("stroke-dasharray", "3, 3")
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 1)
+      .datum([{x: 210, y: yDash}, {x: 210, y: yDot}])
+      .attr("d", d3.line()
+        .x(d => d.x)
+        .y(d => d.y));
+
+    svg.append('g')
+      .selectAll("dot")
+      .data([{x: 210, y: yDash}])
+      .enter()
+      .append("circle")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", 3)
+        .style("fill", color)
+        .attr("stroke", "black")
+        .attr("stroke-width", 1);
+  }
+
+  postLegendItem(post_svg, 55, 45, 60, "UMVU", COLORS2.xBar);
+  postLegendItem(post_svg, 85, 75, 90, "Bayes", COLORS2.prior);
+  postLegendItem(post_svg, 115, 105, 120, "Minimax", COLORS2.minimax);
+
+  let posterior_data = [];
   updatePosteriorData();
-        
-  var posterior_curve = post_svg
+
+  const posterior_curve = post_svg
     .append('g')
     .append("path")
       .datum(posterior_data)
-      .attr("fill", "#EDA137")
+      .attr("fill", COLORS2.posterior)
       .attr("border", 0)
       .attr("opacity", ".9")
       .attr("stroke", "currentColor")
       .attr("stroke-width", 1)
       .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-          .curve(d3.curveBasis)
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); })
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
       );
-     
-  var umvu_x = sample / n;
-  var umvu_y = Math.pow(umvu_x, sample+a-1) * Math.pow(1-umvu_x, n-sample+b-1) / data[n][a_key][b_key][sample];
-      
-  var umvu_dash = post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "black")
-        .attr("stroke-width", 1)
-        .datum([{x: umvu_x, y: umvu_y}, {x: umvu_x, y: 0}])
-        .attr("d",  d3.line()
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); }));
-      
-  var umvu_dot = post_svg.append('g')
+
+  let umvu_x = sample / n;
+  let umvu_y = Math.pow(umvu_x, sample + a - 1) * Math.pow(1 - umvu_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
+
+  const umvu_dash = post_svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", "3, 3")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1)
+    .datum([{x: umvu_x, y: umvu_y}, {x: umvu_x, y: 0}])
+    .attr("d", d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y)));
+
+  const umvu_dot = post_svg.append('g')
     .selectAll("dot")
     .data([{x: umvu_x, y: umvu_y}])
     .enter()
     .append("circle")
-      .attr("cx", function (d) { return x(d.x); } )
-      .attr("cy", function (d) { return y(d.y); } )
+      .attr("cx", d => x(d.x))
+      .attr("cy", d => y(d.y))
       .attr("r", 3)
-      .style("fill", "#E86456")
+      .style("fill", COLORS2.xBar)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
-      
-  var bayes_x = (sample + 1) / (n + 2);
-  var bayes_y = Math.pow(bayes_x, sample+a-1) * Math.pow(1-bayes_x, n-sample+b-1) / data[n][a_key][b_key][sample];
-    
-  var bayes_dash = post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "black")
-        .attr("stroke-width", 1)
-        .datum([{x: bayes_x, y: bayes_y}, {x: bayes_x, y: 0}])
-        .attr("d",  d3.line()
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); }));
-      
-  var bayes_dot = post_svg.append('g')
+
+  let bayes_x = (sample + 1) / (n + 2);
+  let bayes_y = Math.pow(bayes_x, sample + a - 1) * Math.pow(1 - bayes_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
+
+  const bayes_dash = post_svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", "3, 3")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1)
+    .datum([{x: bayes_x, y: bayes_y}, {x: bayes_x, y: 0}])
+    .attr("d", d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y)));
+
+  const bayes_dot = post_svg.append('g')
     .selectAll("dot")
     .data([{x: bayes_x, y: bayes_y}])
     .enter()
     .append("circle")
-      .attr("cx", function (d) { return x(d.x); } )
-      .attr("cy", function (d) { return y(d.y); } )
+      .attr("cx", d => x(d.x))
+      .attr("cy", d => y(d.y))
       .attr("r", 3)
-      .style("fill", "#348ABD")
+      .style("fill", COLORS2.prior)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
-      
-  var minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
-  var minimax_y = Math.pow(minimax_x, sample+a-1) * Math.pow(1-minimax_x, n-sample+b-1) / data[n][a_key][b_key][sample];
-      
-  var minimax_dash = post_svg.append("path")
-        .attr("class", "line")
-        .style("stroke-dasharray", ("3, 3"))
-        .attr("stroke", "black")
-        .attr("stroke-width", 1)
-        .datum([{x: minimax_x, y: minimax_y}, {x: minimax_x, y: 0}])
-        .attr("d",  d3.line()
-          .x(function(d) { return x(d.x); })
-          .y(function(d) { return y(d.y); }));
-      
-  var minimax_dot = post_svg.append('g')
+
+  let minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
+  let minimax_y = Math.pow(minimax_x, sample + a - 1) * Math.pow(1 - minimax_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
+
+  const minimax_dash = post_svg.append("path")
+    .attr("class", "line")
+    .style("stroke-dasharray", "3, 3")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1)
+    .datum([{x: minimax_x, y: minimax_y}, {x: minimax_x, y: 0}])
+    .attr("d", d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y)));
+
+  const minimax_dot = post_svg.append('g')
     .selectAll("dot")
     .data([{x: minimax_x, y: minimax_y}])
     .enter()
     .append("circle")
-      .attr("cx", function (d) { return x(d.x); } )
-      .attr("cy", function (d) { return y(d.y); } )
+      .attr("cx", d => x(d.x))
+      .attr("cy", d => y(d.y))
       .attr("r", 3)
-      .style("fill", "#F5CC18")
+      .style("fill", COLORS2.minimax)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
-  
-  
+
   function updatePriorData() {
     prior_data = [];
     prior_data.push({x: 0, y: 0});
-    prior_data.push({x: 0, y: (a == 1 ? 1 : 0) / data[0][a_key][b_key][0] });
-    
-    for (var i = 0.002; i < 1; i += 0.002) {
-  	   prior_data.push({x: i, y: Math.pow(i, a-1) * Math.pow(1-i, b-1) / data[0][a_key][b_key][0] });
+    prior_data.push({x: 0, y: (a == 1 ? 1 : 0) / data[0][a_key][b_key][0]});
+
+    for (let i = 0.002; i < 1; i += 0.002) {
+      prior_data.push({x: i, y: Math.pow(i, a - 1) * Math.pow(1 - i, b - 1) / data[0][a_key][b_key][0]});
     }
 
-    prior_data.push({x: 1, y: (b == 1 ? 1 : 0) / data[0][a_key][b_key][0] });
+    prior_data.push({x: 1, y: (b == 1 ? 1 : 0) / data[0][a_key][b_key][0]});
     prior_data.push({x: 1, y: 0});
   }
-  
-  
+
   function updatePriorCurve() {
-	  updatePriorData();
-	  
-	  prior_curve
-	    .datum(prior_data)
-	    .transition()
-	    .duration(1000)
-	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	  );
+    updatePriorData();
+
+    prior_curve
+      .datum(prior_data)
+      .transition()
+      .duration(1000)
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+      );
   }
-  
-  
+
   function updatePosteriorData() {
     posterior_data = [];
     posterior_data.push({x: 0, y: 0});
-    posterior_data.push({x: 0, y: (sample < 1 - a ? 1 : 0) / data[n][a_key][b_key][sample] });
-  
-    for (var i = 0.002; i < 1; i += 0.002) {
-  	   posterior_data.push({x: i, y: Math.pow(i, sample+a-1) * Math.pow(1-i, n-sample+b-1) / data[n][a_key][b_key][sample] });
+    posterior_data.push({x: 0, y: (sample < 1 - a ? 1 : 0) / data[n][a_key][b_key][sample]});
+
+    for (let i = 0.002; i < 1; i += 0.002) {
+      posterior_data.push({x: i, y: Math.pow(i, sample + a - 1) * Math.pow(1 - i, n - sample + b - 1) / data[n][a_key][b_key][sample]});
     }
 
-    posterior_data.push({x: 1, y: (sample < n + b - 1 ? 0 : 1) / data[n][a_key][b_key][sample] });
+    posterior_data.push({x: 1, y: (sample < n + b - 1 ? 0 : 1) / data[n][a_key][b_key][sample]});
     posterior_data.push({x: 1, y: 0});
-        
+
     umvu_x = sample / n;
     if ((umvu_x == 0 && sample < 1 - a) || (umvu_x == 1 && n - sample < 1 - b)) {
       umvu_y = 13;
+    } else {
+      umvu_y = Math.pow(umvu_x, sample + a - 1) * Math.pow(1 - umvu_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
     }
-    else {
-      umvu_y = Math.pow(umvu_x, sample+a-1) * Math.pow(1-umvu_x, n-sample+b-1) / data[n][a_key][b_key][sample];
-    }
-    
+
     bayes_x = (sample + a) / (n + a + b);
-    bayes_y = Math.pow(bayes_x, sample+a-1) * Math.pow(1-bayes_x, n-sample+b-1) / data[n][a_key][b_key][sample];
-    
+    bayes_y = Math.pow(bayes_x, sample + a - 1) * Math.pow(1 - bayes_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
+
     minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
-    minimax_y = Math.pow(minimax_x, sample+a-1) * Math.pow(1-minimax_x, n-sample+b-1) / data[n][a_key][b_key][sample];
+    minimax_y = Math.pow(minimax_x, sample + a - 1) * Math.pow(1 - minimax_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
   }
-  
-	function updatePosteriorCurve() {
-	  updatePosteriorData();
-	  
-	  posterior_curve
-	    .datum(posterior_data)
-	    .transition()
-	    .duration(1000)
-	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	  );
-	  
-     umvu_dot	
-       .transition()
-	    .duration(1000)
-       .attr("cx", function (d) { return x(umvu_x); } )
-       .attr("cy", function (d) { return y(umvu_y); } );
-       
-	 umvu_dash
-	    .datum([{x: umvu_x, y: 0}, {x: umvu_x, y: umvu_y}])
-       .transition()
-	    .duration(1000)
-	    .attr("d",  d3.line()
-	      .curve(d3.curveBasis)
-	      .x(function(d) { return x(d.x); })
-	      .y(function(d) { return y(d.y); })
-	    );
-	    
-    bayes_dot	
+
+  function updatePosteriorCurve() {
+    updatePosteriorData();
+
+    posterior_curve
+      .datum(posterior_data)
       .transition()
       .duration(1000)
-      .attr("cx", function (d) { return x(bayes_x); } )
-      .attr("cy", function (d) { return y(bayes_y); } );
-        
-	bayes_dash
-	   .datum([{x: bayes_x, y: 0}, {x: bayes_x, y: bayes_y}])
-      .transition()
-      .duration(1000)
-      .attr("d",  d3.line()
-         .curve(d3.curveBasis)
-         .x(function(d) { return x(d.x); })
-         .y(function(d) { return y(d.y); })
-      );
-	    
-    minimax_dot	
-      .transition()
-      .duration(1000)
-      .attr("cx", function (d) { return x(minimax_x); } )
-      .attr("cy", function (d) { return y(minimax_y); } );
-        
-	minimax_dash
-	   .datum([{x: minimax_x, y: 0}, {x: minimax_x, y: minimax_y}])
-      .transition()
-      .duration(1000)
-      .attr("d",  d3.line()
-         .curve(d3.curveBasis)
-         .x(function(d) { return x(d.x); })
-         .y(function(d) { return y(d.y); })
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
       );
 
-	}
-  
+    umvu_dot
+      .transition()
+      .duration(1000)
+      .attr("cx", () => x(umvu_x))
+      .attr("cy", () => y(umvu_y));
+
+    umvu_dash
+      .datum([{x: umvu_x, y: 0}, {x: umvu_x, y: umvu_y}])
+      .transition()
+      .duration(1000)
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+      );
+
+    bayes_dot
+      .transition()
+      .duration(1000)
+      .attr("cx", () => x(bayes_x))
+      .attr("cy", () => y(bayes_y));
+
+    bayes_dash
+      .datum([{x: bayes_x, y: 0}, {x: bayes_x, y: bayes_y}])
+      .transition()
+      .duration(1000)
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+      );
+
+    minimax_dot
+      .transition()
+      .duration(1000)
+      .attr("cx", () => x(minimax_x))
+      .attr("cy", () => y(minimax_y));
+
+    minimax_dash
+      .datum([{x: minimax_x, y: 0}, {x: minimax_x, y: minimax_y}])
+      .transition()
+      .duration(1000)
+      .attr("d", d3.line()
+        .curve(d3.curveBasis)
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+      );
+  }
+
   function updateN(value) {
     n = parseInt(value);
     sample = Math.min(sample, n);
     updateRectSample();
     updatePosteriorCurve();
   }
-  
+
   function updatePrior(a_val, b_val) {
     a_key = parseInt(a_val);
     b_key = parseInt(b_val);
@@ -1433,49 +1340,48 @@ var post_svg = smpl_svg
     updatePriorCurve();
     updatePosteriorCurve();
   }
-	
-var slider_svg = d3.select("#bin_bayes_plt")
-  .append("svg")
-  .attr("width", width + 20)
-  .attr("height", 100)
-  .append("g")
-  .attr("transform", "translate(" + 25 + "," + 20 + ")");
 
-var n_x = d3.scaleLinear()
+  const slider_svg = d3.select("#bin_bayes_plt")
+    .append("svg")
+    .attr("width", width + 20)
+    .attr("height", 100)
+    .append("g")
+    .attr("transform", `translate(25,20)`);
+
+  const n_x = d3.scaleLinear()
     .domain([1, 10])
     .range([0, width * 0.22])
     .clamp(true);
 
-var a_x = d3.scaleLinear()
+  const a_x = d3.scaleLinear()
     .domain([0.1, 3])
     .range([0, width * 0.22])
     .clamp(true);
 
-var b_x = d3.scaleLinear()
+  const b_x = d3.scaleLinear()
     .domain([0.1, 3])
     .range([0, width * 0.22])
     .clamp(true);
 
-function roundN(x) { return Math.round(x - 0.5); }
-function roundAB(x) { return 0.1 * Math.round(10 * x - 0.5); }
+  function roundN(x) { return Math.round(x - 0.5); }
+  function roundAB(x) { return 0.1 * Math.round(10 * x - 0.5); }
 
-function updateA(x) { updatePrior(10 * x, b_key.toString()); }
-function updateB(x) { updatePrior(a_key.toString(), 10 * x); }
+  function updateA(x) { updatePrior(10 * x, b_key.toString()); }
+  function updateB(x) { updatePrior(a_key.toString(), 10 * x); }
 
-createSlider(slider_svg, updateN, n_x, 260, 0.05 * height, "n", "#65AD69", n, roundN);
-var handleA = createSlider(slider_svg, updateA, a_x, 10, 0.05 * height, "a", "#348ABD", a, roundAB);
-var handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", "#348ABD", b, roundAB);
-  
-  var minimaxButton = d3.select("#minimax-button");
+  createSlider(slider_svg, updateN, n_x, 260, 0.05 * height, "n", COLORS2.mu, n, roundN);
+  const handleA = createSlider(slider_svg, updateA, a_x, 10, 0.05 * height, "a", COLORS2.prior, a, roundAB);
+  const handleB = createSlider(slider_svg, updateB, b_x, 10, 0.3 * height, "b", COLORS2.prior, b, roundAB);
+
+  const minimaxButton = d3.select("#minimax-button");
 
   minimaxButton
     .on("click", function() {
-    var value = Math.round(10 * Math.sqrt(n) / 2);
-    handleA.attr("cx", a_x(0.1 * value));  
-    handleB.attr("cx", b_x(0.1 * value));
-    updatePrior(value, value);
-  });
-
+      const value = Math.round(10 * Math.sqrt(n) / 2);
+      handleA.attr("cx", a_x(0.1 * value));
+      handleB.attr("cx", b_x(0.1 * value));
+      updatePrior(value, value);
+    });
 
 });
 
