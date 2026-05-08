@@ -272,6 +272,7 @@ const svg = d3.select("#gauss_bayes_plt")
   .attr("transform", `translate(${margin.left},${margin.top})`);
 
 let prior_data = [], posterior_data = [];
+let g, post_std, avg_y, mode_y, mu_y;
 updateData();
 
 const x = d3.scaleLinear()
@@ -292,8 +293,6 @@ const y = d3.scaleLinear()
 const yAxis = svg.append("g").call(d3.axisLeft(y).ticks(3));
 yAxis.selectAll(".tick text")
   .attr("font-family", "Arvo");
-
-let g, post_std, avg_y, mode_y, mu_y;
 
 function updateData() {
   prior_data = gaussianCurveData(nu, tau);
@@ -1117,6 +1116,7 @@ d3.json("../../../../assets/beta.json").then(data => {
   postLegendItem(post_svg, 115, 105, 120, "Minimax", COLORS2.minimax);
 
   let posterior_data = [];
+  let umvu_x, umvu_y, bayes_x, bayes_y, minimax_x, minimax_y;
   updatePosteriorData();
 
   const posterior_curve = post_svg
@@ -1134,9 +1134,6 @@ d3.json("../../../../assets/beta.json").then(data => {
         .x(d => x(d.x))
         .y(d => y(d.y))
       );
-
-  let umvu_x = sample / n;
-  let umvu_y = Math.pow(umvu_x, sample + a - 1) * Math.pow(1 - umvu_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
 
   const umvu_dash = post_svg.append("path")
     .attr("class", "line")
@@ -1160,9 +1157,6 @@ d3.json("../../../../assets/beta.json").then(data => {
       .attr("stroke", "black")
       .attr("stroke-width", 1);
 
-  let bayes_x = (sample + 1) / (n + 2);
-  let bayes_y = Math.pow(bayes_x, sample + a - 1) * Math.pow(1 - bayes_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
-
   const bayes_dash = post_svg.append("path")
     .attr("class", "line")
     .style("stroke-dasharray", "3, 3")
@@ -1184,9 +1178,6 @@ d3.json("../../../../assets/beta.json").then(data => {
       .style("fill", COLORS2.prior)
       .attr("stroke", "black")
       .attr("stroke-width", 1);
-
-  let minimax_x = (sample + Math.sqrt(n) / 2) / (n + Math.sqrt(n));
-  let minimax_y = Math.pow(minimax_x, sample + a - 1) * Math.pow(1 - minimax_x, n - sample + b - 1) / data[n][a_key][b_key][sample];
 
   const minimax_dash = post_svg.append("path")
     .attr("class", "line")
