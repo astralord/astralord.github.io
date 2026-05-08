@@ -270,10 +270,10 @@ function erf(x) {
     if (Math.abs(x) > 3) {
       return x / Math.abs(x);
     }
-    var m = 1.00;
-    var s = 1.00;
-    var sum = x * 1.0;
-    for(var i = 1; i < 50; i++){
+    let m = 1.00;
+    let s = 1.00;
+    let sum = x * 1.0;
+    for (let i = 1; i < 50; i++){
         m *= i;
         s *= -1;
         sum += (s * Math.pow(x, 2.0 * i + 1.0)) / (m * (2.0 * i + 1.0));
@@ -286,9 +286,9 @@ function Phi(x) {
 }
 
 function erfinv(x){
-    var z;
-    var a = 0.147;                                                   
-    var the_sign_of_x;
+    let z;
+    const a = 0.147;                                                   
+    let the_sign_of_x;
     if (0 == x) {
         the_sign_of_x = 0;
     } else if (x > 0) {
@@ -298,12 +298,12 @@ function erfinv(x){
     }
 
     if (0 != x) {
-        var ln_1minus_x_sqrd = Math.log(1 - x * x);
-        var ln_1minusxx_by_a = ln_1minus_x_sqrd / a;
-        var ln_1minusxx_by_2 = ln_1minus_x_sqrd / 2;
-        var ln_etc_by2_plus2 = ln_1minusxx_by_2 + (2/(Math.PI * a));
-        var first_sqrt = Math.sqrt((ln_etc_by2_plus2 * ln_etc_by2_plus2) - ln_1minusxx_by_a);
-        var second_sqrt = Math.sqrt(first_sqrt - ln_etc_by2_plus2);
+        const ln_1minus_x_sqrd = Math.log(1 - x * x);
+        const ln_1minusxx_by_a = ln_1minus_x_sqrd / a;
+        const ln_1minusxx_by_2 = ln_1minus_x_sqrd / 2;
+        const ln_etc_by2_plus2 = ln_1minusxx_by_2 + (2/(Math.PI * a));
+        const first_sqrt = Math.sqrt((ln_etc_by2_plus2 * ln_etc_by2_plus2) - ln_1minusxx_by_a);
+        const second_sqrt = Math.sqrt(first_sqrt - ln_etc_by2_plus2);
         z = second_sqrt * the_sign_of_x;
     } else {
         z = 0;
@@ -316,17 +316,17 @@ function PhiInv(y) {
 }
 
 function basic_test() {
-var n = 100;
-var c = 0.55;
-var p_a = 0.5;
+let n = 100;
+let c = 0.55;
+let p_a = 0.5;
 
-var margin = {top: 30, right: 0, bottom: 20, left: 30},
+const margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 700 - margin.left - margin.right,
     height = 290 - margin.top - margin.bottom,
     fig_height = 200 - margin.top - margin.bottom,
     fig_width = 450;
     
-var svg = d3.select("div#basic_test")
+const svg = d3.select("div#basic_test")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -334,61 +334,61 @@ var svg = d3.select("div#basic_test")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleLinear()
+const x = d3.scaleLinear()
           .domain([0, 1])
           .range([0, fig_width]);
             
-var xAxisTop = svg.append("g")
+const xAxisTop = svg.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(x));
   
 xAxisTop.selectAll(".tick text")
    .attr("font-family", "Arvo");
    
-var xBtm = d3.scaleLinear()
+const xBtm = d3.scaleLinear()
           .domain([0, 1])
           .range([0, fig_width]);
             
-var xAxisBtm = svg.append("g")
+const xAxisBtm = svg.append("g")
    .attr("transform", "translate(0," + 1.6 * fig_height + ")")
    .call(d3.axisBottom(xBtm));
   
 xAxisBtm.selectAll(".tick text")
    .attr("font-family", "Arvo");
 
-var y = d3.scaleLinear()
+const y = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([0, 1]);
             
-var yAxisTop = svg.append("g")
+const yAxisTop = svg.append("g")
     .call(d3.axisLeft(y).ticks(4));
   
 yAxisTop.selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-var yBtm = d3.scaleLinear()
+const yBtm = d3.scaleLinear()
           .range([1.6 * fig_height, 1.3 * fig_height])
           .domain([0, 1]);
             
-var yAxisBtm = svg.append("g")
+const yAxisBtm = svg.append("g")
     .call(d3.axisLeft(yBtm).ticks(1));
   
 yAxisBtm.selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-var err1_data = [{'x': p_a, 'y': 0}];
-for (var p = p_a; p > 0; p -= 0.001) {
-  var pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
+const err1_data = [{'x': p_a, 'y': 0}];
+for (let p = p_a; p > 0; p -= 0.001) {
+  const pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
   err1_data.push({'x': p, 'y': Phi(pp)});
 }
 
-var err2_data = [{'x': p_a, 'y': 0}];
-for (var p = p_a; p < 1; p += 0.001) {
-  var pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
+const err2_data = [{'x': p_a, 'y': 0}];
+for (let p = p_a; p < 1; p += 0.001) {
+  const pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
   err2_data.push({'x': p, 'y': 1 - Phi(pp)});
 }
 
-var err1_curve = svg
+const err1_curve = svg
   .append('g')
   .append("path")
       .datum(err1_data)
@@ -404,7 +404,7 @@ var err1_curve = svg
           .y(function(d) { return y(d['y']); })
    );
   
-var err2_curve = svg
+const err2_curve = svg
   .append('g')
   .append("path")
       .datum(err2_data)
@@ -420,11 +420,11 @@ var err2_curve = svg
           .y(function(d) { return y(d['y']); })
    );
    
-var phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
-var phi_data_1 = [{'x': c, 'y': 1}, {'x': 1, 'y': 1}];
-var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+const phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
+const phi_data_1 = [{'x': c, 'y': 1}, {'x': 1, 'y': 1}];
+const phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
 
-var phi_curve_0 = svg
+const phi_curve_0 = svg
   .append('g')
   .append("path")
       .datum(phi_data_0)
@@ -438,7 +438,7 @@ var phi_curve_0 = svg
           .y(function(d) { return yBtm(d['y']); })
    );
    
-var phi_curve_1 = svg
+const phi_curve_1 = svg
   .append('g')
   .append("path")
       .datum(phi_data_1)
@@ -452,7 +452,7 @@ var phi_curve_1 = svg
           .y(function(d) { return yBtm(d['y']); })
    );
    
-var phi_curve_dash = svg
+const phi_curve_dash = svg
   .append('g')
   .append("path")
       .datum(phi_data_dash)
@@ -467,7 +467,7 @@ var phi_curve_dash = svg
           .y(function(d) { return yBtm(d['y']); })
    );
 
-var phi_dot = svg.append('g')
+const phi_dot = svg.append('g')
    .selectAll("dot")
    .data([{'x': xBtm(c), 'y': yBtm(1)}])
    .enter()
@@ -502,9 +502,9 @@ svg.append('g')
      );
 
 function updatePhiLine() {
-  var phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
-  var phi_data_1 = [{'x': c, 'y': 1}, {'x': 1, 'y': 1}];
-  var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+  const phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
+  const phi_data_1 = [{'x': c, 'y': 1}, {'x': 1, 'y': 1}];
+  const phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
   
   phi_curve_0
       .datum(phi_data_0)
@@ -535,16 +535,16 @@ function updatePhiLine() {
 }
 
 function updateErrCurves() {
-  var err1_data = [{'x': p_a, 'y': 0}];
-  for (var p = p_a; p > 0; p -= 0.001) {
-    var pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
+  const err1_data = [{'x': p_a, 'y': 0}];
+  for (let p = p_a; p > 0; p -= 0.001) {
+    const pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
     err1_data.push({'x': p, 'y': Phi(pp)});
   }
   err1_data.push({'x': 0, 'y': 0});
   
-  var err2_data = [{'x': p_a, 'y': 0}];
-  for (var p = p_a; p < 1; p += 0.001) {
-    var pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
+  const err2_data = [{'x': p_a, 'y': 0}];
+  for (let p = p_a; p < 1; p += 0.001) {
+    const pp = Math.sqrt(n / (p * (1 - p))) * (p - c);
     err2_data.push({'x': p, 'y': 1 - Phi(pp)});
   }
   err2_data.push({'x': 1, 'y': 0});
@@ -586,9 +586,9 @@ function dragged_c(event, d) {
   updateErrCurves();
 }
 
-var labels_x = 450;
-var labels_y = 0;
-var labels_v = 18;
+const labels_x = 450;
+const labels_y = 0;
+const labels_v = 18;
 
 svg.append("path")
    .attr("stroke", "#65AD69")
@@ -893,15 +893,15 @@ d3.select("#simple_hypothesis")
   .style("position", "relative");
   
 function randn_bm() {
-    var u = 0, v = 0;
+    let u = 0, v = 0;
     while(u === 0) u = Math.random();
     while(v === 0) v = Math.random();
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 }
 
 function gauss_data(mu, sigma, min, max) {
-  var data = [{x: min, y: 0}];
-  for (var i = min; i < max; i += 0.01) {
+  const data = [{x: min, y: 0}];
+  for (let i = min; i < max; i += 0.01) {
       data.push({x: i, y: Math.exp(-0.5 * ((i - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI)) });
   }
   data.push({x: max, y: 0});
@@ -909,16 +909,16 @@ function gauss_data(mu, sigma, min, max) {
 }
 
 function quantile_data(u_q) {
-  var data0 = [{x: 0, y: 0}];
-  for (var i = 0; i < u_q; i += 0.01) {
+  const data0 = [{x: 0, y: 0}];
+  for (let i = 0; i < u_q; i += 0.01) {
       data0.push({x: i, y: 1 - Phi(i) });
   }
-  var q = 1 - Phi(u_q);
+  const q = 1 - Phi(u_q);
   data0.push({x: u_q, y: q});
   data0.push({x: u_q, y: 0});
   
-  var data1 = [{x: u_q, y: 0}];
-  for (var i = u_q; i < 3.5; i += 0.01) {
+  const data1 = [{x: u_q, y: 0}];
+  for (let i = u_q; i < 3.5; i += 0.01) {
       data1.push({x: i, y: 1 - Phi(i) });
   }
   data1.push({x: 3.5, y: 0});
@@ -927,11 +927,11 @@ function quantile_data(u_q) {
 
     
 function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, init_val, round_fun) {
-    var slider = svg_.append("g")
+    const slider = svg_.append("g")
       .attr("class", "slider")
       .attr("transform", "translate(" + loc_x + "," + loc_y + ")");
     
-    var drag = d3.drag()
+    const drag = d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
 	        .on("start drag", function(event, d) { 
 	          handle.attr("cx", x(round_fun(x.invert(event.x))));  
@@ -959,7 +959,7 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
     .style('fill', "currentColor")
     .text(function(d) { return d; });
 
-   var handle = slider.insert("circle", ".track-overlay")
+   const handle = slider.insert("circle", ".track-overlay")
       .attr("class", "handle")
       .attr("r", 5).attr("cx", x(init_val));
       
@@ -978,22 +978,22 @@ function createSlider(svg_, parameter_update, x, loc_x, loc_y, letter, color, in
 
 function simple_hypothesis() {
 
-var mu0 = -1,
+let mu0 = -1,
     mu1 = 1,
     sigma = 1,
     alpha = 0.05,
     n = 10;
 
-var u_q = PhiInv(1 - alpha);
-var power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
+let u_q = PhiInv(1 - alpha);
+let power = 1 - Phi(Math.sqrt(n) * (mu0 - mu1) / sigma + u_q);
 
-var margin = {top: 30, right: 0, bottom: 20, left: 30},
+const margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 750 - margin.left - margin.right,
     height = 465 - margin.top - margin.bottom,
     fig_height = 200 - margin.top - margin.bottom,
     fig_width = 350;
     
-var svg = d3.select("div#simple_hypothesis")
+const svg = d3.select("div#simple_hypothesis")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -1001,11 +1001,11 @@ var svg = d3.select("div#simple_hypothesis")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleLinear()
+const x = d3.scaleLinear()
           .domain([-4, 4])
           .range([0, fig_width]);
             
-var xAxisTop = svg.append("g")
+const xAxisTop = svg.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(x));
   
@@ -1013,11 +1013,11 @@ xAxisTop.selectAll(".tick text")
    .attr("font-family", "Arvo");
 
    
-var xBtm = d3.scaleLinear()
+const xBtm = d3.scaleLinear()
           .domain([-4, 4])
           .range([0, fig_width]);
             
-var xAxisBtm = svg.append("g")
+const xAxisBtm = svg.append("g")
    .attr("transform", "translate(0," + 1.6 * fig_height + ")")
    .call(d3.axisBottom(xBtm));
   
@@ -1025,11 +1025,11 @@ xAxisBtm.selectAll(".tick text")
    .attr("font-family", "Arvo");
 
 
-var xRight = d3.scaleLinear()
+const xRight = d3.scaleLinear()
           .domain([0, 3.5])
           .range([1.2 * fig_width, 1.9 * fig_width]);
           
-var xAxisRight = svg.append("g")
+const xAxisRight = svg.append("g")
    .attr("transform", "translate(0," + 2 * fig_height + ")")
    .call(d3.axisBottom(xRight).ticks(5));
   
@@ -1038,11 +1038,11 @@ xAxisRight.selectAll(".tick text")
    
    
    
-var y = d3.scaleLinear()
+const y = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([0, 1]);
             
-var yAxisTop = svg.append("g")
+const yAxisTop = svg.append("g")
     .call(d3.axisLeft(y).ticks(4));
   
 yAxisTop.selectAll(".tick text")
@@ -1050,22 +1050,22 @@ yAxisTop.selectAll(".tick text")
 
 
 
-var yBtm = d3.scaleLinear()
+const yBtm = d3.scaleLinear()
           .range([1.6 * fig_height, 1.3 * fig_height])
           .domain([0, 1]);
             
-var yAxisBtm = svg.append("g")
+const yAxisBtm = svg.append("g")
     .call(d3.axisLeft(yBtm).ticks(1));
   
 yAxisBtm.selectAll(".tick text")
     .attr("font-family", "Arvo");
             
 
-var yRight = d3.scaleLinear()
+const yRight = d3.scaleLinear()
           .range([2 * fig_height, 0])
           .domain([0, 0.5]);
             
-var yAxisRight = svg.append("g")
+const yAxisRight = svg.append("g")
    .attr("transform", "translate(" + 1.2 * fig_width + ",0)")
     .call(d3.axisLeft(yRight).ticks(4));
   
@@ -1074,9 +1074,9 @@ yAxisRight.selectAll(".tick text")
     
     
     
-var mu0_data = gauss_data(mu0, sigma, -4, 4);
+let mu0_data = gauss_data(mu0, sigma, -4, 4);
 
-var mu0_curve = svg
+const mu0_curve = svg
   .append('g')
   .append("path")
       .datum(mu0_data)
@@ -1092,9 +1092,9 @@ var mu0_curve = svg
           .y(function(d) { return y(d.y); })
    );
    
-var mu1_data = gauss_data(mu1, sigma, -4, 4);
+let mu1_data = gauss_data(mu1, sigma, -4, 4);
 
-var mu1_curve = svg
+const mu1_curve = svg
   .append('g')
   .append("path")
       .datum(mu1_data)
@@ -1110,8 +1110,8 @@ var mu1_curve = svg
           .y(function(d) { return y(d.y); })
    );
 
-var q_data = quantile_data(u_q);
-var quantile_curve0 = svg
+let q_data = quantile_data(u_q);
+const quantile_curve0 = svg
   .append('g')
   .append("path")
       .datum(q_data[0])
@@ -1127,7 +1127,7 @@ var quantile_curve0 = svg
           .y(function(d) { return yRight(d.y); })
    );
    
-var quantile_curve1 = svg
+const quantile_curve1 = svg
   .append('g')
   .append("path")
       .datum(q_data[1])
@@ -1166,7 +1166,7 @@ function updateQuantileCurve() {
 }   
    
 function updatePower() {
-  var rc = 1000;
+  let rc = 1000;
   if (power > 0.999) {
       rc = 10000;
   }
@@ -1178,13 +1178,13 @@ function updatePower() {
 }
 
 function dragged_u(event, d) {
-  var u_x = Math.min(xRight(3.5), Math.max(event.x, xRight(0)));
+  const u_x = Math.min(xRight(3.5), Math.max(event.x, xRight(0)));
   u_q = xRight.invert(u_x);
   alpha = 1 - Phi(u_q);
-  var u_y = yRight(alpha);
+  const u_y = yRight(alpha);
   d3.select(this).attr("cx", d.x = u_x).attr("cy", d.y = u_y);
   updatePhiLine();
-  var rc = 1000;
+  let rc = 1000;
   if (alpha < 0.001) {
     rc = 10000;
   }
@@ -1196,7 +1196,7 @@ function dragged_u(event, d) {
   updateQuantileCurve();
 }
 
-var u_dot = svg.append('g')
+const u_dot = svg.append('g')
    .selectAll("dot")
    .data([{'x': xRight(u_q), 'y': yRight(alpha)}])
    .enter()
@@ -1217,9 +1217,9 @@ var u_dot = svg.append('g')
 function updatePhiLine() {
   reset();
   c = mu0 + u_q * sigma / Math.sqrt(n);
-  var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
-  var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
-  var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+  const phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
+  const phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
+  const phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
       
   phi_dot
       .transition()
@@ -1254,12 +1254,12 @@ function updatePhiLine() {
       );
 }
 
-var c = mu0 + u_q * sigma / Math.sqrt(n);
-var phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
-var phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
-var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+let c = mu0 + u_q * sigma / Math.sqrt(n);
+const phi_data_0 = [{'x': -4, 'y': 0}, {'x': c, 'y': 0}];
+const phi_data_1 = [{'x': c, 'y': 1}, {'x': 4, 'y': 1}];
+const phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
 
-var phi_curve_0 = svg
+const phi_curve_0 = svg
   .append('g')
   .append("path")
       .datum(phi_data_0)
@@ -1273,7 +1273,7 @@ var phi_curve_0 = svg
           .y(function(d) { return yBtm(d['y']); })
    );
    
-var phi_curve_1 = svg
+const phi_curve_1 = svg
   .append('g')
   .append("path")
       .datum(phi_data_1)
@@ -1287,7 +1287,7 @@ var phi_curve_1 = svg
           .y(function(d) { return yBtm(d['y']); })
    );
    
-var phi_curve_dash = svg
+const phi_curve_dash = svg
   .append('g')
   .append("path")
       .datum(phi_data_dash)
@@ -1302,7 +1302,7 @@ var phi_curve_dash = svg
           .y(function(d) { return yBtm(d['y']); })
    );
 
-var phi_dot = svg.append('g')
+const phi_dot = svg.append('g')
    .selectAll("dot")
    .data([{'x': xBtm(c), 'y': yBtm(1)}])
    .enter()
@@ -1351,7 +1351,7 @@ function updateSigma(x) {
 
 function trivialRound(x) { return x; }
 
-var sigma_x = d3.scaleLinear()
+const sigma_x = d3.scaleLinear()
     .domain([0.15, 2])
     .range([0, width * 0.4])
     .clamp(true);
@@ -1380,7 +1380,7 @@ d3.select("#n-num").on("input", function() {
     updatePower();
 });
 
-var table_nums = [0, 0, 0, 0];
+let table_nums = [0, 0, 0, 0];
 
 function updateTableText() {
 
@@ -1405,13 +1405,13 @@ function updateTableText() {
     .text(table_nums[3]);
 }
 
-var avg_dots = [];
+let avg_dots = [];
 function sampleGauss(mu, color) {
-      var avg_dur = 1200;
-      var smpl_dots = [];
-      var avg = 0;
-      for (var i = 0; i < n; i += 1) {
-          var random_sample = mu + sigma * randn_bm();
+      const avg_dur = 1200;
+      const smpl_dots = [];
+      let avg = 0;
+      for (let i = 0; i < n; i += 1) {
+          const random_sample = mu + sigma * randn_bm();
           smpl_dots.push(svg.append('g')
             .selectAll("dot")
             .data([{x: random_sample, y: 1}])
@@ -1433,7 +1433,7 @@ function sampleGauss(mu, color) {
       }
       avg /= n;  
       
-      for (var i = 0; i < n; i += 1) {
+      for (let i = 0; i < n; i += 1) {
           smpl_dots[i]
             .transition()
             .delay(avg_dur) 
@@ -1485,7 +1485,7 @@ d3.select("#sample-button-h").on("click", function() {sampleGauss(mu0, "#65AD69"
 d3.select("#sample-button-k").on("click", function() {sampleGauss(mu1, "#EDA137")});
 
 function reset() {
-  for (var i = 0; i < avg_dots.length; i += 1) {
+  for (let i = 0; i < avg_dots.length; i += 1) {
       avg_dots[i].remove();
   }
   avg_dots = [];
@@ -1495,7 +1495,7 @@ function reset() {
 
 d3.select("#reset-button").on("click", function() { reset(); });
 
-var alpha_text = svg
+const alpha_text = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.6 * fig_height)
@@ -1505,7 +1505,7 @@ var alpha_text = svg
   .style("font-size", "14px")
   .style("fill", "#348ABD");
   
-var power_text = svg
+const power_text = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.9 * fig_height)
@@ -1536,8 +1536,8 @@ d3.select("#simple_hypothesis")
   .style("left", 1.9 * fig_width + 5 + margin.left + "px")
   .style("top", 2 * fig_height + 15 + "px");
   
-var labels_x = 250;
-var labels_y = 0;
+const labels_x = 250;
+const labels_y = 0;
 
 svg.append("path")
    .attr("stroke", "#65AD69")
@@ -1657,7 +1657,7 @@ d3.select("#simple_hypothesis")
   .style("left", labels_x + fig_width + margin.left + 30 + "px")
   .style("top", labels_y + 15 + "px");
   
-var table_text_acc_h = svg
+const table_text_acc_h = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.35 * fig_height)
@@ -1667,7 +1667,7 @@ var table_text_acc_h = svg
   .style("font-size", "14px")
   .style("fill", "#65AD69");
   
-var table_text_rej_h = svg
+const table_text_rej_h = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.35 * fig_height)
@@ -1677,7 +1677,7 @@ var table_text_rej_h = svg
   .style("font-size", "14px")
   .style("fill", "#EDA137");
   
-var table_text_true_h = svg
+const table_text_true_h = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.6 * fig_height)
@@ -1687,7 +1687,7 @@ var table_text_true_h = svg
   .style("font-size", "14px")
   .style("fill", "#65AD69");
   
-var table_text_true_k = svg
+const table_text_true_k = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.9 * fig_height)
@@ -1697,7 +1697,7 @@ var table_text_true_k = svg
   .style("font-size", "14px")
   .style("fill", "#EDA137");
   
-var table_text_hh = svg
+const table_text_hh = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.6 * fig_height)
@@ -1707,7 +1707,7 @@ var table_text_hh = svg
   .style("font-size", "14px")
   .style("fill", "#65AD69");
   
-var table_text_hk = svg
+const table_text_hk = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.9 * fig_height)
@@ -1717,7 +1717,7 @@ var table_text_hk = svg
   .style("font-size", "14px")
   .style("fill", "#E86456");
   
-var table_text_kh = svg
+const table_text_kh = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.6 * fig_height)
@@ -1727,7 +1727,7 @@ var table_text_kh = svg
   .style("font-size", "14px")
   .style("fill", "#E86456");
   
-var table_text_kk = svg
+const table_text_kk = svg
   .append("text")
   .attr("text-anchor", "start")
   .attr("y", 2.9 * fig_height)
@@ -2227,26 +2227,26 @@ d3.select("#asymptotic_test")
 
 function asymptotic_test() {
 
-var mus = [],
+let mus = [],
     sigmas = [],
     alpha = 0.05,
     n = 30,
     curve_id = -1,
     std_avg = 0;
     
-var smpl_dots = [], tn_dots = [], stds = [];
-var si_texts = [], sigma_text = null, t_text = null;
+let smpl_dots = [], tn_dots = [], stds = [];
+let si_texts = [], sigma_text = null, t_text = null;
 
-var colors = ["#65AD69", "#EDA137", "#E86456", "#B19CD9", "#A4D8D8"];
-var booked_colors = [];
+const colors = ["#65AD69", "#EDA137", "#E86456", "#B19CD9", "#A4D8D8"];
+let booked_colors = [];
 
-var margin = {top: 30, right: 0, bottom: 20, left: 30},
+const margin = {top: 30, right: 0, bottom: 20, left: 30},
     width = 750 - margin.left - margin.right,
     height = 430 - margin.top - margin.bottom,
     fig_height = 250 - margin.top - margin.bottom,
     fig_width = 350;
     
-var svg = d3.select("div#asymptotic_test")
+const svg = d3.select("div#asymptotic_test")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -2254,11 +2254,11 @@ var svg = d3.select("div#asymptotic_test")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleLinear()
+const x = d3.scaleLinear()
           .domain([-10, 10])
           .range([0, fig_width]);
             
-var xAxis = svg.append("g")
+const xAxis = svg.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(x));
   
@@ -2266,11 +2266,11 @@ xAxis.selectAll(".tick text")
    .attr("font-family", "Arvo");
 
 
-var xRight = d3.scaleLinear()
+const xRight = d3.scaleLinear()
           .domain([0, 20])
           .range([1.2 * fig_width, 1.9 * fig_width]);
           
-var xAxisRight = svg.append("g")
+const xAxisRight = svg.append("g")
    .attr("transform", "translate(0," + fig_height + ")")
    .call(d3.axisBottom(xRight).ticks(5));
   
@@ -2278,21 +2278,21 @@ xAxisRight.selectAll(".tick text")
    .attr("font-family", "Arvo");
    
 
-var y = d3.scaleLinear()
+const y = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([0, 1]);
             
-var yAxis = svg.append("g")
+const yAxis = svg.append("g")
     .call(d3.axisLeft(y).ticks(4));
   
 yAxis.selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-var yRight = d3.scaleLinear()
+const yRight = d3.scaleLinear()
           .range([fig_height, 0])
           .domain([0, 1]);
             
-var yAxisRight = svg.append("g")
+const yAxisRight = svg.append("g")
    .attr("transform", "translate(" + 1.2 * fig_width + ",0)")
     .call(d3.axisLeft(yRight).ticks(4));
   
@@ -2301,7 +2301,7 @@ yAxisRight.selectAll(".tick text")
     
 
 
-var gauss_curves = [];
+let gauss_curves = [];
 
 function addCurve(mu, sigma) {
     reset();
@@ -2314,10 +2314,10 @@ function addCurve(mu, sigma) {
             .attr("opacity", ".2");
     }
     curve_id = k;               
-    var data = gauss_data(mus[k], sigmas[k], -10, 10);
+    const data = gauss_data(mus[k], sigmas[k], -10, 10);
     
-    var color = "currentColor";
-    for (var i = 0; i < colors.length; i += 1) {
+    let color = "currentColor";
+    for (let i = 0; i < colors.length; i += 1) {
         if (booked_colors.indexOf(colors[i]) < 0) {
              color = colors[i];
              booked_colors.push(color);
@@ -2376,7 +2376,7 @@ initData();
 function updateCurve(mu, sigma) {
     mus[curve_id] = mu;
     sigmas[curve_id] = sigma;
-    var data = gauss_data(mus[curve_id], sigmas[curve_id], -10, 10);
+    const data = gauss_data(mus[curve_id], sigmas[curve_id], -10, 10);
     gauss_curves[curve_id]
       .datum(data)
       .transition()
@@ -2399,19 +2399,19 @@ function updateSigma(sigma_sq) {
 
 function trivialRound(x) { return x; }
 
-var mu_x = d3.scaleLinear()
+const mu_x = d3.scaleLinear()
     .domain([-5, 5])
     .range([0, width * 0.4])
     .clamp(true);
     
-var sigma_x = d3.scaleLinear()
+const sigma_x = d3.scaleLinear()
     .domain([0.15, 2])
     .range([0, width * 0.4])
     .clamp(true);
     
-var muHandler = createSlider(svg, updateMu, mu_x, margin.left, 1.7 * fig_height, "", "#A9A750", mus[curve_id], trivialRound);
+const muHandler = createSlider(svg, updateMu, mu_x, margin.left, 1.7 * fig_height, "", "#A9A750", mus[curve_id], trivialRound);
 
-var sigmaHandler = createSlider(svg, updateSigma, sigma_x, margin.left, 1.9 * fig_height, "", "#A9A750", sigmas[curve_id], trivialRound);
+const sigmaHandler = createSlider(svg, updateSigma, sigma_x, margin.left, 1.9 * fig_height, "", "#A9A750", sigmas[curve_id], trivialRound);
 
 d3.select("#asymptotic_test")
   .append("div")
@@ -2434,7 +2434,7 @@ d3.select("#asymptotic_test")
 d3.csv("../../../../assets/chi_sf.csv").then(data => {
   const quantiles = [3.84, 5.99, 7.81, 9.49];
   
-  var chi_curve0 = svg
+  const chi_curve0 = svg
     .append('g')
     .append("path")
       .datum(data)
@@ -2450,7 +2450,7 @@ d3.csv("../../../../assets/chi_sf.csv").then(data => {
           .y(function(d) { return yRight(d["chi_y0_1"]); })
       );
       
-  var chi_curve1 = svg
+  const chi_curve1 = svg
     .append('g')
     .append("path")
       .datum(data)
@@ -2466,7 +2466,7 @@ d3.csv("../../../../assets/chi_sf.csv").then(data => {
           .y(function(d) { return yRight(d["chi_y1_1"]); })
       );
       
-  var u_dot = svg.append('g')
+  const u_dot = svg.append('g')
      .selectAll("dot")
      .data([{'x': xRight(quantiles[0]), 'y': yRight(0.05)}])
      .enter()
@@ -2509,8 +2509,8 @@ d3.csv("../../../../assets/chi_sf.csv").then(data => {
 
   d3.select("#add-button").on("click", function() {
     if (gauss_curves.length < colors.length) {
-        var mu = 10 * Math.random() - 5;
-        var sigma = 1;
+        const mu = 10 * Math.random() - 5;
+        const sigma = 1;
         addCurve(mu, sigma);
         muHandler.attr("cx", mu_x(mus[curve_id]));
         sigmaHandler.attr("cx", sigma_x(sigmas[curve_id]));
@@ -2521,8 +2521,8 @@ d3.csv("../../../../assets/chi_sf.csv").then(data => {
   d3.select("#delete-button").on("click", function() {
     if (gauss_curves.length > 2) {
         reset();
-        booked_color = gauss_curves[curve_id].attr("fill");
-        booked_color_id = booked_colors.indexOf(booked_color);
+        const booked_color = gauss_curves[curve_id].attr("fill");
+        const booked_color_id = booked_colors.indexOf(booked_color);
         booked_colors.splice(booked_color_id, 1);
         gauss_curves[curve_id].remove();
        
@@ -2539,7 +2539,7 @@ d3.csv("../../../../assets/chi_sf.csv").then(data => {
         sigmaHandler.attr("cx", sigma_x(sigmas[curve_id]));
         updateChi(gauss_curves.length - 1);
         
-        for (var i = 0; i < gauss_curves.length; i += 1) {
+        for (let i = 0; i < gauss_curves.length; i += 1) {
           const k = i;
           gauss_curves[i]
                       .on('mouseover', function() {
@@ -2569,19 +2569,19 @@ d3.csv("../../../../assets/chi_sf.csv").then(data => {
 
 });
 
-var avg_dur = 1200;
+const avg_dur = 1200;
 function sample() {
       clearSamples();
-      var random_samples = [];
-      var avgs = [];
+      const random_samples = [];
+      const avgs = [];
       std_avg = 0;
-      for (var k = 0; k < gauss_curves.length; k += 1) {
+      for (let k = 0; k < gauss_curves.length; k += 1) {
           random_samples.push([]);
           smpl_dots.push([]);
-          var color = gauss_curves[k].attr("fill");
+          const color = gauss_curves[k].attr("fill");
           const ystd = -0.1 * (k + 2);
-          var avg = 0;
-          for (var i = 0; i < n; i += 1) {
+          let avg = 0;
+          for (let i = 0; i < n; i += 1) {
               random_samples[k].push(mus[k] + sigmas[k] * randn_bm());
               smpl_dots[k].push(svg.append('g')
                                 .selectAll("dot")
@@ -2606,8 +2606,8 @@ function sample() {
           avg /= n;
           avgs.push(avg);
 	      
-          var std = 0;
-          for (var i = 0; i < n; i += 1) {
+          let std = 0;
+          for (let i = 0; i < n; i += 1) {
               std += (random_samples[k][i] - avgs[k]) ** 2;
           }
           std /= n;
@@ -2618,13 +2618,13 @@ function sample() {
       
       std_avg /= gauss_curves.length;
                            
-      var T_n = gauss_curves.length * Math.log(std_avg);
-      for (var i = 0; i < gauss_curves.length; i += 1) {
+      let T_n = gauss_curves.length * Math.log(std_avg);
+      for (let i = 0; i < gauss_curves.length; i += 1) {
         T_n -= Math.log(stds[i]);
       }
       T_n *= n;
            
-      var tn_dot = svg.append('g')
+      const tn_dot = svg.append('g')
         .selectAll("dot")
         .data([{x: T_n, y: 0}])
         .enter()
@@ -2651,8 +2651,8 @@ function sample() {
 d3.select("#sample-button-brt").on("click", function() { sample(); });
 
 function clearSamples() {
-  for (var k = 0; k < smpl_dots.length; k += 1) {
-    for (var i = 0; i < smpl_dots[k].length; i += 1) {
+  for (let k = 0; k < smpl_dots.length; k += 1) {
+    for (let i = 0; i < smpl_dots[k].length; i += 1) {
       smpl_dots[k][i].remove();
     }
   }
@@ -2664,7 +2664,7 @@ function clearSamples() {
 
 function reset() {
   clearSamples();
-  for (var i = 0; i < tn_dots.length; i += 1) {
+  for (let i = 0; i < tn_dots.length; i += 1) {
     tn_dots[i].remove();
   }
   tn_dots = [];
@@ -2691,8 +2691,8 @@ d3.select("#asymptotic_test")
   .style("top", fig_height + 15 + "px");
 
 
-var labels_x = 250;
-var labels_y = 0;
+const labels_x = 250;
+const labels_y = 0;
 
 svg.append("path")
    .attr("stroke", "#348ABD")
@@ -2791,7 +2791,7 @@ svg
   .style("fill", "#348ABD");
 
 function createSiTexts() {
-  for (var i = 0; i < 5; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
     si_texts.push(svg.append("text")
                      .attr("text-anchor", "start")
                      .attr("y", y(-0.1 * (i + 2.2)))
@@ -2803,9 +2803,9 @@ function createSiTexts() {
 }
 
 function updateSiTexts() {
-  for (var i = 0; i < gauss_curves.length; i += 1) {
-    var color = gauss_curves[i].attr("fill");
-    var rounded_si = Math.round(1000 * stds[i]) / 1000;
+  for (let i = 0; i < gauss_curves.length; i += 1) {
+    const color = gauss_curves[i].attr("fill");
+    const rounded_si = Math.round(1000 * stds[i]) / 1000;
     si_texts[i]
       .transition()
       .duration(avg_dur)
@@ -2815,7 +2815,7 @@ function updateSiTexts() {
 }
 
 function clearSiTexts() {
- for (var i = 0; i < si_texts.length; i += 1) {
+ for (let i = 0; i < si_texts.length; i += 1) {
     si_texts[i]
       .transition()
       .duration(avg_dur)
@@ -2844,13 +2844,13 @@ function createStatTexts() {
 }
 
 function updateStatTexts() {
-    var sigma_num = Math.round(1000 * std_avg) / 1000;
+    const sigma_num = Math.round(1000 * std_avg) / 1000;
     sigma_text
       .transition()
       .duration(avg_dur)
       .text("= " + sigma_num);
     
-    var t_num = xRight.invert(tn_dots[tn_dots.length - 1].attr("cx"));
+    let t_num = xRight.invert(tn_dots[tn_dots.length - 1].attr("cx"));
     t_num = Math.round(1000 * t_num) / 1000;
     t_text
       .transition()
@@ -2957,12 +2957,12 @@ d3.select("#htmp")
   
 function plt_heatmap() {
 
-var margin = {top: 30, right: 30, bottom: 5, left: 50},
+const margin = {top: 30, right: 30, bottom: 5, left: 50},
   width = 750 - margin.left - margin.right,
   height = 300 - margin.top - margin.bottom,
   fig_width = 300, fig_height = 240;
 
-var svg = d3.select("#htmp")
+const svg = d3.select("#htmp")
 .append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
@@ -2970,16 +2970,16 @@ var svg = d3.select("#htmp")
   .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
 
-var r = 4, s = 5;
-var rows = [], columns = [];
-for (var i = 0; i < r; i += 1) {
+const r = 4, s = 5;
+const rows = [], columns = [];
+for (let i = 0; i < r; i += 1) {
     rows.push(i + 1);
 }
-for (var i = 0; i < s; i += 1) {
+for (let i = 0; i < s; i += 1) {
     columns.push(i + 1);
 }
 
-var x = d3.scaleBand()
+const x = d3.scaleBand()
   .range([ 0, fig_width ])
   .domain(columns)
   .padding(0.01);
@@ -2990,7 +2990,7 @@ svg.append("g")
   .selectAll(".tick text")
   .attr("font-family", "Arvo");
 
-var y = d3.scaleBand()
+const y = d3.scaleBand()
   .range([ fig_height, 0 ])
   .domain(rows)
   .padding(0.01);
@@ -3000,7 +3000,7 @@ svg.append("g")
   .selectAll(".tick text")
   .attr("font-family", "Arvo");
 
-var xRight = d3.scaleLinear()
+const xRight = d3.scaleLinear()
           .domain([0, 50])
           .range([1.2 * fig_width, 2.2 * fig_width]);
             
@@ -3011,7 +3011,7 @@ svg.append("g")
    .attr("font-family", "Arvo");
 
 
-var yRight = d3.scaleLinear()
+const yRight = d3.scaleLinear()
           .range([0.5 * fig_height, 0.2 * fig_height])
           .domain([0, 1]);
             
@@ -3021,21 +3021,21 @@ svg.append("g")
     .selectAll(".tick text")
     .attr("font-family", "Arvo");
 
-var color = d3.scaleLinear()
+const color = d3.scaleLinear()
   .range(["white", "#65AD69"])
   .domain([1, 25]);
 
-var data = [];
-for (var i = 0; i < s; i += 1) {
-  for (var j = 0; j < r; j += 1) {
-    var value = 1 + Math.round(19 * Math.random());
+const data = [];
+for (let i = 0; i < s; i += 1) {
+  for (let j = 0; j < r; j += 1) {
+    const value = 1 + Math.round(19 * Math.random());
     data.push({'i': i + 1, 'j': j + 1,
                'value': value});
   }
 }
 
-var t_n = 0, v_n = 0;
-var tn_text = svg.append("text")
+let t_n = 0, v_n = 0;
+const tn_text = svg.append("text")
                .attr("text-anchor", "start")
                .attr("y", 0.8 * fig_height + 3)
                .attr("x", 1.4 * fig_width + 20)
@@ -3045,7 +3045,7 @@ var tn_text = svg.append("text")
                .style("fill", "#348ABD");
              
                
-var vn_text = svg.append("text")
+const vn_text = svg.append("text")
                .attr("text-anchor", "start")
                .attr("y", 0.8 * fig_height + 3)
                .attr("x", 1.8 * fig_width + 20)
@@ -3058,19 +3058,20 @@ function updateTn() {
    t_n = 0;
    v_n = 0;
    
-   var n = 0, xi = [0, 0, 0, 0], xj = [0, 0, 0, 0, 0];
-   for (var i = 0; i < s; i += 1) {
-     for (var j = 0; j < r; j += 1) {
-        var xij = data[i * r + j]['value'];
+   let n = 0;
+   const xi = [0, 0, 0, 0], xj = [0, 0, 0, 0, 0];
+   for (let i = 0; i < s; i += 1) {
+     for (let j = 0; j < r; j += 1) {
+        const xij = data[i * r + j]['value'];
 		  n += xij;
 		  xj[i] += xij;
 		  xi[j] += xij;
 	  }
 	}
 	
-	for (var i = 0; i < s; i += 1) {
-	  for (var j = 0; j < r; j += 1) {
-	    var xij = data[i * r + j]['value'];
+	for (let i = 0; i < s; i += 1) {
+	  for (let j = 0; j < r; j += 1) {
+	    const xij = data[i * r + j]['value'];
 	    if (xij > 0) {	
 	      t_n += xij * Math.log(n * xij / (xi[j] * xj[i]));
 	    }
@@ -3100,7 +3101,7 @@ function updateTn() {
     .attr("cy", function (d) { return d.y; } )
 }
                    
-  var tooltip = d3.select("#htmp")
+  const tooltip = d3.select("#htmp")
     .append("div")
     .style("opacity", 0)
     .attr("class", "tooltip")
@@ -3110,7 +3111,7 @@ function updateTn() {
     .style("border-radius", "10px")
     .style("padding", "5px");
     
-  var mouseover = function(d) {
+  const mouseover = function(d) {
     tooltip
       .style("opacity", 1);
       
@@ -3119,14 +3120,14 @@ function updateTn() {
       .style("opacity", 1);
   };
   
-  var mousemove = function(event, d) {
+  const mousemove = function(event, d) {
     tooltip
       .html(d.value)
       .style("left", (d3.pointer(event)[0] + 70) + "px")
       .style("top", (d3.pointer(event)[1]) + "px");
   };
   
-  var mouseleave = function(d) {
+  const mouseleave = function(d) {
     tooltip
       .style("opacity", 0);
       
@@ -3135,7 +3136,7 @@ function updateTn() {
       .style("opacity", 0.8);
   };
   
-  var onclick = function(event, d) {
+  const onclick = function(event, d) {
     if (event.ctrlKey || event.metaKey) {
       d['value'] = Math.max(d['value'] - 1, 0);
     }
@@ -3150,12 +3151,12 @@ function updateTn() {
     mousemove(event, d);
   };
  
-var c = 21.026;
-var phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
-var phi_data_1 = [{'x': c, 'y': 1}, {'x': 50, 'y': 1}];
-var phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
+const c = 21.026;
+const phi_data_0 = [{'x': 0, 'y': 0}, {'x': c, 'y': 0}];
+const phi_data_1 = [{'x': c, 'y': 1}, {'x': 50, 'y': 1}];
+const phi_data_dash = [{'x': c, 'y': 0}, {'x': c, 'y': 1}];
 
-var phi_curve_0 = svg
+const phi_curve_0 = svg
   .append('g')
   .append("path")
       .datum(phi_data_0)
@@ -3169,7 +3170,7 @@ var phi_curve_0 = svg
           .y(function(d) { return yRight(d['y']); })
    );
    
-var phi_curve_1 = svg
+const phi_curve_1 = svg
   .append('g')
   .append("path")
       .datum(phi_data_1)
@@ -3183,7 +3184,7 @@ var phi_curve_1 = svg
           .y(function(d) { return yRight(d['y']); })
    );
    
-var phi_curve_dash = svg
+const phi_curve_dash = svg
   .append('g')
   .append("path")
       .datum(phi_data_dash)
@@ -3198,7 +3199,7 @@ var phi_curve_dash = svg
           .y(function(d) { return yRight(d['y']); })
    );
 
-var phi_dot = svg.append('g')
+const phi_dot = svg.append('g')
    .selectAll("dot")
    .data([{'x': xRight(c), 'y': yRight(1)}])
    .enter()
@@ -3210,7 +3211,7 @@ var phi_dot = svg.append('g')
      .attr("stroke", "#348ABD")
      .attr("stroke-width", 2);
      
-var tn_dot = svg.append('g')
+const tn_dot = svg.append('g')
     .selectAll("dot")
     .data([{'x': xRight(t_n), 'y': yRight(t_n > c ? 1 : 0)}])
     .enter()
@@ -3282,7 +3283,7 @@ d3.select("#htmp")
   .style("left", 1.8 * fig_width + margin.left + "px")
   .style("top", 0.8 * fig_height + 15 + "px");
   
-  var heatmap = svg.selectAll()
+  const heatmap = svg.selectAll()
       .data(data)
       .enter()
       .append("rect")
