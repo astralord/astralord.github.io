@@ -421,8 +421,10 @@ function right_dash(svg, x1, x2, y1) {
 function tot() {
   const svg = d3.select("#tot")
             .append("svg")
-			  .attr("width", 700)
-			  .attr("height", 572);
+			  .attr("viewBox", "0 0 700 572")
+			  .style("width", "100%")
+			  .style("max-width", "700px")
+			  .style("height", "auto");
   
   const x_start = 65;
   const x_end = 565;
@@ -718,8 +720,10 @@ function concat_path(svg, x, y) {
 function prompt_tuning() {
   const svg = d3.select("#prompt_tuning")
             .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 400);
+			  .attr("viewBox", "0 0 600 400")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 	  
 	svg.append("path")
 	   .datum([{x: 275, y: 400}, {x: 275, y: 5}])
@@ -918,8 +922,10 @@ function lora_block(svg, x, y) {
 function lora() {
   const svg = d3.select("#lora_svg")
             .append("svg")
-			  .attr("width", 400)
-			  .attr("height", 270);
+			  .attr("viewBox", "0 0 400 270")
+			  .style("width", "100%")
+			  .style("max-width", "400px")
+			  .style("height", "auto");
 
   up_arrow(svg, 120, 170, 270);
   text_block_1(svg, 80, 140, "W");
@@ -1023,8 +1029,10 @@ where $f(\cdot)$ is a nonlinear activation function, e.g. ReLU.
 function adapter() {
   const svg = d3.select("#adapter_svg")
             .append("svg")
-			  .attr("width", 400)
-			  .attr("height", 400);
+			  .attr("viewBox", "0 0 400 400")
+			  .style("width", "100%")
+			  .style("max-width", "400px")
+			  .style("height", "auto");
 			  
 	svg.append("path")
 	   .attr("stroke", "currentColor")
@@ -1163,8 +1171,10 @@ Adapter tuning is highly parameter-efficient: training with adapters of sizes 0.
 function prl_adapter() {
   const svg = d3.select("#prl_adapter")
             .append("svg")
-			  .attr("width", 400)
-			  .attr("height", 330);
+			  .attr("viewBox", "0 0 400 330")
+			  .style("width", "100%")
+			  .style("max-width", "400px")
+			  .style("height", "auto");
 	
 	up_arrow(svg, 100, 10, 40);		  
 	addnorm_block(svg, 40, 40);
@@ -1379,8 +1389,10 @@ function tool_block(svg, x, y, text, shift) {
 function talm() {
   const svg = d3.select("#talm_svg")
             .append("svg")
-			  .attr("width", 700)
-			  .attr("height", 131);
+			  .attr("viewBox", "0 0 700 131")
+			  .style("width", "100%")
+			  .style("max-width", "700px")
+			  .style("height", "auto");
   
   const x_start = 65;
   const x_end = 565;
