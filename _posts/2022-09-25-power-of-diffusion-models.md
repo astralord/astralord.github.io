@@ -46,8 +46,8 @@ To define a **diffusion probabilistic model** (usually called a **“diffusion m
 <script>
 
 function draw_triangle(svg, x, y, rotate=0) {
-	var triangleSize = 25;
-	var triangle = d3.symbol()
+	const triangleSize = 25;
+	const triangle = d3.symbol()
 	            .type(d3.symbolTriangle)
 	            .size(triangleSize);
 	
@@ -61,7 +61,7 @@ function draw_triangle(svg, x, y, rotate=0) {
 
 function graph_chain() {
 
-var svg = d3.select("#grph_chain")
+const svg = d3.select("#grph_chain")
 			  .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 130);
@@ -532,7 +532,7 @@ draw_triangle(svg, x + 31, y + 32, 40);
 
 function graph_reverse_chain() {
 
-var svg = d3.select("#grph_rvrs_chain")
+const svg = d3.select("#grph_rvrs_chain")
 			  .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 105);
@@ -1007,7 +1007,7 @@ We can accelerate inference process by only sampling a subset of $S$ diffusion s
 
 function ddim_chain() {
 
-var svg = d3.select("#ddim_chain")
+const svg = d3.select("#ddim_chain")
 			  .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 158);
@@ -1442,7 +1442,7 @@ d3.select("#cntns_chain")
   
 function continuous_chain() {
 
-var svg = d3.select("#cntns_chain")
+const svg = d3.select("#cntns_chain")
 			  .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 85);
@@ -1912,7 +1912,7 @@ d3.select("#ltnt_dffsn")
   
 function latent_diffusion() {
 
-var svg = d3.select("#ltnt_dffsn")
+const svg = d3.select("#ltnt_dffsn")
 			  .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 200);
