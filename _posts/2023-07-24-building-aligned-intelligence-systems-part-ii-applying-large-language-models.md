@@ -25,8 +25,8 @@ function line(svg, x1, y1, x2, y2, opacity=1.0, width=2) {
 }
 
 function triangle(svg, x, y, rotate=0) {
-	var triangleSize = 25;
-	var triangle_symb = d3.symbol()
+	const triangleSize = 25;
+	const triangle_symb = d3.symbol()
 	            .type(d3.symbolTriangle)
 	            .size(triangleSize);
 	
@@ -419,14 +419,14 @@ function right_dash(svg, x1, x2, y1) {
 }
 
 function tot() {
-  var svg = d3.select("#tot")
+  const svg = d3.select("#tot")
             .append("svg")
 			  .attr("width", 700)
 			  .attr("height", 572);
   
-  x_start = 65;
-  x_end = 565;
-  fs_level = 25;
+  const x_start = 65;
+  const x_end = 565;
+  const fs_level = 25;
   
 	svg.append('text')
 	  .attr('x', 5)
@@ -460,12 +460,12 @@ function tot() {
 	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	  
-  cot_level = 100;
+  const cot_level = 100;
   prompt_block(svg, x_start, cot_level);
-  thought_shift = x_start + 170;
+  let thought_shift = x_start + 170;
   right_arrow(svg, x_start + 80, thought_shift - 5, cot_level + 15);
   thought_block(svg, thought_shift, cot_level, '#D9E9D3');
-  thought_shift_2 = thought_shift + 170;
+  let thought_shift_2 = thought_shift + 170;
   right_dash(svg, thought_shift + 100, thought_shift_2 - 20, cot_level + 15);
   thought_block(svg, thought_shift_2, cot_level, '#D9E9D3');
   right_arrow(svg, thought_shift_2 + 80, x_end - 5, cot_level + 15);
@@ -499,7 +499,7 @@ function tot() {
 	  .style("font-size", "14px")
 	  .attr("font-family", "Arvo");
 	  
-  sc_level = 220;
+  const sc_level = 220;
   prompt_block(svg, x_start, sc_level); 
   thought_shift = x_start + 170;
   right_arrow(svg, x_start + 80, thought_shift - 5, sc_level + 15);
@@ -545,7 +545,7 @@ function tot() {
 	  .style("fill", "currentColor")
 	  .attr("font-family", "Arvo");
 	 
-  tot_level = 440; 
+  const tot_level = 440; 
   prompt_block(svg, x_start, tot_level);
   thought_shift = x_start + 170;
   right_arrow(svg, x_start + 80, thought_shift - 5, tot_level + 15);
@@ -716,7 +716,7 @@ function concat_path(svg, x, y) {
 }
 
 function prompt_tuning() {
-  var svg = d3.select("#prompt_tuning")
+  const svg = d3.select("#prompt_tuning")
             .append("svg")
 			  .attr("width", 600)
 			  .attr("height", 400);
@@ -916,7 +916,7 @@ function lora_block(svg, x, y) {
 }
 
 function lora() {
-  var svg = d3.select("#lora_svg")
+  const svg = d3.select("#lora_svg")
             .append("svg")
 			  .attr("width", 400)
 			  .attr("height", 270);
@@ -1021,7 +1021,7 @@ where $f(\cdot)$ is a nonlinear activation function, e.g. ReLU.
 
 <script>
 function adapter() {
-  var svg = d3.select("#adapter_svg")
+  const svg = d3.select("#adapter_svg")
             .append("svg")
 			  .attr("width", 400)
 			  .attr("height", 400);
@@ -1161,7 +1161,7 @@ Adapter tuning is highly parameter-efficient: training with adapters of sizes 0.
 <script>
 
 function prl_adapter() {
-  var svg = d3.select("#prl_adapter")
+  const svg = d3.select("#prl_adapter")
             .append("svg")
 			  .attr("width", 400)
 			  .attr("height", 330);
@@ -1377,16 +1377,16 @@ function tool_block(svg, x, y, text, shift) {
 }
 
 function talm() {
-  var svg = d3.select("#talm_svg")
+  const svg = d3.select("#talm_svg")
             .append("svg")
 			  .attr("width", 700)
 			  .attr("height", 131);
   
-  x_start = 65;
-  x_end = 565;
-  fs_level = 25;
-  tool_shift = x_start + 165;
-  tool_shift_2 = tool_shift + 165;
+  const x_start = 65;
+  const x_end = 565;
+  const fs_level = 25;
+  const tool_shift = x_start + 165;
+  const tool_shift_2 = tool_shift + 165;
   
   prompt_block(svg, x_start, fs_level);
   right_arrow(svg, x_start + 80, tool_shift - 5, fs_level + 15);
