@@ -67,8 +67,10 @@ function graph_zoomed() {
 
 const svg = d3.select("#grphzmd")
 			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 300);
+			  .attr("viewBox", "0 0 600 300")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 
 function draw_edge(x, y, type, opacity=0.95) {
    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
@@ -300,8 +302,10 @@ function architecture() {
 
 const svg = d3.select("#archtctr")
 			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 95);
+			  .attr("viewBox", "0 0 600 95")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 
 function draw_graph(x, y, node_color, edge_color) {
 
@@ -509,8 +513,10 @@ function resgcn() {
 
 const svg = d3.select("#resgcn")
 			  .append("svg")
-			  .attr("width", 700)
-			  .attr("height", 200);
+			  .attr("viewBox", "0 0 700 200")
+			  .style("width", "100%")
+			  .style("max-width", "700px")
+			  .style("height", "auto");
 			  
 for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
@@ -922,8 +928,10 @@ function resgcn_head() {
 
 const svg = d3.select("#resgcn_head")
 			  .append("svg")
-			  .attr("width", 500)
-			  .attr("height", 342);
+			  .attr("viewBox", "0 0 500 342")
+			  .style("width", "100%")
+			  .style("max-width", "500px")
+			  .style("height", "auto");
 
 for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
@@ -1179,8 +1187,10 @@ function losses() {
 
 const svg = d3.select("#gnn_losses")
 			  .append("svg")
-			  .attr("width", 800)
-			  .attr("height", 280);
+			  .attr("viewBox", "0 0 800 280")
+			  .style("width", "100%")
+			  .style("max-width", "800px")
+			  .style("height", "auto");
 			  
 for (let i = 0; i < 6; i += 1) {
 	svg.append('rect')
@@ -1594,8 +1604,10 @@ function path_search() {
 
 const svg = d3.select("#pthsrch")
 			  .append("svg")
-			  .attr("width", 800)
-			  .attr("height", 350);
+			  .attr("viewBox", "0 0 800 350")
+			  .style("width", "100%")
+			  .style("max-width", "800px")
+			  .style("height", "auto");
 
 function draw_node(x, y, opacity=0.95) {
 	svg.append('circle')

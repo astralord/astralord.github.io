@@ -203,8 +203,10 @@ function gpt_arch_simple() {
 
 const svg = d3.select("#gpt_arch_simple")
 			  .append("svg")
-			  .attr("width", 300)
-			  .attr("height", 375);
+			  .attr("viewBox", "0 0 300 375")
+			  .style("width", "100%")
+			  .style("max-width", "300px")
+			  .style("height", "auto");
 	
 	softmax_block(svg, 90, 20);
 	line(svg, 150, 50, 150, 60, 1, 2, "currentColor");
@@ -628,8 +630,10 @@ function gpt_arch() {
 
 const svg = d3.select("#gpt_arch")
 			  .append("svg")
-			  .attr("width", 725)
-			  .attr("height", 465);
+			  .attr("viewBox", "0 0 725 465")
+			  .style("width", "100%")
+			  .style("max-width", "725px")
+			  .style("height", "auto");
 			  
 	bckg_block(svg, 1, 110);
 	  
@@ -1023,8 +1027,10 @@ function net_block(svg, x, y, text) {
 function sft_learning() {
  const svg = d3.select("#sft_learning")
             .append("svg")
-			  .attr("width", 620)
-			  .attr("height", 145);
+			  .attr("viewBox", "0 0 620 145")
+			  .style("width", "100%")
+			  .style("max-width", "620px")
+			  .style("height", "auto");
 	moon_sample(svg, 20, 5);
 	
 	line(svg, 160, 40, 220, 40, 1, 1);
@@ -1232,8 +1238,10 @@ function rank_block(svg, x, y) {
 function rm_learning() {
  const svg = d3.select("#rm_learning")
             .append("svg")
-			  .attr("width", 620)
-			  .attr("height", 220);
+			  .attr("viewBox", "0 0 620 220")
+			  .style("width", "100%")
+			  .style("max-width", "620px")
+			  .style("height", "auto");
 	moon_sample(svg, 20, 5);
 	model_answer(svg, 0, 80, 'A');
 	svg.append('text')
@@ -1410,8 +1418,10 @@ function frog_block(svg, x, y) {
 function rlhf() {
   const svg = d3.select("#rlhf")
             .append("svg")
-			  .attr("width", 620)
-			  .attr("height", 195);
+			  .attr("viewBox", "0 0 620 195")
+			  .style("width", "100%")
+			  .style("max-width", "620px")
+			  .style("height", "auto");
 			  
   frog_block(svg, 5, 55);
   line(svg, 150, 95, 210, 95, 1, 1);
@@ -1580,8 +1590,10 @@ function backup_diagram() {
 
 const svg = d3.select("#backup_diagram")
 			  .append("svg")
-			  .attr("width", 520)
-			  .attr("height", 80);
+			  .attr("viewBox", "0 0 520 80")
+			  .style("width", "100%")
+			  .style("max-width", "520px")
+			  .style("height", "auto");
 			  
 const g = svg.append("g").attr("id", "node");
   

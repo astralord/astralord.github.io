@@ -495,8 +495,10 @@ function legend() {
 
 	const svg = d3.select("#lgnd")
 				  .append("svg")
-				  .attr("width", 600)
-				  .attr("height", 90);
+				  .attr("viewBox", "0 0 600 90")
+				  .style("width", "100%")
+				  .style("max-width", "600px")
+				  .style("height", "auto");
 	
 	svg.append('text')
 	  .attr('x', 130)
@@ -624,8 +626,10 @@ d3.select("#data_prll").style("position", "relative");
 function data_parallel() {
 	const svg = d3.select("#data_prll")
 				  .append("svg")
-				  .attr("width", 700)
-				  .attr("height", 455);
+				  .attr("viewBox", "0 0 700 455")
+				  .style("width", "100%")
+				  .style("max-width", "700px")
+				  .style("height", "auto");
 	     
 	x_start = 50;
 	y_shift = 100;
@@ -975,8 +979,10 @@ The model weights on different devices do not overlap, and the only communicatio
 function tensor_parallel() {
 	const svg = d3.select("#tnsr_prll")
 				  .append("svg")
-				  .attr("width", 650)
-				  .attr("height", 540);
+				  .attr("viewBox", "0 0 650 540")
+				  .style("width", "100%")
+				  .style("max-width", "650px")
+				  .style("height", "auto");
 	x_start = 50;
 	y_start = 110;
 	y_shift = 100;
@@ -1348,8 +1354,10 @@ function stage(svg, x, y, id, width=80) {
 function pipeline_parallel() {
 	const svg = d3.select("#pp_prll")
 				  .append("svg")
-				  .attr("width", 700)
-				  .attr("height", 360);
+				  .attr("viewBox", "0 0 700 360")
+				  .style("width", "100%")
+				  .style("max-width", "700px")
+				  .style("height", "auto");
 				  
 	x_start = 50;
 	y_start = 20;
@@ -1497,8 +1505,10 @@ d3.select("#pp_as_tp").style("position", "relative");
 function pipeline_parallel_as_tensor() {
 	const svg = d3.select("#pp_as_tp")
 				  .append("svg")
-				  .attr("width", 700)
-				  .attr("height", 435);
+				  .attr("viewBox", "0 0 700 435")
+				  .style("width", "100%")
+				  .style("max-width", "700px")
+				  .style("height", "auto");
 				  
 	x_start = 50;
 	y_start = 20;
@@ -1892,8 +1902,10 @@ function dispatch_tensor(svg, x_sh, y_sh, add_probs=true) {
 function expert_parallel_dispatch() {
 	const svg = d3.select("#expert_prll_dsptch")
 				  .append("svg")
-				  .attr("width", 600)
-				  .attr("height", 615);
+				  .attr("viewBox", "0 0 600 615")
+				  .style("width", "100%")
+				  .style("max-width", "600px")
+				  .style("height", "auto");
 	
 	const num_experts = 4;
 	const expert_capacity = 2;

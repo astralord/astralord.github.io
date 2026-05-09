@@ -63,8 +63,10 @@ function graph_chain() {
 
 const svg = d3.select("#grph_chain")
 			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 130);
+			  .attr("viewBox", "0 0 600 130")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 
 svg.append('circle')
   .attr('cx', 50)
@@ -534,8 +536,10 @@ function graph_reverse_chain() {
 
 const svg = d3.select("#grph_rvrs_chain")
 			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 105);
+			  .attr("viewBox", "0 0 600 105")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 
 svg.append('circle')
   .attr('cx', 50)
@@ -1009,8 +1013,10 @@ function ddim_chain() {
 
 const svg = d3.select("#ddim_chain")
 			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 158);
+			  .attr("viewBox", "0 0 600 158")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 
 svg.append('circle')
   .attr('cx', 50)
@@ -1444,8 +1450,10 @@ function continuous_chain() {
 
 const svg = d3.select("#cntns_chain")
 			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 85);
+			  .attr("viewBox", "0 0 600 85")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 
 svg.append('circle')
   .attr('cx', 50)
@@ -1914,8 +1922,10 @@ function latent_diffusion() {
 
 const svg = d3.select("#ltnt_dffsn")
 			  .append("svg")
-			  .attr("width", 600)
-			  .attr("height", 200);
+			  .attr("viewBox", "0 0 600 200")
+			  .style("width", "100%")
+			  .style("max-width", "600px")
+			  .style("height", "auto");
 
 svg.append('circle')
   .attr('cx', 50)

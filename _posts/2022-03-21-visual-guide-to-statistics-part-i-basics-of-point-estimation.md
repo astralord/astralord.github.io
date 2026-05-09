@@ -35,16 +35,8 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 25%;
   vertical-align: top;
   overflow: hidden;
-}
-
-.svg-content {
-    display: inline-block;
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
 .svg-content-responsive {
@@ -158,9 +150,6 @@ Then estimating $p(x)$ is equal to estimating parameter $\vartheta $.
 
 <script>
 
-d3.select("#drug_exp")
-  .style("position", "relative");
-
 function drug_exp() {
   const theta = 0.2;
 
@@ -174,9 +163,10 @@ function drug_exp() {
 
   const svg = d3.select("div#drug_exp")
     .append("svg")
-    .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", `0 0 ${w} ${h}`)
-    .classed("svg-content", true)
+    .style("width", "100%")
+    .style("max-width", `${w}px`)
+    .style("height", "auto")
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -414,8 +404,10 @@ function chi_t_plts() {
 
   const chi_svg = d3.select("#chi_t_plt")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+      .style("width", "100%")
+      .style("max-width", `${width + margin.left + margin.right}px`)
+      .style("height", "auto")
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -556,8 +548,10 @@ function chi_t_plts() {
 
     const slider_svg = d3.select("#chi_t_plt")
       .append("svg")
-      .attr("width", width + 20)
-      .attr("height", 70)
+      .attr("viewBox", `0 0 ${width + 20} ${70}`)
+      .style("width", "100%")
+      .style("max-width", `${width + 20}px`)
+      .style("height", "auto")
       .append("g")
       .attr("transform", "translate(25,20)");
 
@@ -717,8 +711,10 @@ function biasedness() {
 
   const svg = d3.select("#biased_viz")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+      .style("width", "100%")
+      .style("max-width", `${width + margin.left + margin.right}px`)
+      .style("height", "auto")
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 

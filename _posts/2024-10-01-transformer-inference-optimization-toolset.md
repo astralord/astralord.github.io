@@ -280,8 +280,10 @@ function cache_rect(svg, x, y) {
 function gpu_arch() {
 	const svg = d3.select("#gpu_arch")
 				  .append("svg")
-				  .attr("width", 600)
-				  .attr("height", 215);
+				  .attr("viewBox", "0 0 600 215")
+				  .style("width", "100%")
+				  .style("max-width", "600px")
+				  .style("height", "auto");
 	const x_st = 10, y_st = 30;
 	
 	system_dram_rect(svg, x_st, y_st);
@@ -336,8 +338,10 @@ function add_gpu_dot(svg, x, y, cx, cy, x_shift, y_shift) {
 function gpu_timeline() {
 	const svg = d3.select("#gpu_timeline")
 				  .append("svg")
-				  .attr("width", 600)
-				  .attr("height", 190);
+				  .attr("viewBox", "0 0 600 190")
+				  .style("width", "100%")
+				  .style("max-width", "600px")
+				  .style("height", "auto");
 	const x_shift = 100, y_shift = 20;
 		
 	const x = d3.scaleLog()
@@ -581,8 +585,10 @@ function draw_sampling_text(svg, x_start, y_start, rct_sz, shift) {
 function text_generation() {
 	const svg = d3.select("#text_generation")
 				  .append("svg")
-				  .attr("width", 700)
-				  .attr("height", 300);
+				  .attr("viewBox", "0 0 700 300")
+				  .style("width", "100%")
+				  .style("max-width", "700px")
+				  .style("height", "auto");
 	const x_start = 90, y_start = 30;
 	const shift = 14, rct_sz = 12;
 	let init_seq_len = 10, dim = 2;
@@ -666,8 +672,10 @@ function arithmetic_intensity() {
 
 	const svg = d3.select("#arithmetic_intensity")
 				  .append("svg")
-				  .attr("width", 500)
-				  .attr("height", 200);
+				  .attr("viewBox", "0 0 500 200")
+				  .style("width", "100%")
+				  .style("max-width", "500px")
+				  .style("height", "auto");
 				  
 	const x_start = 80, y_start = 10;
 	const x_end = 450, y_end = 180;
@@ -785,8 +793,10 @@ function draw_sampling_text_2(svg, x_start, y_start, rct_sz, shift) {
 function text_generation_w_kv_cache() {
 	const svg = d3.select("#text_generation_w_kv_cache")
 				  .append("svg")
-				  .attr("width", 550)
-				  .attr("height", 300);
+				  .attr("viewBox", "0 0 550 300")
+				  .style("width", "100%")
+				  .style("max-width", "550px")
+				  .style("height", "auto");
 				  
 	const x_start = 110, y_start = 30;
 	const shift = 14, rct_sz = 12;
@@ -918,8 +928,10 @@ function arithmetic_intensity_mqa() {
 
 	const svg = d3.select("#arithmetic_intensity_mqa")
 				  .append("svg")
-				  .attr("width", 500)
-				  .attr("height", 200);
+				  .attr("viewBox", "0 0 500 200")
+				  .style("width", "100%")
+				  .style("max-width", "500px")
+				  .style("height", "auto");
 				  
 	const x_start = 80, y_start = 10;
 	const x_end = 450, y_end = 180;
@@ -1040,8 +1052,10 @@ function gqa_line(svg, x1, y1, x2, y2) {
 function groupquery_attention() {
 	const svg = d3.select("#groupquery_attention")
 				  .append("svg")
-				  .attr("width", 800)
-				  .attr("height", 255);
+				  .attr("viewBox", "0 0 800 255")
+				  .style("width", "100%")
+				  .style("max-width", "800px")
+				  .style("height", "auto");
 				  
 	const x_start = 55, y_start = -5;
 	const shift = 10, rct_sz = 8;
@@ -1151,8 +1165,10 @@ with up- and down-projection matrices $\mathbf{W}_u^Q \in \mathbb{R}^{d'_c \time
 function multilatent_attention() {
 	const svg = d3.select("#multilatent_attention")
 				  .append("svg")
-				  .attr("width", 800)
-				  .attr("height", 255);
+				  .attr("viewBox", "0 0 800 255")
+				  .style("width", "100%")
+				  .style("max-width", "800px")
+				  .style("height", "auto");
 				  
 	const x_start = 205, y_start = -5;
 	const shift = 10, rct_sz = 8;
@@ -1539,8 +1555,10 @@ function group_latent_attention(svg) {
 
 const svg = d3.select("#group_tied_attention")
 			  .append("svg")
-			  .attr("width", 800)
-			  .attr("height", 255);
+			  .attr("viewBox", "0 0 800 255")
+			  .style("width", "100%")
+			  .style("max-width", "800px")
+			  .style("height", "auto");
 			  
 group_tied_attention(svg);
 group_latent_attention(svg);
@@ -1567,8 +1585,10 @@ A large KV cache is not the only source of memory problems as the sequence lengt
 function chunked_prefill() {
 	const svg = d3.select("#chunked_prefill")
 				  .append("svg")
-				  .attr("width", 700)
-				  .attr("height", 290);
+				  .attr("viewBox", "0 0 700 290")
+				  .style("width", "100%")
+				  .style("max-width", "700px")
+				  .style("height", "auto");
 				  
 	const x_start = 70, y_start = 30;
 	const shift = 14, rct_sz = 12;
@@ -1672,8 +1692,10 @@ We can see that even with multi-query attention and chunked prefill our KV cache
 function sliding_window() {
 	const svg = d3.select("#sliding_window")
 				  .append("svg")
-				  .attr("width", 300)
-				  .attr("height", 160);
+				  .attr("viewBox", "0 0 300 160")
+				  .style("width", "100%")
+				  .style("max-width", "300px")
+				  .style("height", "auto");
 	const x_start = 100, y_start = 20;
 	const shift = 14, rct_sz = 12;
 	text_(svg, "mask", x_start + 4.2 * rct_sz, 10);
@@ -1698,8 +1720,10 @@ When we use sliding window attention, we might use **rolling KV cache** as well.
 function text_generation_w_rolling_kv_cache() {
 	const svg = d3.select("#text_generation_w_rolling_kv_cache")
 				  .append("svg")
-				  .attr("width", 550)
-				  .attr("height", 300);
+				  .attr("viewBox", "0 0 550 300")
+				  .style("width", "100%")
+				  .style("max-width", "550px")
+				  .style("height", "auto");
 				  
 	const x_start = 110, y_start = 30;
 	const shift = 14, rct_sz = 12;
@@ -1844,8 +1868,10 @@ function linear_attention() {
 	
 	const svg = d3.select("#linear_attention")
 				  .append("svg")
-				  .attr("width", 550)
-				  .attr("height", 300);
+				  .attr("viewBox", "0 0 550 300")
+				  .style("width", "100%")
+				  .style("max-width", "550px")
+				  .style("height", "auto");
 				  
 	const x_start = 100, y_start = 20;
 	const shift = 14, rct_sz = 12;
@@ -2286,8 +2312,10 @@ function draw_flash_attn_text(svg, x_start, y_start, rct_sz, shift) {
 function flash_attn() {
 	const svg = d3.select("#flash_attn")
 				  .append("svg")
-				  .attr("width", 600)
-				  .attr("height", 205);
+				  .attr("viewBox", "0 0 600 205")
+				  .style("width", "100%")
+				  .style("max-width", "600px")
+				  .style("height", "auto");
 	const x_start = 90, y_start = 50;
 	const shift = 14, rct_sz = 12;
 	const dim = 2;
@@ -2589,8 +2617,10 @@ function get_positions(iter, x_start, y_start) {
 function ring_attn() {
 	const svg = d3.select("#ring_attn")
 				  .append("svg")
-				  .attr("width", 600)
-				  .attr("height", 350);
+				  .attr("viewBox", "0 0 600 350")
+				  .style("width", "100%")
+				  .style("max-width", "600px")
+				  .style("height", "auto");
 	const x_start = 50, y_start = 25;
 	const shift = 14, rct_sz = 12;
 	const dim = 1;
@@ -2678,8 +2708,10 @@ The problem of Ring Attention is that on all but the first iteration, the worklo
 function stripe_attn() {
 	const svg = d3.select("#stripe_attn")
 				  .append("svg")
-				  .attr("width", 600)
-				  .attr("height", 300);
+				  .attr("viewBox", "0 0 600 300")
+				  .style("width", "100%")
+				  .style("max-width", "600px")
+				  .style("height", "auto");
 	const x_start = 10, y_start = 25;
 	const shift = 14, rct_sz = 12;
 	
@@ -2780,8 +2812,10 @@ function vector_block(svg, x, y, w, h, shift_w, shift_h, rct_sz_w, rct_sz_h, col
 function paged_attn() {
 	const svg = d3.select("#paged_attn")
 				  .append("svg")
-				  .attr("width", 525)
-				  .attr("height", 300);
+				  .attr("viewBox", "0 0 525 300")
+				  .style("width", "100%")
+				  .style("max-width", "525px")
+				  .style("height", "auto");
 	const x_start = 0, y_start = 25;
 	const shift_w = 45, shift_h = 24;
 	const rct_sz_w = 43, rct_sz_h = 22;
@@ -2926,8 +2960,10 @@ function draw_sampling_text_2(svg, x_start, y_start, rct_sz, shift) {
 function radix_attention() {
 	const svg = d3.select("#radix_attention")
 				  .append("svg")
-				  .attr("width", 550)
-				  .attr("height", 370);
+				  .attr("viewBox", "0 0 550 370")
+				  .style("width", "100%")
+				  .style("max-width", "550px")
+				  .style("height", "auto");
 	const x_start = 50, y_start = 10;
 	const shift = 30, rct_sz = 16;
 	let init_timepoint = 9, dim = 2;

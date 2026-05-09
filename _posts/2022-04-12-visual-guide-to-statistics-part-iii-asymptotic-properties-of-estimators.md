@@ -105,16 +105,8 @@ This statement is known as **Multidimensional Central Limit Theorem**.
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 100%;
   vertical-align: top;
   overflow: hidden;
-}
-
-.svg-content-responsive {
-  display: inline-block;
-  position: absolute;
-  top: 10px;
-  left: 0;
 }
 
 .ticks {
@@ -399,8 +391,10 @@ const avg_dur = 1000;
     
 const svg = d3.select("div#mclt")
   .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+    .style("width", "100%")
+    .style("max-width", `${width + margin.left + margin.right}px`)
+    .style("height", "auto")
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
@@ -844,8 +838,10 @@ const avg_dur = 1000;
     
 const svg = d3.select("div#prsn_plt")
   .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+    .style("width", "100%")
+    .style("max-width", `${width + margin.left + margin.right}px`)
+    .style("height", "auto")
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");

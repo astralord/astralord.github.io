@@ -328,8 +328,10 @@ const margin = {top: 30, right: 0, bottom: 20, left: 30},
     
 const svg = d3.select("div#basic_test")
   .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+    .style("width", "100%")
+    .style("max-width", `${width + margin.left + margin.right}px`)
+    .style("height", "auto")
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
@@ -995,8 +997,10 @@ const margin = {top: 30, right: 0, bottom: 20, left: 30},
     
 const svg = d3.select("div#simple_hypothesis")
   .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+    .style("width", "100%")
+    .style("max-width", `${width + margin.left + margin.right}px`)
+    .style("height", "auto")
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
@@ -2248,8 +2252,10 @@ const margin = {top: 30, right: 0, bottom: 20, left: 30},
     
 const svg = d3.select("div#asymptotic_test")
   .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+    .style("width", "100%")
+    .style("max-width", `${width + margin.left + margin.right}px`)
+    .style("height", "auto")
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
@@ -2964,8 +2970,10 @@ const margin = {top: 30, right: 30, bottom: 5, left: 50},
 
 const svg = d3.select("#htmp")
 .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
+  .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+  .style("width", "100%")
+  .style("max-width", `${width + margin.left + margin.right}px`)
+  .style("height", "auto")
 .append("g")
   .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
