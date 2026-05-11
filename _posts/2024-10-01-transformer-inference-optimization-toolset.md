@@ -1971,7 +1971,7 @@ Let's take $\mathbf{P}=\operatorname{softmax}(\mathbf{S}) \in \mathbb{R}^{L \tim
 
 In total we need to move back and forth $5L^2+L$ floats. It would be much faster if we could just read $L^2$ floats of $\mathbf{S}$ and write $L^2$ floats of $\mathbf{P}$, making this operation more than 2.5× faster.
 
-That's where **kernel fusion** comes into play: instead of writing computation output $y=f(x)$ to low-bandwidth global memory only to read it again to get $z=g(y)$, we can implement kernel which performs multiple computations at once $z=(g \circ f)(x)$ without extra memory accesses. XLA compiler in Jax can perform simple fusions, but a programmer can also write custom CUDA kernels with [Triton](https://triton-lang.org/main/index.html) or [Pallas](https://jax.readthedocs.io/en/latest/pallas/design.html).
+That's where **kernel fusion** comes into play: instead of writing computation output $y=f(x)$ to low-bandwidth global memory only to read it again to get $z=g(y)$, we can implement kernel which performs multiple computations at once $z=(g \circ f)(x)$ without extra memory accesses. XLA compiler in Jax can perform simple fusions, but a programmer can also write custom CUDA kernels with [Triton](https://triton-lang.org/main/index.html) or [Pallas](https://docs.jax.dev/en/latest/pallas/index.html).
 
 ### Memory-efficient attention
 
