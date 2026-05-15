@@ -905,7 +905,7 @@ A real world example: take A100 GPU with $80$ GB of HBM. Say, we work with GPT-3
 
 $$\underset{\mathbf{K/V}}{2} \cdot \underset{\text{float16}}{2} \cdot \underset{\text{sequence length}}{4096} \cdot \underset{\text{number of layers}}{96} \cdot \underset{\text{embedding dimension}}{12,288} = \underset{\text{bytes}}{19,327,352,832}.$$
 
-So $18$ GB or $22.5\%$ of A100 memory space is required for KV cache of just one sequence sample. Given that [the majoriy of the GPU memory would be taken by model parameters](https://kipp.ly/transformer-param-count/), we can conclude that even without enlarging our batch size we may quickly run out of memory.
+So $18$ GB or $22.5\%$ of A100 memory space is required for KV cache of just one sequence sample. Given that [the majority of the GPU memory would be taken by model parameters](https://kipp.ly/transformer-param-count/), we can conclude that even without enlarging our batch size we may quickly run out of memory.
 
 ### Multi-/Grouped-query attention
 
