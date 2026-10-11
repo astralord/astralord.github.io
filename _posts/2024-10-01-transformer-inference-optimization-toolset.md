@@ -746,12 +746,6 @@ function arithmetic_intensity() {
 	      );
 	      
 	
-	const l_x = d3.scaleLinear()
-	    .domain([1, 10])
-	    .range([0, 320])
-	    .clamp(true);
-
-	createSlider(svg, draw_attn_cells, l_x, x_start, 280, "L", "currentColor", init_seq_len, roundN, 10);
 	
 }
 
@@ -1008,12 +1002,6 @@ function arithmetic_intensity_mqa() {
 	          .y(function(d) { return ai_y(d.y); })
 	      );
 	      
-	const l_x = d3.scaleLinear()
-	    .domain([1, 10])
-	    .range([0, 320])
-	    .clamp(true);
-
-	createSlider(svg, draw_attn_cells, l_x, x_start, 280, "L", "currentColor", init_seq_len, roundN, 10);
 	
 }
 
