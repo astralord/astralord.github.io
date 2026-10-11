@@ -828,8 +828,8 @@ def block_verify(key, p, q, draft):
     key_u, key_r = jax.random.split(key)
     ratio = p[jnp.arange(gamma), draft] / q[jnp.arange(gamma), draft]
 
-    def step(w, r):
-        w = jnp.minimum(w * r, 1.0)
+    def step(w, ratio_k):
+        w = jnp.minimum(w * ratio_k, 1.0)
         return w, w
 
     _, w = jax.lax.scan(step, 1.0, ratio)
@@ -845,7 +845,7 @@ def block_verify(key, p, q, draft):
     return n, token
 ```
 
-Sun et al. prove that, for a given draft, block verification maximizes the expected number of accepted tokens among all lossless verification rules, so it never does worse than the token-wise rule. Take a toy example where at every position $p(a) = \frac{1}{3}$, $p(b) = \frac{2}{3}$ and $q(a) = \frac{2}{3}$, $q(b) = \frac{1}{3}$, with $\gamma = 2$. Token-wise verification accepts $\frac{10}{9}$ tokens per round on average, block verification $\frac{11}{9}$. With PaLM-2 models the gain was about 8% more tokens per round and 5–8% in walltime, with the same draft, the same target pass and a few extra vector operations. It works with any drafter. Traversal Verification ([Weng et al., 2025](https://arxiv.org/pdf/2505.12398)) brings the same idea to token trees, checking whole root-to-leaf sequences from the leaves up instead of discarding a subtree as soon as its root is rejected.
+Sun et al. prove that, for a given draft, block verification maximizes the expected number of accepted tokens among all lossless verification rules, so it never does worse than the token-wise rule. Take a toy example where at every position $p(a) = \frac{1}{3}$, $p(b) = \frac{2}{3}$ and $q(a) = \frac{2}{3}$, $q(b) = \frac{1}{3}$, with $\gamma = 2$. Token-wise verification accepts $\frac{10}{9}$ tokens per round on average, block verification $\frac{11}{9}$. With PaLM-2 models the gain was about 8% more tokens per round and 5–8% in walltime, with the same draft, the same target pass and a few extra vector operations. It works with any drafter, and at the end of the post we'll see how to train a drafter for it. Traversal Verification ([Weng et al., 2025](https://arxiv.org/pdf/2505.12398)) brings the same idea to token trees, checking whole root-to-leaf sequences from the leaves up instead of discarding a subtree as soon as its root is rejected.
 
 ### Verification bottlenecks
 
@@ -989,13 +989,13 @@ The original speculative decoding papers drafted with a separate small LLM from 
 
 ### EAGLE
 
-**EAGLE** ([Li et al., 2024](https://arxiv.org/pdf/2401.15077)) drafts autoregressively at the level of hidden states, which it calls features, rather than tokens. Its input combines two sequences: the target's last hidden states $\mathbf{h}\_i$, right before the LM head, and the embeddings $e(x_{i+1})$ of the tokens one step ahead. Each hidden state is concatenated with the embedding of the token that was actually sampled from it, an FC layer reduces the pair back to the hidden size, and a single transformer layer predicts the next hidden state $\mathbf{a}\_{t+1}$, which the target's frozen LM head $\operatorname{LM}(\cdot)$ turns into a distribution over the next token:
+**EAGLE** ([Li et al., 2024](https://arxiv.org/pdf/2401.15077)) drafts autoregressively at the level of hidden states, which it calls features, rather than tokens. Its input combines two sequences: the target's last hidden states $\mathbf{h}\_i$, right before the LM head, and the embeddings $e(x_{i+1})$ of the tokens one step ahead. Each hidden state is concatenated with the embedding of the token that was actually sampled from it, an FC layer reduces the pair back to the hidden size, and a single transformer layer predicts the next hidden state:
 
 $$\mathbf{a}_{t+1} = \operatorname{Layer}_\phi\Big(\operatorname{FC}\big[\mathbf{h}_i;\, e(x_{i+1})\big]_{i \le t}\Big).$$
 
-The drafter is trained both to match the target's next hidden state and to predict the token after it:
+The target's LM head turns $\mathbf{a}\_{t+1}$ into the drafter's distribution $q := q(\cdot \mid \mathbf{a}\_{t+1})$ over the token $x_{t+2}$, and the drafter is trained both to match the target's next hidden state and to predict that token:
 
-$$\mathcal{L} = \operatorname{SmoothL}_1\big(\mathbf{a}_{t+1}, \mathbf{h}_{t+1}\big) + w_{\text{cls}} \cdot \operatorname{CE}\big(\operatorname{LM}(\mathbf{a}_{t+1}),\, x_{t+2}\big),$$
+$$\mathcal{L} = \operatorname{SmoothL}_1\big(\mathbf{a}_{t+1}, \mathbf{h}_{t+1}\big) + w_{\text{cls}} \cdot \mathcal{L}_{\operatorname{CE}}\big(q,\, x_{t+2}\big),$$
 
 with $w_{\text{cls}} = 0.1$. The shifted tokens matter: a hidden state $\mathbf{h}\_t$ alone doesn't tell the drafter which token was actually sampled from it. At later draft steps the target's hidden states aren't available yet, so the drafter feeds its own predictions $\mathbf{a}$ back in. **EAGLE-2** ([Li et al., 2024b](https://arxiv.org/pdf/2406.16858)) kept the drafter and replaced the static token tree with a dynamic one, grown wherever the drafter's confidence is high, since that confidence turned out to be well calibrated with acceptance.
 
@@ -1003,7 +1003,7 @@ with $w_{\text{cls}} = 0.1$. The shifted tokens matter: a hidden state $\mathbf{
 
 **EAGLE-3** ([Li et al., 2025](https://arxiv.org/pdf/2503.01840)) made two changes. First, instead of the last hidden state it fuses low-, mid- and high-level hidden states of the target, $\mathbf{H} = \mathbf{W}\_{\text{fuse}}\,\big[\mathbf{h}^{(l_1)};\, \mathbf{h}^{(l_2)};\, \mathbf{h}^{(l_3)}\big]$. Second, it dropped the hidden-state regression, which tied the drafter to imitating the target's hidden states, and trained on tokens only. Without it, the drafter's hidden states $\mathbf{a}$ at later steps no longer have to look like the target's, so they must be part of training. The **training-time test** unrolls the drafter for several steps: the fused target states $\mathbf{H}$ are available only for the verified context, and at every later position the drafter consumes its own hidden states from the previous step, exactly as at inference. The tokens themselves come from the training text:
 
-$$\mathcal{L}_{\text{TTT}} = \sum_{k=1}^{\gamma} \operatorname{CE}\Big(q_\phi\big(\cdot \mid x_{< t+k},\ \mathbf{H}_{\le t},\ \mathbf{a}_{t+1:t+k-1}\big),\; x_{t+k}\Big),$$
+$$\mathcal{L}_{\text{TTT}} = \sum_{k=1}^{\gamma} \mathcal{L}_{\operatorname{CE}}\Big(q_\phi\big(\cdot \mid x_{< t+k},\ \mathbf{H}_{\le t},\ \mathbf{a}_{t+1:t+k-1}\big),\; x_{t+k}\Big),$$
 
 where $\mathbf{a}\_{t+1:t+k-1}$ are the drafter's own hidden states from the earlier steps. With these changes the drafter finally scaled with training data, and EAGLE-3 reported speedups of up to 6.5×. Its weak spot is that it's still sequential: a round costs $\gamma$ drafter passes before the tree is verified, and when verification isn't free, this overhead can eat the whole gain. In [vLLM's throughput tests on AMD GPUs](https://vllm.ai/blog/2026-08-23-speculative-decoding-amd-gpus), EAGLE-3 on Qwen3-8B with MATH500 stayed below plain decoding for every draft length from 1 to 7 tokens, from 0.44× to 0.88×.
 
@@ -1013,9 +1013,9 @@ Another way to get a drafter is to train it together with the target. **Multi-to
 
 $$\mathbf{a}^{(k)}_t = \operatorname{Layer}_k\Big(\operatorname{FC}_k\big[\operatorname{RMSNorm}(\mathbf{a}^{(k-1)}_i);\, \operatorname{RMSNorm}(e(x_{i+k}))\big]_{i \le t}\Big).$$
 
-The shared LM head turns $\mathbf{a}^{(k)}\_t$ into a prediction of token $x_{t+k+1}$, so the $k$-th module learns to look $k+1$ tokens ahead. During pretraining the cross-entropies of all depths are averaged and added to the usual next-token loss with a small weight:
+The shared LM head turns $\mathbf{a}^{(k)}\_t$ into the module's distribution $q_k := q(\cdot \mid \mathbf{a}^{(k)}\_t)$ over token $x_{t+k+1}$, so the $k$-th module learns to look $k+1$ tokens ahead. During pretraining the cross-entropies of all depths are averaged and added to the target's usual next-token loss with a small weight:
 
-$$\mathcal{L} = \operatorname{CE}\big(\operatorname{LM}(\mathbf{h}_t),\, x_{t+1}\big) + \frac{w_{\text{MTP}}}{D} \sum_{k=1}^{D} \operatorname{CE}\big(\operatorname{LM}(\mathbf{a}^{(k)}_t),\, x_{t+k+1}\big).$$
+$$\mathcal{L} = \mathcal{L}_{\operatorname{CE}}\big(p,\, x_{t+1}\big) + \frac{w_{\text{MTP}}}{D} \sum_{k=1}^{D} \mathcal{L}_{\operatorname{CE}}\big(q_k,\, x_{t+k+1}\big).$$
 
 At inference the modules are reused as a sequential drafter that comes with the model for free. DeepSeek-V4 serves with MTP-1, a single module drafting one token per round, and Qwen3.5 has native MTP layers. Kimi-K3 pre-trains one MTP layer and then fine-tunes it into an EAGLE-3-style drafter that fuses the outputs of its 1st, 4th and final layers ([Kimi Team, 2026](https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf)), which is where the two families meet. We'll get back to Kimi-K3's training objective at the end of the post.
 
@@ -1289,12 +1289,12 @@ Marginals fail in a second, more mundane way too. [Chen et al. (2026)](https://a
 
 $$q_k(\cdot \mid x_{\le t+k-1}) = \operatorname{softmax}\big(\mathbf{U}_k + \mathbf{W}_1[x_{t+k-1}]\,\mathbf{W}_2\big),$$
 
-where $\mathbf{W}\_1 \in \mathbb{R}^{V \times r}$ is a lookup table and $\mathbf{W}\_2 \in \mathbb{R}^{r \times V}$, with rank $r = 256$. The backbone still runs once; then tokens are sampled left to right, each one picking its row of the transition bias. Once the block is drafted, its logits for verification are a single extra matmul:
+where the lookup table $\mathbf{W}\_1 \in \mathbb{R}^{V \times 256}$ and $\mathbf{W}\_2 \in \mathbb{R}^{256 \times V}$ form a rank-256 transition matrix. The backbone still runs once; then tokens are sampled left to right, each one picking its row of the transition bias. Once the block is drafted, its logits for verification are a single extra matmul:
 
 ```python
 def markov_logits(z, prev_tok, W_o, W1, W2):
     """z: [γ, d] backbone states, prev_tok: [γ] previous draft tokens,
-    W1: [V, r], W2: [r, V] - low-rank token transition."""
+    W1: [V, 256], W2: [256, V] - low-rank token transition."""
     return z @ W_o + W1[prev_tok] @ W2
 ```
 
@@ -1462,9 +1462,9 @@ DSpark lifts the acceptance length over DFlash by 16–18% on Qwen3-4B/8B/14B (e
 
 ### Domino
 
-**Domino** ([Huang et al., 2026](https://arxiv.org/pdf/2605.29707)) gives the parallel backbone a causal head with full-prefix memory. A small GRU summarizes the embeddings of all tokens drafted so far into a state $\mathbf{s}\_{k-1}$, and a rank-256 correction $\mathbf{W}\_2\sigma(\mathbf{W}\_1[\mathbf{z}\_k; \mathbf{s}\_{k-1}])$ is added to the backbone's logits $\mathbf{U}\_k$, which is the last line of our factorization. The interesting part is training. A head that sees the prefix tempts the optimizer to leave the work to it and neglect the backbone, so Domino uses a base-anchored curriculum: it trains the backbone's own logits first and gradually shifts the loss towards the corrected distribution $q_k$:
+**Domino** ([Huang et al., 2026](https://arxiv.org/pdf/2605.29707)) gives the parallel backbone a causal head with full-prefix memory. A small GRU summarizes the embeddings of all tokens drafted so far into a state $\mathbf{s}\_{k-1}$, and a rank-256 correction $\mathbf{W}\_2\sigma(\mathbf{W}\_1[\mathbf{z}\_k; \mathbf{s}\_{k-1}])$ is added to the backbone's logits $\mathbf{U}\_k$, which is the last line of our factorization. The interesting part is training. A head that sees the prefix tempts the optimizer to leave the work to it and neglect the backbone, so Domino uses a base-anchored curriculum: it trains the backbone's own distribution $q_k^{\text{base}} := \operatorname{softmax}(\mathbf{U}\_k)$ first and gradually shifts the loss towards the corrected distribution $q_k$:
 
-$$\mathcal{L} = (1 - \beta)\,\operatorname{CE}\big(q_k,\, x_{t+k}\big) + \beta\,\operatorname{CE}\big(\operatorname{softmax}(\mathbf{U}_k),\, x_{t+k}\big),$$
+$$\mathcal{L} = (1 - \beta)\, \mathcal{L}_{\operatorname{CE}}\big(q_k,\, x_{t+k}\big) + \beta\, \mathcal{L}_{\operatorname{CE}}\big(q_k^{\text{base}},\, x_{t+k}\big),$$
 
 with $\beta$ annealed from 1 to 0 over training. On Qwen3-8B with greedy decoding it raises the acceptance length over DFlash from 6.06 to 7.17 and the speedup from 4.66× to 5.49×.
 
@@ -1862,7 +1862,12 @@ The forward KL optimum spreads over all three modes and accepts 42% of tokens. T
 
 So why not maximize $\alpha$ directly? Look at the gradients with respect to the drafter's logits $\ell$:
 
-$$\frac{\partial \alpha}{\partial \ell_y} = q(y)\Big(\mathbb{1}[q(y) < p(y)] - \sum_x q(x)\,\mathbb{1}[q(x) < p(x)]\Big), \qquad \frac{\partial \operatorname{KL}(p \,\Vert\, q)}{\partial \ell_y} = q(y) - p(y).$$
+$$
+\begin{aligned}
+\frac{\partial \alpha}{\partial \ell_y} &= \frac{q(y)}{2}\Big(\operatorname{sign}\big(p(y) - q(y)\big) - \sum_x q(x) \operatorname{sign}\big(p(x) - q(x)\big)\Big), \\
+\frac{\partial \operatorname{KL}(p \,\Vert\, q)}{\partial \ell_y} &= q(y) - p(y).
+\end{aligned}
+$$
 
 The gradient of $\alpha$ is scaled by $q(y)$ itself, so the tokens where the drafter puts little mass, which are exactly the ones it needs to learn, barely get any push. KL's gradient is dense: wherever $p$ has mass and $q$ doesn't, it pulls. The figure starts in this regime: $q$ sits between two modes, $\alpha \approx 0.005$ and small moves of $\mu$ or $\sigma$ barely change it, while KL reacts to every move. A real drafter starts from $q$ spread over $10^5$ tokens or more, where the TV gradient is tiny, and in our experiments drafters trained on TV alone ended up well behind KL.
 
@@ -1982,6 +1987,18 @@ A fixed schedule is only right for one acceptance rate. D-PACE ([Wu et al., 2026
 
 $$\mathcal{L}_{\text{E2E}} = -\sum_{k=1}^{\gamma} \prod_{i=1}^{k} \big(1 - \operatorname{TV}(p_i, q_i)\big).$$
 
+E2E is built for token-wise verification, whose survival probability is a product of per-token terms. Block verification breaks this structure: a surplus at one token can pay for a deficit at the next, so two drafters with the same TV at every position can accept different numbers of tokens. **BV loss** ([Kim et al., 2026](https://arxiv.org/pdf/2609.34832)) derives the objective from block verification itself. For a fixed drafted prefix, averaged over the rest of the draft and the verifier's coins, block verification accepts at least its first $k$ tokens with probability exactly $w_k$, the running weight from the verifier's side. So the expected number of accepted draft tokens is $\sum_k \mathbb{E}\_{x \sim q}[w_k]$. Training text comes from the target, not from the drafter, and importance weighting moves the expectation there. Along a target-generated block the clipped running weight becomes a running minimum of likelihood ratios:
+
+$$\mathbb{E}_{x \sim q}\big[w_k\big] = \mathbb{E}_{x \sim p}\big[\min(1, r_1, \dots, r_k)\big], \qquad r_k = \prod_{i=1}^{k} \frac{q_i(x_{t+i})}{p_i(x_{t+i})}.$$
+
+As in our likelihood loss, a logarithm keeps the gradients alive when acceptance is low, and the loss on a target-generated block is
+
+$$\mathcal{L}_{\text{BV}} = -\log \sum_{k=1}^{\gamma} \min\big(1, r_1, \dots, r_k\big).$$
+
+In practice the last token of each prefix is integrated over the vocabulary, which brings in the target's full distribution and makes the single-token case exactly $\mathcal{L}^{\alpha}\_{\text{LK}}$. DFlash and DSpark drafters trained from scratch with BV loss for Qwen3-4B and Qwen3-8B accept 13–21% more tokens per round under block verification than with cross-entropy and 4–16% more than with LK losses, and the gains carry over to token-wise verification and greedy decoding.
+
+Two more observations from the paper fit this section well. Drafters trained on TV alone reached only 1.0–2.2 tokens per round, the vanishing gradient we saw above. And by the end of training, the cross-entropy drafter matched the target's tokens more often than the BV drafter, 54% against 47%, yet the BV drafter kept 21% more draft tokens per round: like KL, token accuracy is only a proxy.
+
 A second gap is the context the drafter conditions on. Losses are usually computed on target-generated text, while at inference the drafter continues its own guesses within the round, and the anchors where rounds start depend on earlier acceptances. EAGLE-3's training-time test closes the first part of this gap by unrolling the drafter during training. Draft-OPD ([Lei et al., 2026](https://arxiv.org/pdf/2605.29343)) goes further with on-policy distillation: it replays draft proposals from the anchors where rounds actually start at inference and weights the distillation by acceptance. DLoop's loop-aware training and Carryover's draft–verify–draft training apply the same idea to states that only exist across rounds: the drafter's own hidden states for unverified tokens and the target's states for rejected ones.
 
 The third gap is between rounds. For a parallel drafter the distribution at position $t$ depends on where its round started, and where rounds start depends on how many tokens the drafter got accepted before. So the states on which the drafter is evaluated depend on the drafter itself. **EDR** ([Zhao and Cai, 2026](https://arxiv.org/pdf/2610.10411)) captures this by representing speculative decoding as a Markov reward process conditioned on a target rollout of length $L$. A state $(s, t)$ means that the current round started at position $s$ and has reached position $t$. With probability $A^{q}\_{s,t}$ the token is accepted and the process moves to $(s, t+1)$; otherwise a new round starts and it moves to $(t, t+1)$, and every rejection costs one round. The expected number of rounds is then exactly
@@ -1992,7 +2009,7 @@ where $\omega^{q}\_{s,t}$ is the probability that decoding visits state $(s, t)$
 
 Two observations fall out of this formula. For an autoregressive drafter, whose prediction at position $t$ doesn't depend on where the round started, the occupancies sum to one at every position and the formula collapses to $1 + \mathbb{E}\big[\sum_t \epsilon_t\big]$: the expected number of rounds is the total TV distance along target rollouts, so a per-token acceptance objective is exactly the right one. For parallel drafters it isn't, and even the product of $1 - \operatorname{TV}$ terms in E2E only approximates the survival probability inside a round, the same $\approx$ as in our formula for $\tau$. EDR weights the local costs by occupancies that depend on $q$, derives an exact temporal-difference gradient that can be estimated without bias from target rollouts, and has no hyperparameters. The same machinery gives an exact offline evaluator of the number of rounds, so two drafters can be compared on shared target rollouts without running speculative decoding. Fine-tuning DSpark and DFly[^DFLY] with EDR gives small but consistent gains over both the released checkpoints and E2E-TV across nine math, code and chat benchmarks.
 
-Per-token, per-block and per-sequence objectives form a ladder: LK losses optimize the acceptance of each token, E2E the acceptance length of each round, and EDR the number of rounds for the whole sequence.
+Per-token, per-block and per-sequence objectives form a ladder: LK losses optimize the acceptance of each token, E2E and BV losses the acceptance length of each round, under token-wise and block verification respectively, and EDR the number of rounds for the whole sequence.
 
 ## Conclusion
 
