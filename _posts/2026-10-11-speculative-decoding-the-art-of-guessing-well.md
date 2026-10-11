@@ -1699,7 +1699,122 @@ There are three ways to keep the drafter's memory in check, and all of them appe
 
 ### H-Spec
 
-**H-Spec** ([Jiang et al., 2026](https://arxiv.org/pdf/2609.24197)) brings both ideas to a parallel drafter. Its attention layers match the target's KV dimensions and read keys and values from one target layer each, in place, like GliDe and Gemma 4's assistant. Its Mamba-2 layers carry the rest of the context in a recurrent state, initialized from target hidden states at the last position, fused across several layers and projected. On top sits DSpark's Markov head. The per-request state of the drafter no longer grows with the context, and nothing has to be injected into it. On Llama-3.1-8B, Qwen3-4B and Qwen3-8B, H-Spec improves the acceptance length over its parallel baselines by 13.3%, 5.0% and 8.7%, and peak vLLM throughput by 13–17%.
+**H-Spec** ([Jiang et al., 2026](https://arxiv.org/pdf/2609.24197)) brings the last two ideas to a parallel drafter. Its starting point is the obvious fix. DFlash keeps its own keys and values only because it projects the target's hidden states into them, so why not let each draft layer attend to the keys and values of one target layer directly, in place, like GliDe? The authors tried exactly this with DFlash. The first two positions of the block stayed as good as before, but conditional acceptance at later positions fell by up to 16.5 percentage points. Keys and values are made for retrieval: each describes one position for future queries, and none of them summarizes the context as a whole, which is what the projected hidden states gave DFlash.
+
+A summary of constant size is already there. Under causal attention, the target's hidden state $\mathbf{h}\_t$ at the last position has seen the whole context, and the target computes it anyway in every verification pass. The question is how a parallel drafter should consume one vector per round, and this is where state space models come in. Recall the recurrent form of [linear attention](https://astralord.github.io/posts/transformer-inference-optimization-toolset/#linear-attention) from the toolset post, which folds the whole prefix into a single matrix, $\mathbf{U}\_i = \mathbf{U}\_{i-1} + \phi(\mathbf{k}\_i)\mathbf{v}\_i^T$. At the core of **Mamba-2** ([Dao and Gu, 2024](https://arxiv.org/pdf/2405.21060)) is the same recurrence with a learned, input-dependent forgetting factor $a_i \in (0, 1)$:
+
+$$\mathbf{U}_i = a_i\, \mathbf{U}_{i-1} + \mathbf{k}_i \mathbf{v}_i^T, \qquad \mathbf{o}_i = \mathbf{U}_i^T \mathbf{q}_i,$$
+
+where $a_i$, $\mathbf{q}\_i$, $\mathbf{k}\_i$ and $\mathbf{v}\_i$ are all computed from the current input (Mamba calls them $\bar{A}$, $C$, $B$ and $x$). An attention layer has to keep a key and a value for every past token, so its memory grows with the context, and every new token reads all of it. A Mamba layer keeps only its state $\mathbf{U}$, whose size doesn't depend on the context length, and the forgetting factor lets it decide what to keep. This is how hybrid targets like Qwen3.5 get their small caches: most of their layers are linear-attention layers of this kind. The price is that the state is a lossy summary that can't retrieve an arbitrary token exactly, so such models still keep some full attention layers.
+
+H-Spec splits the two jobs between two modules, and the target provides both inputs for free. Each of its four layers starts with a Mamba-2 module, and three of them follow it with attention. The Mamba modules don't scan the context at all. The last-position hidden states of five target layers are fused and projected into their initial state $\mathbf{U}\_0$, and they scan only the positions of the block. Since the recurrence is linear, the scan over the whole block runs as one parallel pass, and identical mask tokens still get different states at different positions. The attention modules match the target's KV layout and read the keys and values of three target layers in place, through a 2,048-token sliding window, for the token-level detail a summary can't hold. On top sits DSpark's Markov head. For Qwen3-8B the Mamba state has 48 heads × 64 × 4 = 12,288 numbers per layer and is rebuilt every round, so the drafter keeps nothing of its own between rounds: nothing grows with the context, and nothing has to be injected.
+
+<div id="hspec_context" class="svg-container" align="center"></div> 
+
+<script>
+
+function hspec_context() {
+	const svg = d3.select("#hspec_context")
+				  .append("svg")
+				  .attr("viewBox", "0 0 700 400")
+				  .style("width", "100%")
+				  .style("max-width", "700px")
+				  .style("height", "auto");
+	
+	const words = ["The", "cat", "sat", "on", "the", "warm", "mat", "and", "then", "it", "purred"];
+	const x0 = 30, step = 44, w = 40, cell = 12;
+	const tok_y = 300, target_y = 214, own_y = 140, block_x = 500;
+	const col_x = function(i) { return x0 + i * step; };
+	const g = svg.append("g");
+	let mode = 0, seq_len = 7;
+	
+	function column(x, y, n, color) {
+		for (let j = 0; j < n; j += 1) {
+			rect(g, x + (w - cell) / 2, y + j * (cell + 2), cell, cell, color);
+		}
+	}
+	
+	function draw() {
+		g.selectAll("*").remove();
+		const last_x = col_x(seq_len - 1);
+		
+		text_(g, "target KV cache, kept anyway", x0, target_y + 54, 11);
+		for (let i = 0; i < seq_len; i += 1) {
+			column(col_x(i), target_y, 3, target_color);
+			token_box(g, col_x(i), tok_y, w, words[i], context_color, 1.0, 11);
+		}
+		text_(g, "draft block", block_x, tok_y + 38, 11);
+		token_box(g, block_x, tok_y, w, words[seq_len], context_color, 1.0, 11);
+		for (let k = 1; k < 4; k += 1) {
+			token_box(g, block_x + k * step, tok_y, w, "[M]", "white", 1.0, 11);
+		}
+		
+		if (mode == 0) {
+			text_(g, "DFlash's own KV cache, written for every new token", x0, own_y - 8, 11, drafter_color);
+			for (let i = 0; i < seq_len; i += 1) {
+				column(col_x(i), own_y, 2, drafter_color);
+				if (i < seq_len - 1) {
+					line_(g, col_x(i) + w / 2, target_y - 2, col_x(i) + w / 2, own_y + 2 * cell + 4, "currentColor", 1, "2,2");
+				}
+			}
+			arrow_(g, last_x + w / 2, target_y - 2, last_x + w / 2, own_y + 2 * cell + 4);
+			bezier_(g, block_x, tok_y + 11, block_x - 60, tok_y + 11, last_x + w + 60, own_y + cell, last_x + w + 2, own_y + cell, "currentColor", "4,3", true);
+			text_(g, "drafter memory grows with the context:", x0, 52, 12);
+			text_(g, "20 KiB per token, 0.67 GB at 32k tokens (Qwen3-8B)", x0, 70, 12);
+		} else {
+			bezier_(g, block_x, tok_y + 11, block_x - 60, tok_y + 11, last_x + w + 60, target_y + 20, last_x + w + 2, target_y + 20, "currentColor", "4,3", true);
+			
+			rect(g, last_x, 156, w, 22, target_color);
+			sub_text(g, "h", "t", last_x + w / 2 - 5, 171, 12, "black");
+			arrow_(g, last_x + w / 2, target_y - 2, last_x + w / 2, 180);
+			rect(g, 360, 72, 120, 24, fuse_color);
+			text_(g, "fuse & project", 420, 88, 11, "black").attr("text-anchor", "middle");
+			bezier_(g, last_x + w / 2, 156, last_x + w / 2, 126, 420, 126, 420, 98, "currentColor", "none", true);
+			
+			const grid_x = 522, grid_y = 60;
+			text_(g, "Mamba state, fixed size", grid_x, grid_y - 8, 11, drafter_color);
+			for (let r = 0; r < 4; r += 1) {
+				for (let c = 0; c < 10; c += 1) {
+					rect(g, grid_x + c * 12, grid_y + r * 12, 10, 10, drafter_color, 0.35 + 0.65 * ((r * 7 + c * 3) % 5) / 4);
+				}
+			}
+			arrow_(g, 480, 84, grid_x - 4, 84);
+			
+			const scan_y = 262;
+			arrow_(g, block_x + w / 2, grid_y + 50, block_x + w / 2, scan_y - 7);
+			for (let k = 0; k < 4; k += 1) {
+				const cx = block_x + k * step + w / 2;
+				g.append("circle").attr("cx", cx).attr("cy", scan_y).attr("r", 6)
+				   .attr("fill", drafter_color).attr("stroke", "black");
+				line_(g, cx, tok_y, cx, scan_y + 6);
+				if (k > 0) {
+					arrow_(g, cx - step + 7, scan_y, cx - 7, scan_y);
+				}
+			}
+			text_(g, "one parallel scan", block_x + 1.5 * step + w / 2, scan_y - 14, 10).attr("text-anchor", "middle");
+			text_(g, "drafter memory stays constant:", x0, 52, 12);
+			text_(g, "attention reads the target's cache in place,", x0, 70, 12);
+			text_(g, "the Mamba state is rebuilt every round", x0, 88, 12);
+		}
+	}
+	
+	tabs_(svg, ["DFlash", "H-Spec"], 290, 22, function(i) { mode = i; draw(); });
+	
+	const l_x = d3.scaleLinear()
+	    .domain([2, 10])
+	    .range([0, 300])
+	    .clamp(true);
+	createSlider(svg, function(v) { seq_len = v; draw(); }, l_x, 200, 372, "L", "currentColor", seq_len, roundN, 8);
+}
+
+hspec_context();
+
+</script>
+
+![](.)
+*How a parallel drafter conditions on a context of $L$ tokens. DFlash projects the target's hidden states into its own keys and values, so its cache grows with every token. H-Spec's attention reads the target's KV cache in place, and its Mamba layers start from a fixed-size state built from the target's last hidden state $\mathbf{h}\_t$, then scan the block in one parallel pass. Move the slider to grow the context, and click the titles to switch.*
+
+Both halves matter. With the architecture fixed, dropping the target's keys and values cuts the acceptance length by 24–31%, and dropping the summary by 7–12%. At a matched parameter count, the hybrid backbone beats a Mamba-only drafter by 29–45% and an attention-only one by 13–15%. Against P-EAGLE, DFlash and DSpark retrained with the same recipe, H-Spec improves the acceptance length on Llama-3.1-8B, Qwen3-4B and Qwen3-8B by 13.3%, 5.0% and 8.7% and keeps its margin from 1k to 32k tokens of context. In vLLM it reaches 5–17% higher peak throughput at the lowest KV cache utilization, and its advantage grows with concurrency. The costs are a deeper computational graph, which makes the hybrid backbone draft slower than DFlash's below about 32 concurrent requests or 512 tokens of input, and attention layers that must copy the target's KV layout.
 
 Serving engines have converged on a handful of these drafter families: vLLM's benchmark on AMD GPUs, for example, compares exactly four `method` values of `--speculative-config`, namely `mtp`, `eagle3`, `dflash` and `dspark`. Across all of them the architecture has been moving the same way, from drafting step by step towards a parallel backbone, a small causal head and deep conditioning on the target, all built with the serving engine in mind[^SV2]. What's left is the objective.
 
@@ -1862,14 +1977,9 @@ The forward KL optimum spreads over all three modes and accepts 42% of tokens. T
 
 So why not maximize $\alpha$ directly? Look at the gradients with respect to the drafter's logits $\ell$:
 
-$$
-\begin{aligned}
-\frac{\partial \alpha}{\partial \ell_y} &= \frac{q(y)}{2}\Big(\operatorname{sign}\big(p(y) - q(y)\big) - \sum_x q(x) \operatorname{sign}\big(p(x) - q(x)\big)\Big), \\
-\frac{\partial \operatorname{KL}(p \,\Vert\, q)}{\partial \ell_y} &= q(y) - p(y).
-\end{aligned}
-$$
+$$\frac{\partial \alpha}{\partial \ell_y} = \frac{q(y)}{2}\Big(s(y) - \sum_x q(x)\, s(x)\Big), \qquad \frac{\partial \operatorname{KL}(p \,\Vert\, q)}{\partial \ell_y} = q(y) - p(y),$$
 
-The gradient of $\alpha$ is scaled by $q(y)$ itself, so the tokens where the drafter puts little mass, which are exactly the ones it needs to learn, barely get any push. KL's gradient is dense: wherever $p$ has mass and $q$ doesn't, it pulls. The figure starts in this regime: $q$ sits between two modes, $\alpha \approx 0.005$ and small moves of $\mu$ or $\sigma$ barely change it, while KL reacts to every move. A real drafter starts from $q$ spread over $10^5$ tokens or more, where the TV gradient is tiny, and in our experiments drafters trained on TV alone ended up well behind KL.
+where $s(x) = \operatorname{sign}\big(p(x) - q(x)\big)$. The gradient of $\alpha$ is scaled by $q(y)$ itself, so the tokens where the drafter puts little mass, which are exactly the ones it needs to learn, barely get any push. KL's gradient is dense: wherever $p$ has mass and $q$ doesn't, it pulls. The figure starts in this regime: $q$ sits between two modes, $\alpha \approx 0.005$ and small moves of $\mu$ or $\sigma$ barely change it, while KL reacts to every move. A real drafter starts from $q$ spread over $10^5$ tokens or more, where the TV gradient is tiny, and in our experiments drafters trained on TV alone ended up well behind KL.
 
 ### LK losses
 
@@ -2001,11 +2111,11 @@ Two more observations from the paper fit this section well. Drafters trained on 
 
 A second gap is the context the drafter conditions on. Losses are usually computed on target-generated text, while at inference the drafter continues its own guesses within the round, and the anchors where rounds start depend on earlier acceptances. EAGLE-3's training-time test closes the first part of this gap by unrolling the drafter during training. Draft-OPD ([Lei et al., 2026](https://arxiv.org/pdf/2605.29343)) goes further with on-policy distillation: it replays draft proposals from the anchors where rounds actually start at inference and weights the distillation by acceptance. DLoop's loop-aware training and Carryover's draft–verify–draft training apply the same idea to states that only exist across rounds: the drafter's own hidden states for unverified tokens and the target's states for rejected ones.
 
-The third gap is between rounds. For a parallel drafter the distribution at position $t$ depends on where its round started, and where rounds start depends on how many tokens the drafter got accepted before. So the states on which the drafter is evaluated depend on the drafter itself. **EDR** ([Zhao and Cai, 2026](https://arxiv.org/pdf/2610.10411)) captures this by representing speculative decoding as a Markov reward process conditioned on a target rollout of length $L$. A state $(s, t)$ means that the current round started at position $s$ and has reached position $t$. With probability $A^{q}\_{s,t}$ the token is accepted and the process moves to $(s, t+1)$; otherwise a new round starts and it moves to $(t, t+1)$, and every rejection costs one round. The expected number of rounds is then exactly
+The third gap is between rounds. For a parallel drafter the distribution at position $t$ depends on where its round started, and where rounds start depends on how many tokens the drafter got accepted before. So the states on which the drafter is evaluated depend on the drafter itself. **EDR** ([Zhao and Cai, 2026](https://arxiv.org/pdf/2610.10411)) captures this by representing speculative decoding as a Markov reward process conditioned on a target rollout of length $L$. A state $(t_0, t)$ means that the current round started at position $t_0$ and has reached position $t$. With probability $A^{q}\_{t_0,t}$ the token is accepted and the process moves to $(t_0, t+1)$; otherwise a new round starts and it moves to $(t, t+1)$, and every rejection costs one round. The expected number of rounds is then exactly
 
-$$\mathbb{E}[\#\text{rounds}] = 1 + \sum_{t=1}^{L} \sum_{s=0}^{t-1} \omega^{q}_{s,t}\, \epsilon^{q}_{s,t},$$
+$$\mathbb{E}[\#\text{rounds}] = 1 + \sum_{t=1}^{L} \sum_{t_0=0}^{t-1} \omega^{q}_{t_0,t}\, \epsilon^{q}_{t_0,t},$$
 
-where $\omega^{q}\_{s,t}$ is the probability that decoding visits state $(s, t)$ (its occupancy), and $\epsilon^{q}\_{s,t}$ is the expected local rejection cost there, a TV distance between the drafter and the target.
+where $\omega^{q}\_{t_0,t}$ is the probability that decoding visits state $(t_0, t)$ (its occupancy), and $\epsilon^{q}\_{t_0,t}$ is the expected local rejection cost there, a TV distance between the drafter and the target.
 
 Two observations fall out of this formula. For an autoregressive drafter, whose prediction at position $t$ doesn't depend on where the round started, the occupancies sum to one at every position and the formula collapses to $1 + \mathbb{E}\big[\sum_t \epsilon_t\big]$: the expected number of rounds is the total TV distance along target rollouts, so a per-token acceptance objective is exactly the right one. For parallel drafters it isn't, and even the product of $1 - \operatorname{TV}$ terms in E2E only approximates the survival probability inside a round, the same $\approx$ as in our formula for $\tau$. EDR weights the local costs by occupancies that depend on $q$, derives an exact temporal-difference gradient that can be estimated without bias from target rollouts, and has no hyperparameters. The same machinery gives an exact offline evaluator of the number of rounds, so two drafters can be compared on shared target rollouts without running speculative decoding. Fine-tuning DSpark and DFly[^DFLY] with EDR gives small but consistent gains over both the released checkpoints and E2E-TV across nine math, code and chat benchmarks.
 
