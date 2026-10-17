@@ -468,7 +468,7 @@ where $(\cdot)\_+ = \max(\cdot, 0)$. Tokens the drafter underestimates, $q(x) \l
 
 $$\alpha = \mathbb{E}_{x \sim q}\Big[\min\Big(1, \frac{p(x)}{q(x)}\Big)\Big] = \sum_x \min\big(p(x), q(x)\big),$$
 
-the overlap of the two distributions. The missing part is the **total variation distance**, the largest difference in probability the two distributions can assign to any set of tokens:
+the overlap of the two distributions. Its complement, the probability that a drafted token gets rejected, is the **total variation distance**, the largest difference in probability the two distributions can assign to any set of tokens:
 
 $$1 - \alpha = \operatorname{TV}(p, q) = \frac{1}{2}\sum_x \vert p(x) - q(x) \vert.$$
 
@@ -497,6 +497,16 @@ def verify(key, p, q, draft):
     token = jax.random.categorical(key_r, jnp.log(residual))
     return n, token  # keep draft[:n], then append token
 ```
+
+How many tokens does a round produce? If every drafted token were accepted independently with probability $\alpha$, the number of accepted draft tokens would follow a geometric distribution truncated at $\gamma$, and with the bonus token a round would yield
+
+$$\mathbb{E}[\#\text{tokens}] = \frac{1 - \alpha^{\gamma + 1}}{1 - \alpha}.$$
+
+In practice the drafter gets worse the further it guesses. If $\alpha_k$ is the probability of accepting the $k$-th token given that all previous ones were accepted, the expected number of tokens per round, the **acceptance length**, is
+
+$$\tau \approx 1 + \sum_{k=1}^{\gamma} \prod_{i=1}^{k} \alpha_i.$$
+
+This is the number papers report most often, and the one every drafter in this post tries to raise.
 
 ### Sampling with shared noise
 
@@ -660,33 +670,13 @@ def gumbel_verify(key, log_p, log_q):
     return draft, n, target[n]  # keep draft[:n], then append target[n]
 ```
 
-### How many tokens do we get?
-
-If each drafted token were accepted independently with probability $\alpha$, the number of accepted draft tokens would follow a geometric distribution truncated at $\gamma$, and with the bonus token a round would yield
-
-$$\mathbb{E}[\#\text{tokens}] = \frac{1 - \alpha^{\gamma + 1}}{1 - \alpha}.$$
-
-In practice the drafter gets worse the further it guesses. If $\alpha_k$ is the probability of accepting the $k$-th token given that all previous ones were accepted, the **acceptance length** $\tau$, the expected number of tokens per round, is
-
-$$\tau \approx 1 + \sum_{k=1}^{\gamma} \prod_{i=1}^{k} \alpha_i.$$
-
-This is the number papers report most often. For walltime, let's measure time in target passes, with $c$ the cost of one drafter pass. A drafter that predicts one token per pass runs $\gamma$ times per round, and verification costs about one decoding step (recall the first figure), so
-
-$$\text{speedup} = \frac{\tau}{\gamma c + 1}.$$
-
-A real world example: a decent drafter accepts $\alpha = 0.8$ of tokens, drafts $\gamma = 5$ of them, and costs $c = 0.05$ of a target pass. Then
-
-$$\tau = \frac{1 - 0.8^6}{0.2} \approx 3.69, \qquad \text{speedup} = \frac{3.69}{5 \cdot 0.05 + 1} \approx 2.95\times.$$
-
-A fifth of every round goes to drafting, and this share grows with $\gamma$. Both parts of the formula will keep coming back: better drafters raise $\tau$, and cheaper drafting shrinks the $\gamma c$ term.
-
 ## The verifier's side
 
 Before we get to drafters, let's look at the verifier. It can accept more of the same chain, check several continuations at once, and it stops being free once the batch grows.
 
 ### Block verification
 
-Speculative sampling stops at the first rejection, which is a myopic decision. If the drafter overestimates $x_{t+1}$ but underestimates $x_{t+2}$, the pair as a whole may be as likely under the target as under the drafter, yet token-wise verification often throws both away. **Block verification** ([Sun et al., 2024](https://arxiv.org/pdf/2403.10444)) decides on the whole draft jointly. With $p_k$ and $q_k$ the target's and the drafter's distributions at position $k$, the verifier keeps a running weight of how much of each prefix the target still covers,
+Speculative sampling stops at the first rejection, which is a myopic decision. If the drafter overestimates $x_{t+1}$ but underestimates $x_{t+2}$, the pair as a whole may be as likely under the target as under the drafter, yet token-wise verification often throws both away. **Block verification** ([Sun et al., 2024](https://arxiv.org/pdf/2403.10444)) decides on the whole draft jointly[^BV]. With $p_k$ and $q_k$ the target's and the drafter's distributions at position $k$, the verifier keeps a running weight of how much of each prefix the target still covers,
 
 $$w_k = \min\Big(1,\ w_{k-1}\frac{p_k(x_{t+k})}{q_k(x_{t+k})}\Big), \qquad w_0 = 1,$$
 
@@ -721,7 +711,7 @@ def block_verify(key, p, q, draft):
     return n, token
 ```
 
-Sun et al. prove that for a given draft block verification accepts the most tokens in expectation among all lossless rules, so it never loses to the token-wise rule. In a toy example with $p(a) = \frac{1}{3}$, $p(b) = \frac{2}{3}$, $q(a) = \frac{2}{3}$, $q(b) = \frac{1}{3}$ at every position and $\gamma = 2$, token-wise verification accepts $\frac{10}{9}$ tokens per round, block verification $\frac{11}{9}$. With PaLM-2 models the gain was about 8% more tokens per round and 5–8% in walltime, for a few extra vector operations. It works with any drafter, and at the end of the post we'll see how to train a drafter for it.
+Sun et al. prove that for a given draft block verification accepts the most tokens in expectation among all lossless rules, so it never loses to the token-wise rule. In a toy example with $p(a) = \frac{1}{3}$, $p(b) = \frac{2}{3}$, $q(a) = \frac{2}{3}$, $q(b) = \frac{1}{3}$ at every position and $\gamma = 2$, token-wise verification accepts $\frac{10}{9}$ tokens per round, block verification $\frac{11}{9}$. With PaLM-2 models the gain was about 8% more tokens per round and 5–8% in walltime, for a few extra vector operations and with any drafter.
 
 ### Token trees
 
@@ -729,7 +719,7 @@ A chain dies at the first wrong token, but the target can verify several continu
 
 $$\tau(\mathcal{T}) = 1 + \sum_{v \in \mathcal{T}} \Pr\big(\text{path root} \to v \text{ accepted}\big),$$
 
-the tree version of $\sum_k \prod_{i \le k} \alpha_i$. Given a budget of nodes, the best tree keeps the nodes with the highest path probabilities, and that's what the tree builders later in this post try to approximate.
+the tree version of $\sum_k \prod_{i \le k} \alpha_i$. Given a budget of nodes, the best tree keeps the nodes with the highest path probabilities, and that's what practical tree builders try to approximate.
 
 <div id="token_tree" class="svg-container" align="center"></div> 
 
@@ -885,11 +875,11 @@ token_tree();
 
 Multi-draft versions of speculative sampling keep trees lossless: SpecInfer's multi-round rule tries the children one by one with the usual ratio, passing the target's residual on to the next sibling after each rejection, and SpecTr ([Sun et al., 2023](https://arxiv.org/pdf/2310.15141)) derives the optimal rule from optimal transport. Both assume that the children are *sampled* independently from $q$: the ratio $p(x) / q(x)$ corrects for how often the drafter proposes $x$, so it's exact only if $q(x)$ really is that frequency.
 
-Practical trees are rarely built this way. EAGLE-2's dynamic tree, the best-first trees of DDTree and DominoTree below, and every tree pruned by a confidence threshold take the *top* candidates deterministically: the top candidate is proposed with probability one, a token outside the top-$k$ with probability zero, and plugging $q(x)$ into the rule biases the output. Other proposal schemes need their own rules, like sampling without replacement through the Gumbel-top-$k$ trick in Recursive Speculative Decoding ([Jeon et al., 2024](https://arxiv.org/pdf/2402.14160)). For a deterministic tree each child's honest proposal is a point mass, and the rule degenerates into **token matching**: sample the target's own token at the node and accept it if it's among the children. EAGLE's reference implementation does exactly this, setting $q(x) = 1$ for every child and renormalizing the target's distribution after each rejected sibling, and DDTree verifies by matching at temperature 1. A node is then accepted with probability $\sum_{x \in \text{children}} p(x)$: the drafter's probabilities shape the tree, never the acceptance. The same goes for anything that reshapes the drafter's distribution after the fact, such as top-$k$ truncation: the verifier must receive exactly the distribution the draft was sampled from. Traversal Verification ([Weng et al., 2025](https://arxiv.org/pdf/2505.12398)) brings block verification to trees with sampled children, checking root-to-leaf sequences from the leaves up instead of discarding a subtree as soon as its root is rejected.
+Practical trees are rarely built this way. Trees grown along the drafter's most confident branches, assembled best-first from the most likely paths or pruned by a confidence threshold all take the *top* candidates deterministically: the top candidate is proposed with probability one, a token outside the top-$k$ with probability zero, and plugging $q(x)$ into the rule biases the output. Other proposal schemes need their own rules, like sampling without replacement through the Gumbel-top-$k$ trick in Recursive Speculative Decoding ([Jeon et al., 2024](https://arxiv.org/pdf/2402.14160)). For a deterministic tree each child's honest proposal is a point mass, and the rule degenerates into **token matching**: sample the target's own token at the node and accept it if it's among the children. [Popular implementations](https://github.com/SafeAILab/EAGLE/blob/main/eagle/model/utils.py) do exactly this, setting $q(x) = 1$ for every child and renormalizing the target's distribution after each rejected sibling. A node is then accepted with probability $\sum_{x \in \text{children}} p(x)$: the drafter's probabilities shape the tree, never the acceptance. The same goes for anything that reshapes the drafter's distribution after the fact, such as top-$k$ truncation: the verifier must receive exactly the distribution the draft was sampled from. Traversal Verification ([Weng et al., 2025](https://arxiv.org/pdf/2505.12398)) brings block verification to trees with sampled children, checking root-to-leaf sequences from the leaves up instead of discarding a subtree as soon as its root is rejected.
 
 #### Trees and hybrid targets
 
-The tree mask works because softmax attention treats its keys as a set, so every node simply picks out its ancestors. But frontier targets are no longer pure softmax attention: Kimi-K3 interleaves 69 layers of Kimi Delta Attention, a linear attention with a recurrent state, with 24 MLA layers ([Kimi Team, 2026](https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf)), Qwen3.5 uses Gated DeltaNet in most of its layers, and DeepSeek-V4 compresses the context into blocks. A recurrent layer updates one state token by token, so a tree needs a separate state per branch, which no mask can express, and with compressed attention branches diverging from a shared prefix compress into different blocks. STree ([Wu et al., 2025](https://arxiv.org/pdf/2505.14969)) verifies trees in state space and hybrid models by scanning them with accumulated state transitions. For DeepSeek-V4-Flash, [Liu and Li (2026)](https://arxiv.org/pdf/2609.24698) combine branch-aware causal verification, temporary per-branch state discarded after the pass, and a refresh of the compressed state along the accepted path. With 8 drafted nodes their trees accept 2.83–3.41 tokens per round against 2.39–2.84 for chains, but throughput grows by at most 18.5% and stops growing with larger budgets even as the acceptance length keeps rising.
+The tree mask works because softmax attention treats its keys as a set, so every node simply picks out its ancestors. But frontier targets are no longer pure softmax attention: Kimi-K3 interleaves 69 layers of Kimi Delta Attention, a linear attention with a recurrent state, with 24 MLA layers ([Kimi Team, 2026](https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf)), Qwen3.5 uses Gated DeltaNet in most of its layers, and DeepSeek-V4 compresses the context into blocks. A recurrent layer updates one state token by token, so a tree needs a separate state per branch, which no mask can express, and with compressed attention branches diverging from a shared prefix compress into different blocks. STree ([Wu et al., 2025](https://arxiv.org/pdf/2505.14969)) verifies trees in state space and hybrid models by scanning them with accumulated state transitions. For DeepSeek-V4-Flash, [Liu and Li (2026)](https://arxiv.org/pdf/2609.24698) combine branch-aware causal verification, temporary per-branch state discarded after the pass, and a refresh of the compressed state along the accepted path. With 8 drafted nodes their trees accept about 20% more tokens per round than chains, but throughput grows by at most 18.5% and stops growing with larger budgets even as the acceptance length keeps rising.
 
 Even with softmax attention only, trees are harder for the serving engine than chains:
 
@@ -899,11 +889,11 @@ Even with softmax attention only, trees are harder for the serving engine than c
 
 ### Verification bottlenecks
 
-So far verification cost one decoding step, which holds only while the tokens scored across the batch stay below the `ops:byte` ratio. With $B$ requests and $N$ drafted nodes per request (a chain has $N = \gamma$), the pass scores $B(N + 1)$ tokens. If $T(n)$ is the time of a forward pass over $n$ tokens, the curve from the first figure, the speedup over plain decoding at the same batch size is
+So far verification cost one decoding step. The first figure is the best case, though: a roofline where reading the weights and computing overlap perfectly, so every token below the `ops:byte` ratio is free. Real passes overlap the two only partly, and a pessimistic model simply adds them, $T(n) = t_{\text{mem}} + t_{\text{comp}}(n)$, so that 8 tokens cost 2.4% more than one and 295 tokens twice as much. With $B$ requests and $N$ drafted nodes per request (a chain has $N = \gamma$), the pass scores $B(N + 1)$ tokens, and the speedup over plain decoding at the same batch size is
 
 $$\text{speedup}(N, B) = \frac{\tau(N) \cdot T(B)}{T\big(B(N + 1)\big) + T_{\text{draft}}},$$
 
-where $T_{\text{draft}}$ is the time spent drafting. The numerator grows slowly: even with an optimal tree, the acceptance length grows only roughly logarithmically with the tree size, as observed in Sequoia ([Chen et al., 2024](https://arxiv.org/pdf/2402.12374)). The denominator grows linearly once $B(N+1)$ passes the knee. So the best tree shrinks as the batch grows, roughly as $N^\ast \approx \frac{\text{ops:byte}}{B}$:
+where $T_{\text{draft}}$ is the time spent drafting. The numerator grows slowly: even with an optimal tree, the acceptance length grows only roughly logarithmically with the tree size, as observed in Sequoia ([Chen et al., 2024](https://arxiv.org/pdf/2402.12374)). The denominator grows with every scored token, and steeply once $B(N+1)$ passes the knee, so the best tree shrinks as the batch grows:
 
 <div id="tree_cost" class="svg-container" align="center"></div> 
 
@@ -941,7 +931,7 @@ function tree_cost() {
 				  .style("height", "auto");
 	
 	const x_start = 70, x_end = 480, y_start = 25, y_end = 240, n_max = 256, c = 0.05;
-	const step_time = function(n) { return Math.max(16e9 / 3.35e12, 2 * 8e9 * n / 989e12); };
+	const step_time = function(n) { return 16e9 / 3.35e12 + 2 * 8e9 * n / 989e12; };
 	const batches = [[1, green], [8, blue], [32, colors[1]], [128, red]];
 	const x = d3.scaleLog().base(2).domain([1, n_max]).range([x_start, x_end]);
 	const y = d3.scaleLinear().range([y_end, y_start]);
@@ -1001,9 +991,9 @@ tree_cost();
 </script>
 
 ![](.)
-*Idealized speedup of tree speculation for an 8B model on H100 versus the number of drafted nodes per request, for four batch sizes. The tree is built best-first from a drafter whose top candidate matches the target with probability $\alpha$ and whose $j$-th candidate matches with probability $\alpha(1-\alpha)^j$; verification time follows the curve of the first figure, and drafting costs $c = 0.05$ of a decoding step. Dots mark the best tree for each batch size.*
+*Idealized speedup of tree speculation for an 8B model on H100 versus the number of drafted nodes per request, for four batch sizes. The tree is built best-first from a drafter whose top candidate matches the target with probability $\alpha$ and whose $j$-th candidate matches with probability $\alpha(1-\alpha)^j$; verification time adds weight reads and compute, $T(n) = t_{\text{mem}} + t_{\text{comp}}(n)$, and drafting costs $0.05$ of a decoding step. Dots mark the best tree for each batch size; move the slider to see them shift with $\alpha$.*
 
-With $\alpha = 0.8$, a single request keeps gaining from bigger trees up to the knee, eight requests are best served by about 36 nodes, 32 requests by about 8, and at 128 requests the best "tree" is a chain of two tokens, while a 64-node tree makes decoding almost four times slower than no speculation. That's why Sequoia picks the tree size per hardware, 64 to 128 nodes on an A100 but 768 when the weights are offloaded and streamed to an L40, where the flat part of the curve becomes enormous. In serving, TurboSpec ([Liu et al., 2024](https://arxiv.org/pdf/2406.14066)) adapts speculation to the load by tracking goodput, the rate of tokens that actually get accepted, since naive speculation can make a busy server slower. Together with their engineering costs, this is why trees pay off most where latency matters and the batch is small, while high-throughput serving tends to use chains with a draft length that adapts to the load.
+With $\alpha = 0.8$, a single request is best served by a tree of about 80 nodes, eight requests by 16, 32 requests by 6 and 128 requests by just 3, while a 64-node tree there makes decoding almost three times slower than no speculation. Better drafters can afford bigger trees: from $\alpha = 0.6$ to $0.9$ the best tree grows from 65 to 82 nodes for one request and from 2 to 5 nodes for 128. That's why Sequoia picks the tree size per hardware, 64 to 128 nodes on an A100 but 768 when the weights are offloaded and streamed to an L40, where the flat part of the curve becomes enormous. In serving, TurboSpec ([Liu et al., 2024](https://arxiv.org/pdf/2406.14066)) adapts speculation to the load by tracking goodput, the rate of tokens that actually get accepted, since naive speculation can make a busy server slower. Together with their engineering costs, this is why trees pay off most where latency matters and the batch is small, while high-throughput serving tends to use chains with a draft length that adapts to the load.
 
 ## Anatomy of a drafter
 
@@ -1039,35 +1029,40 @@ $$\mathcal{L} = \operatorname{SmoothL}_1\big(\mathbf{a}_{t+1}, \mathbf{h}_{t+1}\
 
 with $w_{\text{cls}} = 0.1$. The shifted tokens matter, since $\mathbf{h}\_t$ alone doesn't tell which token was sampled from it. At later draft steps the target's hidden states don't exist yet, so the drafter feeds back its own predictions $\mathbf{a}$. **EAGLE-2** ([Li et al., 2024b](https://arxiv.org/pdf/2406.16858)) kept the drafter and replaced the static token tree with a dynamic one, grown wherever the drafter is confident, since its confidence turned out to be well calibrated with acceptance.
 
-### EAGLE-3
+### EAGLE-3 and multi-token prediction
 
-**EAGLE-3** ([Li et al., 2025](https://arxiv.org/pdf/2503.01840)) made two changes. It fuses low-, mid- and high-level hidden states of the target, $\mathbf{H} = \mathbf{W}\_{\text{fuse}}\,\big[\mathbf{h}^{(l_1)};\, \mathbf{h}^{(l_2)};\, \mathbf{h}^{(l_3)}\big]$, and it drops the hidden-state regression, training on tokens only. Its hidden states $\mathbf{a}$ then no longer have to look like the target's, so later draft steps must be part of training. The **training-time test** unrolls the drafter for several steps: $\mathbf{H}$ is available only for the verified context, and at every later position the drafter consumes its own hidden states from the previous step, exactly as at inference, while the tokens come from the training text:
+**EAGLE-3** ([Li et al., 2025](https://arxiv.org/pdf/2503.01840)) keeps EAGLE's input, target features concatenated with the embedding of the next token, and changes two things. It fuses low-, mid- and high-level hidden states of the target, $\mathbf{H} = \mathbf{W}\_{\text{fuse}}\,\big[\mathbf{h}^{(l_1)};\, \mathbf{h}^{(l_2)};\, \mathbf{h}^{(l_3)}\big]$, instead of the last one, and it drops the hidden-state regression, training on tokens only. Its hidden states $\mathbf{a}$ then no longer have to look like the target's, so later draft steps must be part of training. The **training-time test** unrolls the drafter for several steps: $\mathbf{H}$ is available only for the verified context, and at every later position the drafter consumes its own hidden states from the previous step, exactly as at inference, while the tokens come from the training text:
 
 $$\mathcal{L}_{\text{TTT}} = \sum_{k=1}^{\gamma} \mathcal{L}_{\operatorname{CE}}\Big(q_\phi\big(\cdot \mid x_{< t+k},\ \mathbf{H}_{\le t},\ \mathbf{a}_{t+1:t+k-1}\big),\; x_{t+k}\Big).$$
 
-With these changes the drafter finally scaled with training data, and EAGLE-3 reported speedups of up to 6.5×. But it's still sequential: a round costs $\gamma$ drafter passes, and when verification isn't free this overhead can eat the whole gain. In [vLLM's throughput tests on AMD GPUs](https://vllm.ai/blog/2026-08-23-speculative-decoding-amd-gpus), where plain decoding of Qwen3-8B already ran at 3,530 tokens/s, i.e. with a large batch, EAGLE-3 on MATH500 stayed at 0.44× to 0.88× of plain decoding for every draft length from 1 to 7. Both numbers are right, just from opposite ends of the batch size range.
+With these changes the drafter finally scaled with training data, and EAGLE-3 reported speedups of up to 6.5×.
 
-### Multi-token prediction
-
-Another way to get a drafter is to train it with the target. **Multi-token prediction (MTP)** modules were popularized by DeepSeek-V3 ([DeepSeek-AI, 2024](https://arxiv.org/pdf/2412.19437)) as an auxiliary pretraining objective that densifies the training signal: the model gets $D$ extra modules applied in sequence. The $k$-th module normalizes the hidden state $\mathbf{a}^{(k-1)}\_i$ from the previous depth, starting from $\mathbf{a}^{(0)}\_i = \mathbf{h}\_i$, concatenates it with the normalized embedding of the token $k$ steps ahead, and passes the pair through its own FC layer and transformer layer:
+The same structure was trained into targets from the start. **Multi-token prediction (MTP)** modules, popularized by DeepSeek-V3 ([DeepSeek-AI, 2024](https://arxiv.org/pdf/2412.19437)) as an auxiliary pretraining objective that densifies the training signal, are $D$ extra layers applied in sequence. The $k$-th one normalizes the hidden state $\mathbf{a}^{(k-1)}\_i$ from the previous depth, starting from $\mathbf{a}^{(0)}\_i = \mathbf{h}\_i$, concatenates it with the normalized embedding of the token $k$ steps ahead, and passes the pair through its own FC layer and transformer layer, just like an EAGLE drafter:
 
 $$\mathbf{a}^{(k)}_t = \operatorname{Layer}_k\Big(\operatorname{FC}_k\big[\operatorname{RMSNorm}(\mathbf{a}^{(k-1)}_i);\, \operatorname{RMSNorm}(e(x_{i+k}))\big]_{i \le t}\Big).$$
 
-The shared LM head turns $\mathbf{a}^{(k)}\_t$ into $q_k := q(\cdot \mid \mathbf{a}^{(k)}\_t)$ over token $x_{t+k+1}$, so the $k$-th module looks $k+1$ tokens ahead. The cross-entropies of all depths are averaged and added to the usual next-token loss with a small weight:
+The shared LM head turns $\mathbf{a}^{(k)}\_t$ into $q_k := q(\cdot \mid \mathbf{a}^{(k)}\_t)$ over token $x_{t+k+1}$, so the $k$-th module looks $k+1$ tokens ahead, and the cross-entropies of all depths are averaged and added to the usual next-token loss with a small weight:
 
 $$\mathcal{L} = \mathcal{L}_{\operatorname{CE}}\big(p,\, x_{t+1}\big) + \frac{w_{\text{MTP}}}{D} \sum_{k=1}^{D} \mathcal{L}_{\operatorname{CE}}\big(q_k,\, x_{t+k+1}\big).$$
 
-At inference the modules become a sequential drafter that comes with the model for free. DeepSeek-V4 serves with MTP-1, a single module drafting one token per round, and Qwen3.5 has native MTP layers. Kimi-K3 pre-trains one MTP layer and fine-tunes it into an EAGLE-3-style drafter that fuses the outputs of its 1st, 4th and final AttnRes blocks ([Kimi Team, 2026](https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf)), which is where the two families meet. We'll get back to its training objective at the end of the post.
+At inference the modules become a drafter that comes with the model for free: DeepSeek-V4 serves with MTP-1, a single module drafting one token per round, and Qwen3.5 has native MTP layers. Kimi-K3 shows how close the two families are: it pre-trains one MTP layer and fine-tunes it into an EAGLE-3-style drafter that fuses the outputs of its 1st, 4th and final AttnRes blocks ([Kimi Team, 2026](https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf)).
+
+Both remain sequential: a round costs $\gamma$ drafter passes, and when verification isn't free this overhead can eat the whole gain. In [vLLM's throughput tests on AMD GPUs](https://vllm.ai/blog/2026-08-23-speculative-decoding-amd-gpus), where plain decoding of Qwen3-8B already ran at 3,530 tokens/s, i.e. with a large batch, EAGLE-3 on MATH500 stayed slower than plain decoding for every draft length from 1 to 7. The 6.5× and this slowdown come from opposite ends of the batch size range.
 
 ## Parallel drafters
 
-Every drafter so far runs once per drafted token, which in our example already cost a fifth of every round. A **parallel drafter** proposes all $\gamma$ tokens in a single pass. With $n_{\text{draft}}$ drafter passes per round the speedup becomes
+How much does running the drafter once per token cost? Let's measure time in target passes, with $c$ the cost of one drafter pass, and recall from the first figure that verifying a short draft costs about one decoding step. With $n_{\text{draft}}$ drafter passes per round, the speedup over plain decoding is
 
 $$\text{speedup} = \frac{\tau}{n_{\text{draft}} \cdot c + 1}, \qquad n_{\text{draft}} = \begin{cases} \gamma & \text{autoregressive drafter} \\ 1 & \text{parallel drafter} \end{cases}$$
 
-and with the same numbers a parallel drafter reaches $\frac{3.69}{0.05 + 1} \approx 3.51\times$, almost 20% faster at the same acceptance rate and draft length. The gap grows with $\gamma$: an autoregressive drafter has an optimal draft length beyond which extra guesses cost more than they bring, while for a parallel drafter longer drafts are nearly free, at least while verification stays memory-bound. The idea is as old as speculative decoding itself[^JAC], but for a long time parallel guesses were too weak to compete.
+A real world example: a decent drafter accepts $\alpha = 0.8$ of tokens, drafts $\gamma = 5$ of them, and costs $c = 0.05$ of a target pass. Then
 
-A word of caution about the numbers from here on. Papers differ in benchmarks, block sizes, temperatures and checkpoints, so for DFlash on Qwen3-8B alone the papers below report anywhere from about 4 to 7.8 tokens per round. Acceptance lengths are only comparable within one paper, so we'll always quote a method next to baselines from the same setting.
+$$\tau = \frac{1 - 0.8^6}{0.2} \approx 3.69, \qquad \text{speedup} = \frac{3.69}{5 \cdot 0.05 + 1} \approx 2.95\times,$$
+
+so a fifth of every round goes to drafting. A **parallel drafter** proposes all $\gamma$ tokens in a single pass and reaches $\frac{3.69}{0.05 + 1} \approx 3.51\times$, almost 20% faster at the same acceptance rate and draft length. The gap grows with $\gamma$: an autoregressive drafter has an optimal draft length beyond which extra guesses cost more than they bring, while for a parallel drafter longer drafts are nearly free, at least while verification stays memory-bound. The idea is as old as speculative decoding itself[^JAC], but for a long time parallel guesses were too weak to compete.
+
+> Papers differ in benchmarks, block sizes, temperatures and checkpoints, so absolute acceptance lengths vary a lot between them: for one and the same drafter and target, published numbers range from about 4 to 7.8 tokens per round. From here on we compare each method only with baselines from its own paper, and only where the gain is substantial.
+{: .prompt-warning }
 
 ### Medusa
 
@@ -1083,7 +1078,7 @@ The most direct way to a strong parallel drafter is to take a good autoregressiv
 
 ### DFlash
 
-Filling placeholder positions in one pass is what masked diffusion language models do, refining their guesses over several such steps at generation time, and early work drafted with whole discrete diffusion models ([Christopher et al., 2024](https://arxiv.org/pdf/2408.05636)). **DFlash** ([Chen et al., 2026](https://arxiv.org/pdf/2602.06036)) calls itself a **block diffusion** drafter, but the name needs care: it's trained like a masked diffusion model, yet at inference one forward pass over the last token the target produced and a block of mask tokens predicts all masked positions, with no refinement. In effect it's a masked block predictor; iterative refinement only comes back later, in DEdit.
+Filling placeholder positions in one pass is what masked diffusion language models do, refining their guesses over several such steps at generation time, and early work drafted with whole discrete diffusion models ([Christopher et al., 2024](https://arxiv.org/pdf/2408.05636)). **DFlash** ([Chen et al., 2026](https://arxiv.org/pdf/2602.06036)) calls itself a **block diffusion** drafter, but the name needs care: it's trained like a masked diffusion model, yet at inference one forward pass over the last token the target produced and a block of mask tokens predicts all masked positions, with no refinement. In effect it's a masked block predictor.
 
 The block is embedded with the target's embedding table, which DFlash shares and keeps frozen together with the LM head, and its positions attend to each other bidirectionally. To predict well from masks, the drafter needs a strong grip on the context, so DFlash takes hidden states from five target layers, spread uniformly between the second and the third-to-last, fuses them into $\mathbf{H}$ as EAGLE-3 does, with an extra RMSNorm, and injects them as extra keys and values into *every* draft layer:
 
@@ -1091,7 +1086,7 @@ $$\mathbf{z}^{(j+1)} = \operatorname{Attn}\Big(\mathbf{Q} = \mathbf{W}_Q^{(j)} \
 
 where $\mathbf{z}^{(j)}$ are the hidden states of the block at layer $j$, starting from the embeddings. EAGLE-3 sees the fused states only at its input, so their influence fades with depth; in DFlash every layer attends to the target's context directly, which lets the drafter be deeper (5 layers) and still cheap, because it runs once. Training samples random positions in target-generated text as **anchors**, the last verified token of an imagined round, masks the block after each anchor, and applies cross-entropy with weights decaying exponentially along the block.
 
-The most telling numbers come from a controlled comparison by [LMSYS](https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/): 5-layer EAGLE-3 and DFlash drafters for Qwen3-4B trained on the same data both reach $\tau = 4.2$ on GSM8K, yet the speedups are 2.1× and 3.3×. Only $n_{\text{draft}}$ moved. These drafters are weaker than the released DFlash checkpoint, which reaches 5.4 tokens per round on the same task even at temperature 1 in the DSpark paper, but they were trained identically. Adoption followed quickly: the DFlash drafter for Qwen3.5-397B-A17B beats the model's native MTP in throughput in every setting LMSYS benchmarked, by 1.5× on HumanEval at concurrency 1.
+The most telling numbers come from a controlled comparison by [LMSYS](https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/): 5-layer EAGLE-3 and DFlash drafters for Qwen3-4B trained on the same data both reach $\tau = 4.2$ on GSM8K, yet the speedups are 2.1× and 3.3×. Only $n_{\text{draft}}$ moved. These drafters are weaker than the released DFlash checkpoints, but they were trained identically. Adoption followed quickly: the DFlash drafter for Qwen3.5-397B-A17B beats the model's native MTP in throughput in every setting LMSYS benchmarked, by up to 1.5×.
 
 #### DDTree
 
@@ -1151,7 +1146,7 @@ token_tree_budget();
 ![](.)
 *Best-first token tree built from the per-position marginals of a parallel drafter, as in DDTree. Right: the top candidates $q_k$ at each block position $k$ from one drafter pass, shaded if they made it into the tree. Left: the tree, with nodes numbered in the order they leave the heap. Move the slider to change the budget: the tree grows deeper along confident paths and wider where the drafter hesitates.*
 
-The tree is verified in one target pass with an ancestor-only mask, which FlashAttention-2 doesn't support, so DDTree falls back to PyTorch's generic scaled dot-product attention, and since the tree is deterministic, sampling is verified by token matching. On Qwen3-8B with MATH-500 it lifts the acceptance length from DFlash's 7.79 to 10.73 at temperature 0 and the speedup from 5.56× to 7.52×; at temperature 1 the speedup goes from 4.56× to 6.59×.
+The tree is verified in one target pass with an ancestor-only mask, which FlashAttention-2 doesn't support, so DDTree falls back to PyTorch's generic scaled dot-product attention, and since the tree is deterministic, sampling is verified by token matching. On Qwen3-8B it lifts DFlash's acceptance length by almost 40% and its speedup from 5.6× to 7.5×.
 
 ## Restoring dependency in the block
 
@@ -1241,7 +1236,7 @@ $$F_k^{(m)} = \mathbb{E}\Big[\min_{q}\ \mathbb{E}\big[\operatorname{TV}(p_k, q) 
 
 where the inner expectation averages over the unseen earlier tokens of the block and the best $q$ is chosen separately for every information state. A fully parallel drafter has $m = 0$, and with the whole prefix the floor vanishes. Everything above the floor is the drafter's **model gap**. The floors are estimated by sampling hundreds of target continuations per anchor and solving the inner minimization exactly.
 
-On Qwen3-4B the all-parallel floor grows from 0.078 at the second position of a 7-token block to 0.286 at the seventh, capping any parallel drafter, however large, at about 71% acceptance there. But a single realized predecessor removes 86–100% of the floor, and a mutual information estimate agrees: one previous token recovers 94% of the missing path information, two tokens 99%. So a cheap head that sees the previous token is almost enough, and that's what the drafters in this section add to the parallel backbone. Yet real drafters sit far above their floors: across four targets, 43–64% of what the released DFlash checkpoints reject at the last position is model gap, not parallel blindness.
+On Qwen3-4B the all-parallel floor grows from 0.078 at the second position of a 7-token block to 0.286 at the seventh, capping any parallel drafter, however large, at about 71% acceptance there. But a single realized predecessor removes 86–100% of the floor, and an independent mutual information estimate agrees. So a cheap head that sees the previous token is almost enough, and that's what the drafters in this section add to the parallel backbone. Yet real drafters sit far above their floors: across four targets, 43–64% of what the released DFlash checkpoints reject at the last position is model gap, not parallel blindness.
 
 ### DSpark
 
@@ -1418,7 +1413,7 @@ $$\lbrace \gamma_b \rbrace^{*} = \arg\max_{\lbrace \gamma_b \rbrace} \ \underbra
 
 where $\operatorname{SPS}$ (steps per second) is the engine's profiled number of rounds per second for a given number of tokens in the batch. Under light load every request drafts long; under heavy load verification becomes compute-bound and only confident prefixes get budget. The problem is solved greedily by sorting the survival probabilities of all candidate positions.
 
-DSpark lifts the acceptance length over DFlash by 16–18% on Qwen3-4B/8B/14B, averaged over nine math, code and chat benchmarks at temperature 1 with blocks of 7 (on Qwen3-8B with GSM8K, from 5.33 to 6.17). In Qiang et al.'s terms the Markov head removes almost the whole floor: given the true previous token, 85–92% of what DSpark still rejects at the last position is model gap. In live DeepSeek-V4 serving against MTP-1, per-user generation became 60–85% faster for V4-Flash and 57–78% faster for V4-Pro at matched throughput, and aggregate throughput grew by about 50% at a fixed per-user speed target. That makes it the first parallel drafter proven in frontier production, running with $\gamma \le 5$.
+DSpark lifts DFlash's acceptance length by 16–18%. In Qiang et al.'s terms its Markov head removes almost the whole floor: given the true previous token, nearly all of what DSpark still rejects is model gap. In live DeepSeek-V4 serving with $\gamma \le 5$, it made per-user generation 60–85% faster than MTP-1 at matched throughput, the first parallel drafter proven in frontier production.
 
 ### Domino
 
@@ -1426,11 +1421,11 @@ DSpark lifts the acceptance length over DFlash by 16–18% on Qwen3-4B/8B/14B, a
 
 $$\mathcal{L} = (1 - \beta)\, \mathcal{L}_{\operatorname{CE}}\big(q_k,\, x_{t+k}\big) + \beta\, \mathcal{L}_{\operatorname{CE}}\big(q_k^{\text{base}},\, x_{t+k}\big),$$
 
-with $\beta$ annealed linearly from 1 to 0. On Qwen3-8B, averaged over eight benchmarks with greedy decoding and blocks of 16, it raises the acceptance length over DFlash from 6.06 to 7.17 and the speedup from 4.66× to 5.49×.
+with $\beta$ annealed linearly from 1 to 0. It raises DFlash's acceptance length and speedup by about 18%.
 
 #### DominoTree
 
-DDTree assumes the distribution at each depth doesn't depend on the path, which breaks with a causal head. **DominoTree** ([Lin and Jang, 2026](https://arxiv.org/pdf/2607.08642)) is a training-free best-first tree that scores each node with Domino's correction recomputed along its own path, restricted to the top-$M$ candidates per node. Applying the correction gives +10.1% acceptance length, recomputing it per path another +4.7%, and overall DominoTree reaches up to 7.3× speedup over autoregressive decoding on Qwen3-8B, on GSM8K at temperature 0. Like DDTree, it builds the tree deterministically and verifies by matching.
+DDTree assumes the distribution at each depth doesn't depend on the path, which breaks with a causal head. **DominoTree** ([Lin and Jang, 2026](https://arxiv.org/pdf/2607.08642)) is a training-free best-first tree that scores each node with Domino's correction recomputed along its own path, restricted to the top-$M$ candidates per node. Applying the correction at all brings most of the gain, about 10% in acceptance length, and recomputing it per path adds another 5%. Like DDTree, it builds the tree deterministically and verifies by matching.
 
 ### DFlash2
 
@@ -1582,7 +1577,7 @@ dflash2_architecture();
 
 $$\operatorname{Conv}(\mathbf{z})_k = \big(\mathbf{b}_0 + \boldsymbol{\delta}_{k,0}\big) \odot \mathbf{z}_k + \big(\mathbf{b}_1 + \boldsymbol{\delta}_{k,1}\big) \odot \mathbf{z}_{k-1},$$
 
-where $\mathbf{b}\_0, \mathbf{b}\_1$ are learned per-channel kernels and $\boldsymbol{\delta}\_k$ is a linear projection of $\mathbf{z}\_k$, one number per group of 16 channels. Each attention and MLP sublayer is wrapped in two of them, on its normalized input and on its output before the residual connection, with the coefficients of both predicted from the sublayer's input. Twenty convolutions in a row carry a signal across the whole block. They run over the block only, with the tap zeroed at its boundary, so the first mask position reads the last verified token, while the target's context still arrives as keys and values. They add 16.5M parameters, 3% of the drafter, recover much of the gain of a 15-layer drafter at late positions, and take the local exchange over from attention: layers 4–5 now spend 0.5% of their attention inside the block instead of 9.4%.
+where $\mathbf{b}\_0, \mathbf{b}\_1$ are learned per-channel kernels and $\boldsymbol{\delta}\_k$ is a linear projection of $\mathbf{z}\_k$, one number per group of 16 channels. Each attention and MLP sublayer is wrapped in two of them, on its normalized input and on its output before the residual connection, with the coefficients of both predicted from the sublayer's input. Twenty convolutions in a row carry a signal across the whole block. They run over the block only, with the tap zeroed at its boundary, so the first mask position reads the last verified token, while the target's context still arrives as keys and values. For 3% more parameters they recover much of the gain of a 15-layer drafter at late positions, and the local exchange moves from attention to the convolutions.
 
 **A selector instead of an argmax.** DFlash2 keeps the top $K = 16$ candidates $C_k$ at each position with their logits $\boldsymbol{\ell}\_k[b]$ and scores every adjacent pair $a \in C_{k-1}$, $b \in C_k$:
 
@@ -1590,19 +1585,19 @@ $$S_k(a, b) = \boldsymbol{\ell}_k[b] + \big\langle \mathbf{A}[a] \odot \mathbf{P
 
 where $\mathbf{A}$ and $\mathbf{B}$ are 256-dimensional token codebooks for the predecessor and the successor and $\mathbf{P}$ projects $\mathbf{z}\_k$ to 256 dimensions. One batched product yields a $16 \times 16$ matrix per position, with no extra backbone or LM head pass. The draft is a walk through this lattice: starting from the last verified token, each position takes the row $S_k(a, \cdot)$ of the token chosen before and picks its argmax, or samples from its softmax at the sampling temperature. In vLLM the walk is one small Triton program per request, and lattice plus walk take 0.02 ms. The verifier receives exactly this softmax over the 16 candidates, zero elsewhere, as $q_k$, so the truncation is part of the proposal and the output stays exact.
 
-Unlike DSpark's head, the transition is gated by the context through $\mathbf{z}\_k$, so "York" after "New" can be boosted for a city and not for a newspaper, and it's evaluated on $16 \times 16$ pairs instead of the full vocabulary. In Inco's Qwen3-4B ablation the selector costs 2.0M parameters and 0.6% of round latency against 77.8M and 9.6% for DSpark's correction, and lifts the acceptance length from 4.27 to 4.61 at temperature 0 and from 3.78 to 4.25 at temperature 1, against 4.49 and 4.08 with DSpark's correction. The price is that no path can leave the top 16, one more reason for the convolutions to keep recall high.
+Unlike DSpark's head, the transition is gated by the context through $\mathbf{z}\_k$, so "York" after "New" can be boosted for a city and not for a newspaper, and it's evaluated on $16 \times 16$ pairs instead of the full vocabulary. In Inco's ablation the selector has almost 40 times fewer parameters than DSpark's correction and a sixteenth of its latency, yet accepts more tokens. The price is that no path can leave the top 16, one more reason for the convolutions to keep recall high.
 
-Altogether it's a parallel backbone with a head that sees only the previous token, order one in Qiang et al.'s terms, for 18.5M parameters and about 1.3% of round latency. On Qwen3.5-4B with thinking on and temperature 1, the mean acceptance length over five benchmarks grows from 4.92 with DFlash and 5.49 with DSpark to 5.97. For Qwen3.8-27B with blocks of 8 it reaches 4.80 against 4.28 for the native MTP and 2.7–3.4× the throughput of autoregressive decoding at batch size 1. In vLLM, against a community DSpark drafter with 7 draft tokens on GSM8K, it serves 3.51× the autoregressive throughput against 2.79× at concurrency 1, and 2.20× against 1.77× at concurrency 32.
+Altogether it's a parallel backbone with a head that sees only the previous token, order one in Qiang et al.'s terms, for about 1.3% of round latency. On Qwen3.5-4B it accepts 21% more tokens per round than DFlash and 9% more than DSpark.
 
-Qiang et al. push the selector further. At order one there is almost no floor left, so what remains is model gap, and they argue that a context-blind transition added to the logits, as in DSpark, limits what such a head can express. Their **prefix-attention head** builds a query from the predecessor's embedding and the drafter state, attends over the committed prefix and maps the result through a low-rank projection to predecessor-dependent logits, on top of DFlash2's lattice and convolutions. Its floor is DSpark's, but its model gap at the last position is 25.5% lower, and in SGLang their Qwen3-4B drafter accepts 4.94 tokens per round at temperature 1 against 4.75 for the released DSpark checkpoint, averaged over nine tasks.
+Qiang et al. push the selector further. At order one there is almost no floor left, so what remains is model gap, and they argue that a context-blind transition added to the logits, as in DSpark, limits what such a head can express. Their **prefix-attention head** builds a query from the predecessor's embedding and the drafter state, attends over the committed prefix and maps the result through a low-rank projection to predecessor-dependent logits, on top of DFlash2's lattice and convolutions. Its floor is DSpark's, but its model gap at the last position is a quarter lower, which gives a few percent more accepted tokens than the released DSpark checkpoint.
 
 ### Looping and editing the block
 
 A parallel drafter is cheap enough to run twice: with $c = 0.05$, two passes still cost a tenth of a target pass. So instead of adding a head, we can loop the drafter over its own block, the Jacobi-style refinement[^JAC] done by a drafter rather than by the target. Such drafters don't fit a single line of our factorization, since every extra pass conditions the whole block on the previous guess.
 
-**D-Loop** ([Chen et al., 2026](https://arxiv.org/pdf/2610.06011)), from the authors who named the repetition trap, runs the DFlash drafter twice: the first pass proposes a block, the second conditions on a selected prefix of it and regenerates the suffix in parallel. The block becomes two semi-autoregressive halves without a single new parameter, and one drafter learns both roles with a prefix–suffix objective. On Qwen3-4B and Qwen3-8B it beats DFlash and DSpark trained in the same setting, most of all when sampling: averaged over eight benchmarks at temperature 1, it accepts 5.77 tokens per round on Qwen3-8B against 4.20 for DSpark, and the speedup grows from 3.19× to 4.03×.
+**D-Loop** ([Chen et al., 2026](https://arxiv.org/pdf/2610.06011)), from the authors who named the repetition trap, runs the DFlash drafter twice: the first pass proposes a block, the second conditions on a selected prefix of it and regenerates the suffix in parallel. The block becomes two semi-autoregressive halves without a single new parameter, and one drafter learns both roles with a prefix–suffix objective. It beats DFlash and DSpark trained in the same setting, most of all when sampling: at temperature 1 it accepts 37% more tokens per round than DSpark on Qwen3-8B.
 
-**DEdit** ([Yu et al., 2026](https://arxiv.org/pdf/2609.38510)) lets the DFlash drafter edit its whole draft: after the first unmasking pass, each editing pass takes the current draft instead of masks and re-predicts every position at once, with bidirectional attention inside the block, so later guesses can repair earlier errors. The hard part is repairing without breaking correct tokens. ProposalMix training builds editing inputs by mixing the drafter's first-pass predictions with ground-truth tokens according to its confidence, which halves the edits that shorten the accepted prefix. With two editing passes over a block of 32, DEdit reaches 7.58 tokens per round on Qwen3-4B with greedy decoding against 6.91 for DSpark trained on the same data with a block of 16, and average greedy speedups of 5.72× and 5.97× on Qwen3-4B and Qwen3-8B. Every editing pass costs a drafter pass, so the speedup grows less than the acceptance length, and a causal editor accepts less: the future context is what makes editing work.
+**DEdit** ([Yu et al., 2026](https://arxiv.org/pdf/2609.38510)) lets the DFlash drafter edit its whole draft: after the first unmasking pass, each editing pass takes the current draft instead of masks and re-predicts every position at once, with bidirectional attention inside the block, so later guesses can repair earlier errors. The hard part is repairing without breaking correct tokens. ProposalMix training builds editing inputs by mixing the drafter's first-pass predictions with ground-truth tokens according to its confidence, which halves the edits that shorten the accepted prefix. With two editing passes over a block of 32, DEdit accepts 10% more tokens per round than DSpark trained on the same data. Every editing pass costs a drafter pass, so the speedup grows less than the acceptance length, and a causal editor accepts less: the future context is what makes editing work.
 
 ## Beyond a single round
 
@@ -1618,7 +1613,7 @@ Verification also computes target hidden states for rejected tokens, and the rej
 
 **ReTrace** ([Lin et al., 2026](https://arxiv.org/pdf/2608.29748)) shows that rejected positions of a DFlash draft often still align with the target's continuation, and conditions the next block on the rejected suffix instead of fresh mask tokens. It keeps the suffix's hidden representations, aligns them with the new block, corrects them with signals from the same verification pass and fuses them into the drafter's input embeddings through a gated residual connection, without an extra forward pass.
 
-**Carryover drafting** ([Koo et al., 2026](https://arxiv.org/pdf/2609.14717)) recycles the target's side: hidden states the verifier computed for rejected tokens become temporary KV context for the drafter, marked with a single learned embedding and replaced every round, so their size stays bounded by one block. Standard parallel training never produces rejected states like the ones at inference, so Carryover's draft–verify–draft training produces them while keeping all positions in parallel. With DFlash and a DSpark-style drafter it raises the acceptance length by 6.5–14.7% and the vLLM speedup by 7.9–14.4%, and by up to 28.8% on translation.
+**Carryover drafting** ([Koo et al., 2026](https://arxiv.org/pdf/2609.14717)) recycles the target's side: hidden states the verifier computed for rejected tokens become temporary KV context for the drafter, marked with a single learned embedding and replaced every round, so their size stays bounded by one block. Standard parallel training never produces rejected states like the ones at inference, so Carryover's draft–verify–draft training produces them while keeping all positions in parallel. With DFlash and a DSpark-style drafter it raises the vLLM speedup by up to 14%, and by up to 29% on translation.
 
 Both stay lossless, because rejected tokens are never committed, they only inform the next draft. And both change what a drafter keeps between rounds, which brings us to memory.
 
@@ -1689,9 +1684,9 @@ The most straightforward fix is the one long-context LLMs use themselves: a slid
 
 $$\underset{\mathbf{K/V}}{2} \cdot \underset{\text{bf16}}{2} \cdot \underset{\text{window}}{2{,}048} \cdot \underset{\text{draft layers}}{5} \cdot \underset{\text{KV heads}}{8} \cdot \underset{\text{head dim}}{128} \approx \underset{\text{bytes per request}}{42 \text{ MB}},$$
 
-16 times less at 32k tokens and 500 times less at 1M. MagicDec itself drafted this way, running the target over a StreamingLLM-style window of recent tokens and a few attention sinks, and parallel drafters have converged on it too: z-lab trains its recent DFlash drafters, such as the [one for Qwen3.5-27B](https://huggingface.co/z-lab/Qwen3.5-27B-DFlash), with sliding-window attention "for improved long-context performance", Red Hat's [DFlash drafter for DeepSeek-V4-Flash](https://huggingface.co/RedHatAI/DeepSeek-V4-Flash-speculator.dflash) uses 2,048-token windows in all five layers, and H-Spec below runs its attention and all its baselines with the same window.
+16 times less at 32k tokens and 500 times less at 1M. MagicDec itself drafted this way, running the target over a StreamingLLM-style window of recent tokens and a few attention sinks, and parallel drafters have converged on it too: z-lab trains its recent DFlash drafters, such as the [one for Qwen3.5-27B](https://huggingface.co/z-lab/Qwen3.5-27B-DFlash), with sliding-window attention "for improved long-context performance", Red Hat's [DFlash drafter for DeepSeek-V4-Flash](https://huggingface.co/RedHatAI/DeepSeek-V4-Flash-speculator.dflash) uses 2,048-token windows in all five layers, and a recent comparison of parallel drafters ([Jiang et al., 2026](https://arxiv.org/pdf/2609.24197)) runs all of them with the same window.
 
-The window costs less acceptance than one might expect. The keys and values in it are projected from target hidden states that have already attended over the whole context, and drafters mostly look at recent tokens anyway: [Eldenk et al. (2026)](https://arxiv.org/pdf/2605.09992) observe that the attention of EAGLE-3 and MTP drafters drifts from the prompt towards the tokens they've just drafted. Windowed-MTP ([Valliappan, 2026](https://arxiv.org/pdf/2607.21535)) puts 4,032 recent tokens and 64 sinks in the window of the native MTP drafters of hybrid Qwen models at 1M tokens of context. On Qwen3.6-35B the acceptance length even grew over full-context drafting, from 4.49 to 4.74, and the time per output token fell by 1.57×; only a 1K window started to hurt, with 3.79.
+The window costs less acceptance than one might expect. The keys and values in it are projected from target hidden states that have already attended over the whole context, and drafters mostly look at recent tokens anyway: [Eldenk et al. (2026)](https://arxiv.org/pdf/2605.09992) observe that the attention of EAGLE-3 and MTP drafters drifts from the prompt towards the tokens they've just drafted. Windowed-MTP ([Valliappan, 2026](https://arxiv.org/pdf/2607.21535)) puts a 4K window with a few sink tokens on the native MTP drafters of hybrid Qwen models at 1M tokens of context: the acceptance length even grew slightly over full-context drafting while the time per output token fell by a third, and only a 1K window started to hurt.
 
 So for memory alone a window is mostly enough. It doesn't remove the drafter's cache as a separate structure: every new token still has to be projected into keys and values in every draft layer and written into a second cache pool with its own layout, which the engine has to allocate, page and roll back (Windowed-MTP needs a ring buffer and a remapping step to actually reclaim the memory). On Qwen3-8B this injection step gets 4.7× slower going from 4 to 128 concurrent requests. And it leaves open another question: could the drafter get *more* out of the target's own cache than out of the few hidden states it projects into its own?
 
@@ -1827,7 +1822,7 @@ hspec_context();
 ![](.)
 *How a parallel drafter conditions on a context of $L$ tokens. DFlash writes the target's projected hidden states into its own cache for every new token, a cache that grows with the context unless windowed. H-Spec's attention reads the target's KV cache in place, and its Mamba layers start from a fixed-size state built from $\mathbf{h}\_t$ and scan the block in one parallel pass. Move the slider to grow the context, and click the titles to switch.*
 
-Both halves matter: with the architecture fixed, dropping the target's keys and values cuts the acceptance length by 24–31%, and dropping the summary by 7–12%. At a matched parameter count the hybrid backbone beats a Mamba-only drafter by 29–45% and an attention-only one by 13–15%. Against P-EAGLE, DFlash and DSpark retrained with the same recipe, H-Spec improves the acceptance length on Llama-3.1-8B, Qwen3-4B and Qwen3-8B by 13.3%, 5.0% and 8.7%, keeping its margin from 1k to 32k tokens of context. All of them use the same 2,048-token window, so these gains are what the target's cache and summary add as information. In vLLM H-Spec reaches 5–17% higher peak throughput at the lowest KV cache utilization, with an advantage growing with concurrency. The costs are a deeper computational graph, which drafts slower than DFlash below about 32 concurrent requests or 512 tokens of input, and attention layers that must copy the target's KV layout.
+Both halves matter: dropping the target's keys and values cuts the acceptance length by a quarter or more, and dropping the summary by about a tenth. Against P-EAGLE, DFlash and DSpark retrained with the same recipe and the same 2,048-token window, H-Spec accepts 5–13% more tokens per round from 1k to 32k tokens of context, which is what the target's cache and summary add as information, and in vLLM it reaches up to 17% higher peak throughput, with an advantage growing with concurrency. The costs are a deeper computational graph, which drafts slower than DFlash below about 32 concurrent requests or 512 tokens of input, and attention layers that must copy the target's KV layout.
 
 Serving engines have converged on a handful of these families: vLLM's benchmark on AMD GPUs compares exactly four `method` values of `--speculative-config`, namely `mtp`, `eagle3`, `dflash` and `dspark`. Across all of them the architecture has been moving the same way, from drafting step by step towards a parallel backbone, a small causal head and deep conditioning on the target, built with the serving engine in mind[^SV2]. What's left is the objective.
 
@@ -2146,5 +2141,7 @@ Plenty of questions remain open: drafters for long-context and agentic workloads
 [^HYD]: Blockwise parallel decoding ([Stern et al., 2018](https://arxiv.org/pdf/1811.03115)) did this first. Hydra ([Ankner et al., 2024](https://arxiv.org/pdf/2402.05109)) made Medusa heads sequentially dependent, and Medusa-2's typical acceptance trades exactness for speed by accepting any plausible token instead of using speculative sampling.
 
 [^SV2]: Serving engines matter as much as drafters. SGLang's Spec V2 overlaps host-side scheduling with GPU work and raises throughput by over 33%, from about 11.4k to 15.3k tokens/s, for Qwen3-8B on a single B200 at concurrency 32 ([LMSYS](https://www.lmsys.org/blog/2026-06-15-next-generation-speculative-decoding-dflash-v2/)).
+
+[^BV]: Why block verification is lossless, in short. By induction $q(x_{t+1:t+k})\, w_k \le p(x_{t+1:t+k})$, where $q(x_{t+1:t+k})$ and $p(x_{t+1:t+k})$ are products of per-position probabilities, so $w_k$ is the share of the drafted prefix that the target can still pay for. A kept prefix is extended either by the next drafted token $y$, with weight $\min\big(q_{k+1}(y), w_k\, p_{k+1}(y)\big)$, or by a sample from the residual $\big(w_k\, p_{k+1}(y) - q_{k+1}(y)\big)\_+$, and the two add up to exactly $w_k\, p_{k+1}(y)$: the single-token argument of speculative sampling, scaled by $w_k$. The survival probabilities keep this bookkeeping exact even though the verifier decides only after seeing the whole draft. [Sun et al. (2024)](https://arxiv.org/pdf/2403.10444) give the full proof.
 
 [^DFLY]: DFly ([Liu et al., 2026](https://arxiv.org/pdf/2607.25852)) comes from the AngelSpec framework. It's another block-diffusion drafter with a predecessor-conditioned autoregressive head, i.e. the same "parallel + causal head" family as DSpark and Domino.
